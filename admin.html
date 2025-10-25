@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Madrasa — Forms & Applications</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root{--accent:#0b5ed7}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    .hero{background:linear-gradient(180deg,rgba(11,94,215,0.06),transparent);padding:2.5rem}
+    .card{border-radius:1rem}
+    .required::after{content:' *';color:#d00}
+    .form-section{margin-bottom:2rem}
+    .note{font-size:.9rem;color:#555}
+    @media (min-width:992px){.two-col{display:grid;grid-template-columns:1fr 420px;gap:2rem}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">Noorussalam Madrasa</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#forms">Forms</a></li>
+        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-6">Forms & Applications</h1>
+        <p class="lead">Apply for admission, request certificates, submit permission letters and more — all online.</p>
+        <p class="note">Fields marked with <span class="text-danger">*</span> are required.</p>
+      </div>
+      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+        <a href="#admission" class="btn btn-outline-primary btn-lg">Apply for Admission</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container my-5" id="forms">
+  <div class="two-col">
+
+    <div>
+      <!-- Admission Application -->
+      <section class="card p-4 mb-4 form-section" id="admission">
+        <h3 class="mb-3">Admission Application</h3>
+        <p class="note">Fill all required fields. After submission, you'll receive a reference number via email (if provided).</p>
+        <form id="admissionForm" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required">Full Name</label>
+              <input type="text" class="form-control" name="fullName" required>
+              <div class="invalid-feedback">Please enter student's full name.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Preferred Name</label>
+              <input type="text" class="form-control" name="preferredName">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required">Date of Birth</label>
+              <input type="date" class="form-control" name="dob" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required">Gender</label>
+              <select class="form-select" name="gender" required>
+                <option value="">Choose...</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required">Applying For Class / Level</label>
+              <input type="text" class="form-control" name="classLevel" required placeholder="e.g., Primary / Hifz / Tajweed">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required">Parent / Guardian Name</label>
+              <input type="text" class="form-control" name="guardianName" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required">Contact Number</label>
+              <input type="tel" class="form-control" name="phone" pattern="[0-9+\- ]{7,20}" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label required">Address</label>
+              <textarea class="form-control" rows="2" name="address" required></textarea>
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Submit Application</button>
+              <button type="reset" class="btn btn-outline-secondary">Reset</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <aside>
+      <div class="card p-4 sticky-top">
+        <h5>How it works</h5>
+        <ol>
+          <li>Fill the form and click <strong>Submit</strong>.</li>
+          <li>Your submission will be saved and can be searched in <strong>Admin Page</strong>.</li>
+        </ol>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<footer class="bg-white py-4 mt-5 border-top">
+  <div class="container text-center small text-muted">© <span id="year"></span> Noorussalam Madrasa — All rights reserved.</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  const admissionForm = document.getElementById('admissionForm');
+  admissionForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!admissionForm.checkValidity()){
+      admissionForm.classList.add('was-validated');
+      return;
+    }
+    // Save to localStorage
+    const submissions = JSON.parse(localStorage.getItem('madrasaSubmissions') || '[]');
+    submissions.push({
+      formType: 'Admission',
+      name: admissionForm.elements['fullName'].value,
+      classLevel: admissionForm.elements['classLevel'].value,
+      phone: admissionForm.elements['phone'].value,
+      date: new Date()
+    });
+    localStorage.setItem('madrasaSubmissions', JSON.stringify(submissions));
+    alert('Submission saved! You can view it in Admin Page.');
+    admissionForm.reset();
+    admissionForm.classList.remove('was-validated');
+  });
+</script>
+</body>
+</html>
