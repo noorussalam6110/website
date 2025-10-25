@@ -27,9 +27,8 @@
     <div class="collapse navbar-collapse" id="nav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
-        <li class="nav-item"><a class="nav-link active" href="#forms">Forms</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#admission">Admission</a></li>
         <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-        <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
       </ul>
     </div>
   </div>
@@ -43,9 +42,6 @@
         <p class="lead">Apply for admission, request certificates, submit permission letters and more — all online.</p>
         <p class="note">Fields marked with <span class="text-danger">*</span> are required.</p>
       </div>
-      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-        <a href="#admission" class="btn btn-outline-primary btn-lg">Apply for Admission</a>
-      </div>
     </div>
   </div>
 </header>
@@ -57,25 +53,25 @@
       <!-- Admission Application -->
       <section class="card p-4 mb-4 form-section" id="admission">
         <h3 class="mb-3">Admission Application</h3>
-        <p class="note">Fill all required fields. After submission, you'll receive a reference number via email (if provided).</p>
+        <p class="note">Fill all required fields. After submission, you'll receive a confirmation message.</p>
         <form id="admissionForm" novalidate>
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label required">Full Name</label>
-              <input type="text" class="form-control" name="fullName" required>
+              <input type="text" class="form-control" name="FullName" required>
               <div class="invalid-feedback">Please enter student's full name.</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Preferred Name</label>
-              <input type="text" class="form-control" name="preferredName">
+              <input type="text" class="form-control" name="PreferredName">
             </div>
             <div class="col-md-4">
               <label class="form-label required">Date of Birth</label>
-              <input type="date" class="form-control" name="dob" required>
+              <input type="date" class="form-control" name="DOB" required>
             </div>
             <div class="col-md-4">
               <label class="form-label required">Gender</label>
-              <select class="form-select" name="gender" required>
+              <select class="form-select" name="Gender" required>
                 <option value="">Choose...</option>
                 <option>Male</option>
                 <option>Female</option>
@@ -84,19 +80,19 @@
             </div>
             <div class="col-md-4">
               <label class="form-label required">Applying For Class / Level</label>
-              <input type="text" class="form-control" name="classLevel" required placeholder="e.g., Primary / Hifz / Tajweed">
+              <input type="text" class="form-control" name="ClassLevel" required placeholder="e.g., Primary / Hifz / Tajweed">
             </div>
             <div class="col-md-6">
               <label class="form-label required">Parent / Guardian Name</label>
-              <input type="text" class="form-control" name="guardianName" required>
+              <input type="text" class="form-control" name="GuardianName" required>
             </div>
             <div class="col-md-6">
               <label class="form-label required">Contact Number</label>
-              <input type="tel" class="form-control" name="phone" pattern="[0-9+\- ]{7,20}" required>
+              <input type="tel" class="form-control" name="Phone" required>
             </div>
             <div class="col-12">
               <label class="form-label required">Address</label>
-              <textarea class="form-control" rows="2" name="address" required></textarea>
+              <textarea class="form-control" name="Address" rows="2" required></textarea>
             </div>
             <div class="col-12 d-flex gap-2">
               <button type="submit" class="btn btn-primary">Submit Application</button>
@@ -112,7 +108,8 @@
         <h5>How it works</h5>
         <ol>
           <li>Fill the form and click <strong>Submit</strong>.</li>
-          <li>Your submission will be saved and can be searched in <strong>Admin Page</strong>.</li>
+          <li>Your submission will be sent to our secure Google Sheet.</li>
+          <li>You will see a confirmation message after submission.</li>
         </ol>
       </div>
     </aside>
@@ -128,6 +125,8 @@
 <script>
   document.getElementById('year').textContent = new Date().getFullYear();
 
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcP3wvH29nz8k9W9z39Uk12M8OXhkYQdaavD44Ecz0tiLesx2IcWb9l3c4-PqfFwYj/exec'; // Replace with your Web App URL
+
   const admissionForm = document.getElementById('admissionForm');
   admissionForm.addEventListener('submit', function(e){
     e.preventDefault();
@@ -135,19 +134,23 @@
       admissionForm.classList.add('was-validated');
       return;
     }
-    // Save to localStorage
-    const submissions = JSON.parse(localStorage.getItem('madrasaSubmissions') || '[]');
-    submissions.push({
-      formType: 'Admission',
-      name: admissionForm.elements['fullName'].value,
-      classLevel: admissionForm.elements['classLevel'].value,
-      phone: admissionForm.elements['phone'].value,
-      date: new Date()
+
+    const formData = new FormData(admissionForm);
+
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert('Submission successful! Reference: ' + (data.row || 'N/A'));
+      admissionForm.reset();
+      admissionForm.classList.remove('was-validated');
+    })
+    .catch(error => {
+      console.error('Error!', error.message);
+      alert('Submission failed. Please try again.');
     });
-    localStorage.setItem('madrasaSubmissions', JSON.stringify(submissions));
-    alert('Submission saved! You can view it in Admin Page.');
-    admissionForm.reset();
-    admissionForm.classList.remove('was-validated');
   });
 </script>
 </body>
