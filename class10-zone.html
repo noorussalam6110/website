@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Class 10 Student Zone | Noorussalam Madrasa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { background: #f8f9fa; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+
+    header {
+      background: linear-gradient(135deg, #0b5ed7, #74b9ff);
+      color: white; text-align: center;
+      padding: 2rem 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      animation: slideDown 1s ease;
+    }
+
+    .zone-section {
+      background: white; border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      padding: 25px 30px; margin-bottom: 40px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease forwards;
+    }
+    .zone-section:nth-child(1) { animation-delay: 0.2s; }
+    .zone-section:nth-child(2) { animation-delay: 0.4s; }
+    .zone-section:nth-child(3) { animation-delay: 0.6s; }
+
+    .zone-section h4 { color: #0b5ed7; font-weight: 700; margin-bottom: 20px; }
+
+    .resource-item {
+      background: #f0f4ff; border-left: 5px solid #0b5ed7;
+      padding: 12px 15px; margin-bottom: 10px; border-radius: 8px;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: all 0.3s ease;
+    }
+    .resource-item:hover { background: #e8efff; transform: scale(1.02); }
+    .resource-item i { color: #0b5ed7; margin-right: 8px; }
+
+    .download-btn {
+      background: #0b5ed7; color: white; border: none;
+      padding: 5px 12px; border-radius: 6px; font-size: 13px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    .download-btn:hover { background: #084298; transform: scale(1.1); }
+
+    /* Back to Home button */
+    .back-btn {
+      display: inline-block;
+      margin: 40px auto 0;
+      background: #0b5ed7;
+      color: #fff;
+      padding: 10px 25px;
+      border-radius: 25px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease forwards 0.8s;
+    }
+    .back-btn:hover {
+      background: #084298;
+      transform: scale(1.1);
+      box-shadow: 0 8px 20px rgba(11, 94, 215, 0.4);
+    }
+
+    footer {
+      background: #0b5ed7; color: white;
+      text-align: center; padding: 12px 0; margin-top: 40px;
+      animation: fadeIn 1.5s ease 1s forwards;
+      opacity: 0;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      0% { opacity: 0; transform: translateY(-40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <h2>Class 10 — Student Zone</h2>
+    <p class="mb-0">Notes, Homework, Model Papers, and More</p>
+  </header>
+
+  <!-- CONTENT AREA -->
+  <div class="container my-5" id="zone-content">
+    <p class="text-center text-muted">Loading student materials...</p>
+  </div>
+
+  <!-- BACK TO HOME BUTTON -->
+  <div class="text-center">
+    <a href="student-zone.html" class="back-btn">
+      ← Back to Home
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <small>© 2025 All rights reserved | Noorussalam Madrasa</small>
+  </footer>
+
+  <!-- SCRIPT: Google Sheet Data -->
+  <script>
+    const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTAS1GM_u_-G7REOxnFMBGAyPZaSqbFOx1w9J7kvmaAsMWXKkJcmrLl1BG3IgbEho9YS6-6vZeqIsWU/pub?output=csv'; // Replace if Class 2 has its own sheet
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(csv => {
+        const rows = csv.split('\n').slice(1);
+        const materials = { 'Exam Note': [], 'Homework': [], 'Model Paper': [] };
+
+        rows.forEach(r => {
+          const cols = r.split(',');
+          const [type, title, link, subject, date] = cols.map(c => c.trim());
+          if (materials[type]) materials[type].push({ title, link, subject, date });
+        });
+
+        const content = document.getElementById('zone-content');
+        content.innerHTML = '';
+
+        Object.keys(materials).forEach(type => {
+          if (materials[type].length === 0) return;
+          const div = document.createElement('div');
+          div.className = 'zone-section';
+          div.innerHTML = `<h4><i class="fa-solid fa-folder-open"></i> ${type}s</h4>`;
+          materials[type].forEach(item => {
+            div.innerHTML += `
+              <div class="resource-item">
+                <div><i class="fa-solid fa-file"></i> ${item.title} <br><small class="text-muted">${item.subject} • ${item.date}</small></div>
+                <a href="${item.link}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Open</a>
+              </div>`;
+          });
+          content.appendChild(div);
+        });
+      })
+      .catch(err => {
+        document.getElementById('zone-content').innerHTML = `<p class='text-center text-danger'>Error loading data.</p>`;
+      });
+  </script>
+
+</body>
+</html>
