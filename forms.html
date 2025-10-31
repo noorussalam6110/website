@@ -1,296 +1,156 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admission Form | Noorussalam Madrasa</title>
+  <title>Madrasa — Forms & Applications</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body{background:#f6f8fb;font-family:system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    .card{border-radius:12px}
-    .photo-preview{width:120px;height:140px;object-fit:cover;border-radius:6px;border:1px solid #ddd}
-    .required::after{content:' *';color:#d33}
-    @media (min-width:900px){.form-wrapper{max-width:900px;margin:32px auto}}
-
-    /* Blurred translucent modal backdrop */
-    .modal-backdrop.show {
-      backdrop-filter: blur(4px);
-      background-color: rgba(13,110,253,0.12);
-    }
-
-    /* Noorussalam blue accents */
-    .noor-blue { background-color: #0d6efd; color: #fff; }
-    .noor-blue-outline { border-color: #0d6efd; color: #0d6efd; }
-
-    /* Smooth modal content fade (extra) */
-    .modal.fade .modal-dialog { transition: transform 0.28s ease-out, opacity 0.28s ease-out; transform: translateY(-10px); }
-    .modal.fade.show .modal-dialog { transform: translateY(0); }
+    :root{--accent:#0b5ed7}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    .hero{background:linear-gradient(180deg,rgba(11,94,215,0.06),transparent);padding:2.5rem}
+    .card{border-radius:1rem}
+    .required::after{content:' *';color:#d00}
+    .form-section{margin-bottom:2rem}
+    .note{font-size:.9rem;color:#555}
+    @media (min-width:992px){.two-col{display:grid;grid-template-columns:1fr 420px;gap:2rem}}
   </style>
 </head>
 <body>
-  <div class="container form-wrapper">
-    <div class="card shadow-sm p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <h3 class="mb-0">SAMASTHA KERALA ISLAM MATHA VIDYABYASA BOARD</h3>
-          <h4 class="mb-0">NOORUSSALAM SECONDARY MADRASA</h4>
-          <small class="text-muted">Kambippalam, Kerala Estate, Malappuram Dt.</small><br>
-          <small class="text-muted">Website: <a href="https://noorussalammadrasa.online" target="_blank">noorussalammadrasa.online</a></small>
-        </div>
-        <div class="text-end">
-          <small class="text-muted">Email: noorussalam6110@gmail.com</small>
-        </div>
-      </div>
 
-      <form id="admissionForm" novalidate>
-        <div class="row g-3">
-          <div class="col-md-8">
-            <label class="form-label required">Name of Student with initials</label>
-            <input type="text" class="form-control" id="studentName" required>
-          </div>
-
-          <div class="col-12">
-            <label class="form-label required">Address</label>
-            <textarea class="form-control" id="address" rows="2" required></textarea>
-          </div>
-
-          <div class="col-12">
-            <label class="form-label">Aadhar Number</label>
-            <input type="text" class="form-control" id="aadhar">
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label required">Date of Birth</label>
-            <input type="date" class="form-control" id="dob" required>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label required">Gender</label>
-            <select class="form-select" id="gender" required>
-              <option value="" selected disabled>Choose...</option>
-              <option>Male</option>
-              <option>Female</option>
-            </select>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label required">Applying For Class</label>
-            <input type="text" class="form-control" id="applyClass" placeholder="e.g., Class 6" required>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label required">Parent / Guardian Name</label>
-            <input type="text" class="form-control" id="guardianName" required>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label required">Relationship to Student</label>
-            <input type="text" class="form-control" id="relationship" placeholder="e.g., Father, Mother, Uncle" required>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label required">Contact Phone</label>
-            <input type="tel" class="form-control" id="phone" pattern="[0-9]{10,15}" required>
-            <div class="form-text">Digits only, 10–15 characters.</div>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label">Alternate Phone / Email</label>
-            <input type="text" class="form-control" id="altContact">
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label required">House Name</label>
-            <input type="text" class="form-control" id="houseName" required>
-          </div>
-
-          <div class="col-md-4">
-            <label class="form-label">Photo (passport size)</label>
-            <input class="form-control" type="file" id="photo" accept="image/*">
-            <div class="form-text">Optional. Will be used on ID card.</div>
-          </div>
-
-          <div class="col-md-8 d-flex align-items-center">
-            <div id="photoHolder" class="me-3">
-              <img src="" alt="Photo preview" class="photo-preview d-none" id="photoPreview">
-            </div>
-            <div>
-              <button type="button" class="btn btn-outline-secondary btn-sm" id="clearPhoto">Clear Photo</button>
-            </div>
-          </div>
-
-          <div class="col-12">
-            <label class="form-label">Additional Notes</label>
-            <textarea class="form-control" id="notes" rows="2"></textarea>
-          </div>
-
-          <div class="col-12 d-flex gap-2 justify-content-end mt-2">
-            <button type="button" class="btn btn-secondary" id="previewBtn">Preview</button>
-            <button type="submit" class="btn noor-blue" id="submitBtn">
-              <span id="submitSpinner" class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
-              <span id="submitText">Submit Application</span>
-            </button>
-            <button type="button" class="btn btn-outline-primary" id="printBtn">Print Blank Form</button>
-          </div>
-        </div>
-      </form>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">Noorussalam Madrasa</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#admission">Admission</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+      </ul>
     </div>
   </div>
+</nav>
 
-  <!-- Success Modal -->
-  <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header noor-blue">
-          <h5 class="modal-title">✅ Admission Form Submitted</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p id="modalMessage" class="mb-1"></p>
-          <p class="small text-muted">Noorussalam Madrasa will contact you soon.</p>
-        </div>
-        <div class="modal-footer">
-          <a href="https://noorussalammadrasa.online" class="btn btn-outline-primary">Back to Home</a>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
+<header class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-8">
+        <h1 class="display-6">Forms & Applications</h1>
+        <p class="lead">Apply for admission, request certificates, submit permission letters and more — all online.</p>
+        <p class="note">Fields marked with <span class="text-danger">*</span> are required.</p>
       </div>
     </div>
   </div>
+</header>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // Photo preview
-    const photoInput = document.getElementById('photo');
-    const photoPreview = document.getElementById('photoPreview');
-    const clearPhotoBtn = document.getElementById('clearPhoto');
+<main class="container my-5" id="forms">
+  <div class="two-col">
 
-    photoInput.addEventListener('change', (e)=>{
-      const f = e.target.files && e.target.files[0];
-      if(!f) return;
-      const reader = new FileReader();
-      reader.onload = function(ev){
-        photoPreview.src = ev.target.result;
-        photoPreview.classList.remove('d-none');
-      }
-      reader.readAsDataURL(f);
-    });
-    clearPhotoBtn.addEventListener('click', ()=>{ photoInput.value=''; photoPreview.src=''; photoPreview.classList.add('d-none'); });
+    <div>
+      <!-- Admission Application -->
+      <section class="card p-4 mb-4 form-section" id="admission">
+        <h3 class="mb-3">Admission Application</h3>
+        <p class="note">Fill all required fields. After submission, you'll receive a confirmation message.</p>
+        <form id="admissionForm" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required">Full Name</label>
+              <input type="text" class="form-control" name="FullName" required>
+              <div class="invalid-feedback">Please enter student's full name.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">House Name</label>
+              <input type="text" class="form-control" name="PreferredName">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required">Date of Birth</label>
+              <input type="date" class="form-control" name="DOB" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required">Gender</label>
+              <select class="form-select" name="Gender" required>
+                <option value="">Choose...</option>
+                <option>Male</option>
+                <option>Female</option>
+              </select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required">Applying For Class</label>
+              <input type="text" class="form-control" name="ClassLevel" required placeholder="Please enter Applying Class">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required">Parent / Guardian Name</label>
+              <input type="text" class="form-control" name="GuardianName" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required">Contact Number</label>
+              <input type="tel" class="form-control" name="Phone" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label required">Address</label>
+              <textarea class="form-control" name="Address" rows="2" required></textarea>
+            </div>
+            <div class="col-12 d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Submit Application</button>
+              <button type="reset" class="btn btn-outline-secondary">Reset</button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
 
-    // Submit handler with button spinner and modal
-    const form = document.getElementById('admissionForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const submitSpinner = document.getElementById('submitSpinner');
-    const submitText = document.getElementById('submitText');
-    const successModalEl = document.getElementById('successModal');
-    const successModal = new bootstrap.Modal(successModalEl);
-    const modalMessage = document.getElementById('modalMessage');
+    <aside>
+      <div class="card p-4 sticky-top">
+        <h5>How it works</h5>
+        <ol>
+          <li>Fill the form and click <strong>Submit</strong>.</li>
+          <li>Your submission will be sent to our secure Google Sheet.</li>
+          <li>You will see a confirmation message after submission.</li>
+        </ol>
+      </div>
+    </aside>
 
-    form.addEventListener('submit', function(e){
-      e.preventDefault();
-      // simple validation
-      if(!form.checkValidity()){ form.classList.add('was-validated'); return; }
+  </div>
+</main>
 
-      // show spinner on button
-      submitSpinner.classList.remove('d-none');
-      submitText.textContent = 'Submitting...';
-      submitBtn.setAttribute('disabled','disabled');
+<footer class="bg-white py-4 mt-5 border-top">
+  <div class="container text-center small text-muted">© <span id="year"></span> Noorussalam Madrasa — All rights reserved.</div>
+</footer>
 
-      const data = {
-        studentName: document.getElementById('studentName').value,
-        address: document.getElementById('address').value,
-        aadhar: document.getElementById('aadhar')?.value || document.getElementById('aadhar')?.textContent || '',
-        dob: document.getElementById('dob').value,
-        gender: document.getElementById('gender').value,
-        applyClass: document.getElementById('applyClass').value,
-        guardianName: document.getElementById('guardianName').value,
-        relationship: document.getElementById('relationship').value,
-        phone: document.getElementById('phone').value,
-        altContact: document.getElementById('altContact').value,
-        houseName: document.getElementById('houseName').value,
-        notes: document.getElementById('notes').value
-      };
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
 
-      fetch('PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_URL_HERE', {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {'Content-Type': 'application/json'}
-      })
-      .then(res => res.text())
-      .then(txt => {
-        // fill modal message
-        modalMessage.innerHTML = `<strong>${escapeHtml(data.studentName)}</strong><br>Application for <strong>${escapeHtml(data.applyClass)}</strong> has been received.<br>Contact: <strong>${escapeHtml(data.phone)}</strong>`;
-        successModal.show();
-      })
-      .catch(err => {
-        // show inline error alert
-        showError('Submission failed. Please try again.');
-        console.error(err);
-      })
-      .finally(()=>{
-        // restore button state after a short delay so modal animation can show
-        setTimeout(()=>{
-          submitSpinner.classList.add('d-none');
-          submitText.textContent = 'Submit Application';
-          submitBtn.removeAttribute('disabled');
-        }, 800);
-      });
-    });
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcP3wvH29nz8k9W9z39Uk12M8OXhkYQdaavD44Ecz0tiLesx2IcWb9l3c4-PqfFwYj/exec'; // Replace with your Web App URL
 
-    // On modal hidden, reset form
-    successModalEl.addEventListener('hidden.bs.modal', function () {
-      form.reset();
-      form.classList.remove('was-validated');
-    });
-
-    function showError(msg){
-      // create or reuse an alert element at top of form
-      let alertEl = document.getElementById('formError');
-      if(!alertEl){
-        alertEl = document.createElement('div');
-        alertEl.id = 'formError';
-        alertEl.className = 'alert alert-danger';
-        const card = document.querySelector('.card .card-body') || document.querySelector('.card');
-        card.prepend(alertEl);
-      }
-      alertEl.textContent = msg;
-      // auto hide after 5s
-      setTimeout(()=>{ if(alertEl) alertEl.remove(); }, 5000);
+  const admissionForm = document.getElementById('admissionForm');
+  admissionForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!admissionForm.checkValidity()){
+      admissionForm.classList.add('was-validated');
+      return;
     }
 
-    // helper to escape HTML
-    function escapeHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    const formData = new FormData(admissionForm);
 
-    // Preview and Print Blank Form features (preserve existing behavior)
-    document.getElementById('previewBtn').addEventListener('click', ()=>{
-      if(!form.checkValidity()){ form.classList.add('was-validated'); return; }
-      // simple preview in modal before submit (optional) — reuse success modal to show preview
-      modalMessage.innerHTML = `<strong>${escapeHtml(document.getElementById('studentName').value)}</strong><br>Applying for <strong>${escapeHtml(document.getElementById('applyClass').value)}</strong>`;
-      // change title for preview
-      successModalEl.querySelector('.modal-title').textContent = 'Preview — Confirm Details';
-      successModal.show();
-      // restore title when closed
-      successModalEl.addEventListener('hidden.bs.modal', function handler(){
-        successModalEl.querySelector('.modal-title').textContent = '✅ Admission Form Submitted';
-        successModalEl.removeEventListener('hidden.bs.modal', handler);
-      });
+    fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert('Submission successful! Reference: ' + (data.row || 'N/A'));
+      admissionForm.reset();
+      admissionForm.classList.remove('was-validated');
+    })
+    .catch(error => {
+      console.error('Error!', error.message);
+      alert('Submission failed. Please try again.');
     });
-
-    document.getElementById('printBtn').addEventListener('click', ()=>{
-      const formHtml = document.getElementById('admissionForm').outerHTML;
-      const win = window.open('','_blank','width=900,height=900');
-      const content = `
-        <html><head><title>Blank Admission Form</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>body{padding:20px;font-family:Arial,Helvetica,sans-serif}</style>
-        </head><body>
-        <h4>Admission Form - Blank</h4>
-        ${formHtml}
-        <script>window.onload=function(){document.querySelectorAll('input,textarea,select').forEach(i=>i.removeAttribute('required'));}</script>
-        </body></html>
-      `;
-      win.document.open(); win.document.write(content); win.document.close();
-      win.focus();
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
