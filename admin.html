@@ -1,154 +1,368 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Madrasa — Forms & Applications</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noorussalam Madrasa — Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    :root{--accent:#0b5ed7}
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
-    .hero{background:linear-gradient(180deg,rgba(11,94,215,0.06),transparent);padding:2.5rem}
-    .card{border-radius:1rem}
-    .required::after{content:' *';color:#d00}
-    .form-section{margin-bottom:2rem}
-    .note{font-size:.9rem;color:#555}
-    @media (min-width:992px){.two-col{display:grid;grid-template-columns:1fr 420px;gap:2rem}}
+    :root{ --noor-blue: #0b5ea8; --muted:#6c757d; }
+    body { background:#f8fafc; }
+    .sidebar { min-height:100vh; background: linear-gradient(180deg, #fff 0%, #f1f8ff 100%); border-right:1px solid #e6eef8; }
+    .brand { color:var(--noor-blue); font-weight:700; }
+    .card-compact { padding:1rem; border-radius:12px; }
+    .stat-number{ font-size:1.5rem; font-weight:700; }
+    .table-wrap{ max-height:360px; overflow:auto; }
+    .nav-link.active{ background: rgba(11,94,168,0.08); border-radius:8px; color:var(--noor-blue) !important; }
+    .avatar { width:40px; height:40px; border-radius:8px; object-fit:cover; }
+    @media (max-width:991px){ .sidebar{ position:relative; height:auto; } }
   </style>
 </head>
 <body>
+  <div class="container-fluid">
+    <div class="row g-0">
+      <!-- Sidebar -->
+      <aside class="col-12 col-lg-3 col-xl-2 p-3 sidebar">
+        <div class="d-flex align-items-center mb-4">
+          <img src="https://via.placeholder.com/48x48.png?text=N" class="me-2" alt="logo" />
+          <div>
+            <div class="brand">Noorussalam Madrasa</div>
+            <small class="text-muted">Kambippalam, Malappuram</small>
+          </div>
+        </div>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="#">Noorussalam Madrasa</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-controls="nav" aria-expanded="false">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="nav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
-        <li class="nav-item"><a class="nav-link active" href="#forms">Forms</a></li>
-        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
-        <li class="nav-item"><a class="nav-link" href="admin.html">Admin</a></li>
-      </ul>
-    </div>
-  </div>
-</nav>
+        <nav class="nav flex-column mb-4">
+          <a class="nav-link active" href="#"><i class="bi-house"></i> Dashboard</a>
+          <a class="nav-link" href="#studentsSection">Students</a>
+          <a class="nav-link" href="#admissionsSection">Admissions</a>
+          <a class="nav-link" href="#paymentsSection">Payments</a>
+          <a class="nav-link" href="#announcementsSection">Announcements</a>
+          <a class="nav-link" href="#downloads">Downloads</a>
+        </nav>
 
-<header class="hero">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-lg-8">
-        <h1 class="display-6">Forms & Applications</h1>
-        <p class="lead">Apply for admission, request certificates, submit permission letters and more — all online.</p>
-        <p class="note">Fields marked with <span class="text-danger">*</span> are required.</p>
-      </div>
-      <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-        <a href="#admission" class="btn btn-outline-primary btn-lg">Apply for Admission</a>
-      </div>
-    </div>
-  </div>
-</header>
+        <div class="mt-auto">
+          <small class="text-muted">Quick Actions</small>
+          <div class="d-grid mt-2">
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#announceModal">New announcement</button>
+            <a href="application.html" class="btn btn-primary btn-sm mt-2">Open Admissions</a>
+          </div>
+        </div>
+      </aside>
 
-<main class="container my-5" id="forms">
-  <div class="two-col">
+      <!-- Main -->
+      <main class="col p-4">
+        <!-- Topbar -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="m-0">Dashboard</h3>
+          <div class="d-flex align-items-center gap-3">
+            <div class="input-group" style="min-width:220px">
+              <input id="globalSearch" type="search" class="form-control form-control-sm" placeholder="Search students, admissions...">
+              <button class="btn btn-outline-secondary btn-sm" onclick="performSearch()">Search</button>
+            </div>
+            <div class="text-end">
+              <div class="small text-muted">Admin</div>
+              <div class="fw-semibold">Suhail P</div>
+            </div>
+            <img src="https://via.placeholder.com/40" class="avatar" alt="admin">
+          </div>
+        </div>
 
-    <div>
-      <!-- Admission Application -->
-      <section class="card p-4 mb-4 form-section" id="admission">
-        <h3 class="mb-3">Admission Application</h3>
-        <p class="note">Fill all required fields. After submission, you'll receive a reference number via email (if provided).</p>
-        <form id="admissionForm" novalidate>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label required">Full Name</label>
-              <input type="text" class="form-control" name="fullName" required>
-              <div class="invalid-feedback">Please enter student's full name.</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Preferred Name</label>
-              <input type="text" class="form-control" name="preferredName">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label required">Date of Birth</label>
-              <input type="date" class="form-control" name="dob" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label required">Gender</label>
-              <select class="form-select" name="gender" required>
-                <option value="">Choose...</option>
-                <option>Male</option>
-                <option>Female</option>
-                <option>Other</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label required">Applying For Class / Level</label>
-              <input type="text" class="form-control" name="classLevel" required placeholder="e.g., Primary / Hifz / Tajweed">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label required">Parent / Guardian Name</label>
-              <input type="text" class="form-control" name="guardianName" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label required">Contact Number</label>
-              <input type="tel" class="form-control" name="phone" pattern="[0-9+\- ]{7,20}" required>
-            </div>
-            <div class="col-12">
-              <label class="form-label required">Address</label>
-              <textarea class="form-control" rows="2" name="address" required></textarea>
-            </div>
-            <div class="col-12 d-flex gap-2">
-              <button type="submit" class="btn btn-primary">Submit Application</button>
-              <button type="reset" class="btn btn-outline-secondary">Reset</button>
+        <!-- Stats row -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
+            <div class="card card-compact shadow-sm">
+              <small class="text-muted">Total Students</small>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div>
+                  <div class="stat-number" id="totalStudents">412</div>
+                  <small class="text-success" id="studentsChange">+6 since last month</small>
+                </div>
+                <div class="text-end">
+                  <i class="bi-people" style="font-size:1.6rem;color:var(--noor-blue)"></i>
+                </div>
+              </div>
             </div>
           </div>
-        </form>
-      </section>
+
+          <div class="col-6 col-md-3">
+            <div class="card card-compact shadow-sm">
+              <small class="text-muted">Pending Admissions</small>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div>
+                  <div class="stat-number" id="pendingAdmissions">18</div>
+                  <small class="text-muted">new</small>
+                </div>
+                <div>
+                  <i class="bi-file-earmark-person" style="font-size:1.6rem;color:#f59e0b"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="card card-compact shadow-sm">
+              <small class="text-muted">Fees Collected (Month)</small>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div>
+                  <div class="stat-number">₹<span id="feesCollected">72,400</span></div>
+                  <small class="text-muted">this month</small>
+                </div>
+                <div>
+                  <i class="bi-currency-dollar" style="font-size:1.6rem;color:#16a34a"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-3">
+            <div class="card card-compact shadow-sm">
+              <small class="text-muted">Announcements</small>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <div>
+                  <div class="stat-number" id="announcementCount">5</div>
+                  <small class="text-muted">active</small>
+                </div>
+                <div>
+                  <i class="bi-megaphone" style="font-size:1.6rem;color:#ef4444"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts and recent table -->
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-xl-7">
+            <div class="card p-3 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="m-0">Enrollment by Class</h6>
+                <small class="text-muted">Last 12 months</small>
+              </div>
+              <canvas id="enrollmentChart" height="160"></canvas>
+            </div>
+
+            <div class="card p-3 mt-3 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="m-0">Recent Applications</h6>
+                <div>
+                  <button class="btn btn-sm btn-outline-secondary" onclick="exportTableToCSV('applications.csv')">Export CSV</button>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="table table-sm table-hover">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>App. No</th>
+                      <th>Name</th>
+                      <th>Class</th>
+                      <th>Submitted</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="applicationsTable">
+                    <!-- sample rows populated by JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-12 col-xl-5">
+            <div class="card p-3 shadow-sm mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="m-0">Fee Collection (by type)</h6>
+                <small class="text-muted">This month</small>
+              </div>
+              <canvas id="feesChart" height="220"></canvas>
+            </div>
+
+            <div id="announcementsSection" class="card p-3 shadow-sm">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="m-0">Latest Announcements</h6>
+                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#announceModal">New</button>
+              </div>
+              <ul class="list-group list-group-flush" id="announceList">
+                <!-- populated by JS -->
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Students table -->
+        <section id="studentsSection" class="card p-3 shadow-sm mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="m-0">Students</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-secondary" onclick="downloadSampleIDCards()">Download IDs (sample)</button>
+              <button class="btn btn-primary btn-sm ms-2">Add Student</button>
+            </div>
+          </div>
+
+          <div class="table-responsive-sm">
+            <table class="table table-hover table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Class</th>
+                  <th>Roll</th>
+                  <th>Phone</th>
+                  <th>House</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTable">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-muted small">© Noorussalam Madrasa — Kambippalam. Designed for quick admin tasks.</footer>
+
+      </main>
     </div>
-
-    <aside>
-      <div class="card p-4 sticky-top">
-        <h5>How it works</h5>
-        <ol>
-          <li>Fill the form and click <strong>Submit</strong>.</li>
-          <li>Your submission will be saved and can be searched in <strong>Admin Page</strong>.</li>
-        </ol>
-      </div>
-    </aside>
-
   </div>
-</main>
 
-<footer class="bg-white py-4 mt-5 border-top">
-  <div class="container text-center small text-muted">© <span id="year"></span> Noorussalam Madrasa — All rights reserved.</div>
-</footer>
+  <!-- Announcement modal -->
+  <div class="modal fade" id="announceModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">New Announcement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <input id="annTitle" class="form-control" placeholder="Title">
+          </div>
+          <div>
+            <textarea id="annBody" class="form-control" rows="4" placeholder="Write announcement..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-primary" onclick="postAnnouncement()">Post</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  document.getElementById('year').textContent = new Date().getFullYear();
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Sample data
+    const applications = [
+      {no: 'APP-1023', name: 'Ahmed A', cls: '3', date: '2025-10-27', status: 'Pending'},
+      {no: 'APP-1024', name: 'Mariya S', cls: '5', date: '2025-10-25', status: 'Accepted'},
+      {no: 'APP-1025', name: 'Ibrahim K', cls: '7', date: '2025-10-24', status: 'Pending'},
+      {no: 'APP-1026', name: 'Fatima R', cls: '2', date: '2025-10-23', status: 'Rejected'},
+    ];
 
-  const admissionForm = document.getElementById('admissionForm');
-  admissionForm.addEventListener('submit', function(e){
-    e.preventDefault();
-    if(!admissionForm.checkValidity()){
-      admissionForm.classList.add('was-validated');
-      return;
+    const students = [
+      {id:1,name:'Ahmed A',cls:'3',roll:12,phone:'9876543210',house:'A'},
+      {id:2,name:'Mariya S',cls:'5',roll:3,phone:'9876501234',house:'B'},
+      {id:3,name:'Ibrahim K',cls:'7',roll:21,phone:'9494949494',house:'A'},
+    ];
+
+    const announcements = [
+      {title:'Holiday on Friday', body:'School will remain closed on Friday due to festival', date:'2025-10-15'},
+      {title:'Parent Meeting', body:'Parent meeting scheduled on Nov 10 at 10:00 AM', date:'2025-10-20'},
+    ];
+
+    // Render tables
+    function renderApplications(){
+      const tbody = document.getElementById('applicationsTable'); tbody.innerHTML='';
+      applications.forEach(a=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${a.no}</td><td>${a.name}</td><td>${a.cls}</td><td>${a.date}</td><td><span class="badge bg-${a.status==='Accepted'?'success':a.status==='Pending'?'warning':'danger'} text-dark">${a.status}</span></td>`;
+        tbody.appendChild(tr);
+      });
     }
-    // Save to localStorage
-    const submissions = JSON.parse(localStorage.getItem('madrasaSubmissions') || '[]');
-    submissions.push({
-      formType: 'Admission',
-      name: admissionForm.elements['fullName'].value,
-      classLevel: admissionForm.elements['classLevel'].value,
-      phone: admissionForm.elements['phone'].value,
-      date: new Date()
+
+    function renderStudents(){
+      const tbody = document.getElementById('studentsTable'); tbody.innerHTML='';
+      students.forEach(s=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td><td>${s.roll}</td><td>${s.phone}</td><td>${s.house}</td><td><button class='btn btn-sm btn-outline-primary' onclick="editStudent(${s.id})">Edit</button></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function renderAnnouncements(){
+      const ul = document.getElementById('announceList'); ul.innerHTML='';
+      announcements.slice().reverse().forEach(a=>{
+        const li = document.createElement('li'); li.className='list-group-item';
+        li.innerHTML = `<div class='d-flex justify-content-between'><div><strong>${a.title}</strong><div class='small text-muted'>${a.date}</div><div>${a.body}</div></div></div>`;
+        ul.appendChild(li);
+      });
+      document.getElementById('announcementCount').textContent = announcements.length;
+    }
+
+    // Charts
+    const enrollmentCtx = document.getElementById('enrollmentChart').getContext('2d');
+    const enrollmentChart = new Chart(enrollmentCtx, {
+      type: 'line',
+      data: {
+        labels: ['Nov 2024','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'],
+        datasets: [{ label: 'New Enrollments', data: [12,8,15,10,18,20,22,16,14,11,13,9], tension:0.3, borderColor: getComputedStyle(document.documentElement).getPropertyValue('--noor-blue')||'#0b5ea8', fill:true, backgroundColor:'rgba(11,94,168,0.06)'}]
+      },
+      options:{ responsive:true, plugins:{legend:{display:false}} }
     });
-    localStorage.setItem('madrasaSubmissions', JSON.stringify(submissions));
-    alert('Submission saved! You can view it in Admin Page.');
-    admissionForm.reset();
-    admissionForm.classList.remove('was-validated');
-  });
-</script>
+
+    const feesCtx = document.getElementById('feesChart').getContext('2d');
+    const feesChart = new Chart(feesCtx, {
+      type: 'doughnut',
+      data: { labels:['Tuition','Exam','Uniform','Donation'], datasets:[{data:[42000,12000,8000,10000]}] },
+      options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+
+    // Interactions
+    function postAnnouncement(){
+      const t = document.getElementById('annTitle').value.trim();
+      const b = document.getElementById('annBody').value.trim();
+      if(!t||!b) return alert('Please provide title and message');
+      announcements.push({title:t, body:b, date:new Date().toISOString().split('T')[0]});
+      renderAnnouncements();
+      var modal = bootstrap.Modal.getInstance(document.getElementById('announceModal'));
+      modal.hide();
+      document.getElementById('annTitle').value=''; document.getElementById('annBody').value='';
+    }
+
+    function exportTableToCSV(filename){
+      const rows = [];
+      rows.push(['App No','Name','Class','Submitted','Status']);
+      applications.forEach(a=> rows.push([a.no,a.name,a.cls,a.date,a.status]));
+      let csv = rows.map(r => r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url);
+    }
+
+    function downloadSampleIDCards(){
+      alert('This will trigger generation of ID cards (placeholder). In a real site this links to a server-side PDF generator.');
+    }
+
+    function editStudent(id){ alert('Edit student '+id+' (placeholder)'); }
+
+    function performSearch(){
+      const q = document.getElementById('globalSearch').value.toLowerCase();
+      if(!q){ renderApplications(); renderStudents(); return; }
+      // simple filter example
+      const apps = applications.filter(a=> a.name.toLowerCase().includes(q) || a.no.toLowerCase().includes(q));
+      const studs = students.filter(s=> s.name.toLowerCase().includes(q) || String(s.roll).includes(q));
+      const at = document.getElementById('applicationsTable'); at.innerHTML=''; apps.forEach(a=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${a.no}</td><td>${a.name}</td><td>${a.cls}</td><td>${a.date}</td><td>${a.status}</td>`; at.appendChild(tr); });
+      const st = document.getElementById('studentsTable'); st.innerHTML=''; studs.forEach(s=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${s.id}</td><td>${s.name}</td><td>${s.cls}</td><td>${s.roll}</td><td>${s.phone}</td><td>${s.house}</td><td></td>`; st.appendChild(tr); });
+    }
+
+    // initial render
+    renderApplications(); renderStudents(); renderAnnouncements();
+
+  </script>
+
+  <!-- Bootstrap icons (small) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </body>
 </html>
