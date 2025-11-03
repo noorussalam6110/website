@@ -1,88 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Noorussalam Madrasa | Login</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body {
-      background: linear-gradient(135deg, #0b5ea8, #3a8ddf);
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Poppins', sans-serif;
-    }
-    .login-card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      padding: 2rem;
-      width: 100%;
-      max-width: 400px;
-    }
-    .brand-title { color: #0b5ea8; font-weight: 700; }
-    .btn-login { background-color: #0b5ea8; border: none; }
-    .btn-login:hover { background-color: #094b85; }
-    .form-control:focus {
-      border-color: #0b5ea8;
-      box-shadow: 0 0 0 0.2rem rgba(11,94,168,0.25);
-    }
-  </style>
-</head>
-<body>
-  <div class="login-card text-center">
-    <div class="mb-4">
-      <img src="https://via.placeholder.com/80x80.png?text=N" class="mb-2" alt="logo">
-      <h4 class="brand-title">Noorussalam Madrasa</h4>
-      <p class="text-muted mb-0">Multi-role Login</p>
-    </div>
-
-    <form id="loginForm">
-      <div class="mb-3 text-start">
-        <label for="username" class="form-label">Username / ID</label>
-        <input type="text" id="username" class="form-control" placeholder="Enter your ID" required>
-      </div>
-      <div class="mb-3 text-start">
-        <label for="password" class="form-label">Password / DOB</label>
-        <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
-      </div>
-      <div class="d-grid">
-        <button type="submit" class="btn btn-login text-white">Login</button>
-      </div>
-    </form>
-
-    <div id="errorMsg" class="text-danger mt-3" style="display:none;">
-      Invalid login. Please check your ID or password.
-    </div>
-
-    <p class="mt-4 small text-muted">© Noorussalam Madrasa — Kambippalam</p>
-  </div>
-
-  <script>
-    const SCRIPT_URL = "YOUR_WEB_APP_URL_HERE"; // Replace with your Apps Script web app link
-
-    document.getElementById('loginForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      const result = await response.json();
-      if (result.success) {
-        sessionStorage.setItem('userName', result.name);
-        sessionStorage.setItem('userRole', result.role);
-        window.location.href = result.redirect;
-      } else {
-        document.getElementById('errorMsg').style.display = 'block';
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Noorussalam Madrasa | Admin Login</title>
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Poppins", sans-serif;
       }
-    });
-  </script>
-</body>
+      body {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0b5ed7, #3f8efc);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .container {
+        position: relative;
+        width: 380px;
+        background: #fff;
+        border-radius: 15px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        padding: 40px 30px;
+        text-align: center;
+      }
+      h1 {
+        margin-bottom: 20px;
+        color: #0b5ed7;
+        font-weight: 700;
+      }
+      .input-box {
+        position: relative;
+        margin-bottom: 20px;
+      }
+      .input-box input {
+        width: 100%;
+        padding: 12px 40px 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
+      }
+      .input-box i {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #0b5ed7;
+        font-size: 20px;
+      }
+      .btn {
+        width: 100%;
+        background: #0b5ed7;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      .btn:hover {
+        background: #0846aa;
+      }
+      .error {
+        color: red;
+        margin-top: 10px;
+      }
+      .mad-title {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 25px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Admin Login</h1>
+      <div class="mad-title">
+        Noorussalam Secondary Madrasa<br />
+        Kambippalam, Kerala Estate, Malappuram Dt.<br />
+        <small>Email: noorussalam6110@gmail.com</small>
+      </div>
+
+      <div class="input-box">
+        <input type="text" id="username" placeholder="Username" required />
+        <i class="bx bxs-user"></i>
+      </div>
+      <div class="input-box">
+        <input type="password" id="password" placeholder="Password" required />
+        <i class="bx bxs-lock-alt"></i>
+      </div>
+      <button class="btn" onclick="login()">Login</button>
+      <p class="error" id="errorMsg"></p>
+    </div>
+
+    <script>
+      const ADMIN_USER = "admin";
+      const ADMIN_PASS = "noor123"; // Change this password
+
+      function login() {
+        const user = document.getElementById("username").value.trim();
+        const pass = document.getElementById("password").value.trim();
+        const errorMsg = document.getElementById("errorMsg");
+
+        if (user === ADMIN_USER && pass === ADMIN_PASS) {
+          localStorage.setItem("isLoggedIn", "true");
+          window.location.href = "admin-dashboard.html"; // Redirect to your dashboard
+        } else {
+          errorMsg.textContent = "Invalid username or password!";
+        }
+      }
+    </script>
+  </body>
 </html>
