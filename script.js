@@ -51,3 +51,14 @@ function openModal(src){
   const modal = new bootstrap.Modal(document.getElementById('imgModal'));
   modal.show();
 }
+const container = document.querySelector('.container');
+const registerBtn = document.querySelector('.register-btn');
+const loginBtn = document.querySelector('.login-btn');
+
+registerBtn.addEventListener('click', () => {
+    container.classList.add('active');
+})
+
+loginBtn.addEventListener('click', () => {
+    container.classList.remove('active');
+})
