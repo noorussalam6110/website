@@ -1,125 +1,221 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Noorussalam Madrasa | Login</title>
-    <link
-      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-      rel="stylesheet"
-    />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Poppins", sans-serif;
-      }
-      body {
-        min-height: 100vh;
-        background: linear-gradient(135deg, #0b5ed7, #3f8efc);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .container {
-        position: relative;
-        width: 380px;
-        background: #fff;
-        border-radius: 15px;
-        box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
-        padding: 40px 30px;
-        text-align: center;
-      }
-      h1 {
-        margin-bottom: 20px;
-        color: #0b5ed7;
-        font-weight: 700;
-      }
-      .input-box {
-        position: relative;
-        margin-bottom: 20px;
-      }
-      .input-box input {
-        width: 100%;
-        padding: 12px 40px 12px 15px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 16px;
-      }
-      .input-box i {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #0b5ed7;
-        font-size: 20px;
-      }
-      .btn {
-        width: 100%;
-        background: #0b5ed7;
-        color: #fff;
-        border: none;
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: 0.3s;
-      }
-      .btn:hover {
-        background: #0846aa;
-      }
-      .error {
-        color: red;
-        margin-top: 10px;
-      }
-      .mad-title {
-        font-size: 14px;
-        color: #555;
-        margin-bottom: 25px;
-      }
-    </style>
-  </head>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Noorussalam Madrasa — Login</title>
 
-  <body>
-    <div class="container">
-      <h1>Login Page</h1>
-      <div class="mad-title">
-        Noorussalam Secondary Madrasa<br />
-        Kambippalam, Kerala Estate, Malappuram Dt.<br />
-        <small>Email: noorussalam6110@gmail.com</small>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <!-- Boxicons for icons -->
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+
+  <style>
+    :root{
+      --accent:#0b5ea8; /* madrasa blue-ish */
+      --glass: rgba(255,255,255,0.06);
+      --glass-2: rgba(255,255,255,0.10);
+      --card-bg: rgba(255,255,255,0.04);
+      --radius: 14px;
+      color-scheme: light dark;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(11,94,168,0.12), transparent 10%),
+                  radial-gradient(900px 500px at 90% 90%, rgba(3,155,135,0.08), transparent 10%),
+                  linear-gradient(180deg,#07142a 0%, #0e2438 100%);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;align-items:center;justify-content:center;padding:32px;
+    }
+
+    /* subtle animated shapes behind card */
+    .bg-shapes{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+    .shape{position:absolute;border-radius:50%;filter:blur(60px);opacity:0.45;transform:translateZ(0);animation:float 10s ease-in-out infinite}
+    .shape.s1{width:420px;height:420px;left:-80px;top:10%;background:linear-gradient(45deg,#0b5ea8,#03a87c);}
+    .shape.s2{width:320px;height:320px;right:-60px;bottom:5%;background:linear-gradient(135deg,#a24ff0,#0b5ea8);animation-duration:12s}
+    @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-24px)}100%{transform:translateY(0)}}
+
+    .container{
+      width:100%;max-width:980px;display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center;z-index:1;
+    }
+
+    /* left info panel */
+    .info{
+      padding:40px;border-radius:var(--radius);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter: blur(8px);box-shadow:0 10px 30px rgba(2,6,23,0.6);
+      color:#e6f2ff;border:1px solid rgba(255,255,255,0.03);
+    }
+    .logo{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+    .logo .mark{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#03a87c);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;box-shadow:0 6px 18px rgba(11,94,168,0.25)}
+    h1{font-size:22px;margin:0 0 8px}
+    p.lead{opacity:0.9;margin:0 0 18px;line-height:1.5}
+    ul.features{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+    ul.features li{display:flex;gap:12px;align-items:flex-start}
+    ul.features i{font-size:18px;margin-top:4px;}
+
+    /* login card */
+    .card{
+      padding:28px;border-radius:18px;background:linear-gradient(180deg,var(--card-bg), rgba(255,255,255,0.02));backdrop-filter: blur(10px);border:1px solid rgba(255,255,255,0.06);
+      box-shadow:0 12px 40px rgba(2,6,23,0.6);width:100%;
+    }
+    .card h2{margin:0 0 14px;font-size:18px}
+    form{display:flex;flex-direction:column;gap:14px}
+
+    /* floating label input */
+    .field{position:relative}
+    input[type=text], input[type=password], input[type=email]{
+      width:100%;padding:14px 44px 14px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;font-size:15px;outline:none;transition:box-shadow .18s, border-color .18s;
+      backdrop-filter: blur(6px);
+    }
+    input:focus{box-shadow:0 6px 18px rgba(11,94,168,0.14);border-color:rgba(11,94,168,0.9)}
+    label.floating{position:absolute;left:14px;top:12px;pointer-events:none;font-size:13px;color:rgba(255,255,255,0.65);transition:transform .14s ease, font-size .14s, top .14s}
+    input:not(:placeholder-shown)+label.floating, input:focus+label.floating{transform:translateY(-10px);font-size:12px;top:6px;color:rgba(255,255,255,0.88)}
+
+    .field .icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:0.9}
+    .password-toggle{cursor:pointer}
+
+    .row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .checkbox{display:flex;align-items:center;gap:8px;font-size:14px}
+
+    .btn{
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;border-radius:12px;border:0;background:linear-gradient(90deg,var(--accent),#03a87c);color:white;font-weight:600;cursor:pointer;box-shadow:0 8px 18px rgba(3,160,125,0.12);transition:transform .14s ease, box-shadow .14s
+    }
+    .btn:active{transform:translateY(1px)}
+
+    .alt-actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .socials{display:flex;gap:8px}
+    .socials button{flex:1;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit;display:flex;gap:8px;align-items:center;justify-content:center}
+
+    .muted{font-size:13px;opacity:0.85}
+
+    footer.small{margin-top:12px;font-size:12px;color:rgba(255,255,255,0.6)}
+
+    /* responsive */
+    @media (max-width:900px){
+      .container{grid-template-columns:1fr;max-width:520px}
+      .info{order:2}
+    }
+
+  </style>
+</head>
+<body>
+  <div class="bg-shapes" aria-hidden="true">
+    <div class="shape s1"></div>
+    <div class="shape s2"></div>
+  </div>
+
+  <main class="container" role="main">
+    <section class="info" aria-labelledby="welcome">
+      <div class="logo">
+        <div class="mark" aria-hidden>
+          NS
+        </div>
+        <div>
+          <div style="font-weight:700">Noorussalam Madrasa</div>
+          <div style="font-size:13px;opacity:0.9">Kambippalam — Student Portal</div>
+        </div>
       </div>
+      <h1 id="welcome">Welcome back</h1>
+      <p class="lead">Login to access student dashboard, class resources, attendance, and notices. Use your madrasa ID or registered email.</p>
 
-      <div class="input-box">
-        <input type="text" id="username" placeholder="Username" required />
-        <i class="bx bxs-user"></i>
-      </div>
-      <div class="input-box">
-        <input type="password" id="password" placeholder="Password" required />
-        <i class="bx bxs-lock-alt"></i>
-      </div>
-      <button class="btn" onclick="login()">Login</button>
-      <p class="error" id="errorMsg"></p>
-    </div>
+      <ul class="features" aria-hidden>
+        <li><i class='bx bxs-bell'></i><div><strong>Announcements</strong><div class="muted">Instant notices for exams & events</div></div></li>
+        <li><i class='bx bxs-book-open'></i><div><strong>Study Materials</strong><div class="muted">Syllabus, worksheets & PDFs</div></div></li>
+        <li><i class='bx bxs-time-five'></i><div><strong>Attendance</strong><div class="muted">Realtime attendance records</div></div></li>
+      </ul>
 
-    <script>
-      const ADMIN_USER = "admin";
-      const ADMIN_PASS = "noor123"; // Change this password
+      <footer class="small" aria-hidden="true">Not your account? Ask the madrasa office to reset your password.</footer>
+    </section>
 
-      function login() {
-        const user = document.getElementById("username").value.trim();
-        const pass = document.getElementById("password").value.trim();
-        const errorMsg = document.getElementById("errorMsg");
+    <aside class="card" aria-labelledby="login">
+      <h2 id="login">Sign in to your account</h2>
 
-        if (user === ADMIN_USER && pass === ADMIN_PASS) {
-          localStorage.setItem("isLoggedIn", "true");
-          window.location.href = "admin-dashboard.html"; // Redirect to your dashboard
-        } else {
-          errorMsg.textContent = "Invalid username or password!";
-        }
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <input id="user" name="user" type="text" placeholder=" " required pattern=".{3,}" aria-label="Madrasa ID or email">
+          <label class="floating" for="user">Madrasa ID or Email</label>
+          <span class="icon" aria-hidden><i class='bx bx-user'></i></span>
+        </div>
+
+        <div class="field">
+          <input id="password" name="password" type="password" placeholder=" " minlength="6" required aria-label="Password">
+          <label class="floating" for="password">Password</label>
+          <span class="icon password-toggle" id="togglePwd" title="Show password" role="button" tabindex="0"><i class='bx bx-hide'></i></span>
+        </div>
+
+        <div class="row">
+          <label class="checkbox"><input type="checkbox" id="remember"> Remember me</label>
+          <a href="#" class="muted" style="text-decoration:none;color:inherit">Forgot?</a>
+        </div>
+
+        <button type="submit" class="btn" aria-live="polite"> <i class='bx bxs-lock-alt'></i> Sign In</button>
+
+        <div class="alt-actions">
+          <div style="display:flex;align-items:center;gap:12px"><hr style="flex:1;border:none;height:1px;background:rgba(255,255,255,0.04)"><div class="muted">or</div><hr style="flex:1;border:none;height:1px;background:rgba(255,255,255,0.04)"></div>
+
+          <div class="socials">
+            <button type="button" aria-label="Sign in with Google"><i class='bx bxl-google'></i> Google</button>
+            <button type="button" aria-label="Sign in with Microsoft"><i class='bx bxl-windows'></i> Microsoft</button>
+          </div>
+
+          <div class="muted" style="text-align:center">Don't have an account? <a href="#" style="color:var(--accent);text-decoration:none;font-weight:600">Register</a></div>
+        </div>
+
+        <footer class="small">By continuing you agree to our <a href="#" style="color:rgba(255,255,255,0.9);text-decoration:none">terms</a>.</footer>
+      </form>
+    </aside>
+  </main>
+
+  <script>
+    // show/hide password
+    const pwd = document.getElementById('password');
+    const toggle = document.getElementById('togglePwd');
+    toggle.addEventListener('click', () => {
+      const icon = toggle.querySelector('i');
+      if (pwd.type === 'password') { pwd.type = 'text'; icon.className = 'bx bx-show'; toggle.title = 'Hide password'; }
+      else { pwd.type = 'password'; icon.className = 'bx bx-hide'; toggle.title = 'Show password'; }
+    });
+    toggle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' ') toggle.click(); });
+
+    // basic client-side validation + subtle success animation
+    const form = document.getElementById('loginForm');
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      if (!form.checkValidity()){
+        // simple invalid UX
+        form.querySelectorAll('input').forEach(inp=>{
+          if(!inp.checkValidity()){
+            inp.focus();
+            inp.style.boxShadow = '0 6px 24px rgba(220,38,38,0.18)';
+            setTimeout(()=>inp.style.boxShadow='none',1200);
+            return;
+          }
+        });
+        return;
       }
-    </script>
-  </body>
+
+      // fake submit animation
+      const btn = form.querySelector('.btn');
+      btn.disabled = true; btn.style.transform = 'translateY(2px)'; btn.innerHTML = '<i class="bx bx-loader-circle bx-spin"></i> Signing in...';
+
+      // emulate network auth (replace with real fetch)
+      setTimeout(()=>{
+        btn.innerHTML = '<i class="bx bxs-check-circle"></i> Signed in';
+        btn.style.background = 'linear-gradient(90deg,#22c55e,#06b6d4)';
+        // after success you would redirect: window.location.href = '/dashboard.html'
+      },900);
+    });
+
+    // Accessibility: reduce motion if user prefers
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (prefersReduced.matches) {
+      document.querySelectorAll('.shape').forEach(s=>s.style.animation='none');
+      document.documentElement.style.scrollBehavior = 'auto';
+    }
+  </script>
+</body>
 </html>
