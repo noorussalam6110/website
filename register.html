@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Register — Noorussalam</title>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <style>
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#f3f7fb;padding:20px}
+    .card{max-width:520px;margin:40px auto;padding:22px;border-radius:12px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,0.08)}
+    h2{margin-bottom:8px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row.full{grid-template-columns:1fr}
+    input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px}
+    button{margin-top:12px;padding:10px 14px;border-radius:8px;border:none;background:#0b5ea8;color:#fff;font-weight:600}
+    @media(max-width:600px){.row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Register (Student)</h2>
+    <p>Create a new student account</p>
+    <div class="row">
+      <div><label>Madrasa ID (username)<br><input id="username" /></label></div>
+      <div><label>Email<br><input id="email" type="email" /></label></div>
+      <div><label>Password<br><input id="password" type="password" /></label></div>
+      <div><label>Confirm Password<br><input id="password2" type="password" /></label></div>
+      <div class="full"><label>Full Name<br><input id="fullname" /></label></div>
+      <div><label>Class<br><input id="class" /></label></div>
+      <div><label>Admission No.<br><input id="admission" /></label></div>
+    </div>
+    <button id="registerBtn">Register</button>
+    <p id="msg" style="margin-top:10px"></p>
+    <p style="margin-top:12px;font-size:13px">Already registered? <a href="login.html">Login</a></p>
+  </div>
+
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbwZB8o9K_C5BDQkHouXx9z8o1Roeq28ByO-qZPImeC9hdtQRkS5mBpSMQJXsLkLB709/exec"; // replace
+
+document.getElementById('registerBtn').addEventListener('click', async () => {
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const password2 = document.getElementById('password2').value;
+  const fullname = document.getElementById('fullname').value.trim();
+  const cls = document.getElementById('class').value.trim();
+  const admission = document.getElementById('admission').value.trim();
+  const msg = document.getElementById('msg');
+
+  if(!username || !password){ msg.textContent = 'Username and password required'; return; }
+  if(password !== password2){ msg.textContent = 'Passwords do not match'; return; }
+
+  msg.textContent = 'Creating account...';
+
+  try {
+    const res = await fetch(scriptURL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "register",
+        username, password, fullname, class: cls, admission, email
+      })
+    });
+    const j = await res.json();
+    if(j.success){ msg.style.color='green'; msg.textContent = 'Account created — Redirecting to login...';
+      setTimeout(()=> location.href='login.html',1200);
+    } else {
+      msg.style.color='red'; msg.textContent = j.error || 'Error creating account';
+    }
+  } catch (err) {
+    console.error(err);
+    msg.style.color='red'; msg.textContent = 'Network error';
+  }
+});
+</script>
+</body>
+</html>
