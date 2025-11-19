@@ -26,7 +26,7 @@
       animation: gradientBG 15s ease infinite;
       padding: 40px 20px;
       color: #fff;
-      overflow: hidden; /* hide sparkles overflow */
+      overflow: hidden;
     }
 
     @keyframes gradientBG {
@@ -38,18 +38,12 @@
     /* Sparkles */
     .sparkle {
       position: absolute;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 50%;
-      width: 5px;
-      height: 5px;
+      width: 4px;
+      height: 4px;
       opacity: 0.8;
-      animation: sparkleAnim linear infinite;
-    }
-
-    @keyframes sparkleAnim {
-      0% {transform: translateY(0) scale(0.8); opacity: 0.8;}
-      50% {opacity: 1; scale: 1;}
-      100% {transform: translateY(-1000px) scale(0.5); opacity: 0;}
+      pointer-events: none;
     }
 
     /* Result Box */
@@ -77,10 +71,7 @@
     }
 
     @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to {opacity: 1; transform: translateY(0);}
     }
 
     /* Heading & Text */
@@ -169,9 +160,6 @@
 </head>
 <body>
 
-  <!-- Sparkles -->
-  <div id="sparkles"></div>
-
   <div class="result-box">
     <h1>Final Examination Result 2025-26</h1>
     <p>Click below to view your latest examination results.</p>
@@ -182,10 +170,10 @@
        <i class="fa-solid fa-graduation-cap me-2"></i> Final Examination Result
     </a>
 
-    <a href="coming-soon.html" 
+    <a href="https://result.samastha.info/" 
        class="btn btn-success btn-lg w-100 mb-3" 
        target="_blank" rel="noopener noreferrer">
-       <i class="fa-solid fa-book-open-reader me-2"></i> Samastha Public Exam
+       <i class="fa-solid fa-book-open-reader me-2"></i> Samastha Public Examination
     </a>
 
     <div class="text-center mt-4">
@@ -196,12 +184,18 @@
   <footer>© 2025 Noorussalam Madrasa | All Rights Reserved</footer>
 
   <script>
-    // Generate floating sparkles
+    // Swirling sparkles around result box
     const sparkleCount = 40;
+    const box = document.querySelector('.result-box');
+    const rect = box.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const radius = Math.max(rect.width, rect.height) / 2 + 20; // distance from box
+
     const sparklesContainer = document.createElement('div');
     sparklesContainer.style.position = 'absolute';
-    sparklesContainer.style.top = '0';
-    sparklesContainer.style.left = '0';
+    sparklesContainer.style.top = 0;
+    sparklesContainer.style.left = 0;
     sparklesContainer.style.width = '100%';
     sparklesContainer.style.height = '100%';
     sparklesContainer.style.pointerEvents = 'none';
@@ -210,13 +204,22 @@
     for (let i = 0; i < sparkleCount; i++) {
       const sparkle = document.createElement('div');
       sparkle.className = 'sparkle';
-      sparkle.style.left = Math.random() * 100 + 'vw';
-      sparkle.style.top = Math.random() * 100 + 'vh';
       sparkle.style.width = 2 + Math.random() * 4 + 'px';
       sparkle.style.height = sparkle.style.width;
-      sparkle.style.animationDuration = 5 + Math.random() * 10 + 's';
-      sparkle.style.opacity = Math.random();
       sparklesContainer.appendChild(sparkle);
+
+      let angle = Math.random() * 2 * Math.PI;
+      let speed = 0.01 + Math.random() * 0.02;
+      let verticalOffset = Math.random() * 40;
+
+      function animate() {
+        angle += speed;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle) - verticalOffset * Math.sin(angle*2);
+        sparkle.style.transform = `translate(${x}px, ${y}px)`;
+        requestAnimationFrame(animate);
+      }
+      animate();
     }
   </script>
 
