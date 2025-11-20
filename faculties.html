@@ -1,219 +1,597 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Our Faculties | Noorussalam Madrasa</title>
 
-  <!-- Bootstrap -->
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
+  <!-- AOS for nice scroll animations -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
   <style>
-    body {
-      background: linear-gradient(to bottom, #0a1a35, #0f2b55);
-      color: #fff;
-      font-family: 'Poppins', sans-serif;
-      padding-bottom: 40px;
+    :root{
+      --bg-1: #07142d;
+      --bg-2: #0c2a55;
+      --card-glass: rgba(255,255,255,0.06);
+      --muted: #c8d3e6;
+      --accent: #4da3ff;
+      --gold: #ffd700;
+      --wa: #25D366;
+      --text: #eef4ff;
     }
 
-    header {
-      text-align: center;
-      padding: 35px 10px;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(5px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+    /* Light mode variables (overrides) */
+    :root[data-theme="light"]{
+      --bg-1: #f6f9ff;
+      --bg-2: #e9f0ff;
+      --card-glass: rgba(8,24,48,0.04);
+      --muted: #556678;
+      --accent: #0b61ff;
+      --gold: #b88600;
+      --wa: #0f8b4b;
+      --text: #04263a;
     }
 
-    h2 {
-      font-weight: 700;
-      color: #fff;
+    html,body{height:100%; margin:0; font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      color:var(--text);
+      background: linear-gradient(135deg,var(--bg-1), var(--bg-2));
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
     }
 
-    .accordion-button {
-      background: #112e60 !important;
-      color: #fff !important;
-      font-weight: 600;
-      border-radius: 10px;
-      margin-bottom: 8px;
-    }
-
-    .accordion-button:not(.collapsed) {
-      background: #1a4187 !important;
-      box-shadow: 0 0 12px rgba(255,255,255,0.2);
-    }
-
-    .faculty-card {
-      background: rgba(255,255,255,0.06);
-      padding: 20px;
-      border-radius: 15px;
-      text-align: center;
-      box-shadow: 0 0 12px rgba(255,255,255,0.15);
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:60;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
       backdrop-filter: blur(6px);
-      animation: fadeIn 0.5s ease-in-out;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding:14px 12px;
+    }
+    .header-inner{max-width:1200px; margin:0 auto; display:flex; gap:12px; align-items:center; justify-content:space-between;}
+    .title-block {text-align:left;}
+    .title-block h1{margin:0;font-size:1.05rem;letter-spacing:0.4px;}
+    .title-block p{margin:0;font-size:0.85rem;color:var(--muted);}
+
+    /* Controls row */
+    .controls { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+    /* Search */
+    .search-box{min-width:220px; max-width:420px;}
+    .search-box input{border-radius:999px; padding:10px 14px; border:none; outline:none; box-shadow: 0 6px 18px rgba(0,0,0,0.25); background: rgba(255,255,255,0.03); color:var(--text);}
+
+    /* Toggle */
+    .mode-toggle { background:transparent; border:1px solid rgba(255,255,255,0.06); border-radius:999px; padding:6px 10px; color:var(--muted); cursor:pointer; display:flex; gap:8px; align-items:center; }
+
+    /* Expand/Collapse buttons */
+    .small-btn { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04); color:var(--text); padding:6px 10px; border-radius:8px; cursor:pointer; }
+
+    /* Section container */
+    main.container{ max-width:1100px; margin:18px auto 60px; padding:0 12px; }
+
+    /* Accordion customization */
+    .accordion .accordion-item { background:transparent; border:0; }
+    .accordion-button {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:10px;
+      color:var(--text);
+      padding:16px 14px;
+      font-weight:600;
+      box-shadow: 0 6px 16px rgba(2,10,30,0.45);
+    }
+    .accordion-button:not(.collapsed) {
+      background: linear-gradient(180deg, rgba(77,163,255,0.08), rgba(77,163,255,0.03));
+      box-shadow: 0 10px 28px rgba(77,163,255,0.06);
+    }
+    .accordion-body { padding:12px 0 20px; }
+
+    /* Faculty card (inside accordion panel) */
+    .faculty-card {
+      background: var(--card-glass);
+      border-radius:14px;
+      padding:20px;
+      display:flex;
+      gap:18px;
+      align-items:center;
+      box-shadow: 0 10px 30px rgba(3,12,30,0.45);
+      border: 1px solid rgba(255,255,255,0.04);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+    .avatar {
+      width:120px; height:120px; border-radius:50%;
+      object-fit:cover; border:3px solid var(--gold);
+      box-shadow: 0 8px 30px rgba(255,215,0,0.12);
+      flex-shrink:0;
+      background: #0b1d3a;
+    }
+    .card-content { flex:1; min-width:0 }
+    .card-content h3{ margin:0; font-size:1.02rem; }
+    .card-content .role { color:var(--muted); margin-top:6px; font-weight:600;}
+    .card-content p { margin:8px 0 0; color:var(--text); opacity:0.95; }
+
+    .card-actions { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+    .wa-btn { background:linear-gradient(180deg,var(--wa), #18b155); color:#fff; border-radius:28px; padding:9px 12px; text-decoration:none; font-weight:700; display:inline-flex; gap:8px; align-items:center; }
+    .socials a { width:42px; height:42px; display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.02); border-radius:10px; color:var(--text); text-decoration:none; transition:transform .18s; }
+    .socials a:hover { transform:scale(1.1); box-shadow:0 10px 26px rgba(0,0,0,0.4); }
+
+    /* Modal full profile adjustments */
+    .profile-modal .modal-content { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:14px; border: 1px solid rgba(255,255,255,0.04); }
+    .slider { position:relative; width:100%; max-width:520px; margin:0 auto; }
+    .slider img { width:100%; height:320px; object-fit:cover; border-radius:10px; display:block; }
+    .slider .nav { position:absolute; top:50%; transform:translateY(-50%); width:100%; display:flex; justify-content:space-between; pointer-events:none; }
+    .slider .nav button { pointer-events:auto; background:rgba(0,0,0,0.35); border:0; color:#fff; width:44px;height:44px;border-radius:8px; display:flex;align-items:center;justify-content:center; margin:0 8px; }
+
+    /* Responsive behavior - we want 1 card per row on mobile inside accordion body */
+    @media (max-width:575.98px) {
+      .faculty-card { flex-direction:column; align-items:center; text-align:center; gap:10px; padding:18px; }
+      .avatar { width:138px;height:138px; }
+      .slider img { height:260px; }
     }
 
-    .faculty-card img {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      border: 3px solid #ffd700;
-      object-fit: cover;
-    }
+    /* tiny animation */
+    .fade-in { opacity:0; transform:translateY(8px); transition:all .6s ease; }
+    .fade-in.show { opacity:1; transform:none; }
 
-    .social-buttons a {
-      font-size: 1.2rem;
-      margin: 0 7px;
-      transition: 0.3s;
-    }
-
-    .social-buttons a:hover {
-      transform: scale(1.3);
-    }
-
-    .wa-btn {
-      background: #25D366;
-      color: #fff;
-      padding: 6px 0;
-      margin-top: 10px;
-      border-radius: 25px;
-      display: block;
-      font-weight: 600;
-      text-decoration: none;
-      transition: 0.3s;
-    }
-
-    .wa-btn:hover {
-      transform: scale(1.04);
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 40px;
-      padding: 12px;
-      background: rgba(255,255,255,0.05);
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
+    /* focus outlines for keyboard users */
+    :focus-visible { outline: 3px solid rgba(77,163,255,0.2); outline-offset:3px; border-radius:6px;}
   </style>
 </head>
-
 <body>
 
-<header>
-  <h2>Our Faculties</h2>
-  <p class="text-light">Click a teacher’s name to view their profile</p>
-</header>
+  <!-- Canvas for particles -->
+  <canvas id="particle-canvas" style="position:fixed; inset:0; z-index:-3; pointer-events:none;"></canvas>
 
-<div class="container mt-4">
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div class="title-block">
+        <h1>Our Faculties</h1>
+        <p>Click a teacher name to expand — tap the profile for details</p>
+      </div>
 
-  <div class="accordion" id="facultyAccordion">
+      <div class="controls">
+        <div class="search-box">
+          <input id="searchInput" type="search" placeholder="Search teacher (type name)…" aria-label="Search teachers">
+        </div>
 
-    <!-- Teacher 1 -->
-    <div class="accordion-item bg-transparent border-0">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#teacher1">
-          SUHAIL P
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button id="expandAll" class="small-btn" title="Expand all">Expand All</button>
+          <button id="collapseAll" class="small-btn" title="Collapse all">Collapse All</button>
+        </div>
+
+        <button id="themeToggle" class="mode-toggle" title="Toggle dark / light mode" aria-pressed="false">
+          <i id="themeIcon" class="bi bi-moon-fill" style="font-size:1rem"></i>
+          <span style="font-size:0.88rem; color:var(--muted)">Theme</span>
         </button>
-      </h2>
-      <div id="teacher1" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
-        <div class="accordion-body">
-          <div class="faculty-card">
-            <img src="https://i.ibb.co/S77QvZ07/Whats-App-Image-2025-10-25-at-8-38-50-AM.jpg">
-            <h5 class="mt-3 fw-bold">SUHAIL P</h5>
-            <p class="text-warning m-0">SWADAR MUALLIM</p>
-            <small class="d-block">📞 7034678818</small>
-            <p class="mt-2">A passionate educator known for guiding students with care and commitment.</p>
+      </div>
+    </div>
+  </header>
 
-            <a class="wa-btn" href="https://wa.me/7034678818">Message on WhatsApp</a>
+  <main class="container">
+
+    <div class="accordion" id="facultyAccordion" role="tablist" aria-label="Faculty list">
+
+      <!-- Teacher 1 -->
+      <div class="accordion-item" data-name="suhail p">
+        <h2 class="accordion-header" id="head-1">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-1" aria-expanded="false" aria-controls="collapse-1">
+            SUHAIL P
+          </button>
+        </h2>
+        <div id="collapse-1" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
+          <div class="accordion-body">
+            <div class="faculty-card fade-in" data-aos="fade-up">
+              <img class="avatar" src="https://i.ibb.co/S77QvZ07/Whats-App-Image-2025-10-25-at-8-38-50-AM.jpg" alt="Suhail P">
+              <div class="card-content">
+                <h3>SUHAIL P</h3>
+                <div class="role text-warning">SWADAR MUALLIM</div>
+                <div class="text-muted" style="margin-top:6px">📞 7034678818</div>
+                <p class="mt-2">A passionate educator known for guiding students with care and commitment to moral and academic excellence.</p>
+
+                <div class="card-actions">
+                  <a class="wa-btn" href="https://wa.me/7034678818" aria-label="Message Suhail on WhatsApp"><i class="bi bi-whatsapp"></i> Message</a>
+                  <div class="socials">
+                    <a class="whatsapp" href="https://wa.me/7034678818" title="WhatsApp"><i class="bi bi-whatsapp"></i></a>
+                    <a class="instagram" href="#" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a class="facebook" href="#" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a class="x" href="#" title="X (Twitter)"><i class="bi bi-twitter-x"></i></a>
+                    <a class="telegram" href="#" title="Telegram"><i class="bi bi-telegram"></i></a>
+                  </div>
+                  <button class="small-btn" style="margin-left:auto" data-profile='{"name":"SUHAIL P","role":"SWADAR MUALLIM","phone":"7034678818","about":"A passionate educator known for guiding students with care and commitment to moral and academic excellence.","images":["https://i.ibb.co/S77QvZ07/Whats-App-Image-2025-10-25-at-8-38-50-AM.jpg"]}' onclick="openProfile(this)">View Profile</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teacher 2 -->
+      <div class="accordion-item" data-name="firos faizy ak">
+        <h2 class="accordion-header" id="head-2">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-2" aria-expanded="false" aria-controls="collapse-2">
+            FIROS FAIZY AK
+          </button>
+        </h2>
+        <div id="collapse-2" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
+          <div class="accordion-body">
+            <div class="faculty-card fade-in" data-aos="fade-up">
+              <img class="avatar" src="https://i.ibb.co/3mXsbSdg/Whats-App-Image-2025-10-25-at-8-37-28-AM.jpg" alt="Firos Faizy">
+              <div class="card-content">
+                <h3>FIROS FAIZY AK</h3>
+                <div class="role text-warning">TEACHER</div>
+                <div class="text-muted" style="margin-top:6px">📞 9645134854</div>
+                <p class="mt-2">Dedicated to fostering a love for learning and nurturing discipline through compassionate teaching.</p>
+
+                <div class="card-actions">
+                  <a class="wa-btn" href="https://wa.me/9645134854"><i class="bi bi-whatsapp"></i> Message</a>
+                  <div class="socials">
+                    <a class="whatsapp" href="https://wa.me/9645134854"><i class="bi bi-whatsapp"></i></a>
+                    <a class="instagram" href="#"><i class="bi bi-instagram"></i></a>
+                    <a class="facebook" href="#"><i class="bi bi-facebook"></i></a>
+                    <a class="x" href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a class="telegram" href="#"><i class="bi bi-telegram"></i></a>
+                  </div>
+                  <button class="small-btn" style="margin-left:auto" data-profile='{"name":"FIROS FAIZY AK","role":"TEACHER","phone":"9645134854","about":"Dedicated to fostering a love for learning and nurturing discipline through compassionate teaching.","images":["https://i.ibb.co/3mXsbSdg/Whats-App-Image-2025-10-25-at-8-37-28-AM.jpg"]}' onclick="openProfile(this)">View Profile</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teacher 3 -->
+      <div class="accordion-item" data-name="darimi usthad">
+        <h2 class="accordion-header" id="head-3">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-3" aria-expanded="false" aria-controls="collapse-3">
+            DARIMI USTHAD
+          </button>
+        </h2>
+        <div id="collapse-3" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
+          <div class="accordion-body">
+            <div class="faculty-card fade-in" data-aos="fade-up">
+              <img class="avatar" src="https://i.ibb.co/kWR6Z5B/AMEER.jpg" alt="Darimi Usthad">
+              <div class="card-content">
+                <h3>DARIMI USTHAD</h3>
+                <div class="role text-warning">TEACHER</div>
+                <div class="text-muted" style="margin-top:6px">📞 8078055520</div>
+                <p class="mt-2">An experienced teacher with deep knowledge of Islamic studies and a calm, inspiring teaching style.</p>
+
+                <div class="card-actions">
+                  <a class="wa-btn" href="https://wa.me/8078055520"><i class="bi bi-whatsapp"></i> Message</a>
+                  <div class="socials">
+                    <a class="whatsapp" href="https://wa.me/8078055520"><i class="bi bi-whatsapp"></i></a>
+                    <a class="instagram" href="#"><i class="bi bi-instagram"></i></a>
+                    <a class="facebook" href="#"><i class="bi bi-facebook"></i></a>
+                    <a class="x" href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a class="telegram" href="#"><i class="bi bi-telegram"></i></a>
+                  </div>
+                  <button class="small-btn" style="margin-left:auto" data-profile='{"name":"DARIMI USTHAD","role":"TEACHER","phone":"8078055520","about":"An experienced teacher with deep knowledge of Islamic studies and a calm, inspiring teaching style.","images":["https://i.ibb.co/kWR6Z5B/AMEER.jpg"]}' onclick="openProfile(this)">View Profile</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teacher 4 -->
+      <div class="accordion-item" data-name="fairoosudheen aslami">
+        <h2 class="accordion-header" id="head-4">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-4" aria-expanded="false" aria-controls="collapse-4">
+            FAIROOSUDHEEN ASLAMI
+          </button>
+        </h2>
+        <div id="collapse-4" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
+          <div class="accordion-body">
+            <div class="faculty-card fade-in" data-aos="fade-up">
+              <img class="avatar" src="https://i.ibb.co/pvnbMsDr/FAIROOS.jpg" alt="Fairoosudheen Aslami">
+              <div class="card-content">
+                <h3>FAIROOSUDHEEN ASLAMI</h3>
+                <div class="role text-warning">TEACHER</div>
+                <div class="text-muted" style="margin-top:6px">📞 9497349254</div>
+                <p class="mt-2">Brings enthusiasm and innovation into the classroom, inspiring students to excel in academics and values.</p>
+
+                <div class="card-actions">
+                  <a class="wa-btn" href="https://wa.me/9497349254"><i class="bi bi-whatsapp"></i> Message</a>
+                  <div class="socials">
+                    <a class="whatsapp" href="https://wa.me/9497349254"><i class="bi bi-whatsapp"></i></a>
+                    <a class="instagram" href="#"><i class="bi bi-instagram"></i></a>
+                    <a class="facebook" href="#"><i class="bi bi-facebook"></i></a>
+                    <a class="x" href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a class="telegram" href="#"><i class="bi bi-telegram"></i></a>
+                  </div>
+                  <button class="small-btn" style="margin-left:auto" data-profile='{"name":"FAIROOSUDHEEN ASLAMI","role":"TEACHER","phone":"9497349254","about":"Brings enthusiasm and innovation into the classroom, inspiring students to excel in academics and values.","images":["https://i.ibb.co/pvnbMsDr/FAIROOS.jpg"]}' onclick="openProfile(this)">View Profile</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add more teacher items here... follow same structure and include data-profile JSON in the View Profile button -->
+
+    </div>
+  </main>
+
+  <!-- Profile Modal (popup) -->
+  <div class="modal fade profile-modal" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content p-3">
+        <div class="modal-header border-0">
+          <h5 id="modalName" class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="slider" id="modalSlider">
+            <img id="sliderImage" src="" alt="profile image">
+            <div class="nav">
+              <button id="prevSlide" class="btn"><i class="bi bi-chevron-left"></i></button>
+              <button id="nextSlide" class="btn"><i class="bi bi-chevron-right"></i></button>
+            </div>
+          </div>
+
+          <div style="margin-top:16px; display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap;">
+            <div style="flex:1; min-width:240px;">
+              <div class="text-muted" id="modalRole" style="font-weight:700;"></div>
+              <div style="margin-top:8px" id="modalPhone"></div>
+              <p style="margin-top:12px" id="modalAbout"></p>
+            </div>
+            <div style="min-width:160px; display:flex; align-items:center; justify-content:center;">
+              <a id="modalWhats" class="wa-btn" href="#" target="_blank"><i class="bi bi-whatsapp"></i> Message</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Teacher 2 -->
-    <div class="accordion-item bg-transparent border-0">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#teacher2">
-          FIROS FAIZY AK
-        </button>
-      </h2>
-      <div id="teacher2" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
-        <div class="accordion-body">
-          <div class="faculty-card">
-            <img src="https://i.ibb.co/3mXsbSdg/Whats-App-Image-2025-10-25-at-8-37-28-AM.jpg">
-            <h5 class="mt-3 fw-bold">FIROS FAIZY AK</h5>
-            <p class="text-warning m-0">TEACHER</p>
-            <small class="d-block">📞 9645134854</small>
-            <p class="mt-2">Dedicated to fostering discipline and inspiring learning.</p>
-
-            <a class="wa-btn" href="https://wa.me/9645134854">Message on WhatsApp</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Teacher 3 -->
-    <div class="accordion-item bg-transparent border-0">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#teacher3">
-          DARIMI USTHAD
-        </button>
-      </h2>
-      <div id="teacher3" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
-        <div class="accordion-body">
-          <div class="faculty-card">
-            <img src="https://i.ibb.co/kWR6Z5B/AMEER.jpg">
-            <h5 class="mt-3 fw-bold">DARIMI USTHAD</h5>
-            <p class="text-warning m-0">TEACHER</p>
-            <small class="d-block">📞 8078055520</small>
-            <p class="mt-2">Experienced teacher with deep knowledge of Islamic studies.</p>
-
-            <a class="wa-btn" href="https://wa.me/8078055520">Message on WhatsApp</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Teacher 4 -->
-    <div class="accordion-item bg-transparent border-0">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#teacher4">
-          FAIROOSUDHEEN ASLAMI
-        </button>
-      </h2>
-      <div id="teacher4" class="accordion-collapse collapse" data-bs-parent="#facultyAccordion">
-        <div class="accordion-body">
-          <div class="faculty-card">
-            <img src="https://i.ibb.co/pvnbMsDr/FAIROOS.jpg">
-            <h5 class="mt-3 fw-bold">FAIROOSUDHEEN ASLAMI</h5>
-            <p class="text-warning m-0">TEACHER</p>
-            <small class="d-block">📞 9497349254</small>
-            <p class="mt-2">Inspires students to excel in academics and values.</p>
-
-            <a class="wa-btn" href="https://wa.me/9497349254">Message on WhatsApp</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
-</div>
 
-<!-- FOOTER -->
-<footer>
-  <small>© 2025 Noorussalam Madrasa | All Rights Reserved</small>
-</footer>
+  <!-- Floating WhatsApp (always visible) -->
+  <a class="floating-wa" href="https://wa.me/7034678818" aria-label="Contact via WhatsApp" style="position:fixed; right:18px; bottom:18px; z-index:999;">
+    <i class="bi bi-whatsapp" style="font-size:1.35rem; color:#fff; display:inline-block; margin-top:2px;"></i>
+  </a>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Back to top button -->
+  <button id="backTop" class="btn btn-primary" style="position:fixed; right:18px; bottom:86px; display:none; z-index:998;">
+    <i class="bi bi-arrow-up"></i>
+  </button>
 
+  <!-- Bootstrap JS bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- AOS -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <script>
+    // ---------- AOS init ----------
+    AOS.init({ duration:700, easing: 'ease-out-cubic', once:true });
+
+    // ---------- Particle canvas (lightweight) ----------
+    (function(){
+      const canvas = document.getElementById('particle-canvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w=canvas.width = innerWidth;
+      let h=canvas.height = innerHeight;
+      const particles = [];
+      const count = Math.max(18, Math.floor((w*h)/90000)); // adjust by screen size
+
+      function rand(min,max){ return Math.random()*(max-min)+min }
+      for(let i=0;i<count;i++){
+        particles.push({
+          x: rand(0,w),
+          y: rand(0,h),
+          r: rand(0.8,3.2),
+          vx: rand(-0.2,0.2),
+          vy: rand(-0.15,0.15),
+          hue: rand(180,220),
+          alpha: rand(0.06,0.25)
+        });
+      }
+
+      function draw(){
+        ctx.clearRect(0,0,w,h);
+        for(const p of particles){
+          p.x += p.vx;
+          p.y += p.vy;
+          if(p.x < -10) p.x = w+10;
+          if(p.x > w+10) p.x = -10;
+          if(p.y < -10) p.y = h+10;
+          if(p.y > h+10) p.y = -10;
+          ctx.beginPath();
+          ctx.fillStyle = `hsla(${p.hue}, 80%, 60%, ${p.alpha})`;
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', ()=>{ w=canvas.width=innerWidth; h=canvas.height=innerHeight; });
+      draw();
+    })();
+
+    // ---------- Expand / Collapse all ----------
+    const expandAllBtn = document.getElementById('expandAll');
+    const collapseAllBtn = document.getElementById('collapseAll');
+    expandAllBtn.addEventListener('click', ()=>{
+      document.querySelectorAll('.accordion-collapse').forEach(c => {
+        if(!c.classList.contains('show')) {
+          const bs = bootstrap.Collapse.getOrCreateInstance(c);
+          bs.show();
+        }
+      });
+    });
+    collapseAllBtn.addEventListener('click', ()=>{
+      document.querySelectorAll('.accordion-collapse').forEach(c => {
+        if(c.classList.contains('show')) {
+          const bs = bootstrap.Collapse.getOrCreateInstance(c);
+          bs.hide();
+        }
+      });
+    });
+
+    // ---------- Search filter ----------
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', e=>{
+      const q = (e.target.value || '').trim().toLowerCase();
+      document.querySelectorAll('.accordion-item').forEach(item=>{
+        const name = (item.getAttribute('data-name')||'').toLowerCase();
+        if(!q || name.includes(q)){
+          item.style.display = '';
+        } else item.style.display = 'none';
+      });
+    });
+
+    // ---------- Back to top ----------
+    const backTop = document.getElementById('backTop');
+    window.addEventListener('scroll', () => {
+      backTop.style.display = (window.scrollY>380) ? 'block' : 'none';
+    });
+    backTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
+
+    // ---------- Modal & Profile slider ----------
+    const profileModalEl = document.getElementById('profileModal');
+    const profileModal = new bootstrap.Modal(profileModalEl, {keyboard:true});
+    const modalName = document.getElementById('modalName');
+    const modalRole = document.getElementById('modalRole');
+    const modalPhone = document.getElementById('modalPhone');
+    const modalAbout = document.getElementById('modalAbout');
+    const modalWhats = document.getElementById('modalWhats');
+    const sliderImage = document.getElementById('sliderImage');
+    const prevSlideBtn = document.getElementById('prevSlide');
+    const nextSlideBtn = document.getElementById('nextSlide');
+
+    let currentImages = [];
+    let slideIndex = 0;
+    let sliderAutoplayTimer = null;
+
+    function startAutoplay(){
+      clearInterval(sliderAutoplayTimer);
+      sliderAutoplayTimer = setInterval(()=> {
+        nextSlide(true);
+      }, 3500);
+    }
+    function stopAutoplay(){ clearInterval(sliderAutoplayTimer); }
+
+    function showSlide(i){
+      if(!currentImages || currentImages.length===0) return;
+      slideIndex = ((i % currentImages.length) + currentImages.length) % currentImages.length;
+      sliderImage.src = currentImages[slideIndex];
+      sliderImage.alt = modalName.textContent + ' photo ' + (slideIndex+1);
+    }
+    function nextSlide(noRestart){
+      showSlide(slideIndex+1);
+      if(!noRestart) startAutoplay();
+    }
+    function prevSlide(){ showSlide(slideIndex-1); startAutoplay(); }
+
+    nextSlideBtn.addEventListener('click', ()=> nextSlide());
+    prevSlideBtn.addEventListener('click', ()=> prevSlide());
+    sliderImage.addEventListener('mouseenter', stopAutoplay);
+    sliderImage.addEventListener('mouseleave', startAutoplay);
+
+    // invoked by View Profile buttons
+    window.openProfile = function(btn){
+      try {
+        const data = JSON.parse(btn.getAttribute('data-profile'));
+        modalName.textContent = data.name || '';
+        modalRole.textContent = data.role || '';
+        modalPhone.textContent = data.phone ? ('📞 ' + data.phone) : '';
+        modalAbout.textContent = data.about || '';
+        modalWhats.href = 'https://wa.me/' + (data.phone || '').replace(/\D/g,'');
+        currentImages = Array.isArray(data.images) && data.images.length>0 ? data.images : ['https://i.ibb.co/3mXsbSdg/Whats-App-Image-2025-10-25-at-8-37-28-AM.jpg'];
+        slideIndex = 0;
+        showSlide(0);
+        startAutoplay();
+        profileModal.show();
+      } catch(err){
+        console.error('Invalid profile data', err);
+      }
+    };
+
+    // stop autoplay when modal hidden
+    profileModalEl.addEventListener('hidden.bs.modal', ()=> stopAutoplay());
+
+    // ---------- Dark / Light mode toggle ----------
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+
+    function setTheme(t){
+      if(t === 'light') {
+        document.documentElement.setAttribute('data-theme','light');
+        themeIcon.className = 'bi bi-sun-fill';
+        themeToggle.setAttribute('aria-pressed','true');
+        localStorage.setItem('ns_theme','light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        themeIcon.className = 'bi bi-moon-fill';
+        themeToggle.setAttribute('aria-pressed','false');
+        localStorage.removeItem('ns_theme');
+      }
+    }
+    // initial theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('ns_theme');
+    if(savedTheme === 'light') setTheme('light');
+    else {
+      // if user prefers light system-wide, set light by default
+      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) setTheme('light');
+      else setTheme('dark');
+    }
+    themeToggle.addEventListener('click', ()=>{
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      setTheme(isLight ? 'dark' : 'light');
+    });
+
+    // ---------- reveal fade-in using IntersectionObserver ----------
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('show');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-in').forEach(el => io.observe(el));
+
+    // ---------- Accessibility: keyboard open via Enter on accordion button names ----------
+    document.querySelectorAll('.accordion-button').forEach(btn=>{
+      btn.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); btn.click(); }
+      });
+    });
+
+    // ---------- small tweak: ensure accordion collapse on search when hidden items exist ----------
+    searchInput.addEventListener('input', ()=>{
+      // close open panels that are filtered out
+      document.querySelectorAll('.accordion-collapse.show').forEach(c=>{
+        const item = c.closest('.accordion-item');
+        if(item && item.style.display === 'none') {
+          bootstrap.Collapse.getInstance(c)?.hide();
+        }
+      });
+    });
+
+    // ---------- responsive: ensure floating WhatsApp not blocking content on tiny screens ----------
+    function adjustFloating(){
+      const float = document.querySelector('.floating-wa');
+      if(!float) return;
+      if(window.innerWidth <= 420) {
+        float.style.right = '8px';
+        float.style.bottom = '8px';
+      } else {
+        float.style.right = '18px';
+        float.style.bottom = '18px';
+      }
+    }
+    addEventListener('resize', adjustFloating);
+    addEventListener('load', adjustFloating);
+
+  </script>
 </body>
 </html>
