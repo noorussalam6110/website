@@ -1,258 +1,181 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ID Card Generator | Noorussalam Madrasa</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ID Card</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <style>
-    body {
-      background: linear-gradient(135deg, #0b5ed7 0%, #74b9ff 100%);
-      font-family: 'Poppins', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 30px;
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- QR Code JS -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+<style>
+  body {
+    background: #eef3ff;
+    font-family: "Poppins", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+  }
+
+  /* ---------------- ID CARD SIZE (STANDARD 54mm × 86mm) ---------------- */
+  .id-card {
+    width: 328px;     /* 54mm → 328px */
+    height: 524px;    /* 86mm → 524px */
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.2);
+    border: 4px solid #004aad;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+  }
+
+  .id-header {
+    background: linear-gradient(90deg, #004aad, #4a90ff);
+    color: white;
+    padding: 10px;
+  }
+
+  .id-header h5 {
+    font-size: 15px;
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .id-header small {
+    font-size: 11px;
+    opacity: 0.9;
+  }
+
+  .id-photo {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    margin-top: 15px;
+    border: 4px solid white;
+    object-fit: cover;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  }
+
+  .name {
+    font-size: 20px;
+    margin-top: 8px;
+    font-weight: 700;
+    color: #004aad;
+  }
+
+  p {
+    font-size: 13px;
+    margin: 2px 0;
+  }
+
+  .qr-box {
+    margin-top: 10px;
+  }
+
+  #qrcode {
+    width: 80px;
+    margin: auto;
+  }
+
+  /* ---------------- PRINT ONLY THE ID CARD ---------------- */
+  @media print {
+    body * {
+      visibility: hidden;
     }
-
-    .id-form {
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-      padding: 30px;
-      width: 100%;
-      max-width: 420px;
-      text-align: center;
-      animation: fadeIn 0.8s ease;
+    #idcard, #idcard * {
+      visibility: visible;
     }
-
-    .id-form h2 {
-      color: #0b5ed7;
-      font-weight: 700;
-      margin-bottom: 15px;
+    #idcard {
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      transform: translateX(-50%);
     }
+  }
 
-    .id-form p {
-      color: #6c757d;
-      font-size: 14px;
-      margin-bottom: 25px;
-    }
-
-    .id-form button {
-      background: #0b5ed7;
-      border: none;
-      padding: 10px 0;
-      width: 100%;
-      border-radius: 8px;
-      font-weight: 600;
-      color: #fff;
-      transition: all 0.3s ease;
-    }
-
-    .id-form button:hover {
-      background: #0849a2;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+  .btn-main {
+    margin-top: 25px;
+    width: 230px;
+    padding: 10px;
+    border-radius: 30px;
+    font-weight: 600;
+  }
+</style>
 </head>
 
 <body>
 
-  <div class="id-form">
-    <img src="https://i.ibb.co/7Jw5TBJg/NSM-LOGO-PNG.png" width="80" alt="logo">
-    <h2>NOORUSSALAM MADRASA</h2>
-    <p>Enter your Class and Roll Number to generate your ID card</p>
+<!-- ---------------- ID CARD CONTENT ---------------- -->
+<div id="idcard" class="id-card">
 
-    <form id="idForm">
-      <div class="mb-3 text-start">
-        <label class="form-label">Class</label>
-        <input type="text" name="class" class="form-control" placeholder="Enter Class" required>
-      </div>
-
-      <div class="mb-3 text-start">
-        <label class="form-label">Roll Number</label>
-        <input type="text" name="roll" class="form-control" placeholder="Enter Roll Number" required>
-      </div>
-
-      <button type="submit">Generate Digital ID Card</button>
-    </form>
+  <div class="id-header">
+    <h5>NOORUSSALAM SECONDARY MADRASA</h5>
+    <small>Kambippalam - Kerala Estate</small><br>
+    <small>Under SKIMVB | Reg No: 6110</small>
   </div>
 
-  <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzwNp2D-Kg6yGaiGaP5npYiyGXRoGI3eTrf_DdHCXo-4Lo2mw2kLQEBucmNl5VkQs8R/exec';
+  <!-- Student Photo -->
+  <img id="photo" class="id-photo" src="https://via.placeholder.com/150">
 
-    document.getElementById('idForm').addEventListener('submit', e => {
-      e.preventDefault();
+  <div class="name" id="fullname">Student Name</div>
 
-      const formData = new FormData(e.target);
-      const classVal = formData.get('class');
-      const rollVal = formData.get('roll');
+  <p><b>UID:</b> <span id="uid">123456</span></p>
+  <p><b>Admission No:</b> <span id="admno">2025</span></p>
+  <p><b>Father:</b> <span id="father">Abdul Rahman</span></p>
+  <p><b>Class:</b> <span id="class">5</span></p>
+  <p><b>Roll No:</b> <span id="roll">12</span></p>
+  <p><b>Phone:</b> <span id="phone">9876543210</span></p>
 
-      const url = `${scriptURL}?class=${encodeURIComponent(classVal)}&roll=${encodeURIComponent(rollVal)}`;
-
-      const newWin = window.open("", "_blank");
-      newWin.document.write("<h3 style='text-align:center;font-family:Poppins;color:#0b5ed7;'>Loading ID Card...</h3>");
-
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          if (data.result === 'success') {
-
-            const s = data.student;
-
-            const html = `
-<html>
-<head>
-  <title>${s.FullName} - ID Card</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
-
-  <style>
-    body {
-      background: #eef3ff;
-      font-family: 'Quicksand', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px;
-    }
-
-    @media print {
-      body * { visibility: hidden; }
-      #idcard, #idcard * { visibility: visible; }
-      #idcard {
-        position: absolute;
-        left: 50%;
-        top: 20px;
-        transform: translateX(-50%);
-      }
-    }
-
-    .id-card {
-      width: 380px;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-      overflow: hidden;
-      text-align: center;
-      border: 4px solid #0b5ed7;
-    }
-
-    .id-header {
-      background: linear-gradient(90deg, #0b5ed7, #74b9ff);
-      color: white;
-      padding: 12px;
-    }
-
-    .id-header h5 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .id-header small {
-      font-size: 12px;
-      display: block;
-      opacity: 0.9;
-    }
-
-    .id-body {
-      padding: 20px;
-    }
-
-    .id-photo {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-top: -20px;
-      border: 4px solid white;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-    }
-
-    .name {
-      color: #0b5ed7;
-      margin-top: 10px;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    p {
-      margin: 2px 0;
-      font-size: 14px;
-      color: #333;
-    }
-
-    .btn-print, .btn-home {
-      margin-top: 20px;
-      width: 200px;
-      border-radius: 30px;
-      padding: 10px;
-      font-weight: 600;
-    }
-
-    .btn-home {
-      background: #0b5ed7;
-      color: white;
-    }
-  </style>
-</head>
-
-<body>
-
-  <div id="idcard" class="id-card">
-    <div class="id-header">
-      <h5>NOORUSSALAM SECONDARY MADRASA</h5>
-      <small>Kambippalam Kerala Estate</small>
-      <small>Under SKIMVB | Reg No: 6110</small>
-    </div>
-
-    <div class="id-body">
-      <img src="${s.PhotoURL || 'https://via.placeholder.com/100'}" class="id-photo">
-
-      <div class="name">${s.FullName}</div>
-
-      <p><b>UID:</b> ${s.UID}</p>
-      <p><b>Admission No:</b> ${s.AdmissionNumber}</p>
-      <p><b>Father’s Name:</b> ${s.FatherName}</p>
-      <p><b>Class:</b> ${s.ClassLevel}</p>
-      <p><b>Roll No:</b> ${s.RollNumber}</p>
-      <p><b>Phone:</b> ${s.Phone}</p>
-    </div>
+  <!-- QR Code Box -->
+  <div class="qr-box">
+    <div id="qrcode"></div>
   </div>
 
-  <button onclick="window.print()" class="btn btn-outline-primary btn-print">Print ID Card</button>
+</div>
 
-  <a href="index.html">
-    <button class="btn btn-home">Back to Home</button>
-  </a>
+<!-- Buttons -->
+<button onclick="window.print()" class="btn btn-outline-primary btn-main">
+  Print ID Card
+</button>
 
-</body>
-</html>
-`;
+<script>
+  // --------------------------- SAMPLE DATA ---------------------------
+  const student = {
+    FullName: "Mohammed Azhar",
+    UID: "NSM-11025",
+    Admission: "4552",
+    Father: "Mr. Ibrahim",
+    Class: "7",
+    Roll: "18",
+    Phone: "9846123450",
+    Photo: "https://via.placeholder.com/200"
+  };
 
-            newWin.document.open();
-            newWin.document.write(html);
-            newWin.document.close();
+  // Fill Data
+  document.getElementById("fullname").innerText = student.FullName;
+  document.getElementById("uid").innerText = student.UID;
+  document.getElementById("admno").innerText = student.Admission;
+  document.getElementById("father").innerText = student.Father;
+  document.getElementById("class").innerText = student.Class;
+  document.getElementById("roll").innerText = student.Roll;
+  document.getElementById("phone").innerText = student.Phone;
+  document.getElementById("photo").src = student.Photo;
 
-          } else {
-            newWin.document.write(`<h3 style='color:red;text-align:center;'>${data.message}</h3>`);
-          }
-        })
-        .catch(() => {
-          newWin.document.write("<h3 style='color:red;text-align:center;'>Error fetching data.</h3>");
-        });
-    });
-  </script>
+  // Generate QR Code (Optional)
+  QRCode.toCanvas(
+    document.getElementById("qrcode"),
+    `UID: ${student.UID}\nName:${student.FullName}\nClass:${student.Class}`,
+    { width: 80 }
+  );
+</script>
 
 </body>
 </html>
