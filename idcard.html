@@ -1,245 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta-name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ID Card Generator | Noorussalam Madrasa</title>
+  <title>${s.FullName} | ID Card</title>
 
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
   <style>
     body {
-      background: linear-gradient(135deg, #0b5ed7 0%, #74b9ff 100%);
-      font-family: 'Poppins', sans-serif;
+      background: #f0f4ff;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
       padding: 30px;
     }
 
-    /* FORM DESIGN */
-    .id-form {
-      background: #fff;
-      border-radius: 15px;
-      padding: 30px;
-      width: 100%;
-      max-width: 420px;
+    /* ID CARD */
+    .id-card {
+      width: 340px;
+      background: #ffffff;
+      border-radius: 18px;
+      padding-bottom: 15px;
       text-align: center;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.25);
-      animation: fadeIn 0.8s ease;
+      border: 4px solid #0b5ed7;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      position: relative;
     }
-    .id-form img { margin-bottom: 10px; }
-    .id-form h2 { color: #0b5ed7; font-weight: 700; }
-    .id-form p { font-size: 14px; color: #555; }
 
-    .id-form button {
+    /* Header */
+    .id-header {
+      background: linear-gradient(90deg, #0b5ed7, #74b9ff);
+      color: white;
+      padding: 12px;
+    }
+    .id-header h5 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .id-header small {
+      display: block;
+      margin-top: 2px;
+      font-size: 12px;
+      opacity: 0.95;
+    }
+
+    /* Photo */
+    .id-photo {
+      width: 95px;
+      height: 95px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-top: -25px;
+      border: 4px solid white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .info p {
+      margin: 2px 0;
+      font-size: 14px;
+      color: #222;
+    }
+
+    /* QR */
+    .qr-code img {
+      margin-top: 5px;
+      width: 90px;
+    }
+    .academic-year {
+      margin-top: 5px;
+      font-weight: 700;
+      color: #0b5ed7;
+    }
+
+    /* PRINT SETTINGS */
+    @media print {
+      body {
+        background: white !important;
+      }
+      .print-hide {
+        display: none !important;
+      }
+    }
+
+    /* Print Button (hidden by default – only for debugging) */
+    .print-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
       background: #0b5ed7;
-      border: none;
-      padding: 10px 0;
-      width: 100%;
-      border-radius: 8px;
+      color: white;
+      border-radius: 50px;
+      padding: 10px 20px;
       font-weight: 600;
-      color: #fff;
-      margin-top: 8px;
-      transition: 0.3s;
-    }
-    .id-form button:hover { background: #0849a2; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-12px); }
-      to   { opacity: 1; transform: translateY(0); }
+      border: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      cursor: pointer;
     }
   </style>
-
 </head>
+
 <body>
 
-  <!-- FORM -->
-  <div class="id-form">
-    <img src="https://i.ibb.co/7Jw5TBJg/NSM-LOGO-PNG.png" width="85" />
-    <h2>NOORUSSALAM MADRASA</h2>
-    <p>Enter your Class and Roll Number to generate your digital ID card</p>
+  <div class="id-card" id="idcard">
+    <div class="id-header">
+      <h5>NOORUSSALAM SECONDARY MADRASA</h5>
+      <small>Kambippalam Kerala Estate</small>
+      <small>Under SKIMVB | Reg No: 6110</small>
+    </div>
 
-    <form id="idForm">
-      <div class="mb-3 text-start">
-        <label class="form-label">Class</label>
-        <input type="text" name="class" class="form-control" placeholder="Enter Class" required>
-      </div>
+    <img src="${s.PhotoURL}" class="id-photo">
 
-      <div class="mb-3 text-start">
-        <label class="form-label">Roll Number</label>
-        <input type="text" name="roll" class="form-control" placeholder="Enter Roll Number" required>
-      </div>
+    <div class="info">
+      <p><strong>${s.FullName}</strong></p>
+      <p><b>UID:</b> ${s.UID}</p>
+      <p><b>Admission No:</b> ${s.AdmissionNumber}</p>
+      <p><b>Father:</b> ${s.FatherName}</p>
+      <p><b>Class:</b> ${s.ClassLevel}</p>
+      <p><b>Roll No:</b> ${s.RollNumber}</p>
+      <p><b>Phone:</b> ${s.Phone}</p>
+    </div>
 
-      <button type="submit">Generate Digital ID Card</button>
-    </form>
+    <div class="qr-code">
+      <img src="${qrURL}">
+      <p class="academic-year">Academic Year 2025–26</p>
+    </div>
   </div>
 
+  <!-- Hidden print button (not shown in print) -->
+  <button class="print-btn print-hide" onclick="window.print()">Print</button>
 
-<script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbzwNp2D-Kg6yGaiGaP5npYiyGXRoGI3eTrf_DdHCXo-4Lo2mw2kLQEBucmNl5VkQs8R/exec';
-
-document.getElementById('idForm').addEventListener('submit', e => {
-
-  e.preventDefault();
-  const formData = new FormData(e.target);
-
-  const classVal = formData.get("class");
-  const rollVal  = formData.get("roll");
-
-  const url = `${scriptURL}?class=${encodeURIComponent(classVal)}&roll=${encodeURIComponent(rollVal)}`;
-
-  const win = window.open("", "_blank");
-  win.document.write("<h3 style='text-align:center;color:#0b5ed7;font-family:Poppins;'>Loading ID Card...</h3>");
-
-  fetch(url)
-    .then(r => r.json())
-    .then(data => {
-
-      if (data.result !== "success") {
-        win.document.body.innerHTML = `<h3 style='color:red;text-align:center;'>${data.message}</h3>`;
-        return;
-      }
-
-      const s = data.student;
-
-      const qrText = `UID:${s.UID}, Name:${s.FullName}, Class:${s.ClassLevel}, Roll:${s.RollNumber}`;
-      const qrURL = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrText)}&size=120x120`;
-
-      const html = `
-      <html>
-      <head>
-        <title>${s.FullName} - ID Card</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-        <style>
-          body {
-            background: #eef3ff;
-            display: flex;
-            justify-content: center;
-            padding: 40px;
-            font-family: 'Poppins';
-          }
-
-          .id-card {
-            width: 340px;
-            border-radius: 18px;
-            padding: 15px;
-            background: white;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.25);
-            border: 4px solid #0b5ed7;
-            position: relative;
-          }
-
-          .id-card:before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: url('https://i.ibb.co/7Jw5TBJg/NSM-LOGO-PNG.png') center/65% no-repeat;
-            opacity: 0.08;
-          }
-
-          .header {
-            text-align: center;
-            padding-bottom: 10px;
-          }
-
-          .header h4 {
-            margin: 0;
-            font-weight: 700;
-            color: #0b5ed7;
-          }
-
-          .student-photo {
-            width: 105px;
-            height: 105px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #0b5ed7;
-            display: block;
-            margin: 8px auto;
-            background: #fff;
-          }
-
-          .info p {
-            margin: 3px 0;
-            font-size: 14px;
-          }
-
-          .qr {
-            text-align: center;
-            margin-top: 12px;
-          }
-
-          .actions {
-            margin-top: 15px;
-            text-align: center;
-          }
-
-          .actions button {
-            padding: 8px 18px;
-            border: none;
-            border-radius: 8px;
-            margin: 5px;
-            font-weight: 600;
-            cursor: pointer;
-          }
-
-          .print-btn { background: #0b5ed7; color: white; }
-          .back-btn { background: #6c757d; color: white; }
-
-          @media print {
-            .actions { display: none !important; }
-            body { background: white; }
-          }
-        </style>
-      </head>
-
-      <body>
-        <div class="id-card">
-
-          <div class="header">
-            <h4>NOORUSSALAM SECONDARY MADRASA</h4>
-            <small>Kambippalam, Kerala Estate</small><br>
-            <small>Academic Year 2025–26</small>
-          </div>
-
-          <img src="${s.PhotoURL || 'https://via.placeholder.com/120'}" class="student-photo">
-
-          <div class="info text-center">
-            <p><b>Name:</b> ${s.FullName}</p>
-            <p><b>UID:</b> ${s.UID}</p>
-            <p><b>Admission No:</b> ${s.AdmissionNumber}</p>
-            <p><b>Class:</b> ${s.ClassLevel}</p>
-            <p><b>Roll No:</b> ${s.RollNumber}</p>
-            <p><b>Father:</b> ${s.FatherName}</p>
-            <p><b>Phone:</b> ${s.Phone}</p>
-          </div>
-
-          <div class="qr">
-            <img src="${qrURL}" width="110">
-          </div>
-
-          <div class="actions">
-            <button class="print-btn" onclick="window.print()">Print ID Card</button>
-            <button class="back-btn" onclick="window.location.href='/'">Back to Home</button>
-          </div>
-
-        </div>
-      </body>
-      </html>
-      `;
-
-      win.document.open();
-      win.document.write(html);
-      win.document.close();
-    });
-});
-</script>
+  <!-- Auto Print -->
+  <script>
+    window.onload = function() {
+      setTimeout(() => {
+        window.print();
+      }, 300);
+    };
+  </script>
 
 </body>
 </html>
