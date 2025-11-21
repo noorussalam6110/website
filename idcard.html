@@ -8,62 +8,69 @@
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Nunito font for a soft premium look -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    :root{ --primary:#0b5ed7; --primary-dark:#0849a2; --card-width:328px; --card-height:205px; } /* 86×54 mm -> px approximated */
+    :root{
+      --primary: #0b5ed7;
+      --primary-dark: #0849a2;
+      --card-w: 328px;  /* ~86mm */
+      --card-h: 205px;  /* ~54mm */
+      --watermark-url: "/mnt/data/nsm logo.jpeg"; /* your uploaded logo path */
+    }
+
+    html,body { height:100%; margin:0; }
     body {
-      font-family: "Poppins",sans-serif;
+      font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(140deg, var(--primary) 0%, #6fb6ff 60%, #dff1ff 100%);
       min-height:100vh;
-      margin:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      background: linear-gradient(135deg, var(--primary) 0%, #74b9ff 100%);
       padding:28px;
     }
 
+    /* Form card */
     .id-form {
       width:100%;
-      max-width:460px;
-      background: #fffafc;
-      padding:28px;
+      max-width:500px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), #ffffff);
       border-radius:18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      padding:28px;
+      box-shadow: 0 12px 30px rgba(3,34,63,0.18);
       text-align:center;
     }
-
     .id-form img { margin-bottom:8px; }
-    .id-form h1 { font-size:1.05rem; color:var(--primary); margin:0 0 8px; font-weight:700; text-transform:uppercase; }
-    .id-form p { color:#556; margin-bottom:18px; }
+    .id-form h1 { font-size:1.06rem; color:var(--primary); margin:6px 0 6px; letter-spacing:0.6px; }
+    .id-form p { color:#475569; margin-bottom:18px; }
 
-    .form-control { border-radius:10px; height:46px; }
+    .form-control { height:46px; border-radius:10px; }
     .btn-generate {
       background: linear-gradient(90deg,var(--primary),#167bff);
-      border: none;
       color:#fff;
-      font-weight:600;
-      height:46px;
+      border:0;
       border-radius:10px;
-      box-shadow: 0 8px 20px rgba(11,94,215,0.28);
+      height:46px;
+      font-weight:700;
+      box-shadow: 0 8px 22px rgba(11,94,215,0.24);
     }
-    .btn-generate:hover { background: var(--primary-dark); transform:translateY(-2px); }
+    .btn-generate:hover { transform: translateY(-2px); background: var(--primary-dark); }
 
-    small.hint { display:block; margin-top:10px; color:#999; }
+    small.hint { display:block; margin-top:10px; color:#6b7280; font-size:13px; }
 
-    /* small responsive */
+    /* responsive */
     @media (max-width:520px){
-      .id-form{ padding:20px; border-radius:14px; }
+      .id-form { padding:20px; }
     }
   </style>
 </head>
 <body>
 
   <div class="id-form">
-    <img src="https://i.ibb.co/7Jw5TBJg/NSM-LOGO-PNG.png" alt="logo" width="86">
+    <img src="https://i.ibb.co/7Jw5TBJg/NSM-LOGO-PNG.png" alt="Noorussalam logo" width="96">
     <h1>NOORUSSALAM MADRASA</h1>
-    <p>Enter Class and Roll Number to generate the ID card (opens in new tab)</p>
+    <p>Enter Class and Roll Number to generate the ID card (opens in a new tab)</p>
 
     <form id="idForm" class="mt-3">
       <div class="mb-3 text-start">
@@ -77,43 +84,49 @@
       </div>
 
       <button type="submit" class="btn btn-generate w-100">Generate Digital ID Card</button>
-      <small class="hint">Printed card size: 86 × 54 mm (CR-80). Use 'Print' in the new tab for best results.</small>
+      <small class="hint">Printed size: CR-80 (86 × 54 mm). Use the Print button in the new tab for best results.</small>
     </form>
   </div>
 
 <script>
-/*
-  Replace SCRIPT_URL with your deployed Apps Script web app URL if different.
-  The script is expected to respond with JSON:
-  { result: "success", student: { FullName, UID, AdmissionNumber, FatherName, ClassLevel, RollNumber, Phone, Address, PhotoURL } }
-*/
+/* ========= Replace SCRIPT_URL with your deployed Apps Script URL if different ========= */
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzwNp2D-Kg6yGaiGaP5npYiyGXRoGI3eTrf_DdHCXo-4Lo2mw2kLQEBucmNl5VkQs8R/exec";
 
-document.getElementById('idForm').addEventListener('submit', async (ev) => {
-  ev.preventDefault();
-  const form = new FormData(ev.target);
-  const cls = form.get('class').trim();
-  const roll = form.get('roll').trim();
-  if (!cls || !roll) return alert('Please enter class and roll number.');
+/* Escape to avoid injection in template */
+function escapeHtml(str){
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#39;');
+}
+
+document.getElementById('idForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const cls = (fd.get('class') || '').toString().trim();
+  const roll = (fd.get('roll') || '').toString().trim();
+  if (!cls || !roll) { alert('Please enter class and roll number.'); return; }
+
+  // open blank tab first (avoids popup blocking)
+  const win = window.open('', '_blank');
+  win.document.write(`<div style="font-family:Nunito,Arial,sans-serif;text-align:center;padding:40px;color:${'#0b5ed7'};"><h3>Loading ID Card...</h3></div>`);
 
   const url = `${SCRIPT_URL}?class=${encodeURIComponent(cls)}&roll=${encodeURIComponent(roll)}`;
-
-  // open blank tab first to avoid popup blocking
-  const win = window.open('', '_blank');
-  win.document.write(`<div style="font-family:Poppins, sans-serif; text-align:center; padding:40px; color:${'#0b5ed7'}"><h3>Loading ID Card...</h3></div>`);
 
   try {
     const res = await fetch(url);
     const data = await res.json();
 
     if (!data || data.result !== 'success') {
-      const msg = (data && data.message) ? data.message : 'Student not found or server error.';
-      win.document.body.innerHTML = `<h3 style="color:red; text-align:center; font-family:Poppins;">${msg}</h3>`;
+      const msg = data && data.message ? data.message : 'Student not found or server error.';
+      win.document.body.innerHTML = `<div style="font-family:Nunito,Arial,sans-serif;padding:40px;text-align:center;color:#b91c1c;"><h3>${escapeHtml(msg)}</h3></div>`;
       return;
     }
 
     const s = data.student || {};
-    // fallback values
     s.FullName = s.FullName || 'STUDENT NAME';
     s.UID = s.UID || '';
     s.AdmissionNumber = s.AdmissionNumber || '';
@@ -124,86 +137,123 @@ document.getElementById('idForm').addEventListener('submit', async (ev) => {
     s.Address = s.Address || '';
     s.PhotoURL = s.PhotoURL || 'https://via.placeholder.com/200';
 
-    // build ID card html (no QR)
+    // Build new-tab HTML: no QR code, full-card watermark using uploaded path (/mnt/data/nsm logo.jpeg)
     const cardHtml = `<!doctype html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>${escapeHtml(s.FullName)} — ID Card</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-  :root{ --primary:#0b5ed7; --card-w:328px; --card-h:205px; }
-  body{ font-family: Poppins, sans-serif; background:#eef4ff; margin:0; padding:28px; display:flex; align-items:center; justify-content:center; min-height:100vh; }
-  /* print only the card */
-  @media print {
-    body * { visibility:hidden; }
-    #idcard, #idcard * { visibility:visible; }
-    #idcard { position:absolute; left:50%; top:20px; transform:translateX(-50%); }
-  }
-  .id-card {
-    width: var(--card-w);
-    height: var(--card-h);
-    background:#fff;
-    border-radius:16px;
-    border:4px solid var(--primary);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.25), inset 0 0 12px rgba(0,0,0,0.06);
-    overflow:hidden;
-    position:relative;
-    text-align:center;
-  }
-  /* circular watermark (placeholder) */
-  .watermark {
-    position:absolute;
-    width:120px; height:120px;
-    top:36%; left:50%;
-    transform:translate(-50%,-50%);
-    background-image:url('https://i.ibb.co/7SRxgqT/round-placeholder.png');
-    background-size:contain;
-    background-repeat:no-repeat;
-    opacity:0.10;
-    border-radius:50%;
-    pointer-events:none;
-    z-index:0;
-  }
-  .id-header { background:linear-gradient(90deg,var(--primary),#6fb6ff); color:#fff; padding:6px 8px; z-index:2; position:relative; }
-  .id-header h4{ margin:0; font-size:13px; font-weight:700; }
-  .id-header small{ display:block; font-size:9px; opacity:0.95; margin-top:2px; }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>${escapeHtml(s.FullName)} — ID Card</title>
 
-  .photo { width:74px; height:74px; border-radius:50%; object-fit:cover; border:3px solid #fff; margin-top:10px; box-shadow:0 3px 10px rgba(0,0,0,0.28); z-index:2; position:relative; }
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 
-  .fullname { color:var(--primary); font-weight:700; margin-top:6px; font-size:14px; z-index:2; position:relative; }
-  .info { font-size:10px; line-height:12px; margin-top:4px; z-index:2; position:relative; padding:0 12px; text-align:left; }
-  .info p { margin:2px 0; color:#222; }
+  <style>
+    :root { --primary: #0b5ed7; --card-w: 328px; --card-h:205px; }
+    html,body{ height:100%; margin:0; }
+    body{
+      font-family: 'Nunito', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: #eef4ff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:28px;
+    }
 
-  .controls { margin-top:14px; display:flex; gap:10px; align-items:center; justify-content:center; }
-  .btn-print, .btn-home { padding:8px 16px; border-radius:24px; font-weight:600; border:0; cursor:pointer; }
-  .btn-print { background:#fff; color:var(--primary); border:2px solid var(--primary); }
-  .btn-home { background:var(--primary); color:#fff; }
+    /* Print only the card - hide controls */
+    @media print {
+      body * { visibility: hidden; }
+      #idcard, #idcard * { visibility: visible; }
+      #idcard { position: absolute; left:50%; top:10px; transform: translateX(-50%); }
+    }
 
-  /* small screens */
-  @media (max-width:420px){
-    body { padding:10px; }
-    .id-card { transform:scale(0.9); transform-origin:center top; }
-  }
-</style>
+    /* Real CR-80 card */
+    .id-card {
+      width: var(--card-w);
+      height: var(--card-h);
+      border-radius:14px;
+      background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+      border: 3px solid var(--primary);
+      box-shadow:
+        0 12px 30px rgba(2,6,23,0.18),
+        inset 0 0 20px rgba(11,94,215,0.02);
+      overflow: hidden;
+      position: relative;
+      text-align: center;
+    }
+
+    /* Full-card circular watermark (soft) - using uploaded local path */
+    .watermark {
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      top: 46%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-image: url('/mnt/data/nsm logo.jpeg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      opacity: 0.10;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(0.2px);
+    }
+
+    .id-header {
+      background: linear-gradient(90deg, var(--primary), #6fb6ff);
+      padding: 8px 6px;
+      color: #fff;
+      z-index: 2;
+      position: relative;
+    }
+    .id-header h4 { margin:0; font-size:13px; font-weight:700; letter-spacing:0.4px; }
+    .id-header small { display:block; font-size:9px; opacity:0.95; margin-top:2px; }
+
+    .photo {
+      width:78px;
+      height:78px;
+      border-radius:50%;
+      object-fit:cover;
+      border:3px solid #fff;
+      margin-top:8px;
+      box-shadow: 0 4px 12px rgba(2,6,23,0.18);
+      z-index:2;
+      position: relative;
+    }
+
+    .fullname { color:var(--primary); font-weight:700; margin-top:6px; font-size:14px; z-index:2; position: relative; }
+    .details { text-align:left; padding:0 14px; margin-top:6px; font-size:10px; line-height:12px; z-index:2; position: relative; }
+    .details p { margin:3px 0; color:#1f2937; }
+
+    .controls { display:flex; gap:12px; justify-content:center; margin-top:14px; z-index:3; position:relative; }
+    .btn-print, .btn-home { padding:8px 14px; border-radius:22px; font-weight:700; border:0; cursor:pointer; }
+    .btn-print { background:#fff; color:var(--primary); border:2px solid var(--primary); }
+    .btn-home { background:var(--primary); color:#fff; }
+
+    @media (max-width:420px){
+      body{ padding:12px; }
+      .id-card{ transform: scale(0.92); transform-origin: center top; }
+    }
+  </style>
 </head>
 <body>
 
   <div id="idcard" class="id-card" role="region" aria-label="Student ID card">
     <div class="watermark" aria-hidden="true"></div>
 
-    <div class="id-header">
+    <div class="id-header" role="heading" aria-level="1">
       <h4>NOORUSSALAM SECONDARY MADRASA</h4>
       <small>Kambippalam - Kerala Estate</small>
       <small>Under SKIMVB | Reg No: 6110</small>
     </div>
 
-    <img src="${escapeHtml(s.PhotoURL)}" alt="Student photo" class="photo">
+    <img src="${escapeHtml(s.PhotoURL)}" alt="Student photo" class="photo" />
 
     <div class="fullname">${escapeHtml(s.FullName)}</div>
 
-    <div class="info">
+    <div class="details" aria-live="polite">
       <p><strong>UID:</strong> ${escapeHtml(s.UID)}</p>
       <p><strong>Admission No:</strong> ${escapeHtml(s.AdmissionNumber)}</p>
       <p><strong>Father's Name:</strong> ${escapeHtml(s.FatherName)}</p>
@@ -213,32 +263,31 @@ document.getElementById('idForm').addEventListener('submit', async (ev) => {
       <p><strong>Address:</strong> ${escapeHtml(s.Address)}</p>
     </div>
 
-    <div style="height:6px;"></div>
   </div>
 
-  <div class="controls">
-    <button class="btn-print" onclick="window.print()">Print ID Card</button>
-    <button class="btn-home" onclick="window.location.href='${location.pathname}'">Back to Home</button>
+  <div class="controls" role="group" aria-label="ID controls">
+    <button class="btn-print" onclick="window.print();">Print ID Card</button>
+    <button class="btn-home" onclick="window.location.href='${location.pathname}';">Back to Home</button>
   </div>
 
 </body>
 </html>`;
 
-    // write full HTML into new tab
+    // write into new tab and close doc
     win.document.open();
     win.document.write(cardHtml);
     win.document.close();
 
   } catch (err) {
     console.error(err);
-    win.document.body.innerHTML = `<div style="text-align:center;color:#b00;font-family:Poppins;padding:30px;">
-      <h3>Error fetching data</h3><p>Please check your Apps Script deployment and console for details.</p></div>`;
+    win.document.body.innerHTML = `<div style="font-family:Nunito,Arial,sans-serif;padding:28px;text-align:center;color:#b91c1c;">
+      <h3>Error fetching data</h3><p>Check Apps Script deployment or network. See console for details.</p></div>`;
   }
 });
 
-/* small helper to avoid HTML injection in template */
+/* helper for safety */
 function escapeHtml(str){
-  if (!str && str !== 0) return '';
+  if (str === null || str === undefined) return '';
   return String(str)
     .replaceAll('&','&amp;')
     .replaceAll('<','&lt;')
@@ -247,5 +296,6 @@ function escapeHtml(str){
     .replaceAll("'",'&#39;');
 }
 </script>
+
 </body>
 </html>
