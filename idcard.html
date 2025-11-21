@@ -54,6 +54,31 @@
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    /* ID Card Styles */
+    .id-card {
+      max-width: 380px;
+      background: white;
+      border-radius: 20px;
+      border: 5px solid #0b5ed7;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .id-header {
+      background: linear-gradient(90deg, #0b5ed7, #74b9ff);
+      color: white;
+      padding: 12px;
+      text-align: center;
+    }
+    .id-header h5 { margin:0; font-size:18px; font-weight:700; line-height:1.3; }
+    .id-header small { font-size:12px; display:block; opacity:0.9; }
+    .id-body { padding: 20px; text-align:center; }
+    .id-photo { width:100px; height:100px; border-radius:50%; object-fit:cover; margin-top:-20px; border:4px solid white; box-shadow:0 0 10px rgba(0,0,0,0.3); }
+    .id-body h5 { color:#0b5ed7; margin-top:10px; font-weight:700; }
+    .id-body p { margin:3px 0; color:#333; font-size:14px; }
+    .qr-code { margin-top:10px; }
+    .academic-year { font-weight:600; color:#0b5ed7; margin-top:8px; font-size:15px; letter-spacing:0.5px; }
+    .btns { margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
   </style>
 </head>
 <body>
@@ -88,11 +113,15 @@
     </form>
   </div>
 
+  <!-- ID Card Container -->
+  <div id="idCardContainer"></div>
+
+  <!-- Libraries for PDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzwNp2D-Kg6yGaiGaP5npYiyGXRoGI3eTrf_DdHCXo-4Lo2mw2kLQEBucmNl5VkQs8R/exec';
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbwINRsXsJEAI1jPEZqXfk-ZPUqZJ-HnC6HF22V3ugJuSYgA2nVf4LC_sAIfZbPvv0gP/exec';
 
     document.getElementById('idForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -104,119 +133,72 @@
       if (!classVal || !rollVal) return alert('Please select class and enter roll number.');
 
       const url = `${scriptURL}?class=${encodeURIComponent(classVal)}&roll=${encodeURIComponent(rollVal)}`;
-
-      // Open new window
-      const newWin = window.open("", "_blank");
-      newWin.document.write(`
-        <div style="text-align:center;font-family:Poppins;color:#0b5ed7;margin-top:50px;">
+      const container = document.getElementById('idCardContainer');
+      
+      // Loading spinner
+      container.style.display = 'block';
+      container.innerHTML = `
+        <div class="text-center my-5">
           <div class="spinner-border text-primary" role="status"></div>
           <p>Loading ID Card...</p>
         </div>
-      `);
+      `;
 
       try {
         const res = await fetch(url);
         const data = await res.json();
 
         if (data.result !== 'success') {
-          newWin.document.body.innerHTML = `<h3 style='color:red;text-align:center;margin-top:50px;'>${data.message}</h3>`;
+          container.innerHTML = `<h3 style="color:red;text-align:center;">${data.message}</h3>`;
           return;
         }
 
         const s = data.student;
-        const qrData = `UID: ${s.UID}, Admission: ${s.AdmissionNumber}, Name: ${s.FullName}, Class: ${s.ClassLevel}, Roll: ${s.RollNumber}`;
+        const qrData = `UID: ${s.UID}, Name: ${s.FullName}, Class: ${s.ClassLevel}, Roll: ${s.RollNumber}`;
         const qrURL = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrData)}&size=150x150`;
 
-        const html = `
-          <html>
-          <head>
-            <title>${s.FullName} | ID Card</title>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-            <style>
-              body {
-                background: #f0f4ff;
-                font-family: 'Poppins', sans-serif;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-                padding: 20px;
-              }
-              .id-card {
-                width: 380px;
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-                overflow: hidden;
-                text-align: center;
-                border: 5px solid #0b5ed7;
-                padding-bottom: 15px;
-              }
-              .id-header {
-                background: linear-gradient(90deg, #0b5ed7, #74b9ff);
-                color: white;
-                padding: 12px;
-              }
-              .id-header h5 { margin:0; font-size:18px; font-weight:700; line-height:1.3; }
-              .id-header small { font-size:12px; display:block; opacity:0.9; }
-              .id-body { padding: 20px; }
-              .id-photo { width:100px; height:100px; border-radius:50%; object-fit:cover; margin-top:-20px; border:4px solid white; box-shadow:0 0 10px rgba(0,0,0,0.3); }
-              .id-body h5 { color:#0b5ed7; margin-top:10px; font-weight:700; }
-              .id-body p { margin:3px 0; color:#333; font-size:14px; }
-              .qr-code { margin-top:10px; }
-              .academic-year { font-weight:600; color:#0b5ed7; margin-top:8px; font-size:15px; letter-spacing:0.5px; }
-              .btns { margin-top:15px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-            </style>
-          </head>
-          <body>
-            <div class="id-card" id="idCard">
-              <div class="id-header">
-                <h5>NOORUSSALAM SECONDARY MADRASA</h5>
-                <small>Kambippalam Kerala Estate, Malappuram Dt.<br>Email: noorussalam6110@gmail.com</small>
-                <small>Under SKIMVB, Reg No:6110</small>
+        container.innerHTML = `
+          <div class="id-card mx-auto p-3" id="idCard">
+            <div class="id-header">
+              <h5>NOORUSSALAM SECONDARY MADRASA</h5>
+              <small>Kambippalam Kerala Estate, Malappuram Dt.<br>Email: noorussalam6110@gmail.com</small>
+              <small>Under SKIMVB, Reg No:6110</small>
+            </div>
+            <div class="id-body">
+              <img src="${s.PhotoURL || 'https://via.placeholder.com/100'}" class="id-photo">
+              <h5>${s.FullName}</h5>
+              <p><strong>UID:</strong> ${s.UID}</p>
+              <p><strong>Admission No:</strong> ${s.AdmissionNumber}</p>
+              <p><strong>Father’s Name:</strong> ${s.FatherName}</p>
+              <p><strong>Class:</strong> ${s.ClassLevel}</p>
+              <p><strong>Roll No:</strong> ${s.RollNumber}</p>
+              <p><strong>Phone:</strong> ${s.Phone}</p>
+              <div class="qr-code my-2">
+                <img src="${qrURL}" alt="QR Code">
+                <p class="academic-year">Academic Year: 2025–26</p>
               </div>
-              <div class="id-body">
-                <img src="${s.PhotoURL || 'https://via.placeholder.com/100'}" alt="Student Photo" class="id-photo">
-                <h5>${s.FullName}</h5>
-                <p><strong>UID:</strong> ${s.UID}</p>
-                <p><strong>Admission No:</strong> ${s.AdmissionNumber}</p>
-                <p><strong>Father’s Name:</strong> ${s.FatherName}</p>
-                <p><strong>Class:</strong> ${s.ClassLevel}</p>
-                <p><strong>Roll No:</strong> ${s.RollNumber}</p>
-                <p><strong>Phone:</strong> ${s.Phone}</p>
-                <div class="qr-code">
-                  <img src="${qrURL}" alt="QR Code">
-                  <p class="academic-year">Academic Year: 2025–26</p>
-                </div>
-                <div class="btns">
-                  <button id="printBtn" class="btn btn-primary btn-sm">Print</button>
-                  <button id="downloadBtn" class="btn btn-success btn-sm">Download PDF</button>
-                </div>
+              <div class="btns">
+                <button id="printBtn" class="btn btn-primary btn-sm">Print</button>
+                <button id="downloadBtn" class="btn btn-success btn-sm">Download PDF</button>
               </div>
             </div>
-
-            <script>
-              const { jsPDF } = window.jspdf;
-              document.getElementById('printBtn').addEventListener('click', () => { window.print(); });
-
-              document.getElementById('downloadBtn').addEventListener('click', () => {
-                html2canvas(document.getElementById('idCard')).then(canvas => {
-                  const imgData = canvas.toDataURL('image/png');
-                  const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[canvas.width, canvas.height] });
-                  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-                  pdf.save('${s.FullName}_ID_Card.pdf');
-                });
-              });
-            </script>
-          </body>
-          </html>
+          </div>
         `;
-        newWin.document.open();
-        newWin.document.write(html);
-        newWin.document.close();
+
+        const { jsPDF } = window.jspdf;
+        document.getElementById('printBtn').addEventListener('click', () => window.print());
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+          html2canvas(document.getElementById('idCard')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[canvas.width, canvas.height] });
+            pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+            pdf.save(`${s.FullName}_ID_Card.pdf`);
+          });
+        });
 
       } catch(err) {
-        newWin.document.body.innerHTML = "<h3 style='color:red;text-align:center;margin-top:50px;'>Error fetching data.</h3>";
+        container.innerHTML = `<h3 style="color:red;text-align:center;">Error fetching data.</h3>`;
+        console.error(err);
       }
     });
   </script>
