@@ -73,6 +73,7 @@
     .name{ text-align:center; font-size:18px; font-weight:700; color:#063a4a; margin-top:6px;}
     .meta{ text-align:center; color:#124; font-weight:600; margin-top:6px; }
 
+    .photo-upload{ display:block; margin:6px auto; }
     .btns{ display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
     .btn{ padding:10px 14px; border-radius:10px; font-weight:800; border:none; cursor:pointer; }
     .btn-png{ background:var(--gold); color:#000; }
@@ -115,7 +116,6 @@
   </script>
 
   <script>
-  // ---------------------------
   const toppers = [
     { class: "1", name: "Ayesha Rahman", mark: "498 / 500", photo: "" },
     { class: "2", name: "Muhammed Shahid", mark: "493 / 500", photo: "" },
@@ -132,9 +132,24 @@
   const CERT_BG = "https://i.ibb.co/Fb5bkwrK/CERTIFICATR.jpg";
   const SIG_SRC = "https://i.ibb.co/YOUR_SIGNATURE_IMAGE.jpg"; // replace with actual signature
 
+  const uploadedPhotos = Array(toppers.length).fill(null);
+
   function placeholderDataURL(){
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="110" cy="84" r="48" fill="#cfeeff"/><rect x="30" y="150" width="160" height="30" rx="15" fill="#cfeeff"/></svg>';
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+  }
+
+  function handlePhotoUpload(input, index){
+    const file = input.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      uploadedPhotos[index] = e.target.result;
+      const card = input.closest(".card");
+      const img = card.querySelector("img");
+      img.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
   }
 
   const grid = document.getElementById("grid");
@@ -145,21 +160,22 @@
     card.innerHTML = `
       <div class="medal">${i+1}</div>
       <div class="photo"><img src="${photoURL}" alt="${escapeHtml(t.name)}"></div>
+      <input type="file" accept="image/*" class="photo-upload" onchange="handlePhotoUpload(this, ${i})">
       <div class="name">${escapeHtml(t.name)}</div>
       <div class="meta">Class ${escapeHtml(t.class)} • ${escapeHtml(t.mark)}</div>
       <div class="btns">
         <button class="btn btn-png" title="Download PNG"
-          onclick="playMedalSound(); downloadPNG(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, ${jsLit(photoURL)} )">
+          onclick="playMedalSound(); downloadPNG(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})">
           <i class="fa fa-file-image"></i>&nbsp;Download PNG
         </button>
 
         <button class="btn btn-pdf" title="Download PDF"
-          onclick="playMedalSound(); downloadPDF(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, ${jsLit(photoURL)} )">
+          onclick="playMedalSound(); downloadPDF(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})">
           <i class="fa fa-file-pdf"></i>&nbsp;Download PDF
         </button>
 
         <button class="btn btn-print" title="Print"
-          onclick="playMedalSound(); printCertificate(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, ${jsLit(photoURL)} )">
+          onclick="playMedalSound(); printCertificate(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})">
           <i class="fa fa-print"></i>&nbsp;Print
         </button>
       </div>
