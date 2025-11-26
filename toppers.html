@@ -19,7 +19,6 @@
   --accent:#0d6efd;
   --gold:#ffd700;
   --card-radius:14px;
-  --max-width:1100px;
   --bg1:#eef9ff;
 }
 body{
@@ -40,10 +39,18 @@ header p{margin:0;color:#0b3b50;opacity:.85}
 .card{
   background:#fff;border-radius:var(--card-radius);padding:14px;box-shadow:0 8px 20px rgba(2,6,23,0.06);
   border:2px solid rgba(255,215,0,0.25);position:relative;
+  overflow:hidden;
 }
 .medal{
   width:56px;height:56px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;margin:6px auto;font-size:20px;
+  animation: shine 1.5s infinite alternate;
 }
+@keyframes shine {
+  0%{ transform: scale(1) rotate(0deg); box-shadow:0 0 4px #ffd700; }
+  50%{ transform: scale(1.1) rotate(10deg); box-shadow:0 0 12px #ffd700; }
+  100%{ transform: scale(1) rotate(-5deg); box-shadow:0 0 6px #ffd700; }
+}
+
 .photo{ width:110px;height:110px;border-radius:50%;overflow:hidden;margin:10px auto;border:3px solid var(--accent);background:#f6fbff }
 .photo img{ width:100%;height:100%;object-fit:cover;display:block }
 .photo-upload{ display:block;margin:8px auto; }
@@ -60,12 +67,19 @@ footer{ text-align:center;color:#345;margin-top:18px;font-size:14px }
 
 .reset-btn{ background:#ef4444;color:#fff;padding:8px 12px;border-radius:8px;border:none }
 
-/* Modal */
+/* Preview Modal */
 #previewModal{
   position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:9999;
 }
 #previewModal img{max-width:90%;max-height:90%;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.4);}
 #previewModal .close{position:absolute;top:20px;right:30px;font-size:28px;color:#fff;cursor:pointer;font-weight:700;}
+
+/* Download animation */
+#downloadAnim{
+  position:fixed;width:60px;height:60px;z-index:10000;
+  pointer-events:none;
+  background: url('https://cdn-icons-png.flaticon.com/512/1828/1828817.png') no-repeat center/contain;
+}
 </style>
 </head>
 <body>
@@ -76,7 +90,7 @@ footer{ text-align:center;color:#345;margin-top:18px;font-size:14px }
   </header>
 
   <div class="controls">
-    <label class="small"><strong>Certificate Background Loaded from Online Server</strong></label>
+    <button class="reset-btn" id="resetAll">Reset All Saved Photos</button>
   </div>
 
   <div id="grid" class="grid" aria-live="polite"></div>
@@ -90,12 +104,13 @@ footer{ text-align:center;color:#345;margin-top:18px;font-size:14px }
   <img id="previewImage" src="">
 </div>
 
+<!-- Sound -->
+<audio id="certSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
+<div id="downloadAnim"></div>
+
 <script>
-/* ---------------------------
-   SETTINGS
----------------------------- */
-const CERT_BG = "https://i.ibb.co/DfHWdhtC/TOPPER.jpg";
-const SIG_SRC  = ""; // Add signature if needed
+const CERT_BG = "https://i.ibb.co/dwRcjKZP/TOPPER.jpg";
+const SIG_SRC  = ;
 
 const toppers = [
   { class: "1", name: "Ayesha Rahman", mark: "498 / 500" },
@@ -122,23 +137,6 @@ function placeholderDataURL(){
   return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
 }
 
-/* ---------------------------
-   FLOATING MEDAL SETTINGS
----------------------------- */
-let floatOffset = 0;
-let floatDirection = 1;
-const floatRange = 8; // max pixels up/down
-
-function animateMedals(){
-  floatOffset += 0.5*floatDirection;
-  if(floatOffset>floatRange || floatOffset<-floatRange) floatDirection*=-1;
-  requestAnimationFrame(animateMedals);
-}
-animateMedals();
-
-/* ---------------------------
-   BUILD GRID
----------------------------- */
 const grid=document.getElementById('grid');
 toppers.forEach((t,i)=>{
   const photoURL=uploadedPhotos[i]||placeholderDataURL();
@@ -159,9 +157,6 @@ toppers.forEach((t,i)=>{
   grid.appendChild(card);
 });
 
-/* ---------------------------
-   PHOTO UPLOAD HANDLER
----------------------------- */
 function handlePhotoUpload(input,index){
   const file=input.files[0]; if(!file) return;
   const reader=new FileReader();
@@ -173,17 +168,19 @@ function handlePhotoUpload(input,index){
   reader.readAsDataURL(file);
 }
 
-/* ---------------------------
-   LOAD IMAGE UTILITY
----------------------------- */
+document.getElementById('resetAll').onclick=()=>{
+  if(!confirm("Clear all photos?")) return;
+  for(let i=0;i<toppers.length;i++){
+    localStorage.removeItem(`topperPhoto_${i}`);
+    uploadedPhotos[i]=null;
+  }
+  location.reload();
+};
+
 function loadImage(src){ return new Promise((res,rej)=>{ const img=new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.onerror=()=>rej(); img.src=src; }); }
 
-/* ---------------------------
-   RENDER CERTIFICATE
----------------------------- */
 async function renderCertificateCanvas(name,cls,mark,photo,index){
-  const w=1125,h=1500;
-  const canvas=document.createElement("canvas");
+  const w=1125,h=1500,canvas=document.createElement("canvas");
   canvas.width=w; canvas.height=h;
   const ctx=canvas.getContext("2d");
 
@@ -192,11 +189,9 @@ async function renderCertificateCanvas(name,cls,mark,photo,index){
 
   const cx=w/2, cy=h/2, r=210;
 
-  // Photo halo
   ctx.beginPath(); ctx.arc(cx,cy,r*1.1,0,2*Math.PI);
   ctx.fillStyle="rgba(255,223,0,0.2)"; ctx.fill();
 
-  // Photo
   if(photo){
     const img=await loadImage(photo);
     const temp=document.createElement("canvas");
@@ -206,62 +201,72 @@ async function renderCertificateCanvas(name,cls,mark,photo,index){
     tctx.drawImage(img,(temp.width-img.width*scale)/2,(temp.height-img.height*scale)/2,img.width*scale,img.height*scale);
     ctx.save();
     ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.clip();
-    ctx.drawImage(temp,cx-r,cy-r); ctx.restore();
+    ctx.drawImage(temp,cx-r,cy-r);
+    ctx.restore();
   }
 
-  // Floating medal
-  const medalR=56;
-  ctx.beginPath(); ctx.arc(cx, cy-r-40-floatOffset, medalR/2, 0, 2*Math.PI);
-  ctx.fillStyle="#ffd700"; ctx.fill();
-  ctx.fillStyle="#000"; ctx.font="bold 28px sans-serif"; ctx.textAlign="center";
-  ctx.fillText(`${index+1}`, cx, cy-r-35-floatOffset);
+  const medalRadius=28;
+  const angle=(Date.now()%3600)/10;
+  ctx.save();
+  ctx.translate(cx, cy-r-40);
+  ctx.rotate((angle*Math.PI)/180);
+  const gradient = ctx.createRadialGradient(0,0,medalRadius*0.3,0,0,medalRadius);
+  gradient.addColorStop(0,"#fff"); gradient.addColorStop(0.5,"#ffd700"); gradient.addColorStop(1,"#ffb700");
+  ctx.fillStyle=gradient;
+  ctx.beginPath(); ctx.arc(0,0,medalRadius,0,2*Math.PI); ctx.fill();
+  ctx.fillStyle="#000"; ctx.font="bold 28px sans-serif"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(`${index+1}`,0,0);
+  ctx.restore();
 
-  // Photo ring
-  ctx.beginPath(); ctx.arc(cx,cy,r+12,0,2*Math.PI);
-  ctx.strokeStyle="#ffd700"; ctx.lineWidth=18; ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx,cy,r+12,0,2*Math.PI); ctx.strokeStyle="#ffd700"; ctx.lineWidth=18; ctx.stroke();
 
-  // Name & class/marks
   ctx.fillStyle="#073045"; ctx.textAlign="center";
   ctx.font="bold 60px sans-serif"; ctx.fillText(name,cx,cy+r+80);
   ctx.font="32px sans-serif"; ctx.fillText(`Class: ${cls} | Marks: ${mark}`,cx,cy+r+140);
 
-  // Date
   const d=new Date(); ctx.textAlign="left"; ctx.font="26px sans-serif";
   ctx.fillText(d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}),80,h-140);
+
+  if(SIG_SRC){
+    const sig=await loadImage(SIG_SRC); const sw=380; const sh=sig.height*(sw/sig.width);
+    ctx.drawImage(sig,w-100-sw,h-260-sh,sw,sh);
+  }
 
   return canvas;
 }
 
-/* ---------------------------
-   PREVIEW / DOWNLOAD / PRINT
----------------------------- */
-async function previewCertificate(name,cls,mark,photo,type,index){
-  const c = await renderCertificateCanvas(name,cls,mark,photo,index);
-  const img = c.toDataURL("image/png");
-  const modal = document.getElementById('previewModal');
-  const previewImg = document.getElementById('previewImage');
-  previewImg.src = img; modal.style.display="flex";
+// Download animation
+function animateDownload(btn){
+  const anim=document.getElementById("downloadAnim");
+  const rect=btn.getBoundingClientRect();
+  anim.style.left=rect.left+"px"; anim.style.top=rect.top+"px";
+  anim.style.display="block";
+  anim.animate([{transform:"translate(0,0) scale(1) rotate(0deg)", opacity:1},
+                {transform:"translate(80vw,-80vh) scale(0.2) rotate(720deg)", opacity:0}], 
+               {duration:1000, easing:"ease-in-out"});
+  setTimeout(()=>{anim.style.display="none";},1000);
+}
 
-  previewImg.onclick = () => {
-    if(type==="png"){ 
-      const a=document.createElement("a"); a.href=img; a.download=`${name.replace(/\s+/g,'_')}.png`; a.click(); confetti();
-    }
-    else if(type==="pdf"){ 
-      const { jsPDF } = window.jspdf; 
-      const pdf=new jsPDF({orientation:"portrait",unit:"px",format:[1125,1500]});
-      pdf.addImage(img,"PNG",0,0,1125,1500); pdf.save(`${name.replace(/\s+/g,'_')}.pdf`); confetti();
-    }
-    else if(type==="print"){ 
-      const w=window.open(""); w.document.write(`<img src="${img}" style="width:100%">`); w.document.close(); 
-      setTimeout(()=>w.print(),500); confetti();
-    }
+// Preview + Download/Print + Sound + Animation
+async function previewCertificate(name,cls,mark,photo,type,index){
+  document.getElementById("certSound").play();
+  animateDownload(event.currentTarget);
+
+  const c=await renderCertificateCanvas(name,cls,mark,photo,index);
+  const img=c.toDataURL("image/png");
+  const modal=document.getElementById("previewModal");
+  const previewImg=document.getElementById("previewImage");
+  previewImg.src=img; modal.style.display="flex";
+
+  previewImg.onclick=()=>{
+    if(type==="png"){ const a=document.createElement("a"); a.href=img; a.download=`${name.replace(/\s+/g,'_')}.png`; a.click(); confetti(); }
+    else if(type==="pdf"){ const { jsPDF } = window.jspdf; const pdf=new jsPDF({orientation:"portrait",unit:"px",format:[1125,1500]}); pdf.addImage(img,"PNG",0,0,1125,1500); pdf.save(`${name.replace(/\s+/g,'_')}.pdf`); confetti(); }
+    else if(type==="print"){ const w=window.open(""); w.document.write(`<img src="${img}" style="width:100%">`); w.document.close(); setTimeout(()=>w.print(),500); confetti(); }
   }
 }
 
-/* ---------------------------
-   MODAL CLOSE
----------------------------- */
-function closePreview(){ document.getElementById('previewModal').style.display="none"; }
+function closePreview(){ document.getElementById("previewModal").style.display="none"; }
+
 </script>
 </body>
 </html>
