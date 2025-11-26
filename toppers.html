@@ -81,7 +81,6 @@
 
     footer{ margin-top:30px; text-align:center; color:#083a4a; opacity:.9; }
 
-    /* small screens */
     @media (max-width:520px){ .btns{flex-direction:column} .photo{width:100px;height:100px} }
   </style>
 </head>
@@ -97,7 +96,6 @@
     <footer>© Noorussalam Madrasa — Certificates include English + Arabic • Auto date • Principal signature</footer>
   </div>
 
-  <!-- small in-browser medal sound (no external file) -->
   <script>
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     const audioCtx = AudioCtx ? new AudioCtx() : null;
@@ -131,30 +129,22 @@
     { class: "9", name: "Yusuf T", mark: "488 / 500", photo: "" },
     { class: "10", name: "Saniya F", mark: "495 / 500", photo: "" }
   ];
-  // ---------------------------
-  // local filenames for certificate background & principal signature
-  // Place these files in same folder as this HTML:
-  // - CERTIFICATR.jpg
-  // - WhatsApp Image 2025-11-26 at 11.41.41 AM.jpeg
   const CERT_BG = "CERTIFICATR.jpg";
   const SIG_SRC = "WhatsApp Image 2025-11-26 at 11.41.41 AM.jpeg";
 
-  // small SVG placeholder if no photo provided
   function placeholderDataURL(){
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="110" cy="84" r="48" fill="#cfeeff"/><rect x="30" y="150" width="160" height="30" rx="15" fill="#cfeeff"/></svg>';
     return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
   }
 
-  // render cards
   const grid = document.getElementById("grid");
-  toppers.forEach(t => {
+  toppers.forEach((t,i) => {
     const photoURL = t.photo && t.photo.length ? t.photo : placeholderDataURL();
-
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <div class="medal">1</div>
+      <div class="medal">${i+1}</div>
       <div class="photo"><img src="${photoURL}" alt="${escapeHtml(t.name)}"></div>
       <div class="name">${escapeHtml(t.name)}</div>
       <div class="meta">Class ${escapeHtml(t.class)} • ${escapeHtml(t.mark)}</div>
@@ -178,25 +168,18 @@
     grid.appendChild(card);
   });
 
-  // helpers
   function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
   function jsLit(s){ if(s===undefined||s===null) return "''"; return "'" + String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'"; }
 
-  // Certificate generation:
-  // - PNG export using canvas.toDataURL("image/png")
-  // - PDF export using jsPDF (A4 landscape)
-  // - Print opens a new tab with the PNG and prints
   async function renderCertificateCanvas(name, cls, mark, photoURL){
     const w = 1920, h = 1280;
     const canvas = document.createElement("canvas");
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext("2d");
 
-    // load background & signature
     const bg = await loadImage(CERT_BG);
     ctx.drawImage(bg, 0, 0, w, h);
 
-    // optional student photo (circle left)
     if(photoURL){
       try{
         const photo = await loadImage(photoURL);
@@ -208,39 +191,24 @@
         ctx.clip();
         ctx.drawImage(photo, px, py, pr, pr);
         ctx.restore();
-      }catch(e){
-        // ignore photo error
-      }
+      }catch(e){}
     }
 
-    // Text: dual-language
     ctx.textAlign = "center";
     ctx.fillStyle = "#000";
-
-    // Title English
     ctx.font = "bold 72px Poppins";
     ctx.fillText("Certificate of Excellence", w/2, 300);
-
-    // Title Arabic
     ctx.font = "bold 64px Amiri, serif";
     ctx.fillText("شهادة التفوق", w/2, 365);
-
-    // Name English
     ctx.font = "bold 82px Poppins";
     ctx.fillText(name, w/2, 520);
-
-    // Name Arabic (repeat)
     ctx.font = "bold 70px Amiri, serif";
     ctx.fillText(name, w/2, 600);
-
-    // Class & mark
     ctx.font = "40px Poppins";
     ctx.fillText(`Class: ${cls}   |   Marks: ${mark}`, w/2, 700);
-
     ctx.font = "36px Amiri, serif";
     ctx.fillText(`الصف: ${cls}   |   الدرجات: ${mark}`, w/2, 760);
 
-    // Auto date bottom-left (English)
     const today = new Date();
     const opts = { day: "numeric", month: "long", year: "numeric" };
     const dateStr = today.toLocaleDateString("en-GB", opts);
@@ -248,14 +216,11 @@
     ctx.font = "28px Poppins";
     ctx.fillText(dateStr, 140, h - 160);
 
-    // Signature bottom-right
     try{
       const sig = await loadImage(SIG_SRC);
       const sigW = 380, sigH = 150;
       ctx.drawImage(sig, w - 560, h - 360, sigW, sigH);
-    }catch(e){
-      // signature load fail silently
-    }
+    }catch(e){}
 
     return canvas;
   }
@@ -270,7 +235,22 @@
     });
   }
 
-  // Download PNG
+  function celebrateConfetti() {
+    const colors = ['#ffd700', '#0d6efd', '#2dd4bf', '#ff6b6b', '#8e44ad', '#1abc9c'];
+    for(let i=0; i<3; i++){
+      confetti({
+        particleCount: 50 + Math.floor(Math.random()*50),
+        spread: 60 + Math.random()*40,
+        startVelocity: 40 + Math.random()*40,
+        gravity: 0.7 + Math.random()*0.3,
+        decay: 0.9 + Math.random()*0.05,
+        scalar: 0.8 + Math.random()*0.4,
+        origin: { x: Math.random(), y: Math.random() * 0.6 },
+        colors: colors
+      });
+    }
+  }
+
   async function downloadPNG(name, cls, mark, photoURL){
     try{
       const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
@@ -279,32 +259,28 @@
       a.href = data;
       a.download = `${name.replace(/\s+/g,'_')}_certificate.png`;
       a.click();
-      // confetti
-      confetti({ particleCount:150, spread:90, startVelocity:60 });
+      celebrateConfetti();
     }catch(e){
       alert("Failed to generate PNG: " + e.message);
       console.error(e);
     }
   }
 
-  // Download PDF (A4 landscape) using jsPDF
   async function downloadPDF(name, cls, mark, photoURL){
     try{
       const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
       const imgData = canvas.toDataURL("image/png");
       const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1122, 793] }); // A4 landscape approx in px
-      // add image full page
+      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1122, 793] });
       pdf.addImage(imgData, 'PNG', 0, 0, 1122, 793);
       pdf.save(`${name.replace(/\s+/g,'_')}_certificate.pdf`);
-      confetti({ particleCount:120, spread:80, startVelocity:45 });
+      celebrateConfetti();
     }catch(e){
       alert("Failed to generate PDF: " + e.message);
       console.error(e);
     }
   }
 
-  // Print: open new window with PNG and call print
   async function printCertificate(name, cls, mark, photoURL){
     try{
       const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
@@ -312,12 +288,13 @@
       const w = window.open("");
       w.document.write(`<img src="${data}" style="width:100%;height:auto">`);
       w.document.close();
-      setTimeout(()=>{ w.print(); }, 600);
+      setTimeout(()=>{ w.print(); celebrateConfetti(); }, 600);
     }catch(e){
       alert("Failed to prepare print: " + e.message);
       console.error(e);
     }
   }
+
   </script>
 </body>
 </html>
