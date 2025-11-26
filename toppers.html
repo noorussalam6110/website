@@ -3,219 +3,379 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Annual Examination Topper - Noorussalam Madrasa</title>
+  <title>Class Topper Certificate Generator — Noorussalam Madrasa</title>
 
-  <!-- Fonts -->
+  <!-- Fonts & icons -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Amiri&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
   <!-- Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- jsPDF for PDF export -->
+  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     :root{
       --accent:#0d6efd;
       --gold:#ffd700;
-      --card-radius:16px;
+      --card-radius:14px;
       --max-width:1100px;
-      --bg1:#e7f8ff;
-      --bg2:#bfe6ff;
+      --bg1:#eef9ff;
     }
-    html,body{height:100%}
     body{
       margin:0;
       font-family:"Poppins",sans-serif;
-      background: linear-gradient(120deg,var(--bg1),var(--bg2));
-      background-size:300% 300%;
-      animation: bgMove 12s infinite ease-in-out;
+      background:var(--bg1);
       color:#073045;
       padding:20px;
     }
-    @keyframes bgMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-    .wrap{max-width:var(--max-width);margin:0 auto 60px;}
-    header{text-align:center;margin-bottom:18px}
-    header h1{color:var(--accent);margin:6px 0;font-size:32px;font-weight:700}
-    header h2{color:#124;margin:4px 0;font-size:24px;font-weight:600}
+    .wrap{max-width:1100px;margin:0 auto 60px;}
+    header{text-align:center;margin-bottom:14px}
+    header h1{color:#073045;margin:6px 0;font-size:28px;font-weight:700}
     header p{margin:0;color:#0b3b50;opacity:.85}
 
-    .sub{ text-align:center;color:#083a4a;opacity:.85;margin-bottom:20px }
-
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
     @media(max-width:820px){ .grid{grid-template-columns:1fr} }
 
     .card{
-      background:linear-gradient(180deg,#fff,#fbfeff);
-      border-radius:var(--card-radius);
-      padding:18px;
-      box-shadow:0 12px 28px rgba(2,6,23,0.06);
-      border:3px solid rgba(255,215,0,0.65);
-      position:relative; overflow:hidden;
-      transition:transform .22s ease, box-shadow .22s ease;
+      background:#fff;border-radius:var(--card-radius);padding:14px;box-shadow:0 8px 20px rgba(2,6,23,0.06);
+      border:2px solid rgba(255,215,0,0.25);
     }
-    .card:hover{ transform:translateY(-6px); box-shadow:0 20px 40px rgba(2,6,23,0.12); }
+    .medal{ width:56px;height:56px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;margin:6px auto;font-size:20px }
+    .photo{ width:110px;height:110px;border-radius:50%;overflow:hidden;margin:10px auto;border:3px solid var(--accent);background:#f6fbff }
+    .photo img{ width:100%;height:100%;object-fit:cover;display:block }
+    .photo-upload{ display:block;margin:8px auto; }
+    .name{ text-align:center;font-weight:700;margin-top:6px }
+    .meta{ text-align:center;color:#0a3b45;font-weight:600;margin-top:6px }
+    .btns{ display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap }
+    .btn{ padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700 }
+    .btn-png{ background:var(--gold); color:#000 }
+    .btn-pdf{ background:#0d6efd;color:#fff }
+    .btn-print{ background:#10b981;color:#032 }
+    .controls{ display:flex;gap:8px;align-items:center;justify-content:center;margin:14px 0 }
+    .small{ font-size:13px;color:#445; }
+    footer{ text-align:center;color:#345;margin-top:18px;font-size:14px }
 
-    .card::after{
-      content:"";
-      position:absolute; top:-150%; left:-120%; width:240%; height:340%;
-      transform:rotate(22deg);
-      background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
-      animation:shine 5s linear infinite; pointer-events:none;
-    }
-    @keyframes shine{0%{transform:translateX(-140%) rotate(22deg)}30%{transform:translateX(140%) rotate(22deg)}100%{transform:translateX(140%) rotate(22deg)}}
-
-    .medal{ width:68px;height:68px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;margin:auto;font-size:22px;box-shadow:0 6px 18px rgba(255,215,0,0.5) }
-    .photo{ width:120px;height:120px;border-radius:50%;overflow:hidden;margin:12px auto;border:4px solid var(--accent);box-shadow:0 8px 20px rgba(13,110,253,0.14) }
-    .photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-    .name{ text-align:center; font-size:18px; font-weight:700; color:#063a4a; margin-top:6px;}
-    .meta{ text-align:center; color:#124; font-weight:600; margin-top:6px; }
-
-    .photo-upload{ display:block; margin:6px auto; }
-    .btns{ display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap; }
-    .btn{ padding:10px 14px; border-radius:10px; font-weight:800; border:none; cursor:pointer; }
-    .btn-png{ background:var(--gold); color:#000; }
-    .btn-pdf{ background: #0d6efd; color:#fff; }
-    .btn-print{ background:#2dd4bf; color:#063a4a; }
-
-    footer{ margin-top:30px; text-align:center; color:#083a4a; opacity:.9; }
-
-    @media (max-width:520px){ .btns{flex-direction:column} .photo{width:100px;height:100px} }
+    .reset-btn{ background:#ef4444;color:#fff;padding:8px 12px;border-radius:8px;border:none }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>NOORUSSALAM MADRASA</h1>
-      <h2>Annual Examination — Class Topper</h2>
-      <p class="sub">Certificates include English + Arabic • Auto date • Principal signature</p>
+      <p class="small">Annual Examination — Class Topper • Upload photo & generate certificate (PNG / PDF / Print)</p>
     </header>
+
+    <div class="controls">
+      <label class="small">Certificate background file used: <strong>TOPPER.jpg</strong> (place in same folder)</label>
+      <button class="reset-btn" id="resetAll">Reset All Saved Photos</button>
+    </div>
 
     <div id="grid" class="grid" aria-live="polite"></div>
 
-    <footer>© Noorussalam Madrasa — All Rights Reserved</footer>
+    <footer>© Noorussalam Madrasa — Auto-date added to certificate</footer>
   </div>
 
-  <script>
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    const audioCtx = AudioCtx ? new AudioCtx() : null;
-    function playMedalSound(){
-      if(!audioCtx) return;
-      try{
-        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.type = 'sine'; o.frequency.setValueAtTime(880, audioCtx.currentTime);
-        g.gain.setValueAtTime(0.0, audioCtx.currentTime);
-        g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
-        o.connect(g); g.connect(audioCtx.destination);
-        o.start(); o.stop(audioCtx.currentTime + 0.5);
-      }catch(e){}
-    }
-  </script>
+<script>
+/* --------------------------
+  CONFIG - edit if needed
+   - CERT_BG: filename (place in same folder) or HTTPS URL
+   - SIG_SRC: signature image file or leave blank
+--------------------------- */
+const CERT_BG = "https://i.ibb.co/nKM1x6N/TOPPER.jpg";            // your provided JPG (place next to HTML)
+const SIG_SRC  = "signature.jpg";        // optional: place signature.jpg next to HTML or use HTTPS URL
 
-  <script>
-  const toppers = [
-    { class: "1", name: "Ayesha Rahman", mark: "498 / 500", photo: "" },
-    { class: "2", name: "Muhammed Shahid", mark: "493 / 500", photo: "" },
-    { class: "3", name: "Nimra Sameer", mark: "487 / 500", photo: "" },
-    { class: "4", name: "Faris P", mark: "489 / 500", photo: "" },
-    { class: "5", name: "Shamil N", mark: "491 / 500", photo: "" },
-    { class: "6", name: "Hana M", mark: "480 / 500", photo: "" },
-    { class: "7", name: "Riyas M", mark: "485 / 500", photo: "" },
-    { class: "8", name: "Zainab K", mark: "492 / 500", photo: "" },
-    { class: "9", name: "Yusuf T", mark: "488 / 500", photo: "" },
-    { class: "10", name: "Saniya F", mark: "495 / 500", photo: "" }
-  ];
+/* toppers list - edit names / classes / marks as needed */
+const toppers = [
+  { class: "1", name: "Ayesha Rahman", mark: "498 / 500" },
+  { class: "2", name: "Muhammed Shahid", mark: "493 / 500" },
+  { class: "3", name: "Nimra Sameer", mark: "487 / 500" },
+  { class: "4", name: "Faris P", mark: "489 / 500" },
+  { class: "5", name: "Shamil N", mark: "491 / 500" },
+  { class: "6", name: "Hana M", mark: "480 / 500" },
+  { class: "7", name: "Riyas M", mark: "485 / 500" },
+  { class: "8", name: "Zainab K", mark: "492 / 500" },
+  { class: "9", name: "Yusuf T", mark: "488 / 500" },
+  { class: "10", name: "Saniya F", mark: "495 / 500" }
+];
 
-  const CERT_BG = "https://i.ibb.co/Fb5bkwrK/CERTIFICATR.jpg";
-  const SIG_SRC = "https://i.ibb.co/YOUR_SIGNATURE_IMAGE.jpg"; // replace with actual signature
+const uploadedPhotos = Array(toppers.length).fill(null);
 
-  const uploadedPhotos = Array(toppers.length).fill(null);
+/* load saved photos from localStorage */
+for(let i=0;i<toppers.length;i++){
+  const saved = localStorage.getItem(`topperPhoto_${i}`);
+  if(saved) uploadedPhotos[i] = saved;
+}
 
-  function placeholderDataURL(){
-    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="110" cy="84" r="48" fill="#cfeeff"/><rect x="30" y="150" width="160" height="30" rx="15" fill="#cfeeff"/></svg>';
-    return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-  }
+/* helpers */
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function jsLit(s){ if(s===undefined||s===null) return "''"; return "'" + String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'"; }
 
-  function handlePhotoUpload(input, index){
-    const file = input.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e){
-      uploadedPhotos[index] = e.target.result;
-      const card = input.closest(".card");
-      const img = card.querySelector("img");
-      img.src = e.target.result;
-    }
-    reader.readAsDataURL(file);
-  }
+/* placeholder */
+function placeholderDataURL(){
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="200" cy="150" r="90" fill="#cfeeff"/><rect x="80" y="300" width="240" height="40" rx="18" fill="#cfeeff"/></svg>';
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
 
-  const grid = document.getElementById("grid");
-  toppers.forEach((t,i) => {
-    const photoURL = t.photo && t.photo.length ? t.photo : placeholderDataURL();
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <div class="medal">${i+1}</div>
-      <div class="photo"><img src="${photoURL}" alt="${escapeHtml(t.name)}"></div>
-      <input type="file" accept="image/*" class="photo-upload" onchange="handlePhotoUpload(this, ${i})">
-      <div class="name">${escapeHtml(t.name)}</div>
-      <div class="meta">Class ${escapeHtml(t.class)} • ${escapeHtml(t.mark)}</div>
-      <div class="btns">
-        <button class="btn btn-png" title="Download PNG"
-          onclick="playMedalSound(); downloadPNG(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})">
-          <i class="fa fa-file-image"></i>&nbsp;Download PNG
-        </button>
+/* build UI cards */
+const grid = document.getElementById('grid');
+toppers.forEach((t,i) => {
+  const photoURL = uploadedPhotos[i] || placeholderDataURL();
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="medal">${i+1}</div>
+    <div class="photo"><img src="${photoURL}" alt="${escapeHtml(t.name)}"></div>
+    <input type="file" accept="image/*" class="photo-upload" onchange="handlePhotoUpload(this, ${i})">
+    <div class="name">${escapeHtml(t.name)}</div>
+    <div class="meta">Class ${escapeHtml(t.class)} • ${escapeHtml(t.mark)}</div>
+    <div class="btns">
+      <button class="btn btn-png" title="Download PNG" onclick="playMedalSound(); generatePNG(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})"><i class="fa fa-file-image"></i>&nbsp;PNG</button>
+      <button class="btn btn-pdf" title="Download PDF" onclick="playMedalSound(); generatePDF(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})"><i class="fa fa-file-pdf"></i>&nbsp;PDF</button>
+      <button class="btn btn-print" title="Print" onclick="playMedalSound(); generatePrint(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})"><i class="fa fa-print"></i>&nbsp;Print</button>
+    </div>
+  `;
+  grid.appendChild(card);
+});
 
-        <button class="btn btn-pdf" title="Download PDF"
-          onclick="playMedalSound(); downloadPDF(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})">
-          <i class="fa fa-file-pdf"></i>&nbsp;Download PDF
-        </button>
+/* handle uploads and persist */
+function handlePhotoUpload(input, index){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    uploadedPhotos[index] = e.target.result;
+    localStorage.setItem(`topperPhoto_${index}`, e.target.result);
+    const card = input.closest('.card');
+    const img = card.querySelector('img');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-        <button class="btn btn-print" title="Print"
-          onclick="playMedalSound(); printCertificate(${jsLit(t.name)}, ${jsLit(t.class)}, ${jsLit(t.mark)}, uploadedPhotos[${i}] || ${jsLit(photoURL)})">
-          <i class="fa fa-print"></i>&nbsp;Print
-        </button>
-      </div>
-    `;
-    grid.appendChild(card);
+/* reset all saved photos */
+document.getElementById('resetAll').addEventListener('click', ()=> {
+  if(!confirm('Clear all saved uploaded photos?')) return;
+  for(let i=0;i<toppers.length;i++){ localStorage.removeItem(`topperPhoto_${i}`); uploadedPhotos[i] = null; }
+  document.querySelectorAll('.photo img').forEach((img,idx)=> img.src = placeholderDataURL());
+  alert('All saved photos cleared.');
+});
+
+/* small medal sound */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const audioCtx = AudioCtx ? new AudioCtx() : null;
+function playMedalSound(){
+  if(!audioCtx) return;
+  try{
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(880, audioCtx.currentTime);
+    g.gain.setValueAtTime(0.0, audioCtx.currentTime);
+    g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.5);
+  }catch(e){}
+}
+
+/* image loader with crossOrigin */
+function loadImage(src){
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    // allow CORS for remote images; for local files served with file:// this may still work
+    img.crossOrigin = "anonymous";
+    img.onload = () => res(img);
+    img.onerror = () => rej(new Error('Image load error: ' + src));
+    img.src = src;
   });
+}
 
-  function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m]); }
-  function jsLit(s){ if(s===undefined||s===null) return "''"; return "'" + String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'"; }
+/* certificate rendering:
+   adjust canvas size to match portrait certificate (we use 1125 x 1500 here)
+   draw CERT_BG full-cover then overlay text, photo circle and signature
+*/
+async function renderCertificateCanvas(name, cls, mark, photoURL){
+  const w = 1125, h = 1500; // portrait
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
 
-  async function renderCertificateCanvas(name, cls, mark, photoURL){
-    const w=1920, h=1280;
-    const canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
-    const ctx=canvas.getContext("2d");
-
-    try { const bg=await loadImage(CERT_BG); ctx.drawImage(bg,0,0,w,h);} catch(e){ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);}
-    if(photoURL){try{const photo=await loadImage(photoURL);const px=260,py=470,pr=200;ctx.save();ctx.beginPath();ctx.arc(px+pr/2,py+pr/2,pr/2,0,Math.PI*2);ctx.closePath();ctx.clip();ctx.drawImage(photo,px,py,pr,pr);ctx.restore();}catch(e){}}
-
-    ctx.textAlign="center";ctx.fillStyle="#000";
-    ctx.font="bold 72px Poppins"; ctx.fillText("Certificate of Excellence", w/2, 300);
-    ctx.font="bold 64px Amiri, serif"; ctx.fillText("شهادة التفوق", w/2, 365);
-    ctx.font="bold 82px Poppins"; ctx.fillText(name,w/2,520);
-    ctx.font="bold 70px Amiri, serif"; ctx.fillText(name,w/2,600);
-    ctx.font="40px Poppins"; ctx.fillText(`Class: ${cls}   |   Marks: ${mark}`, w/2,700);
-    ctx.font="36px Amiri, serif"; ctx.fillText(`الصف: ${cls}   |   الدرجات: ${mark}`, w/2,760);
-
-    const today=new Date(); const opts={day:"numeric",month:"long",year:"numeric"}; const dateStr=today.toLocaleDateString("en-GB",opts);
-    ctx.textAlign="left"; ctx.font="28px Poppins"; ctx.fillText(dateStr,140,h-160);
-
-    try{const sig=await loadImage(SIG_SRC);const sigW=380,sigH=150;ctx.drawImage(sig,w-560,h-360,sigW,sigH);}catch(e){}
-    return canvas;
+  // draw background
+  try{
+    const bg = await loadImage(CERT_BG);
+    // draw centered and cover
+    const bgRatio = bg.width / bg.height;
+    const canvasRatio = w / h;
+    let bw = w, bh = h;
+    if(bgRatio > canvasRatio){
+      // bg wider -> fit height
+      bh = h; bw = bg.width * (h / bg.height);
+    } else {
+      bw = w; bh = bg.height * (w / bg.width);
+    }
+    const bx = (w - bw) / 2, by = (h - bh) / 2;
+    ctx.drawImage(bg, bx, by, bw, bh);
+  }catch(e){
+    // fallback background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0,0,w,h);
   }
 
-  function loadImage(src){return new Promise((res,rej)=>{const img=new Image();img.crossOrigin="anonymous";img.onload=()=>res(img);img.onerror=()=>rej(new Error("Image load error: "+src));img.src=src;});}
+  // define photo circle position based on your provided template (near top-center)
+  // tweak these numbers if needed to better match the white circle on the background image
+  const circleX = w / 2;          // center
+  const circleY = 370;            // vertical position (approx)
+  const circleR = 220;            // radius
 
-  function celebrateConfetti(){const colors=['#ffd700','#0d6efd','#2dd4bf','#ff6b6b','#8e44ad','#1abc9c'];for(let i=0;i<3;i++){confetti({particleCount:50+Math.floor(Math.random()*50),spread:60+Math.random()*40,startVelocity:40+Math.random()*40,gravity:0.7+Math.random()*0.3,decay:0.9+Math.random()*0.05,scalar:0.8+Math.random()*0.4,origin:{x:Math.random(),y:Math.random()*0.6},colors:colors});}}
+  // draw student photo inside clipped circle
+  if(photoURL){
+    try{
+      const pimg = await loadImage(photoURL);
+      // draw photo covering the circle
+      // compute square crop to keep aspect cover
+      const side = Math.max(pimg.width, pimg.height);
+      // draw into an offscreen canvas to scale/crop nicely
+      const oc = document.createElement('canvas');
+      oc.width = circleR*2; oc.height = circleR*2;
+      const octx = oc.getContext('2d');
+      // calculate scale & draw centered
+      const s = Math.max(oc.width / pimg.width, oc.height / pimg.height);
+      const sw = pimg.width * s, sh = pimg.height * s;
+      const sx = (oc.width - sw) / 2, sy = (oc.height - sh) / 2;
+      octx.drawImage(pimg, sx, sy, sw, sh);
+      // clip and paint
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(oc, circleX - circleR, circleY - circleR, circleR*2, circleR*2);
+      ctx.restore();
+    }catch(e){
+      // ignore photo load error
+    }
+  }
 
-  async function downloadPNG(name, cls, mark, photoURL){try{const canvas=await renderCertificateCanvas(name,cls,mark,photoURL);const data=canvas.toDataURL("image/png");const a=document.createElement("a");a.href=data;a.download=`${name.replace(/\s+/g,'_')}_certificate.png`;a.click();celebrateConfetti();}catch(e){alert("Failed to generate PNG: "+e.message);console.error(e);}}
-  async function downloadPDF(name, cls, mark, photoURL){try{const canvas=await renderCertificateCanvas(name,cls,mark,photoURL);const imgData=canvas.toDataURL("image/png");const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"landscape",unit:"px",format:[1122,793]});pdf.addImage(imgData,'PNG',0,0,1122,793);pdf.save(`${name.replace(/\s+/g,'_')}_certificate.pdf`);celebrateConfetti();}catch(e){alert("Failed to generate PDF: "+e.message);console.error(e);}}
-  async function printCertificate(name, cls, mark, photoURL){try{const canvas=await renderCertificateCanvas(name,cls,mark,photoURL);const data=canvas.toDataURL("image/png");const w=window.open("");w.document.write(`<img src="${data}" style="width:100%;height:auto">`);w.document.close();setTimeout(()=>{w.print();celebrateConfetti();},600);}catch(e){alert("Failed to prepare print: "+e.message);console.error(e);}}
-  </script>
+  // optionally draw decorative gold ring around photo (to match template)
+  ctx.beginPath();
+  ctx.arc(circleX, circleY, circleR + 10, 0, Math.PI * 2);
+  ctx.closePath();
+  // subtle gold stroke
+  const grad = ctx.createLinearGradient(circleX - circleR, circleY - circleR, circleX + circleR, circleY + circleR);
+  grad.addColorStop(0, '#f6d36b'); grad.addColorStop(0.5, '#ffd700'); grad.addColorStop(1, '#d4a017');
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 18;
+  ctx.stroke();
+
+  // Certificate text (English + Arabic) - positioned below circle
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#052933';
+
+  // Title English (you can change text if you want)
+  ctx.font = 'bold 44px Poppins';
+  ctx.fillText('Certificate of Excellence', w/2, circleY + circleR + 90);
+
+  // Title Arabic below it
+  ctx.font = 'bold 36px Amiri, serif';
+  ctx.fillText('شهادة التفوق', w/2, circleY + circleR + 140);
+
+  // Student name
+  ctx.font = 'bold 56px Poppins';
+  ctx.fillText(name, w/2, circleY + circleR + 230);
+
+  // Name Arabic (repeat) - using same name field (if you want separate Arabic name, you can add to toppers array)
+  ctx.font = 'bold 44px Amiri, serif';
+  ctx.fillText(name, w/2, circleY + circleR + 290);
+
+  // Class & Marks
+  ctx.font = '28px Poppins';
+  ctx.fillText(`Class: ${cls}  |  Marks: ${mark}`, w/2, circleY + circleR + 360);
+  ctx.font = '28px Amiri, serif';
+  ctx.fillText(`الصف: ${cls}  |  الدرجات: ${mark}`, w/2, circleY + circleR + 410);
+
+  // Auto-date bottom-left
+  const today = new Date();
+  const opts = { day: 'numeric', month: 'long', year: 'numeric' };
+  const dateStr = today.toLocaleDateString('en-GB', opts);
+  ctx.textAlign = 'left';
+  ctx.font = '24px Poppins';
+  ctx.fillText(dateStr, 80, h - 140);
+
+  // signature bottom-right (if provided)
+  try{
+    const sig = await loadImage(SIG_SRC);
+    const sigW = 360, sigH = Math.round(sig.height * (360 / sig.width));
+    ctx.drawImage(sig, w - 80 - sigW, h - 220 - sigH, sigW, sigH);
+  }catch(e){
+    // no signature - skip
+  }
+
+  return canvas;
+}
+
+/* prettier confetti */
+function celebrateConfetti(){
+  const colors = ['#ffd700','#0d6efd','#2dd4bf','#ff6b6b','#8e44ad','#1abc9c'];
+  for(let i=0;i<3;i++){
+    confetti({
+      particleCount: 40 + Math.floor(Math.random()*80),
+      spread: 60 + Math.random()*50,
+      startVelocity: 30 + Math.random()*60,
+      gravity: 0.6 + Math.random()*0.5,
+      decay: 0.9 + Math.random()*0.05,
+      scalar: 0.8 + Math.random()*0.5,
+      origin: { x: Math.random(), y: Math.random()*0.5 },
+      colors: colors
+    });
+  }
+}
+
+/* generate PNG */
+async function generatePNG(name, cls, mark, photoURL){
+  try{
+    const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
+    const data = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = data;
+    a.download = `${name.replace(/\s+/g,'_')}_certificate.png`;
+    a.click();
+    celebrateConfetti();
+  }catch(e){
+    alert('Failed to create PNG: ' + e.message);
+    console.error(e);
+  }
+}
+
+/* generate PDF using jsPDF (A4 portrait) */
+async function generatePDF(name, cls, mark, photoURL){
+  try{
+    const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    // A4 portrait in px ~ 595 x 842 at 72dpi, but we will map full canvas to A4
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [1125, 1500] });
+    pdf.addImage(imgData, 'PNG', 0, 0, 1125, 1500);
+    pdf.save(`${name.replace(/\s+/g,'_')}_certificate.pdf`);
+    celebrateConfetti();
+  }catch(e){
+    alert('Failed to create PDF: ' + e.message);
+    console.error(e);
+  }
+}
+
+/* print */
+async function generatePrint(name, cls, mark, photoURL){
+  try{
+    const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
+    const data = canvas.toDataURL('image/png');
+    const w = window.open('');
+    w.document.write(`<img src="${data}" style="width:100%;height:auto">`);
+    w.document.close();
+    setTimeout(()=>{ w.print(); celebrateConfetti(); }, 700);
+  }catch(e){
+    alert('Failed to prepare print: ' + e.message);
+    console.error(e);
+  }
+}
+</script>
 </body>
 </html>
