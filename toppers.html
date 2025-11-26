@@ -1,439 +1,256 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Class Topper Certificate — Noorussalam Madrasa</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Class Topper Certificate Generator — Noorussalam Madrasa</title>
 
-  <!-- Fonts & icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<!-- Fonts & icons -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Amiri&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <!-- jsPDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <!-- QR generation (QRious) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<!-- Confetti -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <style>
-    :root{
-      --accent:#0d6efd;
-      --gold:#ffd700;
-      --bg:#eef9ff;
-      --card-radius:14px;
-    }
-    body{
-      margin:0;
-      font-family:"Poppins",sans-serif;
-      background:var(--bg);
-      color:#073045;
-      padding:20px;
-    }
-    .wrap{max-width:1100px;margin:0 auto 60px;}
-    header{text-align:center;margin-bottom:12px}
-    header h1{color:#073045;margin:6px 0;font-size:28px;font-weight:700}
-    header p{margin:0;color:#0b3b50;opacity:.85}
+<style>
+:root{
+  --accent:#0d6efd;
+  --gold:#ffd700;
+  --card-radius:14px;
+  --max-width:1100px;
+  --bg1:#eef9ff;
+}
+body{
+  margin:0;
+  font-family:"Poppins",sans-serif;
+  background:var(--bg1);
+  color:#073045;
+  padding:20px;
+}
+.wrap{max-width:1100px;margin:0 auto 60px;}
+header{text-align:center;margin-bottom:14px}
+header h1{color:#073045;margin:6px 0;font-size:28px;font-weight:700}
+header p{margin:0;color:#0b3b50;opacity:.85}
 
-    .controls{ display:flex;gap:8px;align-items:center;justify-content:center;margin:14px 0;flex-wrap:wrap }
-    .small{ font-size:13px;color:#445; }
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:820px){ .grid{grid-template-columns:1fr} }
 
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-    @media(max-width:820px){ .grid{grid-template-columns:1fr} }
+.card{
+  background:#fff;border-radius:var(--card-radius);padding:14px;box-shadow:0 8px 20px rgba(2,6,23,0.06);
+  border:2px solid rgba(255,215,0,0.25);position:relative;
+  overflow:hidden;
+}
+.medal{
+  width:56px;height:56px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:900;color:#000;margin:6px auto;font-size:20px;
+  animation: shine 1.5s infinite alternate;
+}
+@keyframes shine {
+  0%{ transform: scale(1) rotate(0deg); box-shadow:0 0 4px #ffd700; }
+  50%{ transform: scale(1.1) rotate(10deg); box-shadow:0 0 12px #ffd700; }
+  100%{ transform: scale(1) rotate(-5deg); box-shadow:0 0 6px #ffd700; }
+}
 
-    .card{
-      background:#fff;border-radius:var(--card-radius);padding:14px;box-shadow:0 8px 20px rgba(2,6,23,0.06);
-      border:2px solid rgba(255,215,0,0.25);
-    }
+.photo{ width:110px;height:110px;border-radius:50%;overflow:hidden;margin:10px auto;border:3px solid var(--accent);background:#f6fbff }
+.photo img{ width:100%;height:100%;object-fit:cover;display:block }
+.photo-upload{ display:block;margin:8px auto; }
+.name{ text-align:center;font-weight:700;margin-top:6px }
+.meta{ text-align:center;color:#0a3b45;font-weight:600;margin-top:6px }
+.btns{ display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap }
+.btn{ padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700 }
+.btn-png{ background:var(--gold); color:#000 }
+.btn-pdf{ background:var(--accent);color:#fff }
+.btn-print{ background:#10b981;color:#032 }
+.controls{ display:flex;gap:8px;align-items:center;justify-content:center;margin:14px 0 }
+.small{ font-size:13px;color:#445; }
+footer{ text-align:center;color:#345;margin-top:18px;font-size:14px }
 
-    .medal-ui{
-      position:relative;
-      width:86px;height:86px;margin:6px auto 12px;
-      transform-origin:center;
-      animation:medal-shine 2.6s ease-in-out infinite;
-    }
-    /* CSS visual medal (on-screen only) */
-    .medal-ui .disc{
-      width:86px;height:86px;border-radius:50%;
-      background:linear-gradient(180deg,#fff7d6,#ffd700 60%,#f0c200);
-      box-shadow:0 8px 20px rgba(0,0,0,0.12), inset 0 -6px 14px rgba(0,0,0,0.06);
-      display:flex;align-items:center;justify-content:center;font-weight:900;color:#3a2b00;font-size:22px;
-      border:4px solid rgba(255,245,200,0.9);
-    }
-    @keyframes medal-shine{
-      0%{ transform:translateY(0) rotate(-2deg) }
-      50%{ transform:translateY(-6px) rotate(2deg) }
-      100%{ transform:translateY(0) rotate(-2deg) }
-    }
+.reset-btn{ background:#ef4444;color:#fff;padding:8px 12px;border-radius:8px;border:none }
 
-    .photo{ width:110px;height:110px;border-radius:50%;overflow:hidden;margin:10px auto;border:3px solid var(--accent);background:#f6fbff }
-    .photo img{ width:100%;height:100%;object-fit:cover;display:block }
-    .photo-upload{ display:block;margin:8px auto; }
-    .name{ text-align:center;font-weight:700;margin-top:6px }
-    .meta{ text-align:center;color:#0a3b45;font-weight:600;margin-top:6px }
-
-    .btns{ display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap }
-    .btn{ padding:9px 12px;border-radius:10px;border:none;cursor:pointer;font-weight:700 }
-    .btn-png{ background:var(--gold); color:#000 }
-    .btn-pdf{ background:#0d6efd;color:#fff }
-    .btn-print{ background:#10b981;color:#032 }
-
-    .reset-btn{ background:#ef4444;color:#fff;padding:8px 12px;border-radius:8px;border:none }
-
-    footer{ text-align:center;color:#345;margin-top:18px;font-size:14px }
-
-    /* preview certificate area at top */
-    .preview-wrap{ display:flex; gap:20px; align-items:flex-start; margin-bottom:18px; flex-wrap:wrap }
-    .preview-canvas{ border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.12); overflow:hidden; background:white }
-    .preview-controls{ max-width:320px; min-width:240px }
-
-    /* small QR preview under photo */
-    .qr-small{ display:block; margin:8px auto; width:90px; height:90px; background:white; padding:6px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.06) }
-
-    /* print heading & congratulations on print */
-    @media print {
-      #printHeading{ display:block; text-align:center; font-size:28px; font-weight:800; margin-bottom:8px; }
-      #printCongrats{ display:block; text-align:center; font-size:20px; font-weight:700; margin-top:8px; }
-    }
-    #printHeading, #printCongrats { display:none; } /* visible only in print */
-  </style>
+/* Modal */
+#previewModal{
+  position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:9999;
+}
+#previewModal img{max-width:90%;max-height:90%;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,0.4);}
+#previewModal .close{position:absolute;top:20px;right:30px;font-size:28px;color:#fff;cursor:pointer;font-weight:700;}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <h1>NOORUSSALAM MADRASA</h1>
-      <p class="small">Annual Examination — Class Topper</p>
-    </header>
+<div class="wrap">
+  <header>
+    <h1>NOORUSSALAM MADRASA</h1>
+    <p class="small">Annual Examination — Class Topper • Upload photo & generate certificate</p>
+  </header>
 
-    <div class="preview-wrap">
-      <div class="preview-canvas">
-        <!-- Canvas where certificate will be rendered (and used to create PNG/PDF/Print) -->
-        <canvas id="certCanvas" width="1125" height="1500" style="display:block;"></canvas>
-      </div>
-
-      <div class="preview-controls card">
-        <div style="text-align:center">
-          <div class="medal-ui" title="Medal">
-            <div class="disc">1</div>
-          </div>
-        </div>
-
-        <div style="text-align:center;margin-top:6px">
-          <div class="photo"><img id="uiPreviewPhoto" src="" alt="photo"></div>
-          <div id="qrPreview" class="qr-small" aria-hidden="true"></div>
-        </div>
-
-        <div style="margin-top:10px">
-          <label style="font-weight:700">Upload Photo</label>
-          <input id="photoInput" type="file" accept="image/*" style="width:100%;margin-top:6px">
-        </div>
-
-        <div style="margin-top:10px">
-          <label style="font-weight:700">Student Name</label>
-          <input id="nameInput" placeholder="Ayesha Rahman" style="width:100%;padding:8px;margin-top:6px">
-        </div>
-
-        <div style="margin-top:10px">
-          <label style="font-weight:700">Class</label>
-          <input id="classInput" placeholder="1" style="width:100%;padding:8px;margin-top:6px">
-        </div>
-
-        <div style="margin-top:10px">
-          <label style="font-weight:700">Marks</label>
-          <input id="marksInput" placeholder="498 / 500" style="width:100%;padding:8px;margin-top:6px">
-        </div>
-
-        <div class="btns" style="margin-top:12px">
-          <button class="btn btn-png" id="downloadPngBtn">Generate PNG</button>
-          <button class="btn btn-pdf" id="downloadPdfBtn">Generate PDF</button>
-          <button class="btn btn-print" id="printBtn">Print</button>
-        </div>
-
-        <div style="margin-top:10px;text-align:center">
-          <button class="reset-btn" id="resetAll">Reset Saved Photo</button>
-        </div>
-      </div>
-    </div>
-
-    <div style="text-align:center;margin-bottom:8px">
-      <small class="small">QR placed under photo (small). Medal animation shown above certificate preview.</small>
-    </div>
-
-    <div id="printHeading">CLASS TOPPER</div>
-    <div id="printCongrats">CONGRATULATIONS</div>
-
-    <footer>© Noorussalam Madrasa</footer>
+  <div class="controls">
+    <label class="small"><strong>Certificate Background Loaded from Online Server</strong></label>
+    <button class="reset-btn" id="resetAll">Reset All Saved Photos</button>
   </div>
 
+  <div id="grid" class="grid" aria-live="polite"></div>
+
+  <footer>© Noorussalam Madrasa — Auto-date added to certificate</footer>
+</div>
+
+<!-- Preview Modal -->
+<div id="previewModal">
+  <span class="close" onclick="closePreview()">×</span>
+  <img id="previewImage" src="">
+</div>
+
 <script>
-/* -------------------------
-  Configuration
---------------------------*/
-const CERT_BG = "https://i.ibb.co/Fb5bkwrK/CERTIFICATR.jpg"; // online background (works without local files)
-const SIG_SRC  = "https://i.ibb.co/HfzzG1TN/Whats-App-Image-2025-11-26-at-11-41-41-AM-removebg-preview.png"; // signature
-const VERIFICATION_BASE = "https://noorussalam-madrasa.verification/"; // default verification URL
+const CERT_BG = "https://i.ibb.co/Fb5bkwrK/CERTIFICATR.jpg";
+const SIG_SRC  = "https://i.ibb.co/HfzzG1TN/Whats-App-Image-2025-11-26-at-11-41-41-AM-removebg-preview.png";
 
-/* canvas */
-const canvas = document.getElementById('certCanvas');
-const ctx = canvas.getContext('2d');
+const toppers = [
+  { class: "1", name: "Ayesha Rahman", mark: "498 / 500" },
+  { class: "2", name: "Muhammed Shahid", mark: "493 / 500" },
+  { class: "3", name: "Nimra Sameer", mark: "487 / 500" },
+  { class: "4", name: "Faris P", mark: "489 / 500" },
+  { class: "5", name: "Shamil N", mark: "491 / 500" },
+  { class: "6", name: "Hana M", mark: "480 / 500" },
+  { class: "7", name: "Riyas M", mark: "485 / 500" },
+  { class: "8", name: "Zainab K", mark: "492 / 500" },
+  { class: "9", name: "Yusuf T", mark: "488 / 500" },
+  { class: "10", name: "Saniya F", mark: "495 / 500" }
+];
 
-/* inputs */
-const photoInput = document.getElementById('photoInput');
-const nameInput = document.getElementById('nameInput');
-const classInput = document.getElementById('classInput');
-const marksInput = document.getElementById('marksInput');
-const uiPreviewPhoto = document.getElementById('uiPreviewPhoto');
-const qrPreview = document.getElementById('qrPreview');
-
-let uploadedPhotoData = null;
-
-/* Load saved photo from localStorage if exists */
-const savedPhoto = localStorage.getItem('topper_photo');
-if(savedPhoto){
-  uploadedPhotoData = savedPhoto;
-  uiPreviewPhoto.src = uploadedPhotoData;
+const uploadedPhotos = Array(toppers.length).fill(null);
+for(let i=0;i<toppers.length;i++){
+  const saved = localStorage.getItem(`topperPhoto_${i}`);
+  if(saved) uploadedPhotos[i] = saved;
 }
 
-/* photo upload handler */
-photoInput.addEventListener('change', (e)=>{
-  const f = e.target.files && e.target.files[0];
-  if(!f) return;
-  const r = new FileReader();
-  r.onload = () => {
-    uploadedPhotoData = r.result;
-    localStorage.setItem('topper_photo', uploadedPhotoData);
-    uiPreviewPhoto.src = uploadedPhotoData;
-    drawPreview(); // update canvas preview
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function placeholderDataURL(){ 
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="200" cy="150" r="90" fill="#cfeeff"/></svg>';
+  return 'data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+
+const grid=document.getElementById('grid');
+toppers.forEach((t,i)=>{
+  const photoURL=uploadedPhotos[i]||placeholderDataURL();
+  const card=document.createElement('div');
+  card.className='card';
+  card.innerHTML=`
+    <div class="medal">${i+1}</div>
+    <div class="photo"><img src="${photoURL}" alt="${escapeHtml(t.name)}"></div>
+    <input type="file" accept="image/*" class="photo-upload" onchange="handlePhotoUpload(this, ${i})">
+    <div class="name">${escapeHtml(t.name)}</div>
+    <div class="meta">Class ${escapeHtml(t.class)} • ${escapeHtml(t.mark)}</div>
+    <div class="btns">
+      <button class="btn btn-png" onclick="previewCertificate('${t.name}','${t.class}','${t.mark}', uploadedPhotos[${i}]||'${photoURL}','png',${i})"><i class="fa fa-file-image"></i> PNG</button>
+      <button class="btn btn-pdf" onclick="previewCertificate('${t.name}','${t.class}','${t.mark}', uploadedPhotos[${i}]||'${photoURL}','pdf',${i})"><i class="fa fa-file-pdf"></i> PDF</button>
+      <button class="btn btn-print" onclick="previewCertificate('${t.name}','${t.class}','${t.mark}', uploadedPhotos[${i}]||'${photoURL}','print',${i})"><i class="fa fa-print"></i> Print</button>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+function handlePhotoUpload(input,index){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    uploadedPhotos[index]=e.target.result;
+    localStorage.setItem(`topperPhoto_${index}`,e.target.result);
+    input.closest('.card').querySelector('img').src=e.target.result;
   };
-  r.readAsDataURL(f);
-});
-
-/* reset saved photo */
-document.getElementById('resetAll').addEventListener('click', ()=>{
-  if(!confirm('Clear saved photo?')) return;
-  localStorage.removeItem('topper_photo');
-  uploadedPhotoData = null;
-  uiPreviewPhoto.src = '';
-  drawPreview();
-});
-
-/* generate QR (Type C: both details + verification URL) */
-function makeQRDataURL(name, cls, marks){
-  const date = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  const url = `${VERIFICATION_BASE}?name=${encodeURIComponent(name||'')}&class=${encodeURIComponent(cls||'')}&marks=${encodeURIComponent(marks||'')}`;
-  const text = `Student: ${name}\nClass: ${cls}\nMarks: ${marks}\nDate: ${date}\nVerify: ${url}`;
-  // use QRious to generate dataURL
-  const qr = new QRious({ value: text, size: 300, level: 'M' });
-  return qr.toDataURL();
+  reader.readAsDataURL(file);
 }
 
-/* draw medal onto canvas (vector) for inclusion in exports */
-function drawMedalOnCanvas(cx, cy, outerR){
-  // outer ring (gold)
-  const grad = ctx.createRadialGradient(cx - outerR/2, cy - outerR/2, outerR*0.2, cx + outerR/2, cy + outerR/2, outerR*1.2);
-  grad.addColorStop(0, '#fff9d6');
-  grad.addColorStop(0.45, '#ffd700');
-  grad.addColorStop(1, '#d4a017');
+document.getElementById('resetAll').onclick=()=>{
+  if(!confirm("Clear all photos?")) return;
+  for(let i=0;i<toppers.length;i++){
+    localStorage.removeItem(`topperPhoto_${i}`);
+    uploadedPhotos[i]=null;
+  }
+  location.reload();
+};
 
-  ctx.save();
+function loadImage(src){ return new Promise((res,rej)=>{ const img=new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.onerror=()=>rej(); img.src=src; }); }
+
+/* Generate gradient color based on topper index */
+function getGradient(ctx, cx, cy, r, index){
+  const colors=[
+    ["#ff9a9e","#fad0c4"],
+    ["#a18cd1","#fbc2eb"],
+    ["#fad0c4","#ffd1ff"],
+    ["#ffecd2","#fcb69f"],
+    ["#ffdde1","#ee9ca7"],
+    ["#cfd9df","#e2ebf0"],
+    ["#fbc2eb","#a6c1ee"],
+    ["#89f7fe","#66a6ff"],
+    ["#fdfbfb","#ebedee"],
+    ["#a1c4fd","#c2e9fb"]
+  ];
+  const grad = ctx.createRadialGradient(cx, cy, r*0.3, cx, cy, r*1.1);
+  grad.addColorStop(0, colors[index%colors.length][0]);
+  grad.addColorStop(1, colors[index%colors.length][1]);
+  return grad;
+}
+
+async function renderCertificateCanvas(name,cls,mark,photoURL,index){
+  const w=1125,h=1500,canvas=document.createElement("canvas");
+  canvas.width=w; canvas.height=h;
+  const ctx=canvas.getContext("2d");
+
+  const bg=await loadImage(CERT_BG);
+  ctx.drawImage(bg,0,0,w,h);
+
+  const cx=w/2,cy=380,r=210;
+
+  // Gradient behind photo
   ctx.beginPath();
-  ctx.arc(cx, cy, outerR, 0, Math.PI*2);
-  ctx.closePath();
-  ctx.fillStyle = grad;
+  ctx.arc(cx,cy,r*1.1,0,Math.PI*2);
+  ctx.fillStyle=getGradient(ctx,cx,cy,r,index);
   ctx.fill();
-  ctx.lineWidth = 6;
-  ctx.strokeStyle = 'rgba(255,240,200,0.85)';
-  ctx.stroke();
 
-  // center number
-  ctx.fillStyle = '#3a2b00';
-  ctx.font = `bold ${Math.round(outerR*0.55)}px Poppins`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('1', cx, cy);
-  ctx.restore();
-}
-
-/* draw preview certificate */
-async function drawPreview(){
-  // clear
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // load background
-  try{
-    const bg = await loadImage(CERT_BG);
-    // draw cover
-    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
-  }catch(e){
-    // fallback background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(photoURL){
+    const img=await loadImage(photoURL);
+    const temp=document.createElement("canvas");
+    temp.width=r*2; temp.height=r*2;
+    const tctx=temp.getContext("2d");
+    const scale=Math.max(temp.width/img.width,temp.height/img.height);
+    tctx.drawImage(img,(temp.width-img.width*scale)/2,(temp.height-img.height*scale)/2,img.width*scale,img.height*scale);
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.clip();
+    ctx.drawImage(temp,cx-r,cy-r);
+    ctx.restore();
   }
 
-  // photo circle position (below top)
-  const cx = canvas.width/2;
-  const cy = 380;
-  const r = 210;
+  ctx.beginPath(); ctx.arc(cx,cy,r+12,0,Math.PI*2);
+  ctx.strokeStyle="#ffd700"; ctx.lineWidth=18; ctx.stroke();
 
-  // draw uploaded photo into clipped circle (if present)
-  if(uploadedPhotoData){
-    try{
-      const pimg = await loadImage(uploadedPhotoData);
-      // put into square offscreen canvas and scale/crop to cover
-      const oc = document.createElement('canvas');
-      oc.width = r*2; oc.height = r*2;
-      const octx = oc.getContext('2d');
-      const s = Math.max(oc.width / pimg.width, oc.height / pimg.height);
-      const sw = pimg.width * s, sh = pimg.height * s;
-      octx.drawImage(pimg, (oc.width - sw)/2, (oc.height - sh)/2, sw, sh);
+  ctx.fillStyle="#073045"; ctx.textAlign="center";
+  ctx.font="bold 60px sans-serif"; ctx.fillText(name,w/2,cy+r+120);
+  ctx.font="32px sans-serif"; ctx.fillText(`Class: ${cls} | Marks: ${mark}`,w/2,cy+r+180);
 
-      ctx.save();
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(oc, cx - r, cy - r, r*2, r*2);
-      ctx.restore();
-    }catch(e){}
-  }
+  const d=new Date(); const dstr=d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+  ctx.textAlign="left"; ctx.font="26px sans-serif"; ctx.fillText(dstr,80,h-140);
 
-  // decorative gold ring
-  ctx.beginPath(); ctx.arc(cx, cy, r + 12, 0, Math.PI*2);
-  ctx.closePath();
-  ctx.lineWidth = 18;
-  const ringGrad = ctx.createLinearGradient(cx - r, cy - r, cx + r, cy + r);
-  ringGrad.addColorStop(0, '#f6d36b'); ringGrad.addColorStop(0.5, '#ffd700'); ringGrad.addColorStop(1, '#d4a017');
-  ctx.strokeStyle = ringGrad;
-  ctx.stroke();
+  const sig=await loadImage(SIG_SRC);
+  const sw=380,sh=sig.height*(sw/sig.width); ctx.drawImage(sig,w-100-sw,h-260-sh,sw,sh);
 
-  // Draw medal on top-left corner of certificate area (visual / included)
-  drawMedalOnCanvas(140, 220, 60);
-
-  // Student Text (ONLY name, class, marks) below photo as requested (Option B)
-  const name = nameInput.value || 'Student Name';
-  const cls  = classInput.value || 'Class';
-  const marks = marksInput.value || 'Marks';
-
-  ctx.fillStyle = '#073045';
-  ctx.textAlign = 'center';
-
-  ctx.font = 'bold 56px Poppins';
-  ctx.fillText(name, cx, cy + r + 120);
-
-  ctx.font = '32px Poppins';
-  ctx.fillText(`Class: ${cls}`, cx, cy + r + 180);
-  ctx.fillText(`Marks: ${marks}`, cx, cy + r + 220);
-
-  // Date bottom-left
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  ctx.textAlign = 'left';
-  ctx.font = '26px Poppins';
-  ctx.fillText(dateStr, 80, canvas.height - 140);
-
-  // signature bottom-right if exists
-  try{
-    const sig = await loadImage(SIG_SRC);
-    const sigW = 360;
-    const sigH = sig.height * (sigW / sig.width);
-    ctx.drawImage(sig, canvas.width - 80 - sigW, canvas.height - 240 - sigH, sigW, sigH);
-  }catch(e){ /* ignore */ }
-
-  // QR small under photo (position 4: small QR under student photo)
-  try{
-    const qrDataURL = makeQRDataURL(name, cls, marks);
-    const qrImg = await loadImage(qrDataURL);
-    const qrSize = 100;
-    ctx.drawImage(qrImg, cx - qrSize/2, cy + r + 250, qrSize, qrSize);
-
-    // update on-screen QR preview too
-    qrPreview.style.backgroundImage = `url(${qrDataURL})`;
-    qrPreview.style.backgroundSize = 'cover';
-  }catch(e){ /* ignore */ }
-
-  // draw "CONGRATULATIONS" at very bottom (for visual; print CSS also shows separate text)
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 28px Poppins';
-  ctx.fillText('CONGRATULATIONS', canvas.width/2, canvas.height - 60);
+  return canvas;
 }
 
-/* load helper */
-function loadImage(src){
-  return new Promise((res, rej)=>{
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = ()=>res(img);
-    img.onerror = ()=>rej(new Error('load fail: ' + src));
-    img.src = src;
-  });
-}
+/* Preview modal */
+async function previewCertificate(name,cls,mark,photo,type,index){
+  const c=await renderCertificateCanvas(name,cls,mark,photo,index);
+  const img=c.toDataURL("image/png");
+  const modal=document.getElementById("previewModal");
+  const previewImg=document.getElementById("previewImage");
+  previewImg.src=img; modal.style.display="flex";
 
-/* celebration confetti */
-function celebrate(){
-  const colors = ['#ffd700','#0d6efd','#2dd4bf','#ff6b6b','#8e44ad','#1abc9c'];
-  for(let i=0;i<3;i++){
-    confetti({
-      particleCount: 40 + Math.floor(Math.random()*80),
-      spread: 60 + Math.random()*50,
-      startVelocity: 30 + Math.random()*60,
-      gravity: 0.6 + Math.random()*0.5,
-      decay: 0.9 + Math.random()*0.05,
-      scalar: 0.8 + Math.random()*0.5,
-      origin: { x: Math.random(), y: Math.random()*0.5 },
-      colors: colors
-    });
+  previewImg.onclick=()=>{
+    if(type==="png"){ const a=document.createElement("a"); a.href=img; a.download=`${name.replace(/\s+/g,'_')}.png`; a.click(); confetti(); }
+    else if(type==="pdf"){ const { jsPDF } = window.jspdf; const pdf=new jsPDF({orientation:"portrait",unit:"px",format:[1125,1500]}); pdf.addImage(img,"PNG",0,0,1125,1500); pdf.save(`${name.replace(/\s+/g,'_')}.pdf`); confetti(); }
+    else if(type==="print"){ const w=window.open(""); w.document.write(`<img src="${img}" style="width:100%">`); w.document.close(); setTimeout(()=>w.print(),500); confetti(); }
   }
 }
 
-/* Buttons - generate export */
-document.getElementById('downloadPngBtn').addEventListener('click', async ()=>{
-  await drawPreview();
-  const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = `${(nameInput.value||'topper').replace(/\s+/g,'_')}.png`;
-  a.click();
-  celebrate();
-});
-document.getElementById('downloadPdfBtn').addEventListener('click', async ()=>{
-  await drawPreview();
-  const imgData = canvas.toDataURL('image/png');
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ orientation:'portrait', unit:'px', format:[canvas.width, canvas.height] });
-  pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-  pdf.save(`${(nameInput.value||'topper').replace(/\s+/g,'_')}.pdf`);
-  celebrate();
-});
-document.getElementById('printBtn').addEventListener('click', async ()=>{
-  await drawPreview();
-  // show print-specific headings
-  document.getElementById('printHeading').style.display = 'block';
-  document.getElementById('printCongrats').style.display = 'block';
-
-  const data = canvas.toDataURL('image/png');
-  const w = window.open('');
-  w.document.write(`<html><head><title>Print Certificate</title></head><body style="margin:0;padding:0;">`);
-  w.document.write(`<div style="text-align:center;font-weight:800;font-size:28px;margin-top:6px">CLASS TOPPER</div>`);
-  w.document.write(`<img src="${data}" style="width:100%;max-width:1125px;display:block;margin:0 auto;">`);
-  w.document.write(`<div style="text-align:center;font-weight:700;font-size:20px;margin-top:8px">CONGRATULATIONS</div>`);
-  w.document.write(`</body></html>`);
-  w.document.close();
-  setTimeout(()=>{ w.print(); w.close(); },700);
-
-  // hide print headings again (they're inline elements in this page; keep them hidden)
-  document.getElementById('printHeading').style.display = 'none';
-  document.getElementById('printCongrats').style.display = 'none';
-
-  celebrate();
-});
-
-/* redraw preview when inputs change */
-[nameInput, classInput, marksInput].forEach(el=>{
-  el.addEventListener('input', drawPreview);
-});
-
-/* initial preview draw */
-window.addEventListener('load', async ()=>{
-  // set preview photo if none
-  if(!uiPreviewPhoto.src || uiPreviewPhoto.src === window.location.href) uiPreviewPhoto.src = uploadedPhotoData || '';
-  await drawPreview();
-});
+function closePreview(){ document.getElementById("previewModal").style.display="none"; }
 </script>
 </body>
 </html>
