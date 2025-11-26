@@ -170,19 +170,11 @@ document.getElementById('resetAll').onclick=()=>{
 
 function loadImage(src){ return new Promise((res,rej)=>{ const img=new Image(); img.crossOrigin="anonymous"; img.onload=()=>res(img); img.onerror=()=>rej(); img.src=src; }); }
 
-/* Generate gradient color based on topper index */
 function getGradient(ctx, cx, cy, r, index){
   const colors=[
-    ["#ff9a9e","#fad0c4"],
-    ["#a18cd1","#fbc2eb"],
-    ["#fad0c4","#ffd1ff"],
-    ["#ffecd2","#fcb69f"],
-    ["#ffdde1","#ee9ca7"],
-    ["#cfd9df","#e2ebf0"],
-    ["#fbc2eb","#a6c1ee"],
-    ["#89f7fe","#66a6ff"],
-    ["#fdfbfb","#ebedee"],
-    ["#a1c4fd","#c2e9fb"]
+    ["#ff9a9e","#fad0c4"],["#a18cd1","#fbc2eb"],["#fad0c4","#ffd1ff"],["#ffecd2","#fcb69f"],
+    ["#ffdde1","#ee9ca7"],["#cfd9df","#e2ebf0"],["#fbc2eb","#a6c1ee"],["#89f7fe","#66a6ff"],
+    ["#fdfbfb","#ebedee"],["#a1c4fd","#c2e9fb"]
   ];
   const grad = ctx.createRadialGradient(cx, cy, r*0.3, cx, cy, r*1.1);
   grad.addColorStop(0, colors[index%colors.length][0]);
@@ -198,14 +190,16 @@ async function renderCertificateCanvas(name,cls,mark,photoURL,index){
   const bg=await loadImage(CERT_BG);
   ctx.drawImage(bg,0,0,w,h);
 
-  const cx=w/2,cy=380,r=210;
+  const centerX=w/2, centerY=h/2;
+  const r=210;
 
   // Gradient behind photo
   ctx.beginPath();
-  ctx.arc(cx,cy,r*1.1,0,Math.PI*2);
-  ctx.fillStyle=getGradient(ctx,cx,cy,r,index);
+  ctx.arc(centerX,centerY,r*1.1,0,Math.PI*2);
+  ctx.fillStyle=getGradient(ctx,centerX,centerY,r,index);
   ctx.fill();
 
+  // Draw photo
   if(photoURL){
     const img=await loadImage(photoURL);
     const temp=document.createElement("canvas");
@@ -214,23 +208,36 @@ async function renderCertificateCanvas(name,cls,mark,photoURL,index){
     const scale=Math.max(temp.width/img.width,temp.height/img.height);
     tctx.drawImage(img,(temp.width-img.width*scale)/2,(temp.height-img.height*scale)/2,img.width*scale,img.height*scale);
     ctx.save();
-    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.clip();
-    ctx.drawImage(temp,cx-r,cy-r);
+    ctx.beginPath(); ctx.arc(centerX,centerY,r,0,Math.PI*2); ctx.clip();
+    ctx.drawImage(temp,centerX-r,centerY-r);
     ctx.restore();
   }
 
-  ctx.beginPath(); ctx.arc(cx,cy,r+12,0,Math.PI*2);
+  // Medal above photo
+  const medalRadius=56;
+  ctx.beginPath();
+  ctx.arc(centerX,centerY-r-40,medalRadius/2,0,Math.PI*2);
+  ctx.fillStyle="#ffd700"; ctx.fill();
+  ctx.fillStyle="#000"; ctx.font="bold 28px sans-serif"; ctx.textAlign="center";
+  ctx.fillText(`${index+1}`,centerX,centerY-r-35);
+
+  // Photo ring
+  ctx.beginPath(); ctx.arc(centerX,centerY,r+12,0,Math.PI*2);
   ctx.strokeStyle="#ffd700"; ctx.lineWidth=18; ctx.stroke();
 
+  // Name & class/marks below photo
   ctx.fillStyle="#073045"; ctx.textAlign="center";
-  ctx.font="bold 60px sans-serif"; ctx.fillText(name,w/2,cy+r+120);
-  ctx.font="32px sans-serif"; ctx.fillText(`Class: ${cls} | Marks: ${mark}`,w/2,cy+r+180);
+  ctx.font="bold 60px sans-serif"; ctx.fillText(name,centerX,centerY+r+80);
+  ctx.font="32px sans-serif"; ctx.fillText(`Class: ${cls} | Marks: ${mark}`,centerX,centerY+r+140);
 
-  const d=new Date(); const dstr=d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+  // Date bottom left
+  const d=new Date();
+  const dstr=d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
   ctx.textAlign="left"; ctx.font="26px sans-serif"; ctx.fillText(dstr,80,h-140);
 
-  const sig=await loadImage(SIG_SRC);
-  const sw=380,sh=sig.height*(sw/sig.width); ctx.drawImage(sig,w-100-sw,h-260-sh,sw,sh);
+  // Signature bottom right
+  const sig=await loadImage(SIG_SRC); const sw=380; const sh=sig.height*(sw/sig.width);
+  ctx.drawImage(sig,w-100-sw,h-260-sh,sw,sh);
 
   return canvas;
 }
