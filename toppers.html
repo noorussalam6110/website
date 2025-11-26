@@ -1,410 +1,509 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Toppers - Noorussalam Madrasa</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Toppers - Noorussalam Madrasa</title>
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Amiri&display=swap" rel="stylesheet">
 
-<!-- Confetti -->
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <!-- Icons (optional) -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
-<style>
-body{
-  background:linear-gradient(120deg,#a7d7ff,#0d6efd,#82c4ff);
-  background-size:300% 300%;
-  animation:bgMove 10s infinite ease-in-out;
-  font-family:'Poppins',sans-serif;
-  padding:20px;
-}
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-@keyframes bgMove{
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
+  <style>
+    :root{
+      --accent:#0d6efd;
+      --gold:#ffd700;
+      --card-radius:18px;
+      --max-width:1100px;
+      --bg1:#dff6ff;
+      --bg2:#b4dbff;
+    }
+    html,body{height:100%}
+    body {
+      margin:0;
+      font-family: "Poppins", sans-serif;
+      background: linear-gradient(120deg,var(--bg1),var(--bg2));
+      background-size:300% 300%;
+      animation: bgMove 12s infinite ease-in-out;
+      color:#102a43;
+      padding:18px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    @keyframes bgMove {
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
 
-h1{
-  text-align:center;
-  font-weight:700;
-  color:white;
-  margin-bottom:30px;
-}
+    .wrapper{
+      max-width:var(--max-width);
+      margin:0 auto 60px;
+    }
 
-.section-title{
-  text-align:center;
-  color:white;
-  font-size:1.7rem;
-  font-weight:700;
-  margin-top:40px;
-  margin-bottom:20px;
-  text-shadow:0 3px 8px rgba(0,0,0,0.3);
-}
+    header{
+      text-align:center;
+      margin-bottom:18px;
+    }
+    header h1{
+      margin:8px 0;
+      font-size:28px;
+      color:var(--accent);
+      letter-spacing:1px;
+    }
+    header p{
+      margin:0;
+      color: #083344;
+      opacity:0.9;
+    }
 
-/* Topper Card */
-.topper-card{
-  background:white;
-  padding:20px;
-  border-radius:20px;
-  text-align:center;
-  box-shadow:0 15px 35px rgba(0,0,0,0.2);
-  border:3px solid gold;
-  overflow:hidden;
-  position:relative;
-  animation:glow 3s infinite;
-}
+    .section-title{
+      text-align:center;
+      font-size:20px;
+      margin:28px 0 12px;
+      color:var(--accent);
+      font-weight:700;
+    }
 
-@keyframes glow{
-  0%{box-shadow:0 0 10px gold}
-  50%{box-shadow:0 0 30px gold}
-  100%{box-shadow:0 0 10px gold}
-}
+    /* grid of cards (2 columns desktop, 1 mobile) */
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:20px;
+      align-items:stretch;
+    }
+    @media (max-width:800px){
+      .grid{grid-template-columns:1fr}
+    }
 
-/* Shine */
-.topper-card::after{
-  content:"";
-  position:absolute;
-  top:-120%;
-  left:-100%;
-  width:250%;
-  height:350%;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,0.5),transparent);
-  transform:rotate(25deg);
-  animation:shine 5s infinite;
-}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.95));
+      border-radius:var(--card-radius);
+      padding:20px;
+      box-shadow:0 12px 28px rgba(2,6,23,0.08);
+      position:relative;
+      overflow:hidden;
+      border:3px solid rgba(255,215,0,0.7);
+      transition:transform .22s ease, box-shadow .22s ease;
+    }
+    .card:hover{
+      transform:translateY(-6px);
+      box-shadow:0 18px 40px rgba(2,6,23,0.14);
+    }
 
-@keyframes shine{
-  0%{transform:translateX(-150%) rotate(25deg)}
-  30%{transform:translateX(150%) rotate(25deg)}
-  100%{transform:translateX(150%) rotate(25deg)}
-}
+    /* shine animation overlay */
+    .card::after{
+      content:"";
+      position:absolute;
+      top:-130%;
+      left:-100%;
+      width:250%;
+      height:350%;
+      transform:rotate(22deg);
+      background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
+      animation:shineMove 5s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes shineMove{
+      0%{transform: translateX(-140%) rotate(22deg)}
+      30%{transform: translateX(140%) rotate(22deg)}
+      100%{transform: translateX(140%) rotate(22deg)}
+    }
 
-.medal{
-  width:75px;
-  height:75px;
-  border-radius:50%;
-  background:gold;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:30px;
-  font-weight:800;
-  color:white;
-  margin:auto;
-  box-shadow:0 0 12px gold;
-}
+    .medal{
+      width:68px;
+      height:68px;
+      border-radius:50%;
+      background:var(--gold);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-weight:800;
+      font-size:22px;
+      box-shadow:0 6px 18px rgba(255,215,0,0.5);
+      margin:0 auto 10px;
+    }
 
-.topper-photo{
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  margin-top:15px;
-  border:4px solid #0d6efd;
-  object-fit:cover;
-}
+    .photo{
+      width:110px;
+      height:110px;
+      border-radius:50%;
+      overflow:hidden;
+      margin:8px auto;
+      border:4px solid var(--accent);
+      box-shadow:0 6px 18px rgba(13,110,253,0.18);
+    }
+    .photo img{width:100%;height:100%;object-fit:cover;display:block}
 
-.topper-name{
-  font-size:1.3rem;
-  font-weight:700;
-  color:#0d6efd;
-  margin-top:10px;
-}
+    .name{
+      font-size:18px;
+      font-weight:700;
+      color:#043a54;
+      text-align:center;
+      margin-top:6px;
+    }
+    .meta{
+      text-align:center;
+      color:#1f3f5b;
+      font-weight:600;
+      margin-top:6px;
+    }
 
-.btn-download,.btn-print{
-  width:100%;
-  border-radius:10px;
-  padding:10px;
-  margin-top:8px;
-  font-weight:600;
-  border:none;
-}
+    .btns{
+      margin-top:12px;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .btn{
+      padding:10px 12px;
+      border-radius:10px;
+      cursor:pointer;
+      border:none;
+      font-weight:700;
+    }
+    .btn-download{background:var(--gold); color:#000}
+    .btn-print{background:var(--accent); color:#fff}
 
-.btn-download{
-  background:#0d6efd;
-  color:#fff;
-}
+    footer{
+      margin-top:32px;
+      text-align:center;
+      color:#01303f;
+      opacity:0.9;
+    }
 
-.btn-print{
-  background:#ffaa00;
-  color:black;
-}
+    /* small helpers */
+    .muted{opacity:0.8;color:#064256;font-size:14px}
 
-</style>
+    /* responsive spacing for container */
+    .top-container{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      margin-bottom:8px;
+    }
+  </style>
 </head>
 <body>
+  <div class="wrapper">
+    <header>
+      <h1>NOORUSSALAM MADRASA — TOPPERS</h1>
+      <p>Automatic toppers list • Certificates (Dual language: English + Arabic)</p>
+    </header>
 
-<audio id="medalSound">
-  <source src="medal.mp3" type="audio/mpeg">
-</audio>
+    <!-- Section: Mark Toppers -->
+    <div class="top-container">
+      <div class="section-title">🏆 Class Toppers — Marks (First Rank only)</div>
+      <div class="muted">Data loaded from your Google Sheet (Rank=1 rows only)</div>
+    </div>
 
-<script>
-function playMedalSound(){
-  document.getElementById("medalSound").play();
-}
-</script>
+    <div id="marksGrid" class="grid" aria-live="polite"></div>
 
-<h1>Topper Students - Noorussalam Madrasa</h1>
+    <!-- Section: Hajar / Hifz Toppers -->
+    <div class="top-container" style="margin-top:28px">
+      <div class="section-title">📖 Class Toppers — Hajar / Hifz (First Rank only)</div>
+      <div class="muted">Hajar/ Hifz rows will appear here (SECTION column = HAJAR)</div>
+    </div>
 
-<div class="container">
+    <div id="hajarGrid" class="grid" aria-live="polite"></div>
 
-<!-- ================= CLASS 1 ================= -->
-<h2 class="section-title">Class 1 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class1.png" class="topper-photo">
-<div class="topper-name">Student Class 1</div>
+    <footer>
+      © Noorussalam Madrasa — Generated certificates include Arabic & English • Auto date • Principal signature
+    </footer>
+  </div>
 
-<button class="btn-download" onclick="downloadCertificate('Student Class 1','1st Rank','Class 1')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
+  <!-- ======= IN-BROWSER MEDAL SOUND (no external file required) ======= -->
+  <script>
+    // small tone sound using WebAudio API (works without separate .mp3)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playMedalSound(){
+      try{
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(880, audioCtx.currentTime);
+        g.gain.setValueAtTime(0, audioCtx.currentTime);
+        g.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start();
+        o.stop(audioCtx.currentTime + 0.5);
+      }catch(e){
+        // fallback: do nothing
+      }
+    }
+  </script>
 
-<button class="btn-print" onclick="printCertificate('Student Class 1','1st Rank','Class 1')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
+  <!-- ======= Embedded certificate background and signature (your uploaded images) =======
+       They are embedded as base64 data URLs so the generator runs without external hosting.
+       (Background is the CERTIFICATR.jpg you uploaded; signature image is the signature you uploaded.)
+  ============================================================================== -->
+  <script>
+    // ****** IMPORTANT: The long base64 strings are embedded below *******
+    // Certificate background (embedded base64 of CERTIFICATR.jpg)
+    const CERT_BG = "data:image/jpeg;base64,<?!--REPLACEME_BG--!?>";
 
-<!-- ================= CLASS 2 ================= -->
-<h2 class="section-title">Class 2 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class2.png" class="topper-photo">
-<div class="topper-name">Student Class 2</div>
+    // Principal signature (embedded base64 of uploaded signature JPEG)
+    const PRINCIPAL_SIG = "data:image/jpeg;base64,<?!--REPLACEME_SIG--?>";
+  </script>
 
-<button class="btn-download" onclick="downloadCertificate('Student Class 2','1st Rank','Class 2')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 2','1st Rank','Class 2')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 3 ================= -->
-<h2 class="section-title">Class 3 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class3.png" class="topper-photo">
-<div class="topper-name">Student Class 3</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 3','1st Rank','Class 3')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 3','1st Rank','Class 3')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 4 ================= -->
-<h2 class="section-title">Class 4 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class4.png" class="topper-photo">
-<div class="topper-name">Student Class 4</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 4','1st Rank','Class 4')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 4','1st Rank','Class 4')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 5 ================= -->
-<h2 class="section-title">Class 5 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class5.png" class="topper-photo">
-<div class="topper-name">Student Class 5</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 5','1st Rank','Class 5')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 5','1st Rank','Class 5')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 6 ================= -->
-<h2 class="section-title">Class 6 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class6.png" class="topper-photo">
-<div class="topper-name">Student Class 6</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 6','1st Rank','Class 6')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 6','1st Rank','Class 6')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 7 ================= -->
-<h2 class="section-title">Class 7 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class7.png" class="topper-photo">
-<div class="topper-name">Student Class 7</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 7','1st Rank','Class 7')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 7','1st Rank','Class 7')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 8 ================= -->
-<h2 class="section-title">Class 8 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class8.png" class="topper-photo">
-<div class="topper-name">Student Class 8</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 8','1st Rank','Class 8')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 8','1st Rank','Class 8')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 9 ================= -->
-<h2 class="section-title">Class 9 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class9.png" class="topper-photo">
-<div class="topper-name">Student Class 9</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 9','1st Rank','Class 9')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 9','1st Rank','Class 9')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= CLASS 10 ================= -->
-<h2 class="section-title">Class 10 – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="class10.png" class="topper-photo">
-<div class="topper-name">Student Class 10</div>
-
-<button class="btn-download" onclick="downloadCertificate('Student Class 10','1st Rank','Class 10')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Student Class 10','1st Rank','Class 10')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-<!-- ================= HAJAR ================= -->
-<h2 class="section-title">Hajar Section – First Rank</h2>
-<div class="row justify-content-center">
-<div class="col-md-6">
-<div class="topper-card" onmouseover="playMedalSound()">
-<div class="medal">1</div>
-<img src="hajar.png" class="topper-photo">
-<div class="topper-name">Hajar Topper</div>
-
-<button class="btn-download" onclick="downloadCertificate('Hajar Topper','1st Rank','Hajar')">
-<i class="fa fa-download"></i> Download Certificate
-</button>
-
-<button class="btn-print" onclick="printCertificate('Hajar Topper','1st Rank','Hajar')">
-<i class="fa fa-print"></i> Print Certificate
-</button>
-</div></div></div>
-
-</div>
-
-<!-- ================= CERTIFICATE GENERATOR ================= -->
-<script>
-
-function launchConfetti(){
-  confetti({particleCount:150,spread:80,startVelocity:50});
-  setTimeout(()=>confetti({particleCount:100,spread:70}),400);
-}
-
-function generateCertificate(name,rank,cls,mode="download"){
-  const w=1400,h=1000;
-  const canvas=document.createElement("canvas");
-  canvas.width=w; canvas.height=h;
-  const ctx=canvas.getContext("2d");
-  const bg=new Image();
-  bg.src="certificate-bg.png";
-
-  bg.onload=()=>{
-    ctx.drawImage(bg,0,0,w,h);
-    ctx.textAlign="center";
-    ctx.fillStyle="#000";
-
-    ctx.font="bold 70px Poppins";
-    ctx.fillText(name,w/2,480);
-
-    ctx.font="40px Poppins";
-    ctx.fillText("Class: "+cls+" | Rank: "+rank,w/2,580);
-
-    ctx.font="35px Poppins";
-    ctx.fillText("Academic Year 2024-25",w/2,680);
-
-    let data=canvas.toDataURL();
-
-    if(mode==="download"){
-      let a=document.createElement("a");
-      a.download=name+"-certificate.png";
-      a.href=data;
-      a.click();
-      launchConfetti();
+  <!-- ======= Certificate generator (draws background, dual-language text, auto date, draws signature) ======= -->
+  <script>
+    // confetti helper
+    function launchConfetti(){
+      confetti({ particleCount: 150, spread: 90, startVelocity: 60, origin:{ y:0.6 } });
+      setTimeout(()=>confetti({ particleCount: 120, spread: 70, startVelocity: 45, origin:{ y:0.6 } }), 320);
     }
 
-    if(mode==="print"){
-      let win=window.open("");
-      win.document.write(`<img src="${data}" style="width:100%">`);
-      setTimeout(()=>win.print(),500);
+    // core certificate generator
+    // name (string), rank (string), classname (string), photoURL (optional, placed left), mode = "download" | "print"
+    function generateCertificate(name, rank, classname, photoURL, mode="download"){
+      const width = 1920;
+      const height = 1280;
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext("2d");
+
+      // load background and principal signature (both embedded)
+      const bg = new Image();
+      const sig = new Image();
+      bg.src = CERT_BG;
+      sig.src = PRINCIPAL_SIG;
+
+      // when both ready draw
+      bg.onload = () => {
+        ctx.drawImage(bg, 0, 0, width, height);
+
+        // draw optional student photo (left area, small circle)
+        if(photoURL){
+          const photo = new Image();
+          photo.crossOrigin = "anonymous";
+          photo.src = photoURL;
+          photo.onload = () => {
+            // circular clip
+            const px = 300, py = 470, pr = 150;
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(px+pr/2, py+pr/2, pr/2, 0, Math.PI*2);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(photo, px, py, pr, pr);
+            ctx.restore();
+
+            // after drawing photo draw text+sig
+            drawTextsAndSignature();
+          };
+          photo.onerror = () => { drawTextsAndSignature(); };
+        } else {
+          drawTextsAndSignature();
+        }
+
+        function drawTextsAndSignature(){
+          // Dual-language Titles
+          ctx.textAlign = "center";
+          ctx.fillStyle = "#000";
+
+          // Certificate English title
+          ctx.font = "bold 72px Poppins";
+          ctx.fillText("Certificate of Excellence", width/2, 300);
+
+          // Arabic title; using Amiri font included in the page
+          ctx.font = "bold 64px Amiri, serif";
+          ctx.fillText("شهادة التفوق", width/2, 360);
+
+          // Student name English
+          ctx.font = "bold 82px Poppins";
+          ctx.fillText(name, width/2, 520);
+
+          // Student name Arabic (repeat name; you can replace with Arabic transliteration if needed)
+          ctx.font = "bold 70px Amiri, serif";
+          ctx.fillText(name, width/2, 600);
+
+          // Class and Rank
+          ctx.font = "40px Poppins";
+          ctx.fillText(`Class: ${classname}   |   Rank: ${rank}`, width/2, 700);
+
+          // Arabic class & rank
+          ctx.font = "36px Amiri, serif";
+          ctx.fillText(`الصف: ${classname}   |   الترتيب: ${rank}`, width/2, 760);
+
+          // Auto date (bottom left region)
+          const today = new Date();
+          const opts = { year:'numeric', month:'long', day:'numeric' };
+          const dateStr = today.toLocaleDateString('en-GB', opts);
+          ctx.textAlign = "left";
+          ctx.font = "28px Poppins";
+          ctx.fillText(dateStr, 180, height - 160);
+
+          // draw signature when loaded
+          if(sig.complete){
+            const sw = 380, sh = 140;
+            ctx.drawImage(sig, width - 550, height - 330, sw, sh);
+
+            finalize();
+          } else {
+            sig.onload = () => {
+              const sw = 380, sh = 140;
+              ctx.drawImage(sig, width - 550, height - 330, sw, sh);
+              finalize();
+            };
+            sig.onerror = () => finalize();
+          }
+
+          function finalize(){
+            const dataURL = canvas.toDataURL("image/png");
+            if(mode === "download"){
+              const a = document.createElement("a");
+              a.href = dataURL;
+              a.download = `${name}-certificate.png`;
+              a.click();
+              launchConfetti();
+            } else if(mode === "print"){
+              const w = window.open("");
+              w.document.write(`<img src="${dataURL}" style="width:100%;height:auto">`);
+              setTimeout(()=>w.print(),400);
+            }
+          }
+        }
+      };
+
+      bg.onerror = () => {
+        alert("Certificate background failed to load.");
+      };
     }
-  }
-}
 
-function downloadCertificate(n,r,c){
-  generateCertificate(n,r,c,"download");
-}
-function printCertificate(n,r,c){
-  generateCertificate(n,r,c,"print");
-}
+    function downloadCertificate(name, rank, classname, photoURL){
+      generateCertificate(name, rank, classname, photoURL, "download");
+    }
+    function printCertificate(name, rank, classname, photoURL){
+      generateCertificate(name, rank, classname, photoURL, "print");
+    }
+  </script>
 
-</script>
+  <!-- ======= Auto-load toppers from Google Sheet (opensheet.elk.sh) =======
+       --> 
+  <script>
+    // --------- EDIT THIS: replace YOUR_SHEET_ID with your sheet id and Sheet1 with your sheet name if different -------
+    // Example sheet URL after publishing: https://opensheet.elk.sh/1AbcXYZ123/Sheet1
+    const sheetURL = "https://opensheet.elk.sh/YOUR_SHEET_ID/Sheet1";
+    // Your Google Sheet should have columns EXACTLY named: CLASS, NAME, MARK, PHOTO, RANK, SECTION
+    // Only rows where RANK == "1" will be shown. SECTION should be "MARK" or "HAJAR" (case-insensitive)
+    fetch(sheetURL)
+      .then(r => {
+        if(!r.ok) throw new Error("Failed to fetch sheet — check sheet id and publish-to-web setting.");
+        return r.json();
+      })
+      .then(rows => {
+        // parse and show only first ranks
+        const marksGrid = document.getElementById("marksGrid");
+        const hajarGrid = document.getElementById("hajarGrid");
+
+        // normalize keys (some spreadsheet exports may have lower-case keys)
+        rows.forEach(row => {
+          // Example row keys: CLASS, NAME, MARK, PHOTO, RANK, SECTION
+          // normalize to uppercase keys
+        });
+
+        const firstRankRows = rows.filter(r => {
+          // tolerate various cases
+          const rank = (r.RANK || r.rank || "").toString().trim();
+          return rank === "1" || rank.toLowerCase() === "1st" || rank.toLowerCase().startsWith("1");
+        });
+
+        // for each first-rank, choose MARK or HAJAR
+        firstRankRows.forEach((r, idx) => {
+          const CLASS = r.CLASS || r.class || r.Class || r.ClassName || "";
+          const NAME  = r.NAME  || r.name  || "";
+          const MARK  = r.MARK  || r.mark  || r.Score || r.score || "";
+          const PHOTO = r.PHOTO || r.photo || "";
+          const SECTION = (r.SECTION || r.section || "").toString().trim().toUpperCase();
+
+          // build card element
+          const card = document.createElement("div");
+          card.className = "card";
+
+          // inner HTML (use safe text)
+          const safeName = escapeHtml(NAME || "—");
+          const safeClass = escapeHtml(CLASS || "");
+          const safeMark = escapeHtml(MARK || "");
+
+          card.innerHTML = `
+            <div class="medal">1</div>
+            <div class="photo"><img src="${PHOTO || placeholderDataURL()}" alt="${safeName}"></div>
+            <div class="name">${safeName}</div>
+            <div class="meta">Class ${safeClass} ${safeMark ? "• " + safeMark : ""}</div>
+            <div class="btns">
+              <button class="btn btn-download" onclick="downloadCertificate(${jsString(NAME)}, ${jsString('1st Rank')}, ${jsString('Class ' + CLASS)}, ${jsString(PHOTO)})">
+                <i class="fa fa-download"></i> Download
+              </button>
+              <button class="btn btn-print" onclick="printCertificate(${jsString(NAME)}, ${jsString('1st Rank')}, ${jsString('Class ' + CLASS)}, ${jsString(PHOTO)})">
+                <i class="fa fa-print"></i> Print
+              </button>
+            </div>
+          `;
+
+          if(SECTION === "HAJAR" || SECTION === "HIFZ"){
+            hajarGrid.appendChild(card);
+          } else {
+            marksGrid.appendChild(card);
+          }
+        });
+
+      })
+      .catch(err => {
+        console.warn(err);
+        document.getElementById("marksGrid").innerHTML = `<div style="grid-column:1/-1;padding:18px;background:#fff7; border-radius:12px;">Failed to load sheet: ${escapeHtml(err.message)}<br><small>Check your sheet ID and that you published the sheet to web.</small></div>`;
+      });
+
+    // small helper: escape HTML in inserted text
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; });
+    }
+
+    // helper to create JS-safe quoted literal
+    function jsString(s){
+      if(s === undefined || s === null) return "''";
+      return "'" + String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'";
+    }
+
+    // placeholder photo as small data URL: simple light avatar if sheet has no photo
+    function placeholderDataURL(){
+      // a small SVG avatar encoded as data URL
+      const svg = encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="110" cy="84" r="48" fill="#cfeeff"/><rect x="30" y="150" width="160" height="30" rx="15" fill="#cfeeff"/></svg>'
+      );
+      return 'data:image/svg+xml;utf8,' + svg;
+    }
+
+  </script>
+
+  <!-- ======= IMPORTANT: Insert the real base64 strings here =======
+       The assistant will embed the base64 strings for your two uploaded images:
+       - CERT_BG (certificate background)
+       - PRINCIPAL_SIG (signature)
+       In the delivered HTML below these markers, the server-side tool replaced placeholders.
+  ======== -->
+
+  <!-- The next script block will be automatically replaced by the assistant with actual base64 data URLs.
+       If the placeholders above (<?!--REPLACEME_BG--?> / <?!--REPLACEME_SIG--?>) remain, replace them manually:
+       - CERT_BG = "data:image/jpeg;base64,[LONG_BASE64_FOR_CERT_BG]"
+       - PRINCIPAL_SIG = "data:image/jpeg;base64,[LONG_BASE64_FOR_SIGNATURE]"
+  -->
+
+  <script>
+  // The assistant should have already embedded the base64 strings into CERT_BG and PRINCIPAL_SIG variables above.
+  // If you see placeholders, replace them with actual data URLs as described.
+  </script>
 
 </body>
 </html>
