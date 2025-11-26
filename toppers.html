@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Toppers - Noorussalam Madrasa</title>
+  <title>Annual Examination Topper - Noorussalam Madrasa</title>
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Amiri&display=swap" rel="stylesheet">
@@ -37,8 +37,9 @@
 
     .wrap{max-width:var(--max-width);margin:0 auto 60px;}
     header{text-align:center;margin-bottom:18px}
-    header h1{color:var(--accent);margin:6px 0;font-size:30px}
-    header p{margin:0;color:#0b3b50;opacity:.9}
+    header h1{color:var(--accent);margin:6px 0;font-size:32px;font-weight:700}
+    header h2{color:#124;margin:4px 0;font-size:24px;font-weight:600}
+    header p{margin:0;color:#0b3b50;opacity:.85}
 
     .sub{ text-align:center;color:#083a4a;opacity:.85;margin-bottom:20px }
 
@@ -86,13 +87,14 @@
 <body>
   <div class="wrap">
     <header>
-      <h1>NOORUSSALAM MADRASA — CLASS TOPPERS (MARK)</h1>
-      <p class="sub">First Rank only — Offline list (no Google Sheet). Edit the `toppers` array inside the script to change data.</p>
+      <h1>NOORUSSALAM MADRASA</h1>
+      <h2>Annual Examination — Class Topper</h2>
+      <p class="sub">Certificates include English + Arabic • Auto date • Principal signature</p>
     </header>
 
     <div id="grid" class="grid" aria-live="polite"></div>
 
-    <footer>© Noorussalam Madrasa — Certificates include English + Arabic • Auto date • Principal signature</footer>
+    <footer>© Noorussalam Madrasa — All Rights Reserved</footer>
   </div>
 
   <script>
@@ -114,8 +116,6 @@
 
   <script>
   // ---------------------------
-  // MANUAL TOPPERS LIST (EDIT HERE)
-  // ---------------------------
   const toppers = [
     { class: "1", name: "Ayesha Rahman", mark: "498 / 500", photo: "" },
     { class: "2", name: "Muhammed Shahid", mark: "493 / 500", photo: "" },
@@ -129,9 +129,8 @@
     { class: "10", name: "Saniya F", mark: "495 / 500", photo: "" }
   ];
 
-  // **ONLINE IMAGES FOR CERTIFICATE**
   const CERT_BG = "https://i.ibb.co/Fb5bkwrK/CERTIFICATR.jpg";
-  const SIG_SRC = "https://i.ibb.co/YOUR_SIGNATURE_IMAGE.jpg"; // replace with your online signature image URL
+  const SIG_SRC = "https://i.ibb.co/YOUR_SIGNATURE_IMAGE.jpg"; // replace with actual signature
 
   function placeholderDataURL(){
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="100%" height="100%" fill="#eef9ff"/><circle cx="110" cy="84" r="48" fill="#cfeeff"/><rect x="30" y="150" width="160" height="30" rx="15" fill="#cfeeff"/></svg>';
@@ -143,7 +142,6 @@
     const photoURL = t.photo && t.photo.length ? t.photo : placeholderDataURL();
     const card = document.createElement("div");
     card.className = "card";
-
     card.innerHTML = `
       <div class="medal">${i+1}</div>
       <div class="photo"><img src="${photoURL}" alt="${escapeHtml(t.name)}"></div>
@@ -173,134 +171,35 @@
   function jsLit(s){ if(s===undefined||s===null) return "''"; return "'" + String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') + "'"; }
 
   async function renderCertificateCanvas(name, cls, mark, photoURL){
-    const w = 1920, h = 1280;
-    const canvas = document.createElement("canvas");
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext("2d");
+    const w=1920, h=1280;
+    const canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
+    const ctx=canvas.getContext("2d");
 
-    try { 
-      const bg = await loadImage(CERT_BG);
-      ctx.drawImage(bg, 0, 0, w, h);
-    } catch(e){
-      ctx.fillStyle = "#fff"; ctx.fillRect(0,0,w,h);
-      ctx.fillStyle="#000"; ctx.font="60px Poppins"; ctx.fillText("Certificate", w/2, 300);
-    }
+    try { const bg=await loadImage(CERT_BG); ctx.drawImage(bg,0,0,w,h);} catch(e){ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);}
+    if(photoURL){try{const photo=await loadImage(photoURL);const px=260,py=470,pr=200;ctx.save();ctx.beginPath();ctx.arc(px+pr/2,py+pr/2,pr/2,0,Math.PI*2);ctx.closePath();ctx.clip();ctx.drawImage(photo,px,py,pr,pr);ctx.restore();}catch(e){}}
 
-    if(photoURL){
-      try{
-        const photo = await loadImage(photoURL);
-        const px = 260, py = 470, pr = 200;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(px + pr/2, py + pr/2, pr/2, 0, Math.PI*2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(photo, px, py, pr, pr);
-        ctx.restore();
-      }catch(e){}
-    }
+    ctx.textAlign="center";ctx.fillStyle="#000";
+    ctx.font="bold 72px Poppins"; ctx.fillText("Certificate of Excellence", w/2, 300);
+    ctx.font="bold 64px Amiri, serif"; ctx.fillText("شهادة التفوق", w/2, 365);
+    ctx.font="bold 82px Poppins"; ctx.fillText(name,w/2,520);
+    ctx.font="bold 70px Amiri, serif"; ctx.fillText(name,w/2,600);
+    ctx.font="40px Poppins"; ctx.fillText(`Class: ${cls}   |   Marks: ${mark}`, w/2,700);
+    ctx.font="36px Amiri, serif"; ctx.fillText(`الصف: ${cls}   |   الدرجات: ${mark}`, w/2,760);
 
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#000";
-    ctx.font = "bold 72px Poppins";
-    ctx.fillText("Certificate of Excellence", w/2, 300);
-    ctx.font = "bold 64px Amiri, serif";
-    ctx.fillText("شهادة التفوق", w/2, 365);
-    ctx.font = "bold 82px Poppins";
-    ctx.fillText(name, w/2, 520);
-    ctx.font = "bold 70px Amiri, serif";
-    ctx.fillText(name, w/2, 600);
-    ctx.font = "40px Poppins";
-    ctx.fillText(`Class: ${cls}   |   Marks: ${mark}`, w/2, 700);
-    ctx.font = "36px Amiri, serif";
-    ctx.fillText(`الصف: ${cls}   |   الدرجات: ${mark}`, w/2, 760);
+    const today=new Date(); const opts={day:"numeric",month:"long",year:"numeric"}; const dateStr=today.toLocaleDateString("en-GB",opts);
+    ctx.textAlign="left"; ctx.font="28px Poppins"; ctx.fillText(dateStr,140,h-160);
 
-    const today = new Date();
-    const opts = { day: "numeric", month: "long", year: "numeric" };
-    const dateStr = today.toLocaleDateString("en-GB", opts);
-    ctx.textAlign = "left";
-    ctx.font = "28px Poppins";
-    ctx.fillText(dateStr, 140, h - 160);
-
-    try{
-      const sig = await loadImage(SIG_SRC);
-      const sigW = 380, sigH = 150;
-      ctx.drawImage(sig, w - 560, h - 360, sigW, sigH);
-    }catch(e){}
-
+    try{const sig=await loadImage(SIG_SRC);const sigW=380,sigH=150;ctx.drawImage(sig,w-560,h-360,sigW,sigH);}catch(e){}
     return canvas;
   }
 
-  function loadImage(src){
-    return new Promise((res, rej) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => res(img);
-      img.onerror = () => rej(new Error("Image load error: " + src));
-      img.src = src;
-    });
-  }
+  function loadImage(src){return new Promise((res,rej)=>{const img=new Image();img.crossOrigin="anonymous";img.onload=()=>res(img);img.onerror=()=>rej(new Error("Image load error: "+src));img.src=src;});}
 
-  function celebrateConfetti() {
-    const colors = ['#ffd700', '#0d6efd', '#2dd4bf', '#ff6b6b', '#8e44ad', '#1abc9c'];
-    for(let i=0; i<3; i++){
-      confetti({
-        particleCount: 50 + Math.floor(Math.random()*50),
-        spread: 60 + Math.random()*40,
-        startVelocity: 40 + Math.random()*40,
-        gravity: 0.7 + Math.random()*0.3,
-        decay: 0.9 + Math.random()*0.05,
-        scalar: 0.8 + Math.random()*0.4,
-        origin: { x: Math.random(), y: Math.random() * 0.6 },
-        colors: colors
-      });
-    }
-  }
+  function celebrateConfetti(){const colors=['#ffd700','#0d6efd','#2dd4bf','#ff6b6b','#8e44ad','#1abc9c'];for(let i=0;i<3;i++){confetti({particleCount:50+Math.floor(Math.random()*50),spread:60+Math.random()*40,startVelocity:40+Math.random()*40,gravity:0.7+Math.random()*0.3,decay:0.9+Math.random()*0.05,scalar:0.8+Math.random()*0.4,origin:{x:Math.random(),y:Math.random()*0.6},colors:colors});}}
 
-  async function downloadPNG(name, cls, mark, photoURL){
-    try{
-      const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
-      const data = canvas.toDataURL("image/png");
-      const a = document.createElement("a");
-      a.href = data;
-      a.download = `${name.replace(/\s+/g,'_')}_certificate.png`;
-      a.click();
-      celebrateConfetti();
-    }catch(e){
-      alert("Failed to generate PNG: " + e.message);
-      console.error(e);
-    }
-  }
-
-  async function downloadPDF(name, cls, mark, photoURL){
-    try{
-      const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
-      const imgData = canvas.toDataURL("image/png");
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1122, 793] });
-      pdf.addImage(imgData, 'PNG', 0, 0, 1122, 793);
-      pdf.save(`${name.replace(/\s+/g,'_')}_certificate.pdf`);
-      celebrateConfetti();
-    }catch(e){
-      alert("Failed to generate PDF: " + e.message);
-      console.error(e);
-    }
-  }
-
-  async function printCertificate(name, cls, mark, photoURL){
-    try{
-      const canvas = await renderCertificateCanvas(name, cls, mark, photoURL);
-      const data = canvas.toDataURL("image/png");
-      const w = window.open("");
-      w.document.write(`<img src="${data}" style="width:100%;height:auto">`);
-      w.document.close();
-      setTimeout(()=>{ w.print(); celebrateConfetti(); }, 600);
-    }catch(e){
-      alert("Failed to prepare print: " + e.message);
-      console.error(e);
-    }
-  }
-
+  async function downloadPNG(name, cls, mark, photoURL){try{const canvas=await renderCertificateCanvas(name,cls,mark,photoURL);const data=canvas.toDataURL("image/png");const a=document.createElement("a");a.href=data;a.download=`${name.replace(/\s+/g,'_')}_certificate.png`;a.click();celebrateConfetti();}catch(e){alert("Failed to generate PNG: "+e.message);console.error(e);}}
+  async function downloadPDF(name, cls, mark, photoURL){try{const canvas=await renderCertificateCanvas(name,cls,mark,photoURL);const imgData=canvas.toDataURL("image/png");const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:"landscape",unit:"px",format:[1122,793]});pdf.addImage(imgData,'PNG',0,0,1122,793);pdf.save(`${name.replace(/\s+/g,'_')}_certificate.pdf`);celebrateConfetti();}catch(e){alert("Failed to generate PDF: "+e.message);console.error(e);}}
+  async function printCertificate(name, cls, mark, photoURL){try{const canvas=await renderCertificateCanvas(name,cls,mark,photoURL);const data=canvas.toDataURL("image/png");const w=window.open("");w.document.write(`<img src="${data}" style="width:100%;height:auto">`);w.document.close();setTimeout(()=>{w.print();celebrateConfetti();},600);}catch(e){alert("Failed to prepare print: "+e.message);console.error(e);}}
   </script>
 </body>
 </html>
