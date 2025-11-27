@@ -594,6 +594,206 @@
   100% { opacity:1; }
 }
 </style>
+<!-- News Ticker START -->
+<style>
+  :root{
+    --ticker-duration: 30s; /* Longer = slower. Change to 45s, 60s for slower scroll */
+    --badge-flash-duration: 1.2s;
+    --ticker-height: 56px;
+    --bg-gradient: linear-gradient(90deg,#0f172a,#0b1220 40%,#081226 100%);
+    --text-color: #fff;
+    --muted-color: rgba(255,255,255,0.75);
+    --gap: 3rem; /* gap between repeated items for continuous scroll */
+  }
+
+  /* Container */
+  .news-ticker {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--ticker-height);
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 1rem;
+    gap: 0.75rem;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    border-radius: 8px;
+    overflow: hidden;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+
+  /* Breaking badge */
+  .news-ticker__badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: rgba(255, 64, 64, 0.95);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    will-change: opacity;
+    animation: flashBadge var(--badge-flash-duration) linear infinite;
+  }
+
+  @keyframes flashBadge{
+    0%, 60% { opacity: 1; transform: scale(1); }
+    30% { opacity: 0.28; transform: scale(.98); }
+  }
+
+  /* Scroll area */
+  .news-ticker__viewport{
+    position: relative;
+    overflow: hidden;
+    flex: 1 1 auto;
+    min-width: 0; /* allow children to shrink on small screens */
+  }
+
+  .news-ticker__track{
+    display: inline-block;
+    white-space: nowrap;
+    will-change: transform;
+    /* animation controlled by variable */
+    animation: tick-move var(--ticker-duration) linear infinite;
+    font-weight: 500;
+  }
+
+  /* duplicate wrapper to make seamless loop */
+  .news-ticker__group{
+    display: inline-flex;
+    align-items: center;
+    gap: 2rem;
+    padding-right: var(--gap);
+  }
+
+  @keyframes tick-move{
+    from { transform: translateX(0%); }
+    to   { transform: translateX(-50%); } /* -50% because we duplicate the group */
+  }
+
+  /* Each news item */
+  .news-item{
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.2rem 0;
+    font-size: clamp(14px, 2.2vw, 16px); /* responsive text */
+    line-height: 1;
+    color: var(--text-color);
+  }
+  .news-item time { font-size: 12px; color: var(--muted-color); margin-right: .25rem; }
+
+  /* hover / focus: pause animation */
+  .news-ticker__viewport:focus-within .news-ticker__track,
+  .news-ticker__viewport:hover .news-ticker__track {
+    animation-play-state: paused;
+  }
+
+  /* small devices adjustments */
+  @media (max-width: 420px){
+    :root { --ticker-height: 48px; }
+    .news-ticker { padding: 0.3rem 0.6rem; border-radius: 6px; }
+    .news-ticker__badge { padding: 0.28rem 0.5rem; font-size: 13px; }
+    .news-item { gap: 0.45rem; font-size: 13px; }
+  }
+
+  /* accessibility: prefer reduced motion -> stop animation */
+  @media (prefers-reduced-motion: reduce) {
+    .news-ticker__track { animation: none !important; transform: none !important; }
+    .news-ticker__badge { animation: none !important; }
+  }
+
+  /* small visual polish */
+  .news-ticker__icon {
+    display:inline-block;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size: 12px;
+    color: rgba(255,255,255,0.95);
+  }
+</style>
+
+<div class="news-ticker" role="region" aria-label="Latest news ticker">
+  <div class="news-ticker__badge" aria-hidden="true">BREAKING</div>
+
+  <div class="news-ticker__viewport" tabindex="0" aria-live="polite">
+    <!-- The .news-ticker__track contains two identical groups for smooth looping -->
+    <div class="news-ticker__track">
+      <div class="news-ticker__group">
+        <div class="news-item">
+          <span class="news-ticker__icon">•</span>
+          <time datetime="2025-11-27">Nov 27</time>
+          <span>City council approves new coastal cleanup plan.</span>
+        </div>
+
+        <div class="news-item">
+          <span class="news-ticker__icon">•</span>
+          <time datetime="2025-11-27">Nov 27</time>
+          <span>Local startup raises $3M to expand renewable energy product line.</span>
+        </div>
+
+        <div class="news-item">
+          <span class="news-ticker__icon">•</span>
+          <time datetime="2025-11-27">Nov 27</time>
+          <span>Metro announces extended weekend subway service for festival season.</span>
+        </div>
+      </div>
+
+      <!-- duplicate for continuous scroll -->
+      <div class="news-ticker__group" aria-hidden="true">
+        <div class="news-item">
+          <span class="news-ticker__icon">•</span>
+          <time datetime="2025-11-27">Nov 27</time>
+          <span>City council approves new coastal cleanup plan.</span>
+        </div>
+
+        <div class="news-item">
+          <span class="news-ticker__icon">•</span>
+          <time datetime="2025-11-27">Nov 27</time>
+          <span>Local startup raises $3M to expand renewable energy product line.</span>
+        </div>
+
+        <div class="news-item">
+          <span class="news-ticker__icon">•</span>
+          <time datetime="2025-11-27">Nov 27</time>
+          <span>Metro announces extended weekend subway service for festival season.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Small helper to make it simple to change speed from JS if you want dynamic control.
+  // Example usage: setTickerSpeed(45); // seconds for a full loop (slower)
+  function setTickerSpeed(seconds) {
+    if (!seconds || isNaN(seconds) || seconds <= 0) return;
+    document.documentElement.style.setProperty('--ticker-duration', seconds + 's');
+  }
+
+  // Optional: pause animation on touchstart (mobile) and resume on touchend to improve UX.
+  (function(){
+    const viewport = document.querySelector('.news-ticker__viewport');
+    if (!viewport) return;
+    viewport.addEventListener('touchstart', ()=> {
+      const track = viewport.querySelector('.news-ticker__track');
+      if (track) track.style.animationPlayState = 'paused';
+    }, {passive:true});
+    viewport.addEventListener('touchend', ()=> {
+      const track = viewport.querySelector('.news-ticker__track');
+      if (track) track.style.animationPlayState = '';
+    }, {passive:true});
+  })();
+</script>
+<!-- News Ticker END -->
 
 <!-- 🔵 FLASH NEWS SCROLLING (Below Flash Message) -->
 <div class="flash-news-container">
@@ -1247,6 +1447,7 @@ ticker.addEventListener('touchend', () => {
 
 </body>
 </html>
+
 
 
 
