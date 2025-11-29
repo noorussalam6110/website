@@ -19,13 +19,6 @@ body {
   scroll-behavior: smooth;
 }
 
-/* GLOBAL CONTAINER */
-.container {
-  width: 90%;
-  max-width: 1100px;
-  margin: auto;
-}
-
 /* HERO SECTION */
 .hero {
   text-align: center;
@@ -33,6 +26,60 @@ body {
 }
 .hero h1 { font-size: 45px; font-weight: 800; color: #0A1E59; }
 .hero p { font-size: 20px; margin-top: 10px; }
+
+/* DONATION COUNTER */
+.counter-section {
+  text-align: center;
+  padding: 40px 0;
+}
+.counter-section h2 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1E3A8A;
+}
+.counter {
+  font-size: 48px;
+  font-weight: 800;
+  color: #0A1E59;
+  margin-top: 10px;
+}
+
+/* RECENT DONORS */
+.donor-wall {
+  background: #ffffff;
+  padding: 25px 20px;
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  width: 90%;
+  max-width: 500px;
+  margin: 20px auto;
+  text-align: center;
+  overflow: hidden;
+  height: 200px;
+  position: relative;
+}
+.donor-wall h3 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1E3A8A;
+  margin-bottom: 15px;
+}
+#donorList {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  padding-left: 0;
+  margin: 0;
+  list-style: none;
+}
+#donorList li {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0A1E59;
+  padding: 6px 0;
+  border-bottom: 1px dashed #ddd;
+  height: 30px;
+}
 
 /* UPI SECTION */
 .upi-section {
@@ -123,7 +170,36 @@ body {
   to   { text-shadow: 0 0 25px #ffd35c; }
 }
 
-/* AUDIO ICON HIDDEN */
+/* ADMIN PANEL */
+.admin-box {
+  background: #ffffff;
+  margin: 50px auto;
+  padding: 25px 30px;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 18px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  text-align: center;
+}
+.admin-box input {
+  width: 80%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+.admin-box button {
+  background: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  font-size: 16px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+/* AUDIO */
 audio { display: none; }
 </style>
 </head>
@@ -133,6 +209,18 @@ audio { display: none; }
 <section class="hero">
   <h1>Support Noorussalam Madrasa</h1>
   <p>Your donation is Sadaqah Jariyah</p>
+</section>
+
+<!-- DONATION COUNTER -->
+<section class="counter-section">
+  <h2>Total Donations Collected</h2>
+  <div id="totalDonation" class="counter">₹0</div>
+</section>
+
+<!-- RECENT DONORS -->
+<section class="donor-wall">
+  <h3>Recent Donors</h3>
+  <ul id="donorList"></ul>
 </section>
 
 <!-- UPI DONATION -->
@@ -152,6 +240,15 @@ audio { display: none; }
       </a>
     </div>
   </div>
+</section>
+
+<!-- ADMIN PANEL -->
+<section class="admin-box">
+  <h2>🔐 Admin Panel</h2>
+  <p>Add custom donation amount</p>
+  <input type="text" id="donorName" placeholder="Donor Name">
+  <input type="number" id="adminAmount" placeholder="Enter amount in INR">
+  <button onclick="addDonation()">Add Donation</button>
 </section>
 
 <!-- THANK YOU POPUP -->
@@ -174,29 +271,61 @@ audio { display: none; }
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script>
-// Select all UPI buttons
-const upiButtons = document.querySelectorAll(".upi-btn");
-upiButtons.forEach(btn => {
-  btn.addEventListener("click", (e) => {
-    // Play donation sound
-    document.getElementById("donateSound").play();
+// Initial total donations
+let totalDonation = 452300;
+document.getElementById("totalDonation").innerHTML = "₹" + totalDonation.toLocaleString();
 
-    // Launch confetti
-    confetti({
-      particleCount: 120,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+// Donor list array
+let donors = ["Abdul Rahman – ₹500","Anonymous – ₹2000","Afsal – ₹1000"];
+let donorList = document.getElementById("donorList");
+donors.forEach(d => {
+  let li = document.createElement("li");
+  li.textContent = d;
+  donorList.appendChild(li);
+});
 
-    // Show Thank You popup
-    const popup = document.getElementById("thankYouPopup");
-    popup.classList.add("bounce");
-    setTimeout(() => {
-      popup.classList.remove("bounce");
-    }, 1500);
+// Scroll Donor Wall
+let scrollPos = 0;
+function scrollDonors() {
+  scrollPos += 0.5;
+  if(scrollPos >= donorList.scrollHeight - donorList.parentElement.clientHeight) scrollPos = 0;
+  donorList.style.top = -scrollPos + "px";
+  requestAnimationFrame(scrollDonors);
+}
+scrollDonors();
+
+// UPI button donation
+document.querySelectorAll(".upi-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    addDonation("Anonymous", Math.floor(Math.random()*1000)+100);
   });
 });
-</script>
 
+// Admin donation function
+function addDonation(name, amount) {
+  const donorName = name || document.getElementById("donorName").value || "Anonymous";
+  const val = amount || Number(document.getElementById("adminAmount").value);
+  if(val > 0) {
+    totalDonation += val;
+    document.getElementById("totalDonation").innerHTML = "₹" + totalDonation.toLocaleString();
+
+    let li = document.createElement("li");
+    li.textContent = donorName + " – ₹" + val.toLocaleString();
+    donorList.insertBefore(li, donorList.firstChild);
+
+    if(donorList.children.length > 20) donorList.removeChild(donorList.lastChild);
+
+    document.getElementById("donateSound").play();
+    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+
+    const popup = document.getElementById("thankYouPopup");
+    popup.classList.add("bounce");
+    setTimeout(() => { popup.classList.remove("bounce"); }, 1500);
+
+    document.getElementById("donorName").value = '';
+    document.getElementById("adminAmount").value = '';
+  }
+}
+</script>
 </body>
 </html>
