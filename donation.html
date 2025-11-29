@@ -1,148 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Noorussalam Madrasa – Donate</title>
 
-<!-- Google Font & AOS -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<title>Noorussalam Madrasa – Donation Page</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<!-- AOS CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
 
 <style>
-body {font-family:'Poppins',sans-serif; background:#f8faff; margin:0; scroll-behavior:smooth;}
-section {padding:60px 15px; max-width:1100px; margin:auto;}
-h2,h3 {color:#1E3A8A; text-align:center;}
-/* Progress Bar */
-.progress-container {margin:30px 0;}
-.progress {height:24px; border-radius:12px; background:#e2e8f0;}
-.progress-bar {height:24px; border-radius:12px; width:0%; background:#1E3A8A; transition:width 1s;}
-.amount-buttons {display:flex; justify-content:center; gap:15px; margin-bottom:20px;}
-.amount-buttons button {padding:12px 25px; border:none; border-radius:12px; background:#1E3A8A; color:#fff; font-weight:600; cursor:pointer; transition:0.3s;}
-.amount-buttons button.active, .amount-buttons button:hover {background:#0A1E59;}
-.custom-amount {text-align:center; margin-bottom:20px;}
-.custom-amount input {padding:10px 15px; width:150px; font-size:16px; border-radius:10px; border:1px solid #ccc;}
-.donate-btn {display:block; margin:20px auto; background:#ffb703; color:#0A1E59; font-weight:700; font-size:18px; padding:12px 30px; border:none; border-radius:12px; cursor:pointer; transition:0.3s;}
-.donate-btn:hover {background:#ffa500;}
-.upi-section {text-align:center; margin-top:40px;}
-.upi-btn {display:inline-block; text-decoration:none; background:white; padding:15px; margin:10px; border-radius:14px; box-shadow:0 6px 18px rgba(0,0,0,0.1); color:#0A1E59; font-weight:600; transition:0.3s;}
-.upi-btn img {height:40px; display:block; margin:auto 0 5px;}
-.qr-box img {margin-top:20px; width:220px; border-radius:12px;}
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: #f8faff;
+  scroll-behavior: smooth;
+}
+
+/* LOADER */
+#loader {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+}
+.spinner {
+  width: 55px;
+  height: 55px;
+  border: 6px solid #d4d4d4;
+  border-top: 6px solid #1e3a8a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loader p { margin-top: 15px; font-size: 18px; color: #1e3a8a; }
+
+/* HERO SECTION */
+.hero {
+  text-align: center;
+  padding: 70px 20px 50px;
+}
+.hero h1 {
+  font-size: 45px;
+  font-weight: 800;
+  color: #0A1E59;
+}
+.hero p {
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+/* UPI DONATION SECTION */
+.upi-section {
+  padding: 80px 20px;
+  background: #f7faff;
+  text-align: center;
+}
+.upi-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: #1E3A8A;
+}
+.upi-sub { font-size: 18px; margin-bottom: 35px; }
+
+.upi-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+
+.upi-btn {
+  width: 170px;
+  padding: 18px;
+  text-decoration: none;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  font-size: 18px;
+  font-weight: 600;
+  color: #0A1E59;
+  text-align: center;
+  transition: 0.3s;
+}
+.upi-btn img {
+  height: 45px;
+  margin-bottom: 10px;
+}
+.upi-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+.qr-box {
+  margin-top: 50px;
+  background: white;
+  display: inline-block;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+}
+.qr-box h3 {
+  font-size: 26px;
+  margin-bottom: 20px;
+  color: #1E3A8A;
+}
+.qr-image {
+  width: 260px;
+  height: 260px;
+  border-radius: 14px;
+}
+
+/* PARALLAX MOSQUE */
+.parallax-mosque {
+  background-image: url('https://i.imgur.com/Jitq2I1.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  padding: 140px 20px;
+  position: relative;
+  text-align: center;
+  color: white;
+}
+.parallax-mosque::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.45);
+}
+.overlay-text { position: relative; }
+.overlay-text h2 {
+  font-size: 42px;
+  font-weight: 800;
+  animation: glowText 3s infinite alternate;
+}
+.overlay-text p { font-size: 20px; margin-top: 10px; }
+@keyframes glowText {
+  from { text-shadow: 0 0 12px #ffe38a; }
+  to   { text-shadow: 0 0 25px #ffd35c; }
+}
+
+/* COUNTDOWN TIMER */
+.campaign {
+  text-align: center;
+  padding: 60px 20px;
+  background: #eef3ff;
+}
+#countdown {
+  font-size: 32px;
+  font-weight: bold;
+  color: #0A1E59;
+}
+
+/* FLOATING DONATE BUTTON */
+.floating-donate {
+  position:fixed; bottom:25px; right:25px; background:#FFD700; color:#0A1E59;
+  border:none; border-radius:50px; padding:15px 25px; font-size:18px; cursor:pointer;
+  box-shadow:0 8px 22px rgba(0,0,0,0.2); z-index:9998; transition:0.3s;
+  animation: pulse 2s infinite;
+}
+.floating-donate:hover { background:#e6c200; transform:translateY(-3px); animation:none; }
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow:0 8px 22px rgba(0,0,0,0.2); }
+  50% { transform: scale(1.1); box-shadow:0 12px 30px rgba(0,0,0,0.3); }
+  100% { transform: scale(1); box-shadow:0 8px 22px rgba(0,0,0,0.2); }
+}
+
+/* CONFETTI */
+.confetti {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  background-color: #FFD700;
+  pointer-events: none;
+  opacity: 0.9;
+  z-index: 9999;
+  border-radius: 50%;
+  animation: confetti-fall 1.5s forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity:1; }
+  100% { transform: translateY(300px) rotate(720deg); opacity:0; }
+}
 </style>
 </head>
 <body>
 
+<!-- LOADER -->
+<div id="loader">
+  <div class="spinner"></div>
+  <p>Loading...</p>
+</div>
+
 <!-- HERO -->
-<section data-aos="fade-down">
-<h2>Support Noorussalam Madrasa</h2>
-<p style="text-align:center; color:#1E3A8A; font-weight:600;">Your donation is Sadaqah Jariyah</p>
+<section class="hero" data-aos="fade-up">
+  <h1>Support Noorussalam Madrasa</h1>
+  <p>Your donation is Sadaqah Jariyah</p>
 </section>
 
-<!-- PROGRESS BAR -->
-<section data-aos="fade-up">
-<div class="progress-container">
-  <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:5px;">
-    <span>₹<span id="currentDonation">0</span></span>
-    <span>Goal: ₹500,000</span>
+<!-- UPI DONATION SECTION -->
+<section class="upi-section" data-aos="fade-up" data-aos-delay="100">
+  <div class="container">
+    <h2 class="upi-title">Donate Easily via UPI</h2>
+    <p class="upi-sub">Fast, secure & direct donation</p>
+
+    <div class="upi-buttons">
+      <a class="upi-btn" href="upi://pay?pa=YOURUPIID@okbank&pn=Noorussalam%20Madrasa&cu=INR">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Google_Pay_Logo.svg">
+        Google Pay
+      </a>
+      <a class="upi-btn" href="upi://pay?pa=YOURUPIID@okbank&pn=Noorussalam%20Madrasa&cu=INR">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fc/PhonePe_Logo.svg">
+        PhonePe
+      </a>
+      <a class="upi-btn" href="upi://pay?pa=YOURUPIID@okbank&pn=Noorussalam%20Madrasa&cu=INR">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Paytm_logo.png">
+        Paytm
+      </a>
+    </div>
+
+    <div class="qr-box" data-aos="zoom-in" data-aos-delay="200">
+      <h3>Scan & Donate</h3>
+      <img src="YOUR_QR_IMAGE.png" class="qr-image">
+    </div>
   </div>
-  <div class="progress">
-    <div id="donationProgress" class="progress-bar"></div>
+</section>
+
+<!-- PARALLAX SECTION -->
+<section class="parallax-mosque" data-aos="fade-up" data-aos-delay="150">
+  <div class="overlay-text">
+    <h2>“Whoever builds a masjid, Allah will build for him a house in Jannah.”</h2>
+    <p>— Prophet Muhammad ﷺ</p>
   </div>
-</div>
-
-<!-- Amount Buttons -->
-<div class="amount-buttons">
-  <button data-amount="500">₹500</button>
-  <button data-amount="1000">₹1000</button>
-  <button data-amount="2000">₹2000</button>
-  <button data-amount="5000">₹5000</button>
-</div>
-<div class="custom-amount">
-  <input type="number" id="customAmount" placeholder="Custom ₹">
-</div>
-<button class="donate-btn" id="donateNow">Donate Now</button>
 </section>
 
-<!-- UPI / QR -->
-<section class="upi-section" data-aos="fade-up">
-<h3>Or Donate via UPI</h3>
-<a href="#" class="upi-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Google_Pay_Logo.svg">Google Pay</a>
-<a href="#" class="upi-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fc/PhonePe_Logo.svg">PhonePe</a>
-<a href="#" class="upi-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Paytm_logo.png">Paytm</a>
-<div class="qr-box">
-  <img src="YOUR_QR_IMAGE.png" alt="UPI QR">
-</div>
+<!-- COUNTDOWN -->
+<section class="campaign" data-aos="fade-up" data-aos-delay="200">
+  <h2>🚀 Special Ramadan Campaign</h2>
+  <p>Ends in:</p>
+  <div id="countdown"></div>
 </section>
 
-<!-- Audio -->
-<audio id="donateSound" src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3"></audio>
+<!-- FLOATING DONATE BUTTON -->
+<button class="floating-donate" onclick="donateClick()">Donate Now</button>
+
+<!-- DONATION SOUND -->
+<audio id="donateSound">
+  <source src="https://assets.mixkit.co/sfx/preview/mixkit-software-interface-start-2574.mp3" type="audio/mpeg">
+</audio>
 
 <!-- SCRIPTS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <script>
-// AOS
-AOS.init({once:true});
+AOS.init({ duration: 1000, once: true });
 
-// Initial donation
-let donationGoal = 500000;
-let currentDonation = 452300;
-document.getElementById('currentDonation').innerText = currentDonation.toLocaleString();
-updateProgressBar();
+// LOADER
+window.onload = () => { setTimeout(()=>{ document.getElementById("loader").style.display="none"; }, 900); };
 
-// Live donation simulation (random increases)
-setInterval(()=>{
-  let randomDonation = Math.floor(Math.random()*2000);
-  currentDonation += randomDonation;
-  if(currentDonation>donationGoal) currentDonation = donationGoal;
-  document.getElementById('currentDonation').innerText = currentDonation.toLocaleString();
-  updateProgressBar();
-}, 5000);
+// COUNTDOWN
+let endDate = new Date("March 30, 2025 23:59:59").getTime();
+setInterval(() => {
+  let now = Date.now();
+  let diff = endDate - now;
+  let d = Math.floor(diff / (1000*60*60*24));
+  let h = Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  let m = Math.floor((diff%(1000*60*60))/(1000*60));
+  let s = Math.floor((diff%(1000*60))/1000);
+  document.getElementById("countdown").innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+}, 1000);
 
-function updateProgressBar() {
-  let percent = (currentDonation/donationGoal)*100;
-  if(percent>100) percent=100;
-  document.getElementById('donationProgress').style.width = percent+'%';
-}
+// DONATE CLICK EFFECT
+function donateClick() {
+  document.querySelector('.upi-section').scrollIntoView({ behavior: 'smooth' });
+  const sound = document.getElementById('donateSound');
+  sound.currentTime = 0;
+  sound.play();
 
-// Amount buttons
-const buttons = document.querySelectorAll('.amount-buttons button');
-let selectedAmount = 0;
-buttons.forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    buttons.forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    selectedAmount = Number(btn.dataset.amount);
-    document.getElementById('customAmount').value='';
-  });
-});
-
-// Custom input
-const customInput = document.getElementById('customAmount');
-customInput.addEventListener('input', ()=>{
-  selectedAmount = Number(customInput.value);
-  buttons.forEach(b=>b.classList.remove('active'));
-});
-
-// Donate Now
-function donate() {
-  if(selectedAmount>0){
-    currentDonation += selectedAmount;
-    if(currentDonation>donationGoal) currentDonation = donationGoal;
-    document.getElementById('currentDonation').innerText = currentDonation.toLocaleString();
-    updateProgressBar();
-    document.getElementById('donateSound').play();
-    confetti({ particleCount:150, spread:70, origin:{y:0.6}});
-    alert('Thank you for donating ₹'+selectedAmount+'! 🙏');
-    selectedAmount=0;
-    customInput.value='';
-    buttons.forEach(b=>b.classList.remove('active'));
-  } else {
-    alert('Please select or enter a donation amount');
+  for(let i=0;i<20;i++){
+    let confetti = document.createElement('div');
+    confetti.classList.add('confetti');
+    confetti.style.left = Math.random()*window.innerWidth + 'px';
+    confetti.style.backgroundColor = ['#FFD700','#FF8C00','#FF3E3E','#1E3A8A','#00FF99'][Math.floor(Math.random()*5)];
+    confetti.style.animationDuration = (1 + Math.random()) + 's';
+    document.body.appendChild(confetti);
+    confetti.addEventListener('animationend',()=>{ confetti.remove(); });
   }
 }
-
-document.getElementById('donateNow').addEventListener('click',donate);
 </script>
+
 </body>
 </html>
