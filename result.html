@@ -11,182 +11,703 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
   <style>
+    :root {
+      --primary: #0d6efd;
+      --primary-light: #3a8cff;
+      --primary-dark: #0a58ca;
+      --secondary: #20c997;
+      --accent: #ff6b6b;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     /* Animated Gradient Background */
     body {
-      margin: 0;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
-      font-family: 'Rubik', sans-serif;
-      background: linear-gradient(120deg, #c3ecff, #0d6efd, #a0d2ff, #0a58ca);
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
-      color: #333;
+      color: #fff;
       padding: 20px;
       overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 80%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(255,255,255,0.05) 0%, transparent 50%);
+      z-index: -2;
     }
 
     @keyframes gradientBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
 
-    /* Headings */
-    .main-heading {
-      font-size: 2rem;
-      font-weight: 700;
+    /* Floating particles */
+    .particles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      animation: float 20s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(100vw) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Headings with animation */
+    .header-container {
       text-align: center;
-      margin: 30px 0 10px 0;
-      color: #fff;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      margin-bottom: 2rem;
+      animation: fadeInDown 1s ease-out;
+    }
+
+    .main-heading {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      background: linear-gradient(to right, #fff, #f8f9fa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 1px;
+      animation: glow 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+      from {
+        text-shadow: 0 0 10px rgba(255,255,255,0.5),
+                     0 0 20px rgba(255,255,255,0.3),
+                     0 0 30px rgba(255,255,255,0.2);
+      }
+      to {
+        text-shadow: 0 0 20px rgba(255,255,255,0.8),
+                     0 0 30px rgba(255,255,255,0.6),
+                     0 0 40px rgba(255,255,255,0.4);
+      }
     }
 
     .sub-heading {
-      font-size: 1.4rem;
+      font-size: 1.8rem;
       font-weight: 600;
-      text-align: center;
-      color: #e0f0ff;
-      margin: 5px 0;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      margin-bottom: 0.5rem;
+      color: #e0f7ff;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.3s forwards;
     }
 
     .sub-heading-small {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #d0e4ff;
-      margin: 5px 0 30px 0;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: #c2e9ff;
+      text-shadow: 0 1px 5px rgba(0,0,0,0.15);
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.6s forwards;
     }
 
-    /* Result Box */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Result Box with glass morphism */
     .result-box {
       position: relative;
-      background: rgba(255,255,255,0.95);
-      color: #333;
-      border-radius: 20px;
-      padding: 40px 30px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      color: var(--dark);
+      border-radius: 25px;
+      padding: 3rem;
       text-align: center;
-      max-width: 480px;
+      max-width: 550px;
       width: 100%;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 
+        0 25px 50px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.3);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid rgba(255,255,255,0.2);
+      opacity: 0;
+      animation: fadeInUp 1s ease-out 0.9s forwards;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .result-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255,255,255,0.1),
+        transparent
+      );
+      transform: rotate(45deg);
+      animation: shine 3s infinite;
+      z-index: -1;
+    }
+
+    @keyframes shine {
+      0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+      }
+      100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+      }
     }
 
     .result-box:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      transform: translateY(-10px) scale(1.02);
+      box-shadow: 
+        0 35px 70px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.4);
     }
 
     .result-box h2 {
-      font-weight: 600;
-      margin-bottom: 15px;
-      font-size: 1.6rem;
-      color: #0b5ed7;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+      font-size: 2rem;
+      color: var(--primary-dark);
+      position: relative;
+      display: inline-block;
+      padding-bottom: 15px;
+    }
+
+    .result-box h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: var(--gradient-1);
+      border-radius: 2px;
     }
 
     .result-box p {
-      color: #495057;
-      margin-bottom: 30px;
-      font-size: 1rem;
+      color: #6c757d;
+      margin-bottom: 2.5rem;
+      font-size: 1.1rem;
+      line-height: 1.6;
     }
 
-    /* Buttons */
-    .btn-success {
+    /* Enhanced Buttons */
+    .btn-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      margin-bottom: 2rem;
+    }
+
+    .result-btn {
+      position: relative;
       border: none;
-      border-radius: 10px;
-      padding: 12px 25px;
-      font-size: 1rem;
+      border-radius: 15px;
+      padding: 1.2rem 2rem;
+      font-size: 1.1rem;
       font-weight: 600;
       width: 100%;
-      margin-bottom: 15px;
       color: #fff;
-      background: linear-gradient(90deg, #0d6efd, #3a8cff);
-      transition: all 0.3s ease;
+      background: var(--gradient-1);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-decoration: none;
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
     }
 
-    .btn-success:hover {
-      background: linear-gradient(90deg, #3a8cff, #0d6efd);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,123,255,0.3);
+    .result-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--gradient-2);
+      transition: 0.5s;
+      z-index: -1;
     }
 
-    .btn-success i { margin-right: 8px; }
-
-    .btn-outline-primary {
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-weight: 500;
-      color: #0d6efd;
-      border-color: #0d6efd;
-      transition: all 0.3s ease;
-    }
-
-    .btn-outline-primary:hover {
-      background-color: #0d6efd;
+    .result-btn:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
       color: #fff;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0,123,255,0.2);
+    }
+
+    .result-btn:hover::before {
+      left: 0;
+    }
+
+    .result-btn:nth-child(2) {
+      background: var(--gradient-3);
+      box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+    }
+
+    .result-btn:nth-child(2)::before {
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+    }
+
+    .result-btn:nth-child(3) {
+      background: var(--gradient-2);
+      box-shadow: 0 10px 25px rgba(240, 147, 251, 0.3);
+    }
+
+    .result-btn:nth-child(3)::before {
+      background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+    }
+
+    .result-btn i {
+      font-size: 1.3rem;
+      transition: transform 0.3s;
+    }
+
+    .result-btn:hover i {
+      transform: translateX(5px);
+    }
+
+    /* Back button */
+    .back-btn {
+      border-radius: 12px;
+      padding: 0.9rem 2rem;
+      font-weight: 600;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      background: transparent;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .back-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--primary);
+      transition: 0.4s;
+      z-index: -1;
+    }
+
+    .back-btn:hover {
+      color: #fff;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(13, 110, 253, 0.3);
+    }
+
+    .back-btn:hover::before {
+      left: 0;
+    }
+
+    .back-btn i {
+      transition: transform 0.3s;
+    }
+
+    .back-btn:hover i {
+      transform: translateX(-5px);
     }
 
     /* Footer */
     footer {
       text-align: center;
-      color: #fff;
-      font-size: 0.9rem;
-      margin: 40px 0 20px 0;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.95rem;
+      margin: 3rem 0 1rem;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      width: 100%;
+      max-width: 800px;
+      animation: fadeIn 1s ease-out 1.2s forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* Loading animation */
+    .loader {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Ripple effect for buttons */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.6);
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
     }
 
     /* Mobile Responsive */
-    @media (max-width: 576px) {
-      .main-heading { font-size: 1.8rem; margin-top: 20px; }
-      .sub-heading { font-size: 1.2rem; }
-      .sub-heading-small { font-size: 0.95rem; }
-      .result-box { padding: 30px 20px; }
-      .result-box h2 { font-size: 1.4rem; }
-      .btn-success { font-size: 0.95rem; padding: 10px 20px; }
-      .btn-outline-primary { font-size: 0.95rem; padding: 8px 18px; }
+    @media (max-width: 768px) {
+      .main-heading {
+        font-size: 2.5rem;
+      }
+      
+      .sub-heading {
+        font-size: 1.5rem;
+      }
+      
+      .sub-heading-small {
+        font-size: 1rem;
+      }
+      
+      .result-box {
+        padding: 2rem 1.5rem;
+        margin: 0 15px;
+      }
+      
+      .result-box h2 {
+        font-size: 1.7rem;
+      }
+      
+      .result-btn {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+      }
+      
+      .back-btn {
+        padding: 0.8rem 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .main-heading {
+        font-size: 2rem;
+      }
+      
+      .sub-heading {
+        font-size: 1.2rem;
+      }
+      
+      .result-box {
+        padding: 1.5rem;
+      }
+      
+      .result-btn {
+        padding: 0.9rem;
+        font-size: 0.95rem;
+      }
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      
+      .result-box {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+      }
+      
+      .btn-container, .back-btn {
+        display: none !important;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Headings -->
-  <div class="main-heading">RESULT PORTAL</div>
-  <div class="sub-heading">NOORUSSALAM MADRASA</div>
-  <div class="sub-heading-small">KAMBIPPALAM-KERALA ESTATE</div>
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Header -->
+  <div class="header-container">
+    <h1 class="main-heading">RESULT PORTAL</h1>
+    <div class="sub-heading">NOORUSSALAM MADRASA</div>
+    <div class="sub-heading-small">KAMBIPPALAM-KERALA ESTATE</div>
+  </div>
 
   <!-- Result Box -->
   <div class="result-box">
     <h2>Final Examination Result 2025-26</h2>
-    <p>Click below to view your latest examination results.</p>
+    <p>Click below to view your latest examination results with comprehensive details and analytics.</p>
 
-    <a href="https://script.google.com/macros/s/AKfycbwTDLJv711J1fWfsmRWfTs_LuDjhbVANGLdjWnt5GksKfr8ZlqC7k1UEVaB24VuLkc-/exec" class="btn btn-success">
-      <i class="fa-solid fa-book-open-reader"></i> Final Examination Result
-    </a>
-    
-    <a href="https://result.samastha.info/" class="btn btn-success">
-      <i class="fa-solid fa-book-open-reader"></i> Samastha Public Exam Result
-    </a>
-    
-    <a href="toppers.html" class="btn btn-success">
-      <i class="fa-solid fa-graduation-cap"></i> Toppers Poster
-    </a>
-     
+    <div class="btn-container">
+      <a href="https://script.google.com/macros/s/AKfycbwTDLJv711J1fWfsmRWfTs_LuDjhbVANGLdjWnt5GksKfr8ZlqC7k1UEVaB24VuLkc-/exec" 
+         class="result-btn" 
+         id="finalResultBtn">
+        <i class="fa-solid fa-book-open-reader"></i>
+        <span>Final Examination Result</span>
+      </a>
+      
+      <a href="https://result.samastha.info/" 
+         class="result-btn" 
+         id="samasthaBtn">
+        <i class="fa-solid fa-book-open-reader"></i>
+        <span>Samastha Public Exam Result</span>
+      </a>
+      
+      <a href="maintenance.html" 
+         class="result-btn" 
+         id="toppersBtn">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <span>Toppers Poster</span>
+      </a>
+    </div>
 
-    <div class="text-center mt-3">
-      <a href="index.html" class="btn btn-outline-primary">← Back to Home</a>
+    <div class="text-center mt-4">
+      <a href="index.html" class="back-btn" id="backBtn">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Home</span>
+      </a>
     </div>
   </div>
 
-  <footer>© 2025 Noorussalam Madrasa | All Rights Reserved</footer>
+  <footer>
+    © 2025 Noorussalam Madrasa | All Rights Reserved<br>
+    <small>Designed by Suhail kerala</small>
+  </footer>
 
+  <script>
+    // Create floating particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 25;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random size
+        const size = Math.random() * 20 + 5;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        // Random position
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation delay and duration
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        particle.style.animationDuration = `${Math.random() * 10 + 15}s`;
+        
+        // Random opacity
+        particle.style.opacity = Math.random() * 0.5 + 0.2;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // Ripple effect for buttons
+    function createRipple(event) {
+      const button = event.currentTarget;
+      const circle = document.createElement('span');
+      const diameter = Math.max(button.clientWidth, button.clientHeight);
+      const radius = diameter / 2;
+      
+      circle.style.width = circle.style.height = `${diameter}px`;
+      circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+      circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+      circle.classList.add('ripple');
+      
+      const ripple = button.getElementsByClassName('ripple')[0];
+      if (ripple) {
+        ripple.remove();
+      }
+      
+      button.appendChild(circle);
+    }
+    
+    // Loading animation for buttons
+    function addLoadingAnimation(button) {
+      const loader = document.createElement('div');
+      loader.className = 'loader';
+      button.insertBefore(loader, button.firstChild);
+      button.disabled = true;
+    }
+    
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      // Create particles
+      createParticles();
+      
+      // Add ripple effect to all buttons
+      const buttons = document.querySelectorAll('.result-btn, .back-btn');
+      buttons.forEach(button => {
+        button.addEventListener('click', createRipple);
+      });
+      
+      // Add loading effect to result buttons
+      const resultButtons = document.querySelectorAll('.result-btn');
+      resultButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+          // Only add loading if it's an external link
+          if (this.href.includes('http')) {
+            e.preventDefault();
+            addLoadingAnimation(this);
+            
+            // Simulate loading and redirect
+            setTimeout(() => {
+              window.location.href = this.href;
+            }, 500);
+          }
+        });
+      });
+      
+      // Add hover effect to result box
+      const resultBox = document.querySelector('.result-box');
+      resultBox.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-10px) scale(1.02)';
+      });
+      
+      resultBox.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+      
+      // Add keyboard navigation
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.getElementById('backBtn').click();
+        }
+        
+        if (e.altKey && e.key === '1') {
+          document.getElementById('finalResultBtn').click();
+        }
+        
+        if (e.altKey && e.key === '2') {
+          document.getElementById('samasthaBtn').click();
+        }
+        
+        if (e.altKey && e.key === '3') {
+          document.getElementById('toppersBtn').click();
+        }
+      });
+      
+      // Add scroll animation
+      const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, observerOptions);
+      
+      // Observe elements for scroll animations
+      const animatedElements = document.querySelectorAll('.result-box, footer');
+      animatedElements.forEach(el => {
+        observer.observe(el);
+      });
+    });
+    
+    // Add smooth scroll behavior
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Add touch optimization for mobile
+    document.addEventListener('touchstart', function() {}, {passive: true});
+  </script>
 </body>
 </html>
-
-
-
