@@ -508,34 +508,33 @@ header h1 {
   background: rgba(108, 117, 125, 0.08);
 }
 
+/* ONLY PREVIEW BUTTON - REMOVED PDF AND PRINT BUTTONS */
 .btns {
   display: flex;
-  gap: 12px;
   justify-content: center;
   margin-top: 20px;
-  flex-wrap: wrap;
 }
 
 .btn {
-  padding: 12px 20px;
+  padding: 14px 40px;
   border-radius: 12px;
   border: none;
   cursor: pointer;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-width: 110px;
+  gap: 10px;
+  min-width: 200px;
   position: relative;
   overflow: hidden;
 }
 
 .btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn::after {
@@ -548,32 +547,25 @@ header h1 {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.2),
+    rgba(255, 255, 255, 0.3),
     transparent
   );
-  transition: left 0.5s ease;
+  transition: left 0.6s ease;
 }
 
 .btn:hover::after {
   left: 100%;
 }
 
-.btn-png {
-  background: linear-gradient(135deg, #ffd700 0%, #ffcc00 100%);
-  color: #000;
-  border: 1px solid rgba(255, 215, 0, 0.3);
-}
-
-.btn-pdf {
+.btn-preview {
   background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
   color: #fff;
   border: 1px solid rgba(13, 110, 253, 0.3);
+  box-shadow: 0 6px 20px rgba(13, 110, 253, 0.25);
 }
 
-.btn-print {
-  background: linear-gradient(135deg, #10b981 0%, #0da36a 100%);
-  color: #fff;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+.btn-preview:hover {
+  box-shadow: 0 10px 30px rgba(13, 110, 253, 0.4);
 }
 
 /* Footer */
@@ -714,6 +706,11 @@ footer p {
     width: 140px;
     height: 140px;
   }
+  
+  .btn {
+    min-width: 180px;
+    padding: 12px 30px;
+  }
 }
 
 @media(max-width: 480px) {
@@ -722,14 +719,10 @@ footer p {
     height: 130px;
   }
   
-  .btns {
-    flex-direction: column;
-    align-items: center;
-  }
-  
   .btn {
-    width: 100%;
-    max-width: 200px;
+    min-width: 160px;
+    padding: 12px 25px;
+    font-size: 15px;
   }
 }
 
@@ -779,7 +772,7 @@ footer p {
   transform: rotate(90deg);
 }
 
-/* Preview buttons */
+/* Preview buttons - Now only Download PNG and Download PDF */
 .preview-buttons {
   position: fixed;
   bottom: 30px;
@@ -885,8 +878,8 @@ footer p {
         <ul class="instructions-list">
           <li><i class="fas fa-camera"></i> Upload high-quality photos for best results</li>
           <li><i class="fas fa-eye"></i> Preview the certificate before downloading</li>
-          <li><i class="fas fa-download"></i> Download as PNG or PDF format</li>
-          <li><i class="fas fa-print"></i> Print directly if needed</li>
+          <li><i class="fas fa-download"></i> Download as PNG or PDF from preview</li>
+          <li><i class="fas fa-trash-alt"></i> Clear all photos if needed</li>
         </ul>
       </div>
     </div>
@@ -1130,14 +1123,8 @@ classesData.forEach((cls, classIndex) => {
         <div class="rank-label ${isFirst ? 'first' : 'second'}">${topper.rank} Place in Class</div>
         <div class="student-meta">Marks: ${escapeHtml(topper.mark)}</div>
         <div class="btns">
-          <button class="btn btn-png" onclick="previewCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}')">
-            <i class="fas fa-eye"></i> Preview
-          </button>
-          <button class="btn btn-pdf" onclick="generateCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}', 'pdf')">
-            <i class="fas fa-file-pdf"></i> PDF
-          </button>
-          <button class="btn btn-print" onclick="generateCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}', 'print')">
-            <i class="fas fa-print"></i> Print
+          <button class="btn btn-preview" onclick="previewCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}')">
+            <i class="fas fa-eye"></i> Preview Certificate
           </button>
         </div>
       </div>
@@ -1434,52 +1421,6 @@ async function downloadCertificate(name, cls, mark, rank, photo, type) {
     hideLoading();
     console.error("Error generating certificate:", error);
     showNotification("Error generating certificate. Please try again.", 'error');
-  }
-}
-
-// Generate certificate (for print)
-async function generateCertificate(name, cls, mark, rank, photo, type) {
-  if (type === 'print') {
-    try {
-      showLoading();
-      const canvas = await renderCertificateCanvas(name, cls, mark, rank, photo);
-      const img = canvas.toDataURL("image/png");
-      
-      const w = window.open(""); 
-      w.document.write(`
-        <html>
-          <head>
-            <title>Print Certificate - ${name}</title>
-            <style>
-              body { margin:0; display:flex; justify-content:center; align-items:center; min-height:100vh; background:#f0f0f0; }
-              img { max-width:100%; max-height:100%; }
-              @media print {
-                body { background:white; }
-              }
-            </style>
-          </head>
-          <body>
-            <img src="${img}" alt="Certificate">
-          </body>
-        </html>
-      `); 
-      w.document.close(); 
-      
-      // Wait for image to load
-      w.onload = function() {
-        hideLoading();
-        setTimeout(() => w.print(), 100);
-      };
-      
-      showNotification(`Print dialog opened for ${name}'s certificate`, 'success');
-    } catch(error) {
-      hideLoading();
-      console.error("Error printing certificate:", error);
-      showNotification("Error printing certificate. Please try again.", 'error');
-    }
-  } else {
-    // For PNG and PDF, show preview first
-    previewCertificate(name, cls, mark, rank, photo);
   }
 }
 
