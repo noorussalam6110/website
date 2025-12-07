@@ -2,9 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Student Portal | Noorussalam Madrasa</title>
 
+  <!-- Preload critical resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -16,292 +19,286 @@
       --primary-light: #2d3f9e;
       --accent: #f3c13a;
       --accent-light: #ffda5c;
+      --success: #10b981;
+      --error: #ef4444;
       --gold-gradient: linear-gradient(135deg, #f3c13a 0%, #ffda5c 50%, #f3c13a 100%);
       --blue-gradient: linear-gradient(135deg, #0a194f 0%, #1a2c7a 50%, #2d3f9e 100%);
-      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
-      --shadow-medium: 0 15px 40px rgba(0, 0, 0, 0.12);
-      --shadow-strong: 0 20px 50px rgba(0, 0, 0, 0.15);
-      --transition-smooth: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --shadow-strong: 0 12px 32px rgba(0, 0, 0, 0.15);
+      --transition-smooth: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      font-size: 16px;
+      height: 100%;
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--blue-gradient);
       color: white;
       min-height: 100vh;
+      min-height: -webkit-fill-available;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       position: relative;
-      overflow: hidden;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* Animated Background Elements */
-    .bg-pattern {
-      position: absolute;
+    /* Mobile-specific safe areas */
+    @supports (padding: max(0px)) {
+      body {
+        padding-left: max(16px, env(safe-area-inset-left));
+        padding-right: max(16px, env(safe-area-inset-right));
+        padding-top: max(16px, env(safe-area-inset-top));
+        padding-bottom: max(16px, env(safe-area-inset-bottom));
+      }
+    }
+
+    /* Simplified background for mobile performance */
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      opacity: 0.1;
-      background-image: 
-        radial-gradient(circle at 20% 30%, rgba(243, 193, 58, 0.3) 2px, transparent 2px),
-        radial-gradient(circle at 80% 70%, rgba(243, 193, 58, 0.3) 2px, transparent 2px);
-      background-size: 150px 150px, 200px 200px;
-      animation: patternMove 25s linear infinite;
-      pointer-events: none;
-    }
-
-    @keyframes patternMove {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 150px 150px, 200px 200px; }
-    }
-
-    /* Floating Elements */
-    .floating-element {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(5px);
-      animation: floatElement 15s infinite linear;
-      pointer-events: none;
+      background: var(--blue-gradient);
       z-index: 1;
     }
 
-    .floating-element:nth-child(1) {
-      width: 100px;
-      height: 100px;
-      top: 10%;
-      left: 5%;
-      animation-delay: 0s;
-      background: radial-gradient(circle, rgba(243, 193, 58, 0.2) 0%, transparent 70%);
+    /* Mobile-optimized floating elements */
+    .mobile-orb {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      animation: floatMobile 20s infinite ease-in-out;
+      pointer-events: none;
+      z-index: 1;
+      filter: blur(8px);
     }
 
-    .floating-element:nth-child(2) {
+    .mobile-orb:nth-child(1) {
+      width: 200px;
+      height: 200px;
+      top: -100px;
+      right: -100px;
+      background: radial-gradient(circle, rgba(243, 193, 58, 0.1) 0%, transparent 70%);
+      animation-delay: 0s;
+    }
+
+    .mobile-orb:nth-child(2) {
       width: 150px;
       height: 150px;
-      bottom: 15%;
-      right: 8%;
-      animation-delay: 5s;
-      background: radial-gradient(circle, rgba(26, 44, 122, 0.2) 0%, transparent 70%);
-    }
-
-    .floating-element:nth-child(3) {
-      width: 70px;
-      height: 70px;
-      top: 60%;
-      left: 15%;
+      bottom: -75px;
+      left: -75px;
+      background: radial-gradient(circle, rgba(26, 44, 122, 0.1) 0%, transparent 70%);
       animation-delay: 10s;
-      background: radial-gradient(circle, rgba(243, 193, 58, 0.15) 0%, transparent 70%);
     }
 
-    @keyframes floatElement {
-      0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.7;
+    @keyframes floatMobile {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
       }
       50% {
-        transform: translateY(-40px) rotate(180deg);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(0) rotate(360deg);
-        opacity: 0.7;
+        transform: translate(-20px, -20px) scale(1.1);
+        opacity: 0.5;
       }
     }
 
-    /* Twinkling Stars */
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle 3s infinite;
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .star:nth-child(1) { top: 20%; left: 10%; width: 3px; height: 3px; animation-delay: 0s; }
-    .star:nth-child(2) { top: 40%; left: 20%; width: 2px; height: 2px; animation-delay: 0.5s; }
-    .star:nth-child(3) { top: 60%; left: 30%; width: 3px; height: 3px; animation-delay: 1s; }
-    .star:nth-child(4) { top: 30%; left: 80%; width: 2px; height: 2px; animation-delay: 1.5s; }
-    .star:nth-child(5) { top: 70%; left: 70%; width: 3px; height: 3px; animation-delay: 2s; }
-    .star:nth-child(6) { top: 10%; left: 50%; width: 2px; height: 2px; animation-delay: 2.5s; }
-
-    @keyframes twinkle {
-      0%, 100% { opacity: 0.2; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.2); }
-    }
-
-    /* Login Container */
-    .login-container {
+    /* Main Container */
+    .mobile-container {
+      width: 100%;
+      max-width: 420px;
       position: relative;
       z-index: 2;
-      width: 100%;
-      max-width: 450px;
     }
 
-    /* Login Card */
-    .login-card {
-      background: rgba(255, 255, 255, 0.95);
+    /* Mobile Header - For better mobile UX */
+    .mobile-header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 0 16px;
+    }
+
+    .mobile-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      background: white;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid var(--accent);
+      box-shadow: 0 8px 25px rgba(243, 193, 58, 0.25);
+      overflow: hidden;
+      padding: 8px;
+    }
+
+    .mobile-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .mobile-title {
+      font-family: 'Rubik', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: white;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .mobile-subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .mobile-badge {
+      display: inline-block;
+      background: var(--gold-gradient);
+      color: var(--primary-dark);
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 12px;
+      box-shadow: 0 4px 15px rgba(243, 193, 58, 0.3);
+      animation: pulse 3s infinite;
+    }
+
+    /* Main Card */
+    .mobile-card {
+      background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(20px);
-      border-radius: 25px;
-      padding: 40px;
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 32px 24px;
       box-shadow: var(--shadow-strong);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.25);
       position: relative;
       overflow: hidden;
-      animation: cardAppear 0.8s ease-out;
     }
 
-    @keyframes cardAppear {
-      from { opacity: 0; transform: translateY(30px) scale(0.95); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .login-card::before {
+    .mobile-card::before {
       content: '';
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
-      height: 5px;
+      height: 6px;
       background: var(--gold-gradient);
     }
 
-    /* Logo Section */
-    .logo-section {
-      text-align: center;
-      margin-bottom: 30px;
+    /* Form Styles - Mobile Optimized */
+    .mobile-form {
+      margin-top: 8px;
     }
 
-    .logo-circle {
-      width: 90px;
-      height: 90px;
-      margin: 0 auto 20px;
-      border-radius: 20px;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 3px solid var(--accent);
-      box-shadow: 0 10px 25px rgba(243, 193, 58, 0.3);
-      transition: var(--transition-bounce);
-    }
-
-    .logo-circle:hover {
-      transform: rotate(10deg) scale(1.1);
-    }
-
-    .logo-circle img {
-      width: 60px;
-      height: 60px;
-      border-radius: 12px;
-    }
-
-    .login-title {
-      font-family: 'Rubik', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 800;
-      background: var(--blue-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 8px;
-    }
-
-    .login-subtitle {
-      color: #666;
-      font-size: 1rem;
-      margin-bottom: 5px;
-    }
-
-    .login-badge {
-      display: inline-block;
-      background: var(--gold-gradient);
-      color: var(--primary-dark);
-      padding: 6px 15px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-top: 10px;
-      box-shadow: 0 4px 15px rgba(243, 193, 58, 0.3);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    /* Form Styles */
-    .form-group {
+    .form-group-mobile {
+      margin-bottom: 24px;
       position: relative;
-      margin-bottom: 25px;
     }
 
-    .form-label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: var(--primary-dark);
-      font-size: 0.95rem;
+    .form-label-mobile {
       display: flex;
       align-items: center;
       gap: 8px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--primary-dark);
+      font-size: 0.95rem;
     }
 
-    .form-input {
-      width: 100%;
-      padding: 16px 20px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 2px solid #e2e8f0;
-      border-radius: 15px;
+    .form-label-mobile i {
+      color: var(--accent);
       font-size: 1rem;
-      font-family: 'Poppins', sans-serif;
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-input-mobile {
+      width: 100%;
+      padding: 18px 52px 18px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      font-size: 1rem;
+      font-family: inherit;
       color: #333;
       transition: var(--transition-smooth);
-      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.04);
+      -webkit-appearance: none;
+      appearance: none;
     }
 
-    .form-input:focus {
+    /* Prevent zoom on iOS input focus */
+    @media screen and (max-width: 768px) {
+      .form-input-mobile {
+        font-size: 16px; /* Prevents iOS zoom */
+      }
+    }
+
+    .form-input-mobile:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(243, 193, 58, 0.1);
+      box-shadow: 0 0 0 3px rgba(243, 193, 58, 0.15);
       transform: translateY(-2px);
     }
 
-    .form-input:hover {
+    .form-input-mobile:hover {
       border-color: var(--accent-light);
     }
 
-    .input-icon {
+    .input-icon-mobile {
       position: absolute;
       right: 20px;
-      top: 45px;
+      top: 50%;
+      transform: translateY(-50%);
       color: var(--accent);
       font-size: 1.2rem;
       cursor: pointer;
       transition: var(--transition-smooth);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .input-icon:hover {
-      color: var(--primary);
-      transform: scale(1.1);
+    .input-icon-mobile:active {
+      transform: translateY(-50%) scale(0.9);
     }
 
-    /* Login Button */
-    .login-button {
+    /* Submit Button - Touch Optimized */
+    .submit-button-mobile {
       width: 100%;
-      padding: 18px;
+      padding: 20px;
       background: var(--gold-gradient);
       color: var(--primary-dark);
       border: none;
-      border-radius: 15px;
+      border-radius: 16px;
       font-size: 1.1rem;
       font-weight: 700;
       cursor: pointer;
@@ -311,135 +308,133 @@
       align-items: center;
       justify-content: center;
       gap: 12px;
-      margin-top: 10px;
+      margin-top: 8px;
       position: relative;
       overflow: hidden;
-      z-index: 1;
+      touch-action: manipulation;
+      user-select: none;
     }
 
-    .login-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-      transition: left 0.7s ease;
-      z-index: -1;
+    .submit-button-mobile:active {
+      transform: scale(0.98);
+      box-shadow: 0 5px 15px rgba(243, 193, 58, 0.4);
     }
 
-    .login-button:hover::before {
-      left: 100%;
+    .submit-button-mobile:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none !important;
     }
 
-    .login-button:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 15px 35px rgba(243, 193, 58, 0.5);
+    /* Loading Animation */
+    .mobile-spinner {
+      width: 22px;
+      height: 22px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
     }
 
-    .login-button:active {
-      transform: translateY(-2px) scale(1);
+    /* Error/Success Messages */
+    .alert-mobile {
+      padding: 16px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideDown 0.3s ease;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      font-weight: 500;
     }
 
-    /* Links Section */
-    .links-section {
-      margin-top: 25px;
+    .alert-mobile.error {
+      background: linear-gradient(135deg, #fee, #fdd);
+      color: var(--error);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .alert-mobile.success {
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Links Section - Stacked for mobile */
+    .links-mobile {
+      margin-top: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       text-align: center;
     }
 
-    .link-item {
-      display: inline-block;
-      margin: 0 10px;
+    .link-mobile {
       color: var(--primary);
       text-decoration: none;
       font-weight: 600;
       font-size: 0.95rem;
+      padding: 12px 0;
+      border-radius: 12px;
       transition: var(--transition-smooth);
-      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(243, 193, 58, 0.1);
     }
 
-    .link-item::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      width: 0;
-      height: 2px;
-      background: var(--gold-gradient);
-      transition: width 0.3s ease;
-    }
-
-    .link-item:hover::after {
-      width: 100%;
-    }
-
-    .link-item:hover {
-      color: var(--primary-dark);
+    .link-mobile:active {
+      background: rgba(243, 193, 58, 0.2);
+      transform: scale(0.98);
     }
 
     /* Back Button */
-    .back-button {
-      display: block;
-      text-align: center;
-      margin-top: 25px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      text-decoration: none;
-      border-radius: 15px;
-      font-weight: 600;
-      transition: var(--transition-smooth);
-      backdrop-filter: blur(10px);
-      border: 2px solid rgba(255, 255, 255, 0.2);
+    .back-button-mobile {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
+      margin-top: 24px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      text-decoration: none;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: var(--transition-smooth);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      touch-action: manipulation;
     }
 
-    .back-button:hover {
+    .back-button-mobile:active {
       background: rgba(255, 255, 255, 0.2);
-      transform: translateY(-3px);
-      border-color: var(--accent);
-      text-decoration: none;
-      color: white;
+      transform: scale(0.98);
     }
 
     /* Footer */
-    .login-footer {
+    .footer-mobile {
       text-align: center;
-      margin-top: 30px;
+      margin-top: 32px;
       color: rgba(255, 255, 255, 0.8);
       font-size: 0.85rem;
+      line-height: 1.5;
+      padding: 0 16px;
     }
 
-    /* Loading Animation */
-    .loading-spinner {
-      display: none;
-      width: 24px;
-      height: 24px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+    /* Animations */
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
-    }
-
-    /* Error Message */
-    .error-message {
-      display: none;
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      color: white;
-      padding: 12px 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      text-align: center;
-      animation: slideDown 0.3s ease;
-      box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
     }
 
     @keyframes slideDown {
@@ -447,299 +442,506 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Responsive Design */
-    @media (max-width: 576px) {
-      .login-card {
-        padding: 30px 25px;
-      }
-      
-      .login-title {
-        font-size: 1.8rem;
-      }
-      
-      .logo-circle {
-        width: 70px;
-        height: 70px;
-      }
-      
-      .logo-circle img {
-        width: 50px;
-        height: 50px;
-      }
-      
-      .form-input {
-        padding: 14px 16px;
-      }
-      
-      .login-button {
-        padding: 16px;
-        font-size: 1rem;
-      }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
     }
 
-    @media (max-width: 400px) {
-      .login-card {
-        padding: 25px 20px;
-      }
-      
-      .login-title {
+    /* Responsive Breakpoints */
+    @media (max-width: 480px) {
+      .mobile-title {
         font-size: 1.6rem;
       }
       
-      .links-section {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+      .mobile-card {
+        padding: 28px 20px;
+      }
+      
+      .form-input-mobile {
+        padding: 16px 48px 16px 16px;
+      }
+      
+      .submit-button-mobile {
+        padding: 18px;
+        font-size: 1rem;
+      }
+      
+      .mobile-logo {
+        width: 70px;
+        height: 70px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .mobile-title {
+        font-size: 1.4rem;
+      }
+      
+      .mobile-card {
+        padding: 24px 16px;
+      }
+      
+      .form-input-mobile {
+        padding: 14px 44px 14px 14px;
+      }
+      
+      .links-mobile {
+        gap: 12px;
+      }
+      
+      .link-mobile {
+        padding: 10px 0;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Landscape mode optimization */
+    @media (max-height: 600px) and (orientation: landscape) {
+      body {
+        padding: 12px;
+      }
+      
+      .mobile-header {
+        margin-bottom: 20px;
+      }
+      
+      .mobile-logo {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 12px;
+      }
+      
+      .form-group-mobile {
+        margin-bottom: 16px;
+      }
+      
+      .links-mobile {
+        margin-top: 20px;
+      }
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      .mobile-card {
+        background: rgba(30, 30, 40, 0.95);
+        color: #ffffff;
+      }
+      
+      .form-input-mobile {
+        background: rgba(40, 40, 50, 0.95);
+        color: #ffffff;
+        border-color: #4a5568;
+      }
+      
+      .form-label-mobile {
+        color: #e2e8f0;
+      }
+      
+      .link-mobile {
+        background: rgba(243, 193, 58, 0.15);
+        color: var(--accent-light);
+      }
+    }
+
+    /* Print styles */
+    @media print {
+      .mobile-card {
+        box-shadow: none;
+        border: 2px solid #000;
+      }
+      
+      .submit-button-mobile,
+      .back-button-mobile,
+      .link-mobile {
+        display: none;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- Animated Background -->
-  <div class="bg-pattern"></div>
-  
-  <!-- Floating Elements -->
-  <div class="floating-element"></div>
-  <div class="floating-element"></div>
-  <div class="floating-element"></div>
-  
-  <!-- Twinkling Stars -->
-  <div class="star"></div>
-  <div class="star"></div>
-  <div class="star"></div>
-  <div class="star"></div>
-  <div class="star"></div>
-  <div class="star"></div>
+  <!-- Background Elements -->
+  <div class="bg-overlay"></div>
+  <div class="mobile-orb"></div>
+  <div class="mobile-orb"></div>
 
-  <!-- Login Container -->
-  <div class="login-container">
-    <!-- Error Message -->
-    <div class="error-message" id="errorMessage">
-      <i class="fas fa-exclamation-circle me-2"></i>
+  <!-- Main Container -->
+  <div class="mobile-container">
+    <!-- Header -->
+    <div class="mobile-header">
+      <div class="mobile-logo">
+        <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="Noorussalam Madrasa Logo" loading="eager">
+      </div>
+      <h1 class="mobile-title">Student Portal</h1>
+      <p class="mobile-subtitle">Noorussalam Madrasa • Kambippalam</p>
+      <div class="mobile-badge">
+        <i class="fas fa-shield-alt"></i> Secure Login
+      </div>
+    </div>
+
+    <!-- Alert Messages -->
+    <div class="alert-mobile error" id="errorAlert">
+      <i class="fas fa-exclamation-circle"></i>
       <span id="errorText">Invalid login credentials</span>
     </div>
 
-    <!-- Login Card -->
-    <div class="login-card">
-      <!-- Logo Section -->
-      <div class="logo-section">
-        <div class="logo-circle">
-          <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="Noorussalam Madrasa Logo">
-        </div>
-        <h1 class="login-title">Student Portal</h1>
-        <p class="login-subtitle">Noorussalam Madrasa • Kambippalam</p>
-        <div class="login-badge">
-          <i class="fas fa-shield-alt me-2"></i>Secure Login
-        </div>
-      </div>
-
+    <!-- Main Card -->
+    <div class="mobile-card">
       <!-- Login Form -->
-      <form id="loginForm">
+      <form id="loginForm" class="mobile-form">
         <!-- Username Field -->
-        <div class="form-group">
-          <label class="form-label">
+        <div class="form-group-mobile">
+          <label class="form-label-mobile">
             <i class="fas fa-user-graduate"></i> Student ID / Email
           </label>
-          <input type="text" 
-                 id="username" 
-                 class="form-input" 
-                 placeholder="Enter your Student ID or Email" 
-                 required>
-          <div class="input-icon">
-            <i class="fas fa-user"></i>
+          <div class="input-wrapper">
+            <input type="text" 
+                   id="username" 
+                   class="form-input-mobile" 
+                   placeholder="Enter your Student ID or Email" 
+                   required
+                   autocomplete="username"
+                   autocapitalize="none">
+            <div class="input-icon-mobile">
+              <i class="fas fa-user"></i>
+            </div>
           </div>
         </div>
 
         <!-- Password Field -->
-        <div class="form-group">
-          <label class="form-label">
+        <div class="form-group-mobile">
+          <label class="form-label-mobile">
             <i class="fas fa-lock"></i> Password
           </label>
-          <input type="password" 
-                 id="password" 
-                 class="form-input" 
-                 placeholder="Enter your password" 
-                 required>
-          <div class="input-icon" id="togglePassword">
-            <i class="fas fa-eye"></i>
+          <div class="input-wrapper">
+            <input type="password" 
+                   id="password" 
+                   class="form-input-mobile" 
+                   placeholder="Enter your password" 
+                   required
+                   autocomplete="current-password">
+            <div class="input-icon-mobile" id="togglePassword" role="button" aria-label="Toggle password visibility">
+              <i class="fas fa-eye"></i>
+            </div>
           </div>
         </div>
 
-        <!-- Login Button -->
-        <button type="submit" class="login-button" id="loginButton">
+        <!-- Submit Button -->
+        <button type="submit" class="submit-button-mobile" id="loginButton">
           <i class="fas fa-sign-in-alt"></i>
-          <span id="buttonText">Sign In to Portal</span>
-          <div class="loading-spinner" id="loadingSpinner"></div>
+          <span id="buttonText">Sign In</span>
+          <div class="mobile-spinner" id="loadingSpinner"></div>
         </button>
       </form>
 
-      <!-- Links Section -->
-      <div class="links-section">
-        <a href="register.html" class="link-item">
-          <i class="fas fa-user-plus me-1"></i> Create Account
+      <!-- Links -->
+      <div class="links-mobile">
+        <a href="register.html" class="link-mobile">
+          <i class="fas fa-user-plus"></i> Create Account
         </a>
-        <span style="color: #ccc;">•</span>
-        <a href="forgot-password.html" class="link-item">
-          <i class="fas fa-key me-1"></i> Forgot Password?
+        <a href="forgot-password.html" class="link-mobile">
+          <i class="fas fa-key"></i> Forgot Password?
         </a>
       </div>
 
-      <!-- Back to Home -->
-      <a href="index.html" class="back-button">
+      <!-- Back Button -->
+      <a href="index.html" class="back-button-mobile">
         <i class="fas fa-arrow-left"></i>
         Back to Homepage
       </a>
     </div>
 
     <!-- Footer -->
-    <div class="login-footer">
+    <div class="footer-mobile">
       <p>© <span id="currentYear"></span> Noorussalam Madrasa. All rights reserved.</p>
       <p>Under SKIMVB Registration No: 6110</p>
     </div>
   </div>
 
   <script>
-    // Set current year
-    document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-    // Toggle password visibility
-    const passwordInput = document.getElementById('password');
-    const togglePassword = document.getElementById('togglePassword');
-    const toggleIcon = togglePassword.querySelector('i');
-
-    togglePassword.addEventListener('click', () => {
-      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-      passwordInput.setAttribute('type', type);
-      toggleIcon.classList.toggle('fa-eye');
-      toggleIcon.classList.toggle('fa-eye-slash');
-    });
-
-    // Form submission
-    const loginForm = document.getElementById('loginForm');
-    const loginButton = document.getElementById('loginButton');
-    const buttonText = document.getElementById('buttonText');
-    const loadingSpinner = document.getElementById('loadingSpinner');
-    const errorMessage = document.getElementById('errorMessage');
-    const errorText = document.getElementById('errorText');
-
-    // Google Apps Script URL (Replace with your actual URL)
-    const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set current year
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
       
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      // Validate inputs
-      if (!username || !password) {
-        showError('Please fill in all fields');
-        return;
-      }
-
-      // Show loading state
-      loginButton.disabled = true;
-      buttonText.style.display = 'none';
-      loadingSpinner.style.display = 'block';
-      errorMessage.style.display = 'none';
-
-      try {
-        // Simulate API call (Replace with actual Google Apps Script call)
-        // This is a mock implementation
-        await simulateLogin(username, password);
-        
-        // Success - redirect to dashboard
-        loginButton.style.background = 'linear-gradient(135deg, #22c55e, #06b6d4)';
-        buttonText.textContent = 'Login Successful!';
-        buttonText.style.display = 'inline';
-        loadingSpinner.style.display = 'none';
-        
-        // Store login info in localStorage
-        localStorage.setItem('studentLoggedIn', 'true');
-        localStorage.setItem('studentUsername', username);
-        
-        // Redirect after delay
-        setTimeout(() => {
-          window.location.href = 'student-dashboard.html';
-        }, 1500);
-        
-      } catch (error) {
-        // Handle error
-        loginButton.disabled = false;
-        buttonText.style.display = 'inline';
-        loadingSpinner.style.display = 'none';
-        showError(error.message || 'Invalid credentials. Please try again.');
-        
-        // Shake animation for error
-        loginForm.classList.add('shake');
-        setTimeout(() => {
-          loginForm.classList.remove('shake');
-        }, 500);
-      }
+      // Initialize components
+      initPasswordToggle();
+      initFormSubmission();
+      initTouchInteractions();
+      checkExistingLogin();
+      
+      // Prevent pull-to-refresh on mobile
+      document.body.addEventListener('touchmove', function(e) {
+        if (e.touches.length > 1) e.preventDefault();
+      }, { passive: false });
     });
 
-    // Simulated login function (Replace with actual Google Apps Script call)
-    async function simulateLogin(username, password) {
+    // Password toggle functionality
+    function initPasswordToggle() {
+      const passwordInput = document.getElementById('password');
+      const togglePassword = document.getElementById('togglePassword');
+      const toggleIcon = togglePassword.querySelector('i');
+
+      togglePassword.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        toggleIcon.classList.toggle('fa-eye');
+        toggleIcon.classList.toggle('fa-eye-slash');
+        
+        // Focus back on input for better UX
+        passwordInput.focus();
+      });
+
+      // Keyboard accessibility
+      togglePassword.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.click();
+        }
+      });
+    }
+
+    // Form submission handling
+    function initFormSubmission() {
+      const loginForm = document.getElementById('loginForm');
+      const loginButton = document.getElementById('loginButton');
+      const buttonText = document.getElementById('buttonText');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      const errorAlert = document.getElementById('errorAlert');
+      const errorText = document.getElementById('errorText');
+
+      // Add touch feedback to inputs
+      const inputs = document.querySelectorAll('.form-input-mobile');
+      inputs.forEach(input => {
+        input.addEventListener('touchstart', () => {
+          input.parentElement.style.transform = 'scale(0.99)';
+        });
+        
+        input.addEventListener('touchend', () => {
+          input.parentElement.style.transform = 'scale(1)';
+        });
+      });
+
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+
+        // Validate inputs
+        if (!username || !password) {
+          showError('Please fill in all fields');
+          shakeForm();
+          return;
+        }
+
+        // Show loading state
+        setLoadingState(true);
+        hideError();
+
+        try {
+          // Simulate API call (Replace with your actual Google Apps Script URL)
+          const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+          
+          // For now, using mock login - replace with actual fetch
+          const loginData = await mockLoginAPI(username, password);
+          
+          if (loginData.success) {
+            showSuccess('Login successful! Redirecting...');
+            storeLoginSession(username);
+            
+            // Redirect after delay
+            setTimeout(() => {
+              window.location.href = 'student-dashboard.html';
+            }, 1500);
+          } else {
+            throw new Error(loginData.message || 'Invalid credentials');
+          }
+          
+        } catch (error) {
+          // Handle error
+          setLoadingState(false);
+          showError(error.message || 'Login failed. Please try again.');
+          shakeForm();
+          
+          // Clear password field on error
+          document.getElementById('password').value = '';
+        }
+      });
+    }
+
+    // Mock API function (Replace with actual implementation)
+    async function mockLoginAPI(username, password) {
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          // Mock validation - In real implementation, this would call your Google Apps Script
+          // Mock user database
           const mockUsers = {
             'student@example.com': 'password123',
             'NSM2025001': 'password123',
-            'admin': 'admin123'
+            'admin': 'admin123',
+            'test': 'test123'
           };
           
           if (mockUsers[username] && mockUsers[username] === password) {
-            resolve({ success: true, username: username });
+            resolve({
+              success: true,
+              user: {
+                id: username,
+                name: 'Student Name',
+                class: 'XII',
+                roll: '001'
+              }
+            });
           } else {
             reject(new Error('Invalid username or password'));
           }
-        }, 1500); // Simulate network delay
+        }, 1200);
       });
     }
 
-    // Show error message
-    function showError(message) {
-      errorText.textContent = message;
-      errorMessage.style.display = 'block';
+    // UI Helper Functions
+    function setLoadingState(isLoading) {
+      const loginButton = document.getElementById('loginButton');
+      const buttonText = document.getElementById('buttonText');
+      const loadingSpinner = document.getElementById('loadingSpinner');
+      
+      if (isLoading) {
+        loginButton.disabled = true;
+        buttonText.style.opacity = '0';
+        loadingSpinner.style.display = 'block';
+        loginButton.style.opacity = '0.9';
+      } else {
+        loginButton.disabled = false;
+        buttonText.style.opacity = '1';
+        loadingSpinner.style.display = 'none';
+        loginButton.style.opacity = '1';
+      }
     }
 
-    // Add shake animation
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-        20%, 40%, 60%, 80% { transform: translateX(5px); }
-      }
-      .shake {
-        animation: shake 0.5s ease-in-out;
-      }
-    `;
-    document.head.appendChild(style);
+    function showError(message) {
+      const errorAlert = document.getElementById('errorAlert');
+      const errorText = document.getElementById('errorText');
+      
+      errorText.textContent = message;
+      errorAlert.classList.remove('success');
+      errorAlert.classList.add('error');
+      errorAlert.style.display = 'flex';
+      
+      // Auto-hide after 5 seconds
+      setTimeout(() => {
+        errorAlert.style.display = 'none';
+      }, 5000);
+    }
 
-    // Add focus effects to inputs
-    document.querySelectorAll('.form-input').forEach(input => {
-      input.addEventListener('focus', function() {
-        this.parentElement.classList.add('focused');
+    function showSuccess(message) {
+      const errorAlert = document.getElementById('errorAlert');
+      const errorText = document.getElementById('errorText');
+      
+      errorText.textContent = message;
+      errorAlert.classList.remove('error');
+      errorAlert.classList.add('success');
+      errorAlert.style.display = 'flex';
+    }
+
+    function hideError() {
+      const errorAlert = document.getElementById('errorAlert');
+      errorAlert.style.display = 'none';
+    }
+
+    function shakeForm() {
+      const loginForm = document.getElementById('loginForm');
+      loginForm.style.animation = 'shake 0.5s ease-in-out';
+      setTimeout(() => {
+        loginForm.style.animation = '';
+      }, 500);
+    }
+
+    function storeLoginSession(username) {
+      try {
+        localStorage.setItem('studentLoggedIn', 'true');
+        localStorage.setItem('studentUsername', username);
+        localStorage.setItem('loginTime', new Date().toISOString());
+      } catch (e) {
+        console.warn('LocalStorage not available:', e);
+      }
+    }
+
+    function checkExistingLogin() {
+      try {
+        if (localStorage.getItem('studentLoggedIn') === 'true') {
+          const loginTime = localStorage.getItem('loginTime');
+          if (loginTime) {
+            const timeDiff = new Date() - new Date(loginTime);
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+            
+            // Auto-logout after 24 hours
+            if (hoursDiff < 24) {
+              window.location.href = 'student-dashboard.html';
+            } else {
+              localStorage.clear();
+            }
+          }
+        }
+      } catch (e) {
+        // LocalStorage not available
+      }
+    }
+
+    // Touch interactions
+    function initTouchInteractions() {
+      // Add touch feedback to buttons
+      const buttons = document.querySelectorAll('button, .link-mobile, .back-button-mobile');
+      buttons.forEach(button => {
+        button.addEventListener('touchstart', () => {
+          button.style.transform = 'scale(0.97)';
+        });
+        
+        button.addEventListener('touchend', () => {
+          button.style.transform = 'scale(1)';
+        });
+        
+        button.addEventListener('touchcancel', () => {
+          button.style.transform = 'scale(1)';
+        });
       });
       
-      input.addEventListener('blur', function() {
-        this.parentElement.classList.remove('focused');
+      // Prevent zoom on double-tap
+      let lastTap = 0;
+      document.addEventListener('touchend', function(e) {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) {
+          e.preventDefault();
+        }
+        lastTap = currentTime;
       });
+    }
+
+    // Handle orientation changes
+    window.addEventListener('orientationchange', function() {
+      // Debounce resize events
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = setTimeout(function() {
+        // Force repaint on orientation change
+        document.body.style.overflow = 'hidden';
+        setTimeout(() => {
+          document.body.style.overflow = '';
+        }, 100);
+      }, 150);
     });
 
-    // Prevent form resubmission on page refresh
-    if (window.history.replaceState) {
-      window.history.replaceState(null, null, window.location.href);
-    }
+    // Handle network status
+    window.addEventListener('online', () => {
+      showSuccess('Back online!');
+    });
 
-    // Check if already logged in
-    if (localStorage.getItem('studentLoggedIn') === 'true') {
-      // Auto-redirect if already logged in
-      window.location.href = 'student-dashboard.html';
-    }
+    window.addEventListener('offline', () => {
+      showError('Network connection lost');
+    });
   </script>
 </body>
 </html>
