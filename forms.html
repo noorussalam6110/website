@@ -753,7 +753,7 @@
                   <input type="text" 
                          class="form-control" 
                          name="house_name" 
-                         placeholder=" house name">
+                         placeholder="House name / വീട്ടുപേര്">
                   <div class="input-icon">
                     <i class="fas fa-house-user"></i>
                   </div>
@@ -782,7 +782,7 @@
                     <span class="malayalam-text">ലിംഗം</span>
                   </label>
                   <select class="form-select" name="gender" required>
-                    <option value="" selected disabled>Choose gender...</option>
+                    <option value="" selected disabled>Choose gender... / ലിംഗം തിരഞ്ഞെടുക്കുക...</option>
                     <option value="Male">Male / ആൺ</option>
                     <option value="Female">Female / പെൺ</option>
                   </select>
@@ -801,7 +801,7 @@
                   <input type="text" 
                          class="form-control" 
                          name="class_level" 
-                         placeholder="e.g., 1, 2" 
+                         placeholder="e.g., 1, 2 / ഉദാ: 1, 2" 
                          required>
                   <div class="input-icon">
                     <i class="fas fa-graduation-cap"></i>
@@ -819,7 +819,7 @@
                   <input type="text" 
                          class="form-control" 
                          name="guardian_name" 
-                         placeholder="Full name of parent/guardian" 
+                         placeholder="Full name of parent/guardian / രക്ഷിതാവിന്റെ പൂർണ്ണമായ പേര്" 
                          required>
                   <div class="input-icon">
                     <i class="fas fa-user-friends"></i>
@@ -836,7 +836,7 @@
                   <input type="tel" 
                          class="form-control" 
                          name="phone" 
-                         placeholder="10-digit mobile number" 
+                         placeholder="10-digit mobile number / 10 അക്ക മൊബൈൽ നമ്പർ" 
                          required
                          pattern="[0-9]{10}">
                   <div class="input-icon">
@@ -854,7 +854,7 @@
                   <textarea class="form-control" 
                             name="address" 
                             rows="3" 
-                            placeholder="Full postal address with PIN code" 
+                            placeholder="Full postal address with PIN code / പിൻകോഡ് ഉൾപ്പെടെയുള്ള മുഴുവൻ തപാൽ വിലാസം" 
                             required></textarea>
                   <div class="input-icon">
                     <i class="fas fa-map-pin"></i>
@@ -862,28 +862,30 @@
                   <div class="invalid-feedback">Please enter complete address.</div>
                 </div>
 
-                <!-- Additional Information -->
+                <!-- Aadhar Number -->
                 <div class="col-md-6 form-group">
                   <label class="form-label bilingual-label">
-                    <i class="fas fa-envelope me-1"></i>
-                    <span class="english-text">Email Address</span>
-                    <span class="malayalam-text">ഇമെയിൽ വിലാസം</span>
+                    <i class="fas fa-id-card me-1"></i>
+                    <span class="english-text">Aadhar Number</span>
+                    <span class="malayalam-text">ആധാർ നമ്പർ</span>
                   </label>
-                  <input type="email" 
+                  <input type="text" 
                          class="form-control" 
-                         name="email" 
-                         placeholder="Optional email address / ഐച്ഛിക ഇമെയിൽ വിലാസം">
+                         name="aadhar_number" 
+                         placeholder="12-digit Aadhar number / 12 അക്ക ആധാർ നമ്പർ"
+                         pattern="[0-9]{12}"
+                         maxlength="12">
                   <div class="input-icon">
-                    <i class="fas fa-at"></i>
+                    <i class="fas fa-address-card"></i>
                   </div>
+                  <div class="invalid-feedback">Please enter a valid 12-digit Aadhar number (optional).</div>
                 </div>
 
                 <div class="col-md-6 form-group">
                   <label class="form-label bilingual-label">
                     <i class="fas fa-school me-1"></i>
                     <span class="english-text">Previous Madrasa</span>
-                    <span class="malayalam-text">മുമ്പ് പഠിച്ചിരുന്ന മദ്റസ(ഉണ്ടെങ്കിൽ)
-                    </span>
+                    <span class="malayalam-text">മുമ്പ് പഠിച്ചിരുന്ന മദ്റസ (ഉണ്ടെങ്കിൽ)</span>
                   </label>
                   <input type="text" 
                          class="form-control" 
@@ -968,7 +970,7 @@
                 <div class="step-number">4</div>
                 <div class="step-content">
                   <h6>Processing</h6>
-                  <p>Our Madrasa Muallims  will review your application.</p>
+                  <p>Our Madrasa Muallims will review your application.</p>
                   <p class="ml-font">മദ്റസ ഉസ്താദുമാർ നിങ്ങളുടെ അപേക്ഷ അവലോകനം ചെയ്യും.</p>
                 </div>
               </li>
@@ -1130,6 +1132,20 @@
         this.parentElement.classList.remove('focused');
       });
     });
+
+    // Aadhar number input formatting
+    const aadharInput = document.querySelector('input[name="aadhar_number"]');
+    if (aadharInput) {
+      aadharInput.addEventListener('input', function() {
+        // Remove any non-numeric characters
+        this.value = this.value.replace(/\D/g, '');
+        
+        // Limit to 12 digits
+        if (this.value.length > 12) {
+          this.value = this.value.slice(0, 12);
+        }
+      });
+    }
 
     // Prevent form resubmission on page refresh
     if (window.history.replaceState) {
