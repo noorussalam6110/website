@@ -16,11 +16,9 @@
   
   <style>
     :root {
-      --primary-gradient: linear-gradient(135deg, #2E3192 0%, #1BFFFF 100%);
-      --secondary-gradient: linear-gradient(135deg, #D4145A 0%, #FBB03B 100%);
-      --success-gradient: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-      --dark-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 100%);
-      --card-gradient: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 100%);
+      --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --secondary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      --success-gradient: linear-gradient(135deg, #20c997 0%, #11998e 100%);
     }
     
     * {
@@ -33,7 +31,7 @@
     body {
       font-family: 'Poppins', sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       background-attachment: fixed;
       display: flex;
       flex-direction: column;
@@ -44,8 +42,8 @@
       position: relative;
     }
     
-    /* Animated Stars Background */
-    .stars-background {
+    /* Animated Background */
+    .animated-bg {
       position: fixed;
       top: 0;
       left: 0;
@@ -53,23 +51,30 @@
       height: 100%;
       pointer-events: none;
       z-index: 1;
+      overflow: hidden;
     }
     
-    .star {
+    .bg-shape {
       position: absolute;
-      background: rgba(255, 255, 255, 0.8);
       border-radius: 50%;
-      animation: twinkle 4s infinite;
+      background: rgba(255, 255, 255, 0.05);
+      animation: float 20s infinite linear;
     }
     
-    @keyframes twinkle {
-      0%, 100% {
-        opacity: 0.2;
-        transform: scale(0.8);
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0;
       }
-      50% {
-        opacity: 1;
-        transform: scale(1.2);
+      10% {
+        opacity: 0.1;
+      }
+      90% {
+        opacity: 0.1;
+      }
+      100% {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
       }
     }
     
@@ -79,13 +84,13 @@
       z-index: 2;
       width: 100%;
       max-width: 500px;
-      animation: fadeInUp 1s ease-out;
+      animation: fadeIn 1s ease-out;
     }
     
-    @keyframes fadeInUp {
+    @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -104,25 +109,21 @@
       font-family: 'Montserrat', sans-serif;
       font-size: 2.8rem;
       font-weight: 900;
-      background: linear-gradient(to right, #1BFFFF, #2E3192);
+      background: linear-gradient(to right, #fff, #e6e6e6);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
       margin-bottom: 10px;
-      animation: glow 3s ease-in-out infinite alternate;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      animation: pulse 3s ease-in-out infinite;
     }
     
-    @keyframes glow {
-      0% {
-        text-shadow: 
-          0 0 10px rgba(27, 255, 255, 0.5),
-          0 0 20px rgba(46, 49, 146, 0.3);
+    @keyframes pulse {
+      0%, 100% {
+        text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
       }
-      100% {
-        text-shadow: 
-          0 0 20px rgba(27, 255, 255, 0.8),
-          0 0 30px rgba(46, 49, 146, 0.6),
-          0 0 40px rgba(46, 49, 146, 0.4);
+      50% {
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
       }
     }
     
@@ -131,26 +132,24 @@
       color: #fff;
       margin-bottom: 5px;
       font-weight: 600;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
     
     .location {
       font-size: 1rem;
       color: rgba(255, 255, 255, 0.8);
-      text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
     }
     
     /* Main Card */
     .main-card {
-      background: var(--card-gradient);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-radius: 25px;
-      padding: 30px;
+      padding: 35px 30px;
       box-shadow: 
-        0 15px 35px rgba(0, 0, 0, 0.3),
+        0 20px 40px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       position: relative;
       overflow: hidden;
       margin-bottom: 20px;
@@ -164,16 +163,6 @@
       right: 0;
       height: 4px;
       background: var(--primary-gradient);
-      animation: borderGlow 3s infinite;
-    }
-    
-    @keyframes borderGlow {
-      0%, 100% {
-        box-shadow: 0 0 10px #1BFFFF;
-      }
-      50% {
-        box-shadow: 0 0 20px #2E3192;
-      }
     }
     
     .card-title {
@@ -181,148 +170,49 @@
       font-size: 1.8rem;
       font-weight: 700;
       color: #fff;
-      margin-bottom: 25px;
+      margin-bottom: 30px;
       text-align: center;
-      position: relative;
-      padding-bottom: 15px;
-    }
-    
-    .card-title::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 4px;
-      background: var(--secondary-gradient);
-      border-radius: 2px;
     }
     
     /* Success Rate Section */
     .success-section {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 25px;
-      margin-bottom: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      animation: fadeInUp 0.8s ease-out 0.3s both;
-    }
-    
-    .success-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    
-    .success-icon {
-      font-size: 2.2rem;
-      background: linear-gradient(135deg, #11998e, #38ef7d);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      filter: drop-shadow(0 0 10px rgba(17, 153, 142, 0.3));
-    }
-    
-    .success-title {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: #fff;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-    
-    .success-rate-box {
-      background: linear-gradient(135deg, rgba(17, 153, 142, 0.15), rgba(56, 239, 125, 0.1));
-      border-radius: 15px;
-      padding: 20px;
       text-align: center;
-      border: 2px solid rgba(17, 153, 142, 0.3);
-      position: relative;
-      overflow: hidden;
+      margin-bottom: 40px;
+      animation: slideUp 0.8s ease-out 0.3s both;
     }
     
-    .success-rate-box::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(
-        45deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-      );
-      transform: rotate(45deg);
-      animation: shine 6s infinite;
-    }
-    
-    @keyframes shine {
-      0% {
-        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
       }
-      100% {
-        transform: translateX(100%) translateY(100%) rotate(45deg);
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
     
-    .success-rate-number {
-      font-size: 3.5rem;
-      font-weight: 900;
-      background: linear-gradient(to right, #38ef7d, #11998e);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin-bottom: 10px;
-      position: relative;
-      z-index: 2;
-    }
-    
-    .success-rate-label {
-      font-size: 1.1rem;
+    .success-label {
+      font-size: 1.2rem;
       color: rgba(255, 255, 255, 0.9);
-      font-weight: 600;
-      position: relative;
-      z-index: 2;
+      margin-bottom: 15px;
+      font-weight: 500;
     }
     
-    .success-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 15px;
-      margin-top: 20px;
-      position: relative;
-      z-index: 2;
+    .success-rate {
+      font-size: 4.5rem;
+      font-weight: 900;
+      background: linear-gradient(to right, #20c997, #00ffaa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      line-height: 1;
+      margin-bottom: 10px;
+      text-shadow: 0 0 30px rgba(32, 201, 151, 0.3);
     }
     
-    .stat-item {
-      text-align: center;
-      padding: 15px 10px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
-    }
-    
-    .stat-item:hover {
-      transform: translateY(-3px);
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    .stat-number {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #fff;
-      display: block;
-      margin-bottom: 5px;
-    }
-    
-    .stat-label {
-      font-size: 0.85rem;
+    .success-text {
+      font-size: 1.1rem;
       color: rgba(255, 255, 255, 0.8);
       font-weight: 500;
     }
@@ -332,12 +222,12 @@
       display: flex;
       flex-direction: column;
       gap: 15px;
-      margin: 30px 0 25px;
-      animation: fadeInUp 0.8s ease-out 0.6s both;
+      margin-bottom: 30px;
+      animation: slideUp 0.8s ease-out 0.6s both;
     }
     
-    /* Modern Button Design */
-    .modern-btn {
+    /* Modern Buttons */
+    .action-btn {
       position: relative;
       padding: 18px 25px;
       border: none;
@@ -345,7 +235,7 @@
       font-size: 1.1rem;
       font-weight: 600;
       text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s ease;
       cursor: pointer;
       overflow: hidden;
       z-index: 1;
@@ -358,22 +248,6 @@
         0 10px 20px rgba(0, 0, 0, 0.2),
         0 6px 6px rgba(0, 0, 0, 0.1);
       color: white;
-      transform-style: preserve-3d;
-    }
-    
-    .modern-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.1) 0%,
-        rgba(255, 255, 255, 0.05) 50%,
-        rgba(255, 255, 255, 0.1) 100%);
-      z-index: -1;
-      transform: translateZ(-1px);
     }
     
     .btn-annual {
@@ -384,36 +258,37 @@
       background: var(--secondary-gradient);
     }
     
-    .modern-btn::after {
+    .action-btn::before {
       content: '';
       position: absolute;
       top: 0;
-      left: -100%;
+      left: 0;
       width: 100%;
       height: 100%;
       background: linear-gradient(
         90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.1) 100%
       );
-      transition: 0.5s;
-      z-index: 1;
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      z-index: -1;
     }
     
-    .modern-btn:hover::after {
-      left: 100%;
+    .action-btn:hover::before {
+      transform: translateX(100%);
     }
     
-    .modern-btn:hover {
-      transform: translateY(-5px) translateZ(10px);
+    .action-btn:hover {
+      transform: translateY(-3px);
       box-shadow: 
         0 15px 30px rgba(0, 0, 0, 0.3),
         0 10px 10px rgba(0, 0, 0, 0.2);
     }
     
-    .modern-btn:active {
-      transform: translateY(-2px) translateZ(5px);
+    .action-btn:active {
+      transform: translateY(-1px);
       box-shadow: 
         0 8px 15px rgba(0, 0, 0, 0.2),
         0 5px 5px rgba(0, 0, 0, 0.1);
@@ -424,14 +299,14 @@
       transition: transform 0.3s ease;
     }
     
-    .modern-btn:hover .btn-icon {
+    .action-btn:hover .btn-icon {
       transform: rotate(10deg) scale(1.1);
     }
     
     /* Back Button */
     .back-btn-container {
       text-align: center;
-      animation: fadeInUp 0.8s ease-out 0.9s both;
+      animation: slideUp 0.8s ease-out 0.9s both;
     }
     
     .back-btn {
@@ -440,9 +315,9 @@
       justify-content: center;
       gap: 10px;
       padding: 14px 28px;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       color: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 12px;
       text-decoration: none;
       font-weight: 600;
@@ -451,8 +326,8 @@
     }
     
     .back-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
       transform: translateX(-5px);
       color: white;
     }
@@ -464,7 +339,7 @@
       margin-top: 25px;
       font-size: 0.85rem;
       line-height: 1.6;
-      animation: fadeInUp 0.8s ease-out 1.2s both;
+      animation: fadeIn 1s ease-out 1.2s both;
     }
     
     /* Responsive */
@@ -478,18 +353,18 @@
       }
       
       .main-card {
-        padding: 25px 20px;
+        padding: 30px 20px;
       }
       
       .card-title {
         font-size: 1.6rem;
       }
       
-      .success-rate-number {
-        font-size: 3rem;
+      .success-rate {
+        font-size: 3.5rem;
       }
       
-      .modern-btn {
+      .action-btn {
         padding: 16px 20px;
         font-size: 1rem;
       }
@@ -504,13 +379,8 @@
         font-size: 1rem;
       }
       
-      .success-rate-number {
-        font-size: 2.5rem;
-      }
-      
-      .success-stats {
-        grid-template-columns: 1fr;
-        gap: 10px;
+      .success-rate {
+        font-size: 3rem;
       }
       
       .buttons-container {
@@ -520,8 +390,8 @@
   </style>
 </head>
 <body>
-  <!-- Animated Stars Background -->
-  <div class="stars-background" id="starsBackground"></div>
+  <!-- Animated Background -->
+  <div class="animated-bg" id="animatedBg"></div>
   
   <div class="main-container">
     <div class="header">
@@ -535,41 +405,20 @@
       
       <!-- Success Rate Section -->
       <div class="success-section">
-        <div class="success-header">
-          <i class="fas fa-chart-line success-icon"></i>
-          <h3 class="success-title">Overall Success Rate</h3>
-        </div>
-        
-        <div class="success-rate-box">
-          <div class="success-rate-number" id="successRate">94.5%</div>
-          <div class="success-rate-label">Pass Percentage</div>
-          
-          <div class="success-stats">
-            <div class="stat-item">
-              <span class="stat-number" id="totalStudents">1250</span>
-              <span class="stat-label">Total Students</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number" id="passedStudents">1181</span>
-              <span class="stat-label">Passed</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-number" id="distinction">689</span>
-              <span class="stat-label">Distinction</span>
-            </div>
-          </div>
-        </div>
+        <div class="success-label">Overall Success Rate</div>
+        <div class="success-rate" id="successRate">94.5%</div>
+        <div class="success-text">Pass Percentage</div>
       </div>
       
       <!-- Action Buttons -->
       <div class="buttons-container">
-        <button class="modern-btn btn-annual" id="annualBtn" onclick="openAnnualResults()">
+        <button class="action-btn btn-annual" id="annualBtn" onclick="openAnnualResults()">
           <i class="fas fa-graduation-cap btn-icon"></i>
           <span>Annual Examination Results</span>
           <div class="loader" id="annualLoader" style="display: none;"></div>
         </button>
         
-        <button class="modern-btn btn-samastha" id="samasthaBtn" onclick="openSamasthaResults()">
+        <button class="action-btn btn-samastha" id="samasthaBtn" onclick="openSamasthaResults()">
           <i class="fas fa-book-open btn-icon"></i>
           <span>Samastha Public Exam Results</span>
           <div class="loader" id="samasthaLoader" style="display: none;"></div>
@@ -586,62 +435,44 @@
     
     <div class="footer">
       © 2025 Noorussalam Madrasa | All Rights Reserved<br>
-      <small>Celebrating academic excellence since 1995</small>
+      <small>Celebrating academic excellence</small>
       <div style="margin-top: 10px; font-size: 0.8rem; opacity: 0.5;">
         <i class="fas fa-shield-alt"></i> Secure Portal | 
-        <i class="fas fa-bolt"></i> Live Updates | 
-        <i class="fas fa-check-circle"></i> Verified Results
+        <i class="fas fa-bolt"></i> Live Updates
       </div>
     </div>
   </div>
 
   <script>
-    // Create animated stars background
-    function createStars() {
-      const container = document.getElementById('starsBackground');
-      const starCount = window.innerWidth < 768 ? 50 : 100;
+    // Create animated background shapes
+    function createBackgroundShapes() {
+      const container = document.getElementById('animatedBg');
+      const shapeCount = window.innerWidth < 768 ? 15 : 25;
       
-      for (let i = 0; i < starCount; i++) {
-        const star = document.createElement('div');
-        star.classList.add('star');
+      for (let i = 0; i < shapeCount; i++) {
+        const shape = document.createElement('div');
+        shape.classList.add('bg-shape');
         
         // Random size
-        const size = Math.random() * 3 + 1;
-        star.style.width = `${size}px`;
-        star.style.height = `${size}px`;
+        const size = Math.random() * 100 + 50;
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
         
         // Random position
-        star.style.left = `${Math.random() * 100}vw`;
-        star.style.top = `${Math.random() * 100}vh`;
+        shape.style.left = `${Math.random() * 100}vw`;
+        shape.style.top = `${100 + Math.random() * 50}vh`;
         
-        // Random animation delay
-        const delay = Math.random() * 4;
-        star.style.animationDelay = `${delay}s`;
+        // Random animation
+        const duration = Math.random() * 20 + 30;
+        const delay = Math.random() * 5;
+        shape.style.animationDuration = `${duration}s`;
+        shape.style.animationDelay = `${delay}s`;
         
-        // Random brightness
-        const brightness = Math.random() * 0.8 + 0.2;
-        star.style.opacity = brightness;
-        
-        container.appendChild(star);
+        container.appendChild(shape);
       }
     }
     
-    // Animate counter
-    function animateCounter(element, target, duration = 2000) {
-      let start = 0;
-      const increment = target / (duration / 16);
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) {
-          element.textContent = target.toLocaleString();
-          clearInterval(timer);
-        } else {
-          element.textContent = Math.floor(start).toLocaleString();
-        }
-      }, 16);
-    }
-    
-    // Animate percentage with decimal
+    // Animate percentage
     function animatePercentage(element, target, duration = 2000) {
       let start = 0;
       const increment = target / (duration / 16);
@@ -758,10 +589,10 @@
     
     // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      // Create stars background
-      createStars();
+      // Create background shapes
+      createBackgroundShapes();
       
-      // Add ripple animation to style
+      // Add animations to style
       const style = document.createElement('style');
       style.textContent = `
         @keyframes spin {
@@ -776,28 +607,15 @@
       `;
       document.head.appendChild(style);
       
-      // Animate success rate and counters with delay
+      // Animate success rate on load
       setTimeout(() => {
         animatePercentage(document.getElementById('successRate'), 94.5);
-        animateCounter(document.getElementById('totalStudents'), 1250);
-        animateCounter(document.getElementById('passedStudents'), 1181);
-        animateCounter(document.getElementById('distinction'), 689);
       }, 500);
       
       // Add ripple effect to all buttons
-      document.querySelectorAll('.modern-btn, .back-btn').forEach(btn => {
+      document.querySelectorAll('.action-btn, .back-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
           createRipple(e);
-        });
-      });
-      
-      // Add click animation to buttons
-      document.querySelectorAll('.modern-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          this.style.transform = 'translateY(-2px) scale(0.98)';
-          setTimeout(() => {
-            this.style.transform = '';
-          }, 150);
         });
       });
       
@@ -818,26 +636,14 @@
         }
       });
       
-      // Add hover sound effect (optional)
-      document.querySelectorAll('.modern-btn').forEach(btn => {
-        btn.addEventListener('mouseenter', function() {
-          // You could add a subtle sound effect here if needed
-        });
-      });
-      
-      // Simulate live updates to success rate
+      // Add subtle animation to success rate
       setInterval(() => {
         const successRate = document.getElementById('successRate');
-        const currentRate = parseFloat(successRate.textContent);
-        const newRate = Math.min(100, currentRate + (Math.random() * 0.05 - 0.025));
-        successRate.textContent = newRate.toFixed(1) + '%';
-        
-        // Add subtle animation
         successRate.style.transform = 'scale(1.05)';
         setTimeout(() => {
           successRate.style.transform = 'scale(1)';
         }, 200);
-      }, 15000); // Update every 15 seconds
+      }, 5000);
     });
   </script>
 </body>
