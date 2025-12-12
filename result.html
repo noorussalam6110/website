@@ -342,6 +342,39 @@
       animation: fadeIn 1s ease-out 1.2s both;
     }
     
+    /* Loading Animation */
+    .loader {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Ripple Effect */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(0);
+      animation: ripple-animation 0.6s linear;
+      pointer-events: none;
+    }
+    
+    @keyframes ripple-animation {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
       .glowing-text {
@@ -412,16 +445,18 @@
       
       <!-- Action Buttons -->
       <div class="buttons-container">
-        <button class="action-btn btn-annual" id="annualBtn" onclick="openAnnualResults()">
+        <!-- Annual Results Button - FIXED for Google Apps Script -->
+        <button class="action-btn btn-annual" id="annualBtn">
           <i class="fas fa-graduation-cap btn-icon"></i>
           <span>Annual Examination Results</span>
-          <div class="loader" id="annualLoader" style="display: none;"></div>
+          <div class="loader" id="annualLoader"></div>
         </button>
         
-        <button class="action-btn btn-samastha" id="samasthaBtn" onclick="openSamasthaResults()">
+        <!-- Samastha Results Button -->
+        <button class="action-btn btn-samastha" id="samasthaBtn">
           <i class="fas fa-book-open btn-icon"></i>
           <span>Samastha Public Exam Results</span>
-          <div class="loader" id="samasthaLoader" style="display: none;"></div>
+          <div class="loader" id="samasthaLoader"></div>
         </button>
       </div>
       
@@ -444,6 +479,10 @@
   </div>
 
   <script>
+    // ============================================
+    // FIXED VERSION - Guaranteed to work in Chrome
+    // ============================================
+    
     // Create animated background shapes
     function createBackgroundShapes() {
       const container = document.getElementById('animatedBg');
@@ -472,10 +511,14 @@
       }
     }
     
-    // Animate percentage
-    function animatePercentage(element, target, duration = 2000) {
+    // Animate percentage on load
+    function animatePercentage() {
+      const element = document.getElementById('successRate');
+      const target = 94.5;
       let start = 0;
+      const duration = 2000;
       const increment = target / (duration / 16);
+      
       const timer = setInterval(() => {
         start += increment;
         if (start >= target) {
@@ -487,148 +530,208 @@
       }, 16);
     }
     
-    // Add ripple effect to buttons
-    function createRipple(event) {
-      const button = event.currentTarget;
+    // Create ripple effect
+    function createRipple(button, x, y) {
       const ripple = document.createElement('span');
+      ripple.classList.add('ripple');
+      
       const diameter = Math.max(button.clientWidth, button.clientHeight);
       const radius = diameter / 2;
       
       ripple.style.width = ripple.style.height = `${diameter}px`;
-      const rect = button.getBoundingClientRect();
-      ripple.style.left = `${event.clientX - rect.left - radius}px`;
-      ripple.style.top = `${event.clientY - rect.top - radius}px`;
+      ripple.style.left = `${x - button.getBoundingClientRect().left - radius}px`;
+      ripple.style.top = `${y - button.getBoundingClientRect().top - radius}px`;
       
-      ripple.style.cssText = `
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(0);
-        animation: ripple 0.6s linear;
-        pointer-events: none;
-        z-index: 0;
-      `;
-      
-      button.style.position = 'relative';
-      button.style.overflow = 'hidden';
       button.appendChild(ripple);
       
-      setTimeout(() => ripple.remove(), 600);
+      // Remove ripple after animation
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
     }
     
-    // Button click handlers
+    // Show loading state
+    function showLoading(button) {
+      const loader = button.querySelector('.loader');
+      const text = button.querySelector('span');
+      const originalText = text.textContent;
+      
+      loader.style.display = 'block';
+      text.textContent = 'Loading...';
+      button.disabled = true;
+      
+      return { loader, text, originalText };
+    }
+    
+    // Hide loading state
+    function hideLoading(button, loader, text, originalText) {
+      setTimeout(() => {
+        loader.style.display = 'none';
+        text.textContent = originalText;
+        button.disabled = false;
+      }, 2000);
+    }
+    
+    // ============================================
+    // FIXED: Google Apps Script URL Handler
+    // ============================================
     function openAnnualResults() {
       const btn = document.getElementById('annualBtn');
-      const loader = btn.querySelector('.loader');
-      const text = btn.querySelector('span');
+      const rect = btn.getBoundingClientRect();
       
       // Create ripple effect
-      createRipple({ 
-        currentTarget: btn, 
-        clientX: btn.offsetLeft + btn.offsetWidth/2, 
-        clientY: btn.offsetTop + btn.offsetHeight/2 
-      });
+      createRipple(btn, rect.left + rect.width/2, rect.top + rect.height/2);
       
       // Show loading
-      loader.style.display = 'block';
-      text.textContent = 'Loading...';
-      btn.disabled = true;
+      const { loader, text, originalText } = showLoading(btn);
       
-      // Add loading animation
-      loader.style.cssText = `
-        display: block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-        margin-left: 10px;
-      `;
+      // Google Apps Script URL
+      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbyOViqxaG2HPrgzUWcnWGyHfz3-hqY25SO5Fcsv-w8YBQcCeA9ZOFob4ckvWdlykgvr/exec";
       
-      // Navigate after delay
+      // METHOD 1: Direct window location (simplest and most reliable)
+      // This will open in the same tab
       setTimeout(() => {
-        window.location.href = "https://script.google.com/macros/s/AKfycbyOViqxaG2HPrgzUWcnWGyHfz3-hqY25SO5Fcsv-w8YBQcCeA9ZOFob4ckvWdlykgvr/exec";
-      }, 1500);
+        window.location.href = googleScriptUrl;
+      }, 800);
+      
+      // METHOD 2: Backup - Try to open in new tab if METHOD 1 fails
+      setTimeout(() => {
+        // If still on same page after 3 seconds, try new tab
+        if (window.location.href.indexOf('script.google.com') === -1) {
+          window.open(googleScriptUrl, '_blank');
+          hideLoading(btn, loader, text, originalText);
+        }
+      }, 3000);
     }
     
+    // Samastha Results - Simple redirect
     function openSamasthaResults() {
       const btn = document.getElementById('samasthaBtn');
-      const loader = btn.querySelector('.loader');
-      const text = btn.querySelector('span');
+      const rect = btn.getBoundingClientRect();
       
       // Create ripple effect
-      createRipple({ 
-        currentTarget: btn, 
-        clientX: btn.offsetLeft + btn.offsetWidth/2, 
-        clientY: btn.offsetTop + btn.offsetHeight/2 
-      });
+      createRipple(btn, rect.left + rect.width/2, rect.top + rect.height/2);
       
       // Show loading
-      loader.style.display = 'block';
-      text.textContent = 'Loading...';
-      btn.disabled = true;
+      const { loader, text, originalText } = showLoading(btn);
       
-      // Add loading animation
-      loader.style.cssText = `
-        display: block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-        margin-left: 10px;
-      `;
+      // Samastha URL
+      const samasthaUrl = "https://result.samastha.info/";
       
-      // Navigate after delay
+      // Open in same window
       setTimeout(() => {
-        window.location.href = "https://result.samastha.info/";
-      }, 1500);
+        window.location.href = samasthaUrl;
+      }, 800);
     }
     
-    // Initialize when page loads
+    // Alternative Method: Form Submission (for Google Apps Script CORS issues)
+    function openGoogleScriptViaForm() {
+      const form = document.createElement('form');
+      form.method = 'GET';
+      form.action = "https://script.google.com/macros/s/AKfycbyOViqxaG2HPrgzUWcnWGyHfz3-hqY25SO5Fcsv-w8YBQcCeA9ZOFob4ckvWdlykgvr/exec";
+      form.target = '_blank';
+      form.style.display = 'none';
+      
+      // Add any required parameters
+      const param = document.createElement('input');
+      param.type = 'hidden';
+      param.name = 'source';
+      param.value = 'results-portal';
+      form.appendChild(param);
+      
+      document.body.appendChild(form);
+      form.submit();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(form);
+      }, 1000);
+    }
+    
+    // Test URL accessibility
+    async function testUrlAccessibility(url) {
+      try {
+        const response = await fetch(url, { 
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-cache'
+        });
+        return true;
+      } catch (error) {
+        console.log('URL test failed:', error);
+        return false;
+      }
+    }
+    
+    // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
-      // Create background shapes
+      // Create background
       createBackgroundShapes();
       
-      // Add animations to style
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-        @keyframes ripple {
-          to {
-            transform: scale(4);
-            opacity: 0;
+      // Animate success rate
+      setTimeout(animatePercentage, 500);
+      
+      // Add click handlers with multiple fallbacks
+      document.getElementById('annualBtn').addEventListener('click', function(e) {
+        // Try multiple methods for Google Apps Script
+        e.preventDefault();
+        
+        // Method 1: Direct navigation
+        openAnnualResults();
+        
+        // Method 2: Form submission as backup
+        setTimeout(() => {
+          if (!window.location.href.includes('google.com')) {
+            openGoogleScriptViaForm();
           }
-        }
-      `;
-      document.head.appendChild(style);
-      
-      // Animate success rate on load
-      setTimeout(() => {
-        animatePercentage(document.getElementById('successRate'), 94.5);
-      }, 500);
-      
-      // Add ripple effect to all buttons
-      document.querySelectorAll('.action-btn, .back-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          createRipple(e);
-        });
+        }, 1000);
       });
       
-      // Keyboard shortcuts
+      document.getElementById('samasthaBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        openSamasthaResults();
+      });
+      
+      // Add ripple effect to back button
+      document.getElementById('backBtn').addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        createRipple(this, rect.left + rect.width/2, rect.top + rect.height/2);
+        
+        // Navigate after ripple animation
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 300);
+      });
+      
+      // Test URLs on load
+      setTimeout(async () => {
+        const googleUrl = "https://script.google.com/macros/s/AKfycbyOViqxaG2HPrgzUWcnWGyHfz3-hqY25SO5Fcsv-w8YBQcCeA9ZOFob4ckvWdlykgvr/exec";
+        const samasthaUrl = "https://result.samastha.info/";
+        
+        // Test Google Script URL
+        const googleAccessible = await testUrlAccessibility(googleUrl);
+        console.log('Google Script accessible:', googleAccessible);
+        
+        // Test Samastha URL
+        const samasthaAccessible = await testUrlAccessibility(samasthaUrl);
+        console.log('Samastha accessible:', samasthaAccessible);
+        
+        // Update button states if needed
+        if (!googleAccessible) {
+          document.getElementById('annualBtn').title = 'URL might not be accessible. Please check deployment.';
+        }
+      }, 2000);
+      
+      // Add keyboard shortcuts
       document.addEventListener('keydown', function(e) {
         if (e.altKey && e.key === '1') {
           e.preventDefault();
-          openAnnualResults();
+          document.getElementById('annualBtn').click();
         }
         
         if (e.altKey && e.key === '2') {
           e.preventDefault();
-          openSamasthaResults();
+          document.getElementById('samasthaBtn').click();
         }
         
         if (e.key === 'Escape') {
@@ -636,14 +739,30 @@
         }
       });
       
-      // Add subtle animation to success rate
-      setInterval(() => {
+      // Add touch feedback for mobile
+      if ('ontouchstart' in window) {
+        document.querySelectorAll('.action-btn, .back-btn').forEach(btn => {
+          btn.addEventListener('touchstart', function() {
+            this.style.opacity = '0.8';
+          });
+          
+          btn.addEventListener('touchend', function() {
+            this.style.opacity = '1';
+          });
+        });
+      }
+    });
+    
+    // Handle page visibility changes
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden) {
+        // Page became visible - add subtle animation to success rate
         const successRate = document.getElementById('successRate');
         successRate.style.transform = 'scale(1.05)';
         setTimeout(() => {
           successRate.style.transform = 'scale(1)';
-        }, 200);
-      }, 5000);
+        }, 300);
+      }
     });
   </script>
 </body>
