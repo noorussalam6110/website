@@ -479,6 +479,20 @@
   </div>
 
   <script>
+    // ============================================
+    // CONFIGURATION SECTION
+    // ============================================
+    
+    // SET YOUR ANNUAL RESULTS PAGE URL HERE
+    const ANNUAL_RESULTS_URL = "resulthome.html"; // Change this to your actual results page
+    
+    // Samastha results URL (already configured)
+    const SAMASTHA_RESULTS_URL = "https://result.samastha.info/";
+    
+    // ============================================
+    // FUNCTIONS
+    // ============================================
+    
     // Create animated background shapes
     function createBackgroundShapes() {
       const container = document.getElementById('animatedBg');
@@ -561,11 +575,9 @@
     
     // Hide loading state
     function hideLoading(button, loader, text, originalText) {
-      setTimeout(() => {
-        loader.style.display = 'none';
-        text.textContent = originalText;
-        button.disabled = false;
-      }, 2000);
+      loader.style.display = 'none';
+      text.textContent = originalText;
+      button.disabled = false;
     }
     
     // Annual Results Handler
@@ -579,18 +591,18 @@
       // Show loading
       const { loader, text, originalText } = showLoading(btn);
       
-      // REPLACE THIS URL WITH YOUR ACTUAL RESULTS PAGE
-      const annualResultsUrl = "resulthome.html";
-      
-      // Open results page after delay
-      setTimeout(() => {
-        if (annualResultsUrl && annualResultsUrl !== "resulthome.html") {
-          window.location.href = annualResultsUrl;
-        } else {
-          // Show alert if URL not configured
-          alert("Annual results page URL not configured. Please update the code with your actual results page URL.");
+      // Check if URL is configured
+      if (!ANNUAL_RESULTS_URL || ANNUAL_RESULTS_URL === "annual-results.html") {
+        setTimeout(() => {
+          alert("Please configure the annual results page URL in the JavaScript code (line 452).\n\nReplace 'annual-results.html' with your actual results page URL.");
           hideLoading(btn, loader, text, originalText);
-        }
+        }, 500);
+        return;
+      }
+      
+      // Open annual results page
+      setTimeout(() => {
+        window.location.href = ANNUAL_RESULTS_URL;
       }, 800);
     }
     
@@ -605,16 +617,16 @@
       // Show loading
       const { loader, text, originalText } = showLoading(btn);
       
-      // Samastha URL
-      const samasthaUrl = "https://result.samastha.info/";
-      
-      // Open in same window
+      // Open Samastha results page
       setTimeout(() => {
-        window.location.href = samasthaUrl;
+        window.location.href = SAMASTHA_RESULTS_URL;
       }, 800);
     }
     
-    // Initialize everything when page loads
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    
     document.addEventListener('DOMContentLoaded', function() {
       // Create background
       createBackgroundShapes();
@@ -689,4 +701,3 @@
   </script>
 </body>
 </html>
-
