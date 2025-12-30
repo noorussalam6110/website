@@ -49,6 +49,51 @@
             padding: 0 10px;
         }
 
+        /* Publication Status Banner */
+        .publication-banner {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 12px;
+            text-align: center;
+            max-width: 800px;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.1);
+            backdrop-filter: blur(10px);
+            animation: pulse 2s infinite;
+        }
+
+        .publication-banner h3 {
+            color: #856404;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        .publication-banner p {
+            font-size: 16px;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .publication-banner .countdown {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e65100;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+        }
+
         /* Header */
         .header {
             text-align: center;
@@ -188,6 +233,12 @@
             text-transform: uppercase;
         }
 
+        .form-control:disabled {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .btn-primary {
             background: var(--gradient-primary);
             border: none;
@@ -202,6 +253,12 @@
             letter-spacing: 0.5px;
             box-shadow: 0 5px 15px rgba(45, 91, 255, 0.3);
             cursor: pointer;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: linear-gradient(135deg, #6c757d 0%, #868e96 100%);
         }
 
         /* A4 Paper Size Styles */
@@ -299,9 +356,30 @@
             .result-box,
             .form-container,
             .loading-container,
-            .error-message {
+            .error-message,
+            .publication-banner {
                 display: none !important;
             }
+        }
+
+        /* Disabled State */
+        .disabled-section {
+            opacity: 0.6;
+            pointer-events: none;
+            cursor: not-allowed;
+            position: relative;
+        }
+
+        .disabled-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 16px;
+            z-index: 1;
         }
     </style>
 </head>
@@ -315,6 +393,13 @@
             <div class="exam-title">
                 <i class="fas fa-graduation-cap"></i> ACADEMIC RESULTS PORTAL 2025-26
             </div>
+        </div>
+
+        <!-- Publication Status Banner -->
+        <div class="publication-banner" id="publicationBanner" style="display: none;">
+            <h3><i class="fas fa-clock"></i> Results Not Published Yet</h3>
+            <p id="publicationMessage">Results will be published soon.</p>
+            <div class="countdown" id="countdownTimer"></div>
         </div>
 
         <!-- Result Selection Box -->
@@ -346,7 +431,7 @@
                         <i class="fas fa-id-card"></i> Registration Number
                     </label>
                     <input type="text" class="form-control" id="roll" name="roll" 
-                           placeholder="Enter your registration number (e.g., R1, R2, R001)" required>
+                           placeholder="Enter your registration number (e.g., R1, R2, R001)" required disabled>
                     <div class="format-example">
                         <small><strong>Examples:</strong> R1, R2, R01, R001, R100</small>
                     </div>
@@ -356,10 +441,10 @@
                     <label class="form-label" for="dob">
                         <i class="fas fa-calendar-alt"></i> Date of Birth
                     </label>
-                    <input type="date" class="form-control" id="dob" name="dob" required>
+                    <input type="date" class="form-control" id="dob" name="dob" required disabled>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" id="submitBtn">
+                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
                     <i class="fas fa-search"></i> Retrieve Results
                 </button>
             </form>
@@ -415,7 +500,7 @@
 
     <script>
         // Google Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxny2lfJSeBJB0XUzTosTJFLrq-egVmcV-YkRWz36mqQHNyROBqbgwOSDPPMTHKSVy5IQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPRj3_LSzeexJokG433mOwolsQKkOb4bipwvwAOlURTHwCA35gaJEjH1fk66n7U5rThw/exec';
 
         // DOM Elements
         const resultSelectionBox = document.getElementById('resultSelectionBox');
@@ -427,6 +512,146 @@
         const examBtn = document.getElementById('examBtn');
         const rollInput = document.getElementById('roll');
         const dobInput = document.getElementById('dob');
+        const submitBtn = document.getElementById('submitBtn');
+        const publicationBanner = document.getElementById('publicationBanner');
+        const publicationMessage = document.getElementById('publicationMessage');
+        const countdownTimer = document.getElementById('countdownTimer');
+
+        // Global variables for publication control
+        let isPublished = true;
+        let publicationDateTime = null;
+        let countdownInterval = null;
+
+        // Check publication status when page loads
+        async function checkPublicationStatus() {
+            try {
+                // First, let's check if we can get the current status from the server
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                // If we get an error message about publication, it means results are not published
+                if (data.result === 'error' && data.message.includes('not published')) {
+                    isPublished = false;
+                    
+                    // Extract publication message from response
+                    const message = data.message.split('Results are not published yet. ')[1] || 
+                                   'Results will be published soon.';
+                    
+                    publicationMessage.textContent = message;
+                    
+                    // Try to extract date from message for countdown
+                    extractPublicationDateFromMessage(message);
+                    
+                    // Show publication banner
+                    publicationBanner.style.display = 'block';
+                    
+                    // Disable form elements
+                    disableFormElements();
+                    
+                    // Start countdown if we have a date
+                    if (publicationDateTime) {
+                        startCountdown();
+                    }
+                } else {
+                    isPublished = true;
+                    publicationBanner.style.display = 'none';
+                    enableFormElements();
+                }
+            } catch (error) {
+                console.error('Error checking publication status:', error);
+                // If there's an error, assume results are published
+                isPublished = true;
+                publicationBanner.style.display = 'none';
+                enableFormElements();
+            }
+        }
+
+        // Extract publication date from message
+        function extractPublicationDateFromMessage(message) {
+            // Try to find date patterns in the message
+            const datePatterns = [
+                /(\d{1,2}-[A-Za-z]{3}-\d{4})/i,
+                /(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                /(\d{4}-\d{1,2}-\d{1,2})/i
+            ];
+            
+            for (const pattern of datePatterns) {
+                const match = message.match(pattern);
+                if (match) {
+                    publicationDateTime = new Date(match[1]);
+                    // Try to extract time if available
+                    const timeMatch = message.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
+                    if (timeMatch) {
+                        let hours = parseInt(timeMatch[1]);
+                        const minutes = parseInt(timeMatch[2]);
+                        const period = timeMatch[3] ? timeMatch[3].toLowerCase() : '';
+                        
+                        if (period === 'pm' && hours < 12) hours += 12;
+                        if (period === 'am' && hours === 12) hours = 0;
+                        
+                        publicationDateTime.setHours(hours, minutes, 0, 0);
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Start countdown timer
+        function startCountdown() {
+            if (!publicationDateTime) return;
+            
+            clearInterval(countdownInterval);
+            
+            countdownInterval = setInterval(() => {
+                const now = new Date();
+                const diff = publicationDateTime - now;
+                
+                if (diff <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownTimer.textContent = 'Results are now being published...';
+                    setTimeout(() => {
+                        location.reload(); // Reload page to check status
+                    }, 5000);
+                    return;
+                }
+                
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                
+                let countdownText = '';
+                if (days > 0) {
+                    countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                } else if (hours > 0) {
+                    countdownText = `${hours}h ${minutes}m ${seconds}s`;
+                } else {
+                    countdownText = `${minutes}m ${seconds}s`;
+                }
+                
+                countdownTimer.textContent = `Publishing in: ${countdownText}`;
+            }, 1000);
+        }
+
+        // Disable form elements when results are not published
+        function disableFormElements() {
+            rollInput.disabled = true;
+            dobInput.disabled = true;
+            submitBtn.disabled = true;
+            
+            // Add disabled class to result box
+            resultSelectionBox.classList.add('disabled-section');
+        }
+
+        // Enable form elements when results are published
+        function enableFormElements() {
+            rollInput.disabled = false;
+            dobInput.disabled = false;
+            submitBtn.disabled = false;
+            
+            // Remove disabled class from result box
+            resultSelectionBox.classList.remove('disabled-section');
+        }
 
         // Initialize date picker
         function initializeDatePicker() {
@@ -462,6 +687,11 @@
 
         // Show form
         function showForm() {
+            if (!isPublished) {
+                alert('Results are not published yet. Please check the publication banner for details.');
+                return;
+            }
+            
             resultSelectionBox.style.display = 'none';
             formContainer.style.display = 'block';
             resultContainer.style.display = 'none';
@@ -506,6 +736,13 @@
 
         resultForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Check if results are published
+            if (!isPublished) {
+                showError('Results Not Published', 
+                         'The results are not published yet. Please check the publication banner for the scheduled date and time.');
+                return;
+            }
             
             const roll = rollInput.value.trim();
             const dob = dobInput.value;
@@ -712,9 +949,14 @@
         }
 
         // Initialize
-        window.addEventListener('DOMContentLoaded', function() {
-            showResultSelection();
-            initializeDatePicker();
+        window.addEventListener('DOMContentLoaded', async function() {
+            // Check publication status first
+            await checkPublicationStatus();
+            
+            if (isPublished) {
+                showResultSelection();
+                initializeDatePicker();
+            }
             
             // Test function - uncomment to test with sample data
             // testDisplay();
@@ -747,6 +989,28 @@
             };
             
             displayResult(sampleData);
+        }
+
+        // Function to simulate checking publication status (for testing)
+        function simulateNotPublished() {
+            isPublished = false;
+            publicationMessage.textContent = 'Results will be published on 25-Dec-2024 at 10:00 AM';
+            publicationDateTime = new Date('2024-12-25T10:00:00');
+            
+            publicationBanner.style.display = 'block';
+            disableFormElements();
+            startCountdown();
+        }
+
+        // Function to simulate published status (for testing)
+        function simulatePublished() {
+            isPublished = true;
+            publicationBanner.style.display = 'none';
+            enableFormElements();
+            
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
         }
     </script>
 </body>
