@@ -445,7 +445,7 @@
       
       <!-- Action Buttons -->
       <div class="buttons-container">
-        <!-- Annual Results Button - FIXED for Google Apps Script -->
+        <!-- Annual Results Button -->
         <button class="action-btn btn-annual" id="annualBtn">
           <i class="fas fa-graduation-cap btn-icon"></i>
           <span>Annual Examination Results</span>
@@ -479,10 +479,6 @@
   </div>
 
   <script>
-    // ============================================
-    // FIXED VERSION - Guaranteed to work in Chrome
-    // ============================================
-    
     // Create animated background shapes
     function createBackgroundShapes() {
       const container = document.getElementById('animatedBg');
@@ -572,9 +568,7 @@
       }, 2000);
     }
     
-    // ============================================
-    // FIXED: Google Apps Script URL Handler
-    // ============================================
+    // Annual Results Handler
     function openAnnualResults() {
       const btn = document.getElementById('annualBtn');
       const rect = btn.getBoundingClientRect();
@@ -585,26 +579,22 @@
       // Show loading
       const { loader, text, originalText } = showLoading(btn);
       
-      // Google Apps Script URL
-      const googleScriptUrl = "https://script.google.com/macros/s/AKfycbzEVngBq6XNTlQvnDf_nXq5iLmYNNWhrPaA8dIUMtaYdXKyIEJ3K89xpb1CnVsPljQr/exec";
+      // REPLACE THIS URL WITH YOUR ACTUAL RESULTS PAGE
+      const annualResultsUrl = "YOUR_RESULTS_PAGE_URL_HERE.html";
       
-      // METHOD 1: Direct window location (simplest and most reliable)
-      // This will open in the same tab
+      // Open results page after delay
       setTimeout(() => {
-        window.location.href = googleScriptUrl;
-      }, 800);
-      
-      // METHOD 2: Backup - Try to open in new tab if METHOD 1 fails
-      setTimeout(() => {
-        // If still on same page after 3 seconds, try new tab
-        if (window.location.href.indexOf('script.google.com') === -1) {
-          window.open(googleScriptUrl, '_blank');
+        if (annualResultsUrl && annualResultsUrl !== "YOUR_RESULTS_PAGE_URL_HERE.html") {
+          window.location.href = annualResultsUrl;
+        } else {
+          // Show alert if URL not configured
+          alert("Annual results page URL not configured. Please update the code with your actual results page URL.");
           hideLoading(btn, loader, text, originalText);
         }
-      }, 3000);
+      }, 800);
     }
     
-    // Samastha Results - Simple redirect
+    // Samastha Results Handler
     function openSamasthaResults() {
       const btn = document.getElementById('samasthaBtn');
       const rect = btn.getBoundingClientRect();
@@ -624,45 +614,6 @@
       }, 800);
     }
     
-    // Alternative Method: Form Submission (for Google Apps Script CORS issues)
-    function openGoogleScriptViaForm() {
-      const form = document.createElement('form');
-      form.method = 'GET';
-      form.action = "https://script.google.com/macros/s/AKfycbzEVngBq6XNTlQvnDf_nXq5iLmYNNWhrPaA8dIUMtaYdXKyIEJ3K89xpb1CnVsPljQr/exec";
-      form.target = '_blank';
-      form.style.display = 'none';
-      
-      // Add any required parameters
-      const param = document.createElement('input');
-      param.type = 'hidden';
-      param.name = 'source';
-      param.value = 'results-portal';
-      form.appendChild(param);
-      
-      document.body.appendChild(form);
-      form.submit();
-      
-      // Clean up
-      setTimeout(() => {
-        document.body.removeChild(form);
-      }, 1000);
-    }
-    
-    // Test URL accessibility
-    async function testUrlAccessibility(url) {
-      try {
-        const response = await fetch(url, { 
-          method: 'HEAD',
-          mode: 'no-cors',
-          cache: 'no-cache'
-        });
-        return true;
-      } catch (error) {
-        console.log('URL test failed:', error);
-        return false;
-      }
-    }
-    
     // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
       // Create background
@@ -671,20 +622,10 @@
       // Animate success rate
       setTimeout(animatePercentage, 500);
       
-      // Add click handlers with multiple fallbacks
+      // Add click handlers
       document.getElementById('annualBtn').addEventListener('click', function(e) {
-        // Try multiple methods for Google Apps Script
         e.preventDefault();
-        
-        // Method 1: Direct navigation
         openAnnualResults();
-        
-        // Method 2: Form submission as backup
-        setTimeout(() => {
-          if (!window.location.href.includes('google.com')) {
-            openGoogleScriptViaForm();
-          }
-        }, 1000);
       });
       
       document.getElementById('samasthaBtn').addEventListener('click', function(e) {
@@ -702,25 +643,6 @@
           window.location.href = 'index.html';
         }, 300);
       });
-      
-      // Test URLs on load
-      setTimeout(async () => {
-        const googleUrl = "https://script.google.com/macros/s/AKfycbzEVngBq6XNTlQvnDf_nXq5iLmYNNWhrPaA8dIUMtaYdXKyIEJ3K89xpb1CnVsPljQr/exec";
-        const samasthaUrl = "https://result.samastha.info/";
-        
-        // Test Google Script URL
-        const googleAccessible = await testUrlAccessibility(googleUrl);
-        console.log('Google Script accessible:', googleAccessible);
-        
-        // Test Samastha URL
-        const samasthaAccessible = await testUrlAccessibility(samasthaUrl);
-        console.log('Samastha accessible:', samasthaAccessible);
-        
-        // Update button states if needed
-        if (!googleAccessible) {
-          document.getElementById('annualBtn').title = 'URL might not be accessible. Please check deployment.';
-        }
-      }, 2000);
       
       // Add keyboard shortcuts
       document.addEventListener('keydown', function(e) {
@@ -767,5 +689,3 @@
   </script>
 </body>
 </html>
-
-
