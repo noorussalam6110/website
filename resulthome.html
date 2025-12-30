@@ -49,49 +49,74 @@
             padding: 0 10px;
         }
 
-        /* Publication Banner */
-        .publication-banner {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 12px;
+        /* Countdown Banner */
+        .countdown-banner {
+            background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+            color: white;
+            border-radius: 16px;
             padding: 20px;
             margin: 20px auto;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
-            animation: pulse 2s infinite;
+            box-shadow: 0 10px 30px rgba(255, 94, 98, 0.3);
             max-width: 800px;
+            display: none;
+            animation: pulse 2s infinite;
         }
 
-        .publication-banner.published {
-            background: #d4edda;
-            border-color: #28a745;
+        .countdown-banner.published {
+            background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
             animation: none;
-        }
-
-        .publication-banner h3 {
-            color: #856404;
-            margin-bottom: 10px;
-            font-family: 'Montserrat', sans-serif;
-        }
-
-        .publication-banner.published h3 {
-            color: #155724;
-        }
-
-        .publication-banner .countdown {
-            font-size: 20px;
-            font-weight: 700;
-            color: #e65100;
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 8px;
         }
 
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
             100% { transform: scale(1); }
+        }
+
+        .countdown-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .countdown-unit {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px 10px;
+            min-width: 80px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .countdown-value {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            line-height: 1;
+            display: block;
+        }
+
+        .countdown-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .countdown-message {
+            font-size: 1rem;
+            margin-top: 10px;
+            opacity: 0.95;
         }
 
         /* Header */
@@ -287,28 +312,19 @@
             margin-right: auto;
         }
 
-        /* Disabled State */
-        .disabled-section {
-            opacity: 0.7;
-            pointer-events: none;
-            position: relative;
-        }
-
-        .disabled-section::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.5);
-            border-radius: 16px;
-        }
-
         @media (max-width: 767px) {
             .a4-paper {
                 padding: 10mm;
                 margin: 10px auto;
+            }
+            
+            .countdown-unit {
+                min-width: 70px;
+                padding: 12px 8px;
+            }
+            
+            .countdown-value {
+                font-size: 1.5rem;
             }
         }
 
@@ -363,7 +379,7 @@
             .form-container,
             .loading-container,
             .error-message,
-            .publication-banner {
+            .countdown-banner {
                 display: none !important;
             }
         }
@@ -371,13 +387,32 @@
 </head>
 <body>
     <div class="container">
-        <!-- Publication Banner -->
-        <div id="publicationBanner" class="publication-banner" style="display: none;">
-            <h3 id="bannerTitle">
-                <i class="fas fa-clock"></i> Results Not Published Yet
-            </h3>
-            <p id="bannerMessage">Loading publication status...</p>
-            <div id="countdownTimer" class="countdown"></div>
+        <!-- Countdown Banner -->
+        <div class="countdown-banner" id="countdownBanner">
+            <div class="countdown-title" id="bannerTitle">
+                <i class="fas fa-clock"></i> Results Publishing Soon
+            </div>
+            <div class="countdown-timer">
+                <div class="countdown-unit">
+                    <span class="countdown-value" id="days">00</span>
+                    <span class="countdown-label">Days</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-value" id="hours">00</span>
+                    <span class="countdown-label">Hours</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-value" id="minutes">00</span>
+                    <span class="countdown-label">Minutes</span>
+                </div>
+                <div class="countdown-unit">
+                    <span class="countdown-value" id="seconds">00</span>
+                    <span class="countdown-label">Seconds</span>
+                </div>
+            </div>
+            <div class="countdown-message" id="countdownMessage">
+                Results will be published soon...
+            </div>
         </div>
 
         <!-- Header -->
@@ -488,7 +523,7 @@
 
     <script>
         // Google Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeDhgbbmShq-6j2ls2zoIEUS5u47y95COO_k4iHTME-oFNN81CyRGtkdzcfN2ZjuWqnQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNW9wr1gq9F69qMRHKIisJFsWpg5jVZdhaFJGMjcaGSoNcjOBCvncx5a76drTBNOgI_Q/exec';
 
         // DOM Elements
         const resultSelectionBox = document.getElementById('resultSelectionBox');
@@ -500,112 +535,121 @@
         const examBtn = document.getElementById('examBtn');
         const rollInput = document.getElementById('roll');
         const dobInput = document.getElementById('dob');
-        const submitBtn = document.getElementById('submitBtn');
-        const publicationBanner = document.getElementById('publicationBanner');
+        const countdownBanner = document.getElementById('countdownBanner');
         const bannerTitle = document.getElementById('bannerTitle');
-        const bannerMessage = document.getElementById('bannerMessage');
-        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownMessage = document.getElementById('countdownMessage');
+        const daysElement = document.getElementById('days');
+        const hoursElement = document.getElementById('hours');
+        const minutesElement = document.getElementById('minutes');
+        const secondsElement = document.getElementById('seconds');
 
-        // Global variables
-        let isPublished = true;
-        let publicationDateTime = null;
         let countdownInterval = null;
+        let isPublished = true;
 
         // Check publication status
         async function checkPublicationStatus() {
             try {
-                const url = `${SCRIPT_URL}?action=checkPublication&_=${Date.now()}`;
+                // First try to get countdown info
+                const url = `${SCRIPT_URL}?action=getCountdown`;
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                console.log('Publication status:', data);
-                
-                isPublished = data.isPublished;
-                
-                if (isPublished) {
-                    // Results are published
-                    publicationBanner.innerHTML = `
-                        <h3 style="color: #155724;">
-                            <i class="fas fa-check-circle"></i> Results Are Published
-                        </h3>
-                        <p>✅ You can now check your results</p>
-                    `;
-                    publicationBanner.classList.add('published');
-                    publicationBanner.style.display = 'block';
-                    
-                    // Enable everything
-                    resultSelectionBox.classList.remove('disabled-section');
-                    rollInput.disabled = false;
-                    dobInput.disabled = false;
-                    submitBtn.disabled = false;
-                    
-                    if (countdownInterval) {
-                        clearInterval(countdownInterval);
+                if (data && data.data) {
+                    if (data.data.status === 'published') {
+                        // Results are published
+                        isPublished = true;
+                        countdownBanner.classList.add('published');
+                        bannerTitle.innerHTML = '<i class="fas fa-check-circle"></i> Results Are Published!';
+                        countdownMessage.textContent = 'You can now check your examination results.';
+                        countdownBanner.style.display = 'block';
+                        
+                        // Clear any existing countdown
+                        if (countdownInterval) {
+                            clearInterval(countdownInterval);
+                        }
+                        
+                        // Show selection box
+                        resultSelectionBox.style.display = 'block';
+                    } else {
+                        // Results are pending
+                        isPublished = false;
+                        countdownBanner.classList.remove('published');
+                        bannerTitle.innerHTML = '<i class="fas fa-clock"></i> Results Publishing Soon';
+                        countdownMessage.textContent = data.data.message || 'Results will be published soon.';
+                        countdownBanner.style.display = 'block';
+                        
+                        // Hide selection box
+                        resultSelectionBox.style.display = 'none';
+                        
+                        // Start countdown if we have a publication time
+                        if (data.data.publicationTime) {
+                            startCountdown(new Date(data.data.publicationTime));
+                        }
                     }
-                } else {
-                    // Results are not published yet
-                    bannerTitle.innerHTML = `<i class="fas fa-clock"></i> Results Not Published Yet`;
-                    bannerMessage.textContent = data.message;
-                    
-                    if (data.publicationDateTime) {
-                        publicationDateTime = new Date(data.publicationDateTime);
-                        startCountdown();
-                    }
-                    
-                    publicationBanner.classList.remove('published');
-                    publicationBanner.style.display = 'block';
-                    
-                    // Disable the form
-                    resultSelectionBox.classList.add('disabled-section');
-                    rollInput.disabled = true;
-                    dobInput.disabled = true;
-                    submitBtn.disabled = true;
                 }
-                
-                return data;
             } catch (error) {
-                console.error('Error checking publication:', error);
+                console.error('Error checking publication status:', error);
                 // If error, assume published
                 isPublished = true;
-                publicationBanner.style.display = 'none';
-                return { isPublished: true };
+                resultSelectionBox.style.display = 'block';
             }
         }
 
         // Start countdown timer
-        function startCountdown() {
-            if (!publicationDateTime) return;
+        function startCountdown(targetDate) {
+            if (!targetDate) return;
             
             function updateCountdown() {
                 const now = new Date();
-                const diff = publicationDateTime - now;
+                const diff = targetDate - now;
                 
                 if (diff <= 0) {
-                    countdownTimer.textContent = '🎉 Results are being published now!';
+                    // Time's up
+                    daysElement.textContent = '00';
+                    hoursElement.textContent = '00';
+                    minutesElement.textContent = '00';
+                    secondsElement.textContent = '00';
+                    
+                    countdownMessage.innerHTML = 'Results are being published now!<br>Refreshing in 5 seconds...';
+                    
+                    clearInterval(countdownInterval);
+                    
+                    // Refresh page after 5 seconds
                     setTimeout(() => {
                         location.reload();
-                    }, 3000);
+                    }, 5000);
+                    
                     return;
                 }
                 
+                // Calculate time units
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((diff % (1000 * 60)) / 1000);
                 
-                let countdownText = '';
-                if (days > 0) {
-                    countdownText = `${days} day${days > 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
-                } else if (hours > 0) {
-                    countdownText = `${hours} hour${hours !== 1 ? 's' : ''}, ${minutes} minute${minutes !== 1 ? 's' : ''}`;
-                } else {
-                    countdownText = `${minutes} minute${minutes !== 1 ? 's' : ''}, ${seconds} second${seconds !== 1 ? 's' : ''}`;
-                }
+                // Update display
+                daysElement.textContent = days.toString().padStart(2, '0');
+                hoursElement.textContent = hours.toString().padStart(2, '0');
+                minutesElement.textContent = minutes.toString().padStart(2, '0');
+                secondsElement.textContent = seconds.toString().padStart(2, '0');
                 
-                countdownTimer.textContent = `⏳ Publishing in: ${countdownText}`;
+                // Add animation
+                secondsElement.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    secondsElement.style.transform = 'scale(1)';
+                }, 200);
             }
             
+            // Clear existing interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+            
+            // Update immediately
             updateCountdown();
+            
+            // Update every second
             countdownInterval = setInterval(updateCountdown, 1000);
         }
 
@@ -644,7 +688,7 @@
         // Show form
         function showForm() {
             if (!isPublished) {
-                alert('Results are not published yet. Please check the publication banner for details.');
+                alert('Results are not published yet. Please wait for the scheduled publication time.');
                 return;
             }
             
@@ -660,6 +704,11 @@
 
         // Show result selection
         function showResultSelection() {
+            if (!isPublished) {
+                alert('Results are not published yet. Please wait for the scheduled publication time.');
+                return;
+            }
+            
             resultSelectionBox.style.display = 'block';
             formContainer.style.display = 'none';
             resultContainer.style.display = 'none';
@@ -696,7 +745,7 @@
             // Check if results are published
             if (!isPublished) {
                 showError('Results Not Published', 
-                         'The results are not published yet. Please check the publication banner for the scheduled date and time.');
+                         'The results are not published yet. Please check the countdown timer for the scheduled publication time.');
                 return;
             }
             
@@ -906,28 +955,47 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', async function() {
-            // Show loading initially
-            loadingContainer.style.display = 'block';
-            
-            // Check publication status
+            // Check publication status first
             await checkPublicationStatus();
             
-            // Hide loading
-            loadingContainer.style.display = 'none';
-            
-            // If published, show the result selection
+            // If published, show the form controls
             if (isPublished) {
                 showResultSelection();
                 initializeDatePicker();
             }
+            
+            // Refresh status every 30 seconds
+            setInterval(checkPublicationStatus, 30000);
         });
 
-        // Refresh status every 30 seconds
-        setInterval(async () => {
-            if (!isPublished) {
-                await checkPublicationStatus();
-            }
-        }, 30000);
+        // Test function with sample data
+        function testDisplay() {
+            const sampleData = {
+                result: 'success',
+                student: {
+                    name: 'John Doe',
+                    rollNumber: 'R1',
+                    className: '10A',
+                    dateOfBirth: '15-Jan-2008',
+                    totalScore: 450,
+                    percentage: '85.50',
+                    rank: '5',
+                    overallGrade: 'A',
+                    totalMaxScore: 500
+                },
+                subjects: [
+                    { name: 'Mathematics', maxScore: 100, obtainedScore: 90, grade: 'A+', status: 'Pass' },
+                    { name: 'Science', maxScore: 100, obtainedScore: 85, grade: 'A', status: 'Pass' },
+                    { name: 'English', maxScore: 100, obtainedScore: 80, grade: 'B+', status: 'Pass' },
+                    { name: 'Social Studies', maxScore: 100, obtainedScore: 95, grade: 'A+', status: 'Pass' },
+                    { name: 'Computer Science', maxScore: 100, obtainedScore: 100, grade: 'A+', status: 'Pass' }
+                ],
+                overallStatus: 'PASSED',
+                generatedOn: '01-Dec-2025 14:30'
+            };
+            
+            displayResult(sampleData);
+        }
     </script>
 </body>
 </html>
