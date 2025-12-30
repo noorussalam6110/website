@@ -49,49 +49,49 @@
             padding: 0 10px;
         }
 
-        /* Publication Status Banner */
+        /* Publication Banner */
         .publication-banner {
             background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
             padding: 20px;
             margin: 20px auto;
-            border-radius: 12px;
             text-align: center;
-            max-width: 800px;
-            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.1);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.2);
             animation: pulse 2s infinite;
+            max-width: 800px;
+        }
+
+        .publication-banner.published {
+            background: #d4edda;
+            border-color: #28a745;
+            animation: none;
         }
 
         .publication-banner h3 {
             color: #856404;
-            margin-top: 0;
             margin-bottom: 10px;
             font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
         }
 
-        .publication-banner p {
-            font-size: 16px;
-            color: #856404;
-            margin-bottom: 10px;
+        .publication-banner.published h3 {
+            color: #155724;
         }
 
         .publication-banner .countdown {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: #e65100;
             margin-top: 15px;
+            padding: 10px;
             background: rgba(255, 255, 255, 0.5);
-            padding: 10px 20px;
             border-radius: 8px;
-            display: inline-block;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
 
         /* Header */
@@ -233,12 +233,6 @@
             text-transform: uppercase;
         }
 
-        .form-control:disabled {
-            background-color: #f8f9fa;
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
         .btn-primary {
             background: var(--gradient-primary);
             border: none;
@@ -255,12 +249,6 @@
             cursor: pointer;
         }
 
-        .btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background: linear-gradient(135deg, #6c757d 0%, #868e96 100%);
-        }
-
         /* A4 Paper Size Styles */
         .a4-paper {
             background: white;
@@ -273,7 +261,7 @@
             border-radius: 8px;
             position: relative;
             overflow: hidden;
-            display: none; /* Hidden by default */
+            display: none;
         }
 
         .loading-container,
@@ -297,6 +285,24 @@
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
+        }
+
+        /* Disabled State */
+        .disabled-section {
+            opacity: 0.7;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .disabled-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
         }
 
         @media (max-width: 767px) {
@@ -361,30 +367,19 @@
                 display: none !important;
             }
         }
-
-        /* Disabled State */
-        .disabled-section {
-            opacity: 0.6;
-            pointer-events: none;
-            cursor: not-allowed;
-            position: relative;
-        }
-
-        .disabled-section::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.7);
-            border-radius: 16px;
-            z-index: 1;
-        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Publication Banner -->
+        <div id="publicationBanner" class="publication-banner" style="display: none;">
+            <h3 id="bannerTitle">
+                <i class="fas fa-clock"></i> Results Not Published Yet
+            </h3>
+            <p id="bannerMessage">Loading publication status...</p>
+            <div id="countdownTimer" class="countdown"></div>
+        </div>
+
         <!-- Header -->
         <div class="header">
             <img src="https://i.ibb.co/hRD6Hsj9/nsm-logo-removebg-preview.png" alt="College Logo" class="college-logo">
@@ -393,13 +388,6 @@
             <div class="exam-title">
                 <i class="fas fa-graduation-cap"></i> ACADEMIC RESULTS PORTAL 2025-26
             </div>
-        </div>
-
-        <!-- Publication Status Banner -->
-        <div class="publication-banner" id="publicationBanner" style="display: none;">
-            <h3><i class="fas fa-clock"></i> Results Not Published Yet</h3>
-            <p id="publicationMessage">Results will be published soon.</p>
-            <div class="countdown" id="countdownTimer"></div>
         </div>
 
         <!-- Result Selection Box -->
@@ -431,7 +419,7 @@
                         <i class="fas fa-id-card"></i> Registration Number
                     </label>
                     <input type="text" class="form-control" id="roll" name="roll" 
-                           placeholder="Enter your registration number (e.g., R1, R2, R001)" required disabled>
+                           placeholder="Enter your registration number (e.g., R1, R2, R001)" required>
                     <div class="format-example">
                         <small><strong>Examples:</strong> R1, R2, R01, R001, R100</small>
                     </div>
@@ -441,10 +429,10 @@
                     <label class="form-label" for="dob">
                         <i class="fas fa-calendar-alt"></i> Date of Birth
                     </label>
-                    <input type="date" class="form-control" id="dob" name="dob" required disabled>
+                    <input type="date" class="form-control" id="dob" name="dob" required>
                 </div>
                 
-                <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
                     <i class="fas fa-search"></i> Retrieve Results
                 </button>
             </form>
@@ -500,7 +488,7 @@
 
     <script>
         // Google Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPRj3_LSzeexJokG433mOwolsQKkOb4bipwvwAOlURTHwCA35gaJEjH1fk66n7U5rThw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxeDhgbbmShq-6j2ls2zoIEUS5u47y95COO_k4iHTME-oFNN81CyRGtkdzcfN2ZjuWqnQ/exec';
 
         // DOM Elements
         const resultSelectionBox = document.getElementById('resultSelectionBox');
@@ -514,85 +502,73 @@
         const dobInput = document.getElementById('dob');
         const submitBtn = document.getElementById('submitBtn');
         const publicationBanner = document.getElementById('publicationBanner');
-        const publicationMessage = document.getElementById('publicationMessage');
+        const bannerTitle = document.getElementById('bannerTitle');
+        const bannerMessage = document.getElementById('bannerMessage');
         const countdownTimer = document.getElementById('countdownTimer');
 
-        // Global variables for publication control
+        // Global variables
         let isPublished = true;
         let publicationDateTime = null;
         let countdownInterval = null;
 
-        // Check publication status when page loads
+        // Check publication status
         async function checkPublicationStatus() {
             try {
-                // First, let's check if we can get the current status from the server
-                const response = await fetch(SCRIPT_URL);
+                const url = `${SCRIPT_URL}?action=checkPublication&_=${Date.now()}`;
+                const response = await fetch(url);
                 const data = await response.json();
                 
-                // If we get an error message about publication, it means results are not published
-                if (data.result === 'error' && data.message.includes('not published')) {
-                    isPublished = false;
-                    
-                    // Extract publication message from response
-                    const message = data.message.split('Results are not published yet. ')[1] || 
-                                   'Results will be published soon.';
-                    
-                    publicationMessage.textContent = message;
-                    
-                    // Try to extract date from message for countdown
-                    extractPublicationDateFromMessage(message);
-                    
-                    // Show publication banner
+                console.log('Publication status:', data);
+                
+                isPublished = data.isPublished;
+                
+                if (isPublished) {
+                    // Results are published
+                    publicationBanner.innerHTML = `
+                        <h3 style="color: #155724;">
+                            <i class="fas fa-check-circle"></i> Results Are Published
+                        </h3>
+                        <p>✅ You can now check your results</p>
+                    `;
+                    publicationBanner.classList.add('published');
                     publicationBanner.style.display = 'block';
                     
-                    // Disable form elements
-                    disableFormElements();
+                    // Enable everything
+                    resultSelectionBox.classList.remove('disabled-section');
+                    rollInput.disabled = false;
+                    dobInput.disabled = false;
+                    submitBtn.disabled = false;
                     
-                    // Start countdown if we have a date
-                    if (publicationDateTime) {
-                        startCountdown();
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
                     }
                 } else {
-                    isPublished = true;
-                    publicationBanner.style.display = 'none';
-                    enableFormElements();
+                    // Results are not published yet
+                    bannerTitle.innerHTML = `<i class="fas fa-clock"></i> Results Not Published Yet`;
+                    bannerMessage.textContent = data.message;
+                    
+                    if (data.publicationDateTime) {
+                        publicationDateTime = new Date(data.publicationDateTime);
+                        startCountdown();
+                    }
+                    
+                    publicationBanner.classList.remove('published');
+                    publicationBanner.style.display = 'block';
+                    
+                    // Disable the form
+                    resultSelectionBox.classList.add('disabled-section');
+                    rollInput.disabled = true;
+                    dobInput.disabled = true;
+                    submitBtn.disabled = true;
                 }
+                
+                return data;
             } catch (error) {
-                console.error('Error checking publication status:', error);
-                // If there's an error, assume results are published
+                console.error('Error checking publication:', error);
+                // If error, assume published
                 isPublished = true;
                 publicationBanner.style.display = 'none';
-                enableFormElements();
-            }
-        }
-
-        // Extract publication date from message
-        function extractPublicationDateFromMessage(message) {
-            // Try to find date patterns in the message
-            const datePatterns = [
-                /(\d{1,2}-[A-Za-z]{3}-\d{4})/i,
-                /(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                /(\d{4}-\d{1,2}-\d{1,2})/i
-            ];
-            
-            for (const pattern of datePatterns) {
-                const match = message.match(pattern);
-                if (match) {
-                    publicationDateTime = new Date(match[1]);
-                    // Try to extract time if available
-                    const timeMatch = message.match(/(\d{1,2}):(\d{2})\s*(am|pm)?/i);
-                    if (timeMatch) {
-                        let hours = parseInt(timeMatch[1]);
-                        const minutes = parseInt(timeMatch[2]);
-                        const period = timeMatch[3] ? timeMatch[3].toLowerCase() : '';
-                        
-                        if (period === 'pm' && hours < 12) hours += 12;
-                        if (period === 'am' && hours === 12) hours = 0;
-                        
-                        publicationDateTime.setHours(hours, minutes, 0, 0);
-                    }
-                    break;
-                }
+                return { isPublished: true };
             }
         }
 
@@ -600,18 +576,15 @@
         function startCountdown() {
             if (!publicationDateTime) return;
             
-            clearInterval(countdownInterval);
-            
-            countdownInterval = setInterval(() => {
+            function updateCountdown() {
                 const now = new Date();
                 const diff = publicationDateTime - now;
                 
                 if (diff <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownTimer.textContent = 'Results are now being published...';
+                    countdownTimer.textContent = '🎉 Results are being published now!';
                     setTimeout(() => {
-                        location.reload(); // Reload page to check status
-                    }, 5000);
+                        location.reload();
+                    }, 3000);
                     return;
                 }
                 
@@ -622,35 +595,18 @@
                 
                 let countdownText = '';
                 if (days > 0) {
-                    countdownText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                    countdownText = `${days} day${days > 1 ? 's' : ''}, ${hours} hour${hours !== 1 ? 's' : ''}`;
                 } else if (hours > 0) {
-                    countdownText = `${hours}h ${minutes}m ${seconds}s`;
+                    countdownText = `${hours} hour${hours !== 1 ? 's' : ''}, ${minutes} minute${minutes !== 1 ? 's' : ''}`;
                 } else {
-                    countdownText = `${minutes}m ${seconds}s`;
+                    countdownText = `${minutes} minute${minutes !== 1 ? 's' : ''}, ${seconds} second${seconds !== 1 ? 's' : ''}`;
                 }
                 
-                countdownTimer.textContent = `Publishing in: ${countdownText}`;
-            }, 1000);
-        }
-
-        // Disable form elements when results are not published
-        function disableFormElements() {
-            rollInput.disabled = true;
-            dobInput.disabled = true;
-            submitBtn.disabled = true;
+                countdownTimer.textContent = `⏳ Publishing in: ${countdownText}`;
+            }
             
-            // Add disabled class to result box
-            resultSelectionBox.classList.add('disabled-section');
-        }
-
-        // Enable form elements when results are published
-        function enableFormElements() {
-            rollInput.disabled = false;
-            dobInput.disabled = false;
-            submitBtn.disabled = false;
-            
-            // Remove disabled class from result box
-            resultSelectionBox.classList.remove('disabled-section');
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
         }
 
         // Initialize date picker
@@ -950,68 +906,28 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', async function() {
-            // Check publication status first
+            // Show loading initially
+            loadingContainer.style.display = 'block';
+            
+            // Check publication status
             await checkPublicationStatus();
             
+            // Hide loading
+            loadingContainer.style.display = 'none';
+            
+            // If published, show the result selection
             if (isPublished) {
                 showResultSelection();
                 initializeDatePicker();
             }
-            
-            // Test function - uncomment to test with sample data
-            // testDisplay();
         });
 
-        // Test function with sample data
-        function testDisplay() {
-            const sampleData = {
-                result: 'success',
-                student: {
-                    name: 'John Doe',
-                    rollNumber: 'R1',
-                    className: '10A',
-                    dateOfBirth: '15-Jan-2008',
-                    totalScore: 450,
-                    percentage: '85.50',
-                    rank: '5',
-                    overallGrade: 'A',
-                    totalMaxScore: 500
-                },
-                subjects: [
-                    { name: 'Mathematics', maxScore: 100, obtainedScore: 90, grade: 'A+', status: 'Pass' },
-                    { name: 'Science', maxScore: 100, obtainedScore: 85, grade: 'A', status: 'Pass' },
-                    { name: 'English', maxScore: 100, obtainedScore: 80, grade: 'B+', status: 'Pass' },
-                    { name: 'Social Studies', maxScore: 100, obtainedScore: 95, grade: 'A+', status: 'Pass' },
-                    { name: 'Computer Science', maxScore: 100, obtainedScore: 100, grade: 'A+', status: 'Pass' }
-                ],
-                overallStatus: 'PASSED',
-                generatedOn: '01-Dec-2025 14:30'
-            };
-            
-            displayResult(sampleData);
-        }
-
-        // Function to simulate checking publication status (for testing)
-        function simulateNotPublished() {
-            isPublished = false;
-            publicationMessage.textContent = 'Results will be published on 25-Dec-2024 at 10:00 AM';
-            publicationDateTime = new Date('2024-12-25T10:00:00');
-            
-            publicationBanner.style.display = 'block';
-            disableFormElements();
-            startCountdown();
-        }
-
-        // Function to simulate published status (for testing)
-        function simulatePublished() {
-            isPublished = true;
-            publicationBanner.style.display = 'none';
-            enableFormElements();
-            
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
+        // Refresh status every 30 seconds
+        setInterval(async () => {
+            if (!isPublished) {
+                await checkPublicationStatus();
             }
-        }
+        }, 30000);
     </script>
 </body>
 </html>
