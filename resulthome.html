@@ -736,444 +736,457 @@
         </div>
     </div>
 
-    <script>
-        // Google Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0kROlRfszGsrr30E2J3eIJ_oe-tGcgmxT9Tce59-x3hgJQPxS7ImaX0RVBykoZOKKHA/exec';
+<script>
+    // Google Apps Script URL
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxknG5kXbcuHI4UQcIRoOctIia15IsGsj7S2h05yeI7pxzMfX0wKOu99ZpKEdzAJewhCg/exec';
 
-        // DOM Elements
-        const countdownContainer = document.getElementById('countdownContainer');
-        const formContainer = document.getElementById('formContainer');
-        const loadingContainer = document.getElementById('loadingContainer');
-        const errorContainer = document.getElementById('errorContainer');
-        const resultContainer = document.getElementById('resultContainer');
-        const resultForm = document.getElementById('resultForm');
-        const rollInput = document.getElementById('roll');
-        const classSelect = document.getElementById('class');
-        const backToTop = document.getElementById('backToTop');
-        
-        // Countdown elements
-        const daysElement = document.getElementById('days');
-        const hoursElement = document.getElementById('hours');
-        const minutesElement = document.getElementById('minutes');
-        const secondsElement = document.getElementById('seconds');
-        const publishTimeText = document.getElementById('publishTimeText');
-        const publishDateTime = document.getElementById('publishDateTime');
-        const countdownMessage = document.getElementById('countdownMessage');
-        
-        let countdownInterval = null;
-        let serverPublishTime = null;
+    // DOM Elements
+    const countdownContainer = document.getElementById('countdownContainer');
+    const formContainer = document.getElementById('formContainer');
+    const loadingContainer = document.getElementById('loadingContainer');
+    const errorContainer = document.getElementById('errorContainer');
+    const resultContainer = document.getElementById('resultContainer');
+    const resultForm = document.getElementById('resultForm');
+    const rollInput = document.getElementById('roll');
+    const classSelect = document.getElementById('class');
+    const backToTop = document.getElementById('backToTop');
+    
+    // Countdown elements
+    const daysElement = document.getElementById('days');
+    const hoursElement = document.getElementById('hours');
+    const minutesElement = document.getElementById('minutes');
+    const secondsElement = document.getElementById('seconds');
+    const publishTimeText = document.getElementById('publishTimeText');
+    const publishDateTime = document.getElementById('publishDateTime');
+    const countdownMessage = document.getElementById('countdownMessage');
+    
+    let countdownInterval = null;
+    let serverPublishTime = null;
 
-        // Format registration number
-        rollInput.addEventListener('input', function(e) {
-            let value = e.target.value.toUpperCase().replace(/\s/g, '');
-            if (!/^R[0-9]*$/.test(value)) {
-                if (/^[0-9]+$/.test(value)) {
-                    value = 'R' + value;
-                } else if (!value.startsWith('R')) {
-                    value = 'R' + value.replace(/[^0-9]/g, '');
-                }
+    // Format registration number
+    rollInput.addEventListener('input', function(e) {
+        let value = e.target.value.toUpperCase().replace(/\s/g, '');
+        if (!/^R[0-9]*$/.test(value)) {
+            if (/^[0-9]+$/.test(value)) {
+                value = 'R' + value;
+            } else if (!value.startsWith('R')) {
+                value = 'R' + value.replace(/[^0-9]/g, '');
             }
-            e.target.value = value;
-        });
-
-        // Validate registration number
-        function validateRegistrationNumber(roll) {
-            return /^[rR][0-9]+$/.test(roll);
         }
+        e.target.value = value;
+    });
 
-        // Check results status (countdown or form)
-        async function checkResultsStatus() {
-            showLoading("Checking result availability...");
+    // Validate registration number
+    function validateRegistrationNumber(roll) {
+        return /^[rR][0-9]+$/.test(roll);
+    }
+
+    // Check results status (countdown or form)
+    async function checkResultsStatus() {
+        showLoading("Checking result availability...");
+        
+        try {
+            // Use a unique parameter to avoid cache issues
+            const url = `${SCRIPT_URL}?check=status&t=${Date.now()}`;
+            const response = await fetch(url);
+            const data = await response.json();
             
-            try {
-                const url = `${SCRIPT_URL}?check=status`;
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                if (data.result === 'countdown') {
-                    // Results not yet published, show countdown
+            console.log('Status check response:', data);
+            
+            if (data.result === 'countdown') {
+                // Results not yet published, show countdown
+                showCountdown(data);
+            } else {
+                // Results are available, show form
+                showForm();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // If error, assume results are available
+            showForm();
+        }
+    }
+
+    // Show countdown with data from server
+    function showCountdown(data) {
+        formContainer.style.display = 'none';
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        loadingContainer.style.display = 'none';
+        countdownContainer.style.display = 'block';
+        
+        // Update countdown message
+        countdownMessage.textContent = data.message || "Annual Examination Results 2025-26 will be available in:";
+        publishDateTime.textContent = data.publishTimeFormatted || "";
+        
+        // Store server publish time
+        serverPublishTime = data.publishTime;
+        
+        // Start countdown
+        startCountdown();
+        
+        // Scroll to top
+        scrollToTop();
+    }
+
+    // Start countdown timer
+    function startCountdown() {
+        // Clear any existing interval
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        // Update immediately
+        updateCountdown();
+        
+        // Update every second
+        countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    // Update countdown display
+    function updateCountdown() {
+        if (!serverPublishTime) {
+            // If no server time, estimate from current time + 1 hour for demo
+            serverPublishTime = Date.now() + (60 * 60 * 1000);
+        }
+        
+        const now = Date.now();
+        const timeRemaining = serverPublishTime - now;
+        
+        if (timeRemaining <= 0) {
+            // Countdown finished, show form
+            clearInterval(countdownInterval);
+            showForm();
+            return;
+        }
+        
+        // Calculate days, hours, minutes, seconds
+        const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
+        
+        // Update display
+        daysElement.textContent = days.toString().padStart(2, '0');
+        hoursElement.textContent = hours.toString().padStart(2, '0');
+        minutesElement.textContent = minutes.toString().padStart(2, '0');
+        secondsElement.textContent = seconds.toString().padStart(2, '0');
+    }
+
+    // Show form
+    function showForm() {
+        // Stop countdown if running
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        countdownContainer.style.display = 'none';
+        formContainer.style.display = 'block';
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        loadingContainer.style.display = 'none';
+        
+        // Add animation
+        formContainer.style.animation = 'slideUp 0.5s ease-out';
+        
+        // Focus on input after animation
+        setTimeout(() => {
+            rollInput.focus();
+            scrollToTop();
+        }, 300);
+    }
+
+    // Show loading with custom message
+    function showLoading(message = "Processing Your Request") {
+        document.getElementById('loadingText').textContent = message;
+        
+        countdownContainer.style.display = 'none';
+        formContainer.style.display = 'none';
+        resultContainer.style.display = 'none';
+        errorContainer.style.display = 'none';
+        loadingContainer.style.display = 'block';
+        
+        // Add animation
+        loadingContainer.style.animation = 'fadeIn 0.3s ease-out';
+    }
+
+    // Show error with animation
+    function showError(title, message) {
+        document.getElementById('errorTitle').textContent = title;
+        document.getElementById('errorText').textContent = message;
+        
+        countdownContainer.style.display = 'none';
+        formContainer.style.display = 'none';
+        resultContainer.style.display = 'none';
+        loadingContainer.style.display = 'none';
+        errorContainer.style.display = 'block';
+        
+        // Add animation
+        errorContainer.style.animation = 'shake 0.5s ease-in-out';
+    }
+
+    // Scroll to top function
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
+
+    // Back to top button visibility
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+
+    // Back to top click handler
+    backToTop.addEventListener('click', scrollToTop);
+
+    // Form submission
+    resultForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const roll = rollInput.value.trim();
+        const classVal = classSelect.value;
+        
+        if (!roll || !classVal) {
+            showError('Missing Information', 'Please fill in all required fields.');
+            return;
+        }
+        
+        if (!validateRegistrationNumber(roll)) {
+            showError('Invalid Registration Number', 'Please enter a valid registration number (e.g., R1, R2, R001).');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const url = `${SCRIPT_URL}?roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(classVal)}&t=${Date.now()}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            console.log('Result response:', data);
+            
+            // Simulate loading for better UX
+            setTimeout(() => {
+                if (data.result === 'success') {
+                    displayResult(data);
+                } else if (data.result === 'countdown') {
+                    // Results not yet published
                     showCountdown(data);
                 } else {
-                    // Results are available, show form
-                    showForm();
+                    showError('Result Not Found', data.message || 'No results found.');
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                // If error, assume results are available
-                showForm();
-            }
+            }, 800);
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Connection Error', 'Unable to connect to the server.');
         }
+    });
 
-        // Show countdown with data from server
-        function showCountdown(data) {
-            formContainer.style.display = 'none';
-            resultContainer.style.display = 'none';
-            errorContainer.style.display = 'none';
-            loadingContainer.style.display = 'none';
-            countdownContainer.style.display = 'block';
+    // Display Result
+    function displayResult(data) {
+        const student = data.student;
+        const subjects = data.subjects || [];
+        const overallStatus = data.overallStatus;
+        const percentage = parseFloat(student.percentage || '0');
+        
+        // Generate subject rows
+        let subjectRows = '';
+        subjects.forEach((subject, index) => {
+            const statusColor = subject.status === 'Pass' ? '#198754' : '#dc3545';
+            const gradeColor = subject.grade === 'A+' ? '#198754' : 
+                             subject.grade === 'A' ? '#0d6efd' :
+                             subject.grade === 'B+' ? '#6f42c1' :
+                             subject.grade === 'B' ? '#fd7e14' :
+                             subject.grade === 'C' ? '#ffc107' :
+                             subject.grade === 'D' ? '#dc3545' :
+                             subject.grade === 'F' ? '#dc3545' : '#6c757d';
             
-            // Update countdown message
-            countdownMessage.textContent = data.message || "Annual Examination Results 2025-26 will be available in:";
-            publishDateTime.textContent = data.publishTimeFormatted || "";
-            
-            // Calculate initial time difference
-            const now = Date.now();
-            serverPublishTime = data.publishTime;
-            
-            // Start countdown
-            startCountdown();
-            
-            // Scroll to top
-            scrollToTop();
-        }
-
-        // Start countdown timer
-        function startCountdown() {
-            // Clear any existing interval
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            
-            // Update immediately
-            updateCountdown();
-            
-            // Update every second
-            countdownInterval = setInterval(updateCountdown, 1000);
-        }
-
-        // Update countdown display
-        function updateCountdown() {
-            if (!serverPublishTime) return;
-            
-            const now = Date.now();
-            const timeRemaining = serverPublishTime - now;
-            
-            if (timeRemaining <= 0) {
-                // Countdown finished, show form
-                clearInterval(countdownInterval);
-                showForm();
-                return;
-            }
-            
-            // Calculate days, hours, minutes, seconds
-            const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-            
-            // Update display
-            daysElement.textContent = days.toString().padStart(2, '0');
-            hoursElement.textContent = hours.toString().padStart(2, '0');
-            minutesElement.textContent = minutes.toString().padStart(2, '0');
-            secondsElement.textContent = seconds.toString().padStart(2, '0');
-        }
-
-        // Show form
-        function showForm() {
-            // Stop countdown if running
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-            }
-            
-            countdownContainer.style.display = 'none';
-            formContainer.style.display = 'block';
-            resultContainer.style.display = 'none';
-            errorContainer.style.display = 'none';
-            loadingContainer.style.display = 'none';
-            
-            // Add animation
-            formContainer.style.animation = 'slideUp 0.5s ease-out';
-            
-            // Focus on input after animation
-            setTimeout(() => {
-                rollInput.focus();
-                scrollToTop();
-            }, 300);
-        }
-
-        // Show loading with custom message
-        function showLoading(message = "Processing Your Request") {
-            document.getElementById('loadingText').textContent = message;
-            
-            countdownContainer.style.display = 'none';
-            formContainer.style.display = 'none';
-            resultContainer.style.display = 'none';
-            errorContainer.style.display = 'none';
-            loadingContainer.style.display = 'block';
-            
-            // Add animation
-            loadingContainer.style.animation = 'fadeIn 0.3s ease-out';
-        }
-
-        // Show error with animation
-        function showError(title, message) {
-            document.getElementById('errorTitle').textContent = title;
-            document.getElementById('errorText').textContent = message;
-            
-            countdownContainer.style.display = 'none';
-            formContainer.style.display = 'none';
-            resultContainer.style.display = 'none';
-            loadingContainer.style.display = 'none';
-            errorContainer.style.display = 'block';
-            
-            // Add animation
-            errorContainer.style.animation = 'shake 0.5s ease-in-out';
-        }
-
-        // Scroll to top function
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // Back to top button visibility
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                backToTop.classList.add('visible');
-            } else {
-                backToTop.classList.remove('visible');
-            }
+            subjectRows += `
+                <tr>
+                    <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px;">${index + 1}</td>
+                    <td style="padding: 10px 5px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 13px;">${subject.name}</td>
+                    <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px;">${subject.maxScore}</td>
+                    <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px; color: ${statusColor}; font-weight: 600;">${subject.obtainedScore}</td>
+                    <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px; color: ${gradeColor}; font-weight: 700;">${subject.grade}</td>
+                    <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px; color: ${statusColor}; font-weight: 600;">${subject.status}</td>
+                </tr>
+            `;
         });
-
-        // Back to top click handler
-        backToTop.addEventListener('click', scrollToTop);
-
-        // Form submission
-        resultForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const roll = rollInput.value.trim();
-            const classVal = classSelect.value;
-            
-            if (!roll || !classVal) {
-                showError('Missing Information', 'Please fill in all required fields.');
-                return;
-            }
-            
-            if (!validateRegistrationNumber(roll)) {
-                showError('Invalid Registration Number', 'Please enter a valid registration number (e.g., R1, R2, R001).');
-                return;
-            }
-            
-            showLoading();
-            
-            try {
-                const url = `${SCRIPT_URL}?roll=${encodeURIComponent(roll)}&class=${encodeURIComponent(classVal)}`;
-                const response = await fetch(url);
-                const data = await response.json();
+        
+        // Calculate colors
+        const statusColor = overallStatus === 'PASSED' ? '#198754' : '#dc3545';
+        const percentageColor = percentage >= 75 ? '#198754' : 
+                              percentage >= 60 ? '#0d6efd' : 
+                              percentage >= 40 ? '#ffc107' : '#dc3545';
+        
+        // Create result HTML
+        const resultHTML = `
+            <div style="width: 100%;">
+                <!-- Header -->
+                <div style="text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #2D5BFF;">
+                    <div style="color: #2D5BFF; font-size: 18px; font-weight: 700; margin-bottom: 5px; font-family: 'Montserrat', sans-serif;">
+                        NOORUSSALAM SECONDARY MADRASA
+                    </div>
+                    <h2 style="color: #000; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 16px; margin: 8px 0;">
+                        ACADEMIC PERFORMANCE STATEMENT
+                    </h2>
+                    <div style="color: #666; font-size: 13px; font-weight: 500;">ANNUAL EXAMINATION 2025-26</div>
+                </div>
                 
-                // Simulate loading for better UX
-                setTimeout(() => {
-                    if (data.result === 'success') {
-                        displayResult(data);
-                    } else if (data.result === 'countdown') {
-                        // Results not yet published
-                        showCountdown(data);
-                    } else {
-                        showError('Result Not Found', data.message || 'No results found.');
-                    }
-                }, 800);
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Connection Error', 'Unable to connect to the server.');
-            }
-        });
-
-        // Display Result
-        function displayResult(data) {
-            const student = data.student;
-            const subjects = data.subjects || [];
-            const overallStatus = data.overallStatus;
-            const percentage = parseFloat(student.percentage || '0');
-            
-            // Generate subject rows
-            let subjectRows = '';
-            subjects.forEach((subject, index) => {
-                const statusColor = subject.status === 'Pass' ? '#198754' : '#dc3545';
-                const gradeColor = subject.grade === 'A+' ? '#198754' : 
-                                 subject.grade === 'A' ? '#0d6efd' :
-                                 subject.grade === 'B+' ? '#6f42c1' :
-                                 subject.grade === 'B' ? '#fd7e14' :
-                                 subject.grade === 'C' ? '#ffc107' :
-                                 subject.grade === 'D' ? '#dc3545' :
-                                 subject.grade === 'F' ? '#dc3545' : '#6c757d';
-                
-                subjectRows += `
-                    <tr>
-                        <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px;">${index + 1}</td>
-                        <td style="padding: 10px 5px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 13px;">${subject.name}</td>
-                        <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px;">${subject.maxScore}</td>
-                        <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px; color: ${statusColor}; font-weight: 600;">${subject.obtainedScore}</td>
-                        <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px; color: ${gradeColor}; font-weight: 700;">${subject.grade}</td>
-                        <td style="padding: 10px 5px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 13px; color: ${statusColor}; font-weight: 600;">${subject.status}</td>
-                    </tr>
-                `;
-            });
-            
-            // Calculate colors
-            const statusColor = overallStatus === 'PASSED' ? '#198754' : '#dc3545';
-            const percentageColor = percentage >= 75 ? '#198754' : 
-                                  percentage >= 60 ? '#0d6efd' : 
-                                  percentage >= 40 ? '#ffc107' : '#dc3545';
-            
-            // Create result HTML
-            const resultHTML = `
-                <div style="width: 100%;">
-                    <!-- Header -->
-                    <div style="text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #2D5BFF;">
-                        <div style="color: #2D5BFF; font-size: 18px; font-weight: 700; margin-bottom: 5px; font-family: 'Montserrat', sans-serif;">
-                            NOORUSSALAM SECONDARY MADRASA
+                <!-- Student Info -->
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #dee2e6;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;">
+                        <div>
+                            <div style="font-size: 10px; color: #6c757d; margin-bottom: 2px; font-weight: 600;">Student Name</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.name || 'N/A'}</div>
                         </div>
-                        <h2 style="color: #000; font-family: 'Montserrat', sans-serif; font-weight: 600; font-size: 16px; margin: 8px 0;">
-                            ACADEMIC PERFORMANCE STATEMENT
-                        </h2>
-                        <div style="color: #666; font-size: 13px; font-weight: 500;">ANNUAL EXAMINATION 2025-26</div>
-                    </div>
-                    
-                    <!-- Student Info -->
-                    <div style="background: #f8f9fa; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #dee2e6;">
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;">
-                            <div>
-                                <div style="font-size: 10px; color: #6c757d; margin-bottom: 2px; font-weight: 600;">Student Name</div>
-                                <div style="font-size: 13px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.name || 'N/A'}</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 10px; color: #6c757d; margin-bottom: 2px; font-weight: 600;">Reg No</div>
-                                <div style="font-size: 13px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.rollNumber}</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 10px; color: #6c757d; margin-bottom: 2px; font-weight: 600;">Class</div>
-                                <div style="font-size: 13px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.className || 'N/A'}</div>
-                            </div>
+                        <div>
+                            <div style="font-size: 10px; color: #6c757d; margin-bottom: 2px; font-weight: 600;">Reg No</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.rollNumber}</div>
                         </div>
-                    </div>
-                    
-                    <!-- Performance Summary -->
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 15px; font-size: 16px; font-family: 'Montserrat', sans-serif; padding-bottom: 5px; border-bottom: 1px solid #dee2e6;">
-                            PERFORMANCE SUMMARY
-                        </h3>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
-                            <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
-                                <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.totalScore || '0'}</div>
-                                <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Total Marks</div>
-                                <div style="font-size: 10px; color: #999; margin-top: 3px;">Max: ${student.totalMaxScore || '0'}</div>
-                            </div>
-                            <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
-                                <div style="font-size: 20px; font-weight: 800; color: ${percentageColor}; margin-bottom: 5px;">${student.percentage || '0'}%</div>
-                                <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Percentage</div>
-                                <div style="font-size: 10px; color: ${percentageColor}; font-weight: 600; margin-top: 3px;">
-                                    ${percentage >= 75 ? 'Excellent' : 
-                                      percentage >= 60 ? 'Good' : 
-                                      percentage >= 40 ? 'Average' : 
-                                      'Needs Improvement'}
-                                </div>
-                            </div>
-                            <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
-                                <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.rank || 'N/A'}</div>
-                                <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Class Rank</div>
-                            </div>
-                            <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
-                                <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.presents || '0'}</div>
-                                <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Attendance</div>
-                                <div style="font-size: 10px; color: #999; margin-top: 3px;">${student.presents || '0'}/${student.totalMaxPresents || '0'} Days</div>
-                            </div>
+                        <div>
+                            <div style="font-size: 10px; color: #6c757d; margin-bottom: 2px; font-weight: 600;">Class</div>
+                            <div style="font-size: 13px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.className || 'N/A'}</div>
                         </div>
-                        
-                        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef; margin-top: 10px;">
-                            <div style="font-size: 22px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.overallGrade || 'N/A'}</div>
-                            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">Overall Grade</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Subject-wise Performance -->
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 15px; font-size: 16px; font-family: 'Montserrat', sans-serif; padding-bottom: 5px; border-bottom: 1px solid #dee2e6;">
-                            SUBJECT-WISE PERFORMANCE
-                        </h3>
-                        
-                        ${subjects.length > 0 ? `
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #dee2e6; font-size: 12px; border-radius: 8px; overflow: hidden;">
-                                <thead>
-                                    <tr style="background: #2D5BFF; color: white;">
-                                        <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">#</th>
-                                        <th style="padding: 10px 5px; text-align: left; font-weight: 600; font-size: 11px;">Subject</th>
-                                        <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Max</th>
-                                        <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Obtained</th>
-                                        <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Grade</th>
-                                        <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${subjectRows}
-                                </tbody>
-                            </table>
-                        </div>
-                        ` : '<p style="text-align: center; color: #6c757d; padding: 15px; font-size: 13px; background: #f8f9fa; border-radius: 8px;">No subject data available.</p>'}
-                    </div>
-                    
-                    <!-- Final Result -->
-                    <div style="background: ${overallStatus === 'PASSED' ? '#d1e7dd' : '#f8d7da'}; 
-                             padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px; border: 2px solid ${statusColor};">
-                        <div style="margin-bottom: 10px;">
-                            <div style="font-size: 16px; font-weight: 800; color: ${statusColor}; margin-bottom: 8px; font-family: 'Montserrat', sans-serif;">
-                                ${overallStatus === 'PASSED' ? 'CONGRATULATIONS!' : 'NEEDS IMPROVEMENT'}
-                            </div>
-                            <div style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 8px; font-family: 'Montserrat', sans-serif;">
-                                FINAL RESULT: <span style="color: ${statusColor};">${overallStatus}</span>
-                            </div>
-                            ${overallStatus !== 'PASSED' && data.failedSubjects && data.failedSubjects.length > 0 ? 
-                                `<div style="font-size: 12px; color: #495057; background: rgba(255,255,255,0.7); padding: 5px 8px; border-radius: 5px; display: inline-block;">
-                                    <strong>Improvement needed in:</strong> ${data.failedSubjects.join(', ')}
-                                </div>` : ''}
-                        </div>
-                    </div>
-                    
-                    <!-- Approval Section -->
-                    <div style="text-align: right; margin-top: 25px; padding-top: 15px; border-top: 1px solid #dee2e6;">
-                        <div style="font-weight: 700; color: #2D5BFF; font-size: 13px; font-family: 'Montserrat', sans-serif; margin-bottom: 3px;">
-                            Approved by Swadar Mu'allim
-                        </div>
-                        <div style="font-size: 12px; color: #666;">Suhail P</div>
-                    </div>
-                    
-                    <!-- Footer Notes -->
-                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 11px; text-align: center;">
-                        <div>Generated on: ${data.generatedOn || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                        <div style="margin-top: 3px; font-size: 10px;">This is an electronically generated document</div>
-                    </div>
-                    
-                    <!-- Action Buttons -->
-                    <div class="no-print" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6;">
-                        <button onclick="checkResultsStatus()" style="flex: 1; padding: 10px; background: white; border: 2px solid #2D5BFF; color: #2D5BFF; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease;">
-                            <i class="fas fa-redo"></i> Check Another
-                        </button>
-                        <button onclick="window.print()" style="flex: 1; padding: 10px; background: #2D5BFF; border: 2px solid #2D5BFF; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease;">
-                            <i class="fas fa-print"></i> Print Result
-                        </button>
                     </div>
                 </div>
-            `;
-            
-            // Display result
-            resultContainer.innerHTML = resultHTML;
-            loadingContainer.style.display = 'none';
-            resultContainer.style.display = 'block';
-            
-            // Scroll to result with animation
-            setTimeout(() => {
-                resultContainer.scrollIntoView({ behavior: 'smooth' });
-            }, 300);
-        }
+                
+                <!-- Performance Summary -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 15px; font-size: 16px; font-family: 'Montserrat', sans-serif; padding-bottom: 5px; border-bottom: 1px solid #dee2e6;">
+                        PERFORMANCE SUMMARY
+                    </h3>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 10px;">
+                        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
+                            <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.totalScore || '0'}</div>
+                            <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Total Marks</div>
+                            <div style="font-size: 10px; color: #999; margin-top: 3px;">Max: ${student.totalMaxScore || '0'}</div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
+                            <div style="font-size: 20px; font-weight: 800; color: ${percentageColor}; margin-bottom: 5px;">${student.percentage || '0'}%</div>
+                            <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Percentage</div>
+                            <div style="font-size: 10px; color: ${percentageColor}; font-weight: 600; margin-top: 3px;">
+                                ${percentage >= 75 ? 'Excellent' : 
+                                  percentage >= 60 ? 'Good' : 
+                                  percentage >= 40 ? 'Average' : 
+                                  'Needs Improvement'}
+                            </div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
+                            <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.rank || 'N/A'}</div>
+                            <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Class Rank</div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef;">
+                            <div style="font-size: 20px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.presents || '0'}</div>
+                            <div style="font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase;">Attendance</div>
+                            <div style="font-size: 10px; color: #999; margin-top: 3px;">${student.presents || '0'}/${student.totalMaxPresents || '0'} Days</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; padding: 15px; border-radius: 10px; text-align: center; box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e9ecef; margin-top: 10px;">
+                        <div style="font-size: 22px; font-weight: 800; color: var(--primary-dark); margin-bottom: 5px;">${student.overallGrade || 'N/A'}</div>
+                        <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">Overall Grade</div>
+                    </div>
+                </div>
+                
+                <!-- Subject-wise Performance -->
+                <div style="margin-bottom: 20px;">
+                    <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 15px; font-size: 16px; font-family: 'Montserrat', sans-serif; padding-bottom: 5px; border-bottom: 1px solid #dee2e6;">
+                        SUBJECT-WISE PERFORMANCE
+                    </h3>
+                    
+                    ${subjects.length > 0 ? `
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #dee2e6; font-size: 12px; border-radius: 8px; overflow: hidden;">
+                            <thead>
+                                <tr style="background: #2D5BFF; color: white;">
+                                    <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">#</th>
+                                    <th style="padding: 10px 5px; text-align: left; font-weight: 600; font-size: 11px;">Subject</th>
+                                    <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Max</th>
+                                    <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Obtained</th>
+                                    <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Grade</th>
+                                    <th style="padding: 10px 5px; text-align: center; font-weight: 600; font-size: 11px;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${subjectRows}
+                            </tbody>
+                        </table>
+                    </div>
+                    ` : '<p style="text-align: center; color: #6c757d; padding: 15px; font-size: 13px; background: #f8f9fa; border-radius: 8px;">No subject data available.</p>'}
+                </div>
+                
+                <!-- Final Result -->
+                <div style="background: ${overallStatus === 'PASSED' ? '#d1e7dd' : '#f8d7da'}; 
+                         padding: 15px; border-radius: 10px; text-align: center; margin-top: 15px; border: 2px solid ${statusColor};">
+                    <div style="margin-bottom: 10px;">
+                        <div style="font-size: 16px; font-weight: 800; color: ${statusColor}; margin-bottom: 8px; font-family: 'Montserrat', sans-serif;">
+                            ${overallStatus === 'PASSED' ? 'CONGRATULATIONS!' : 'NEEDS IMPROVEMENT'}
+                        </div>
+                        <div style="font-size: 14px; font-weight: 700; color: #000; margin-bottom: 8px; font-family: 'Montserrat', sans-serif;">
+                            FINAL RESULT: <span style="color: ${statusColor};">${overallStatus}</span>
+                        </div>
+                        ${overallStatus !== 'PASSED' && data.failedSubjects && data.failedSubjects.length > 0 ? 
+                            `<div style="font-size: 12px; color: #495057; background: rgba(255,255,255,0.7); padding: 5px 8px; border-radius: 5px; display: inline-block;">
+                                <strong>Improvement needed in:</strong> ${data.failedSubjects.join(', ')}
+                            </div>` : ''}
+                    </div>
+                </div>
+                
+                <!-- Approval Section -->
+                <div style="text-align: right; margin-top: 25px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                    <div style="font-weight: 700; color: #2D5BFF; font-size: 13px; font-family: 'Montserrat', sans-serif; margin-bottom: 3px;">
+                        Approved by Swadar Mu'allim
+                    </div>
+                    <div style="font-size: 12px; color: #666;">Suhail P</div>
+                </div>
+                
+                <!-- Footer Notes -->
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 11px; text-align: center;">
+                    <div>Generated on: ${data.generatedOn || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                    <div style="margin-top: 3px; font-size: 10px;">This is an electronically generated document</div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="no-print" style="display: flex; gap: 10px; justify-content: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #dee2e6;">
+                    <button onclick="checkResultsStatus()" style="flex: 1; padding: 10px; background: white; border: 2px solid #2D5BFF; color: #2D5BFF; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease;">
+                        <i class="fas fa-redo"></i> Check Another
+                    </button>
+                    <button onclick="window.print()" style="flex: 1; padding: 10px; background: #2D5BFF; border: 2px solid #2D5BFF; color: white; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease;">
+                        <i class="fas fa-print"></i> Print Result
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Display result
+        resultContainer.innerHTML = resultHTML;
+        loadingContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        
+        // Scroll to result with animation
+        setTimeout(() => {
+            resultContainer.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+    }
 
-        // Initialize - Check status on page load
-        window.addEventListener('DOMContentLoaded', function() {
+    // Initialize - Check status on page load
+    window.addEventListener('DOMContentLoaded', function() {
+        // Show loading first
+        showLoading("Loading result portal...");
+        
+        // Check status after a short delay
+        setTimeout(() => {
             checkResultsStatus();
-        });
-    </script>
+        }, 500);
+    });
+</script>
 </body>
 </html>
