@@ -600,36 +600,61 @@
             margin-top: 8px;
         }
 
-        /* A4 Paper Size Styles */
+        /* A4 Paper Size Styles - UPDATED */
         .a4-paper {
-            background: white;
+            background: #ffffff;
             width: 100%;
             max-width: 210mm;
             min-height: 297mm;
             margin: 25px auto;
-            padding: 15mm;
+            padding: 20mm;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.15);
-            border-radius: 12px;
+            border-radius: 8px;
             position: relative;
             overflow: hidden;
             display: none;
-            font-size: 14px;
+            font-size: 13px;
             animation: paperSlide 0.6s ease-out;
+            /* Background pattern */
+            background-color: #eaeaea;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.95) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.95) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Watermark */
+        .a4-paper::before {
+            content: "NOORUSSALAM";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            font-weight: 900;
+            color: rgba(45, 91, 255, 0.05);
+            z-index: 0;
+            white-space: nowrap;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 10px;
+            text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Result content container - white background over pattern */
+        .result-content {
+            position: relative;
+            z-index: 1;
+            background: white;
+            padding: 25px;
+            border-radius: 4px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            min-height: calc(297mm - 40mm);
         }
 
         @keyframes paperSlide {
             from { opacity: 0; transform: translateY(50px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .a4-paper::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 8px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
         }
 
         /* Loading Animation */
@@ -827,6 +852,16 @@
             .a4-paper {
                 padding: 10mm;
                 margin: 15px auto;
+                font-size: 12px;
+            }
+            
+            .a4-paper::before {
+                font-size: 60px;
+                letter-spacing: 5px;
+            }
+            
+            .result-content {
+                padding: 15px;
             }
             
             .mobile-menu {
@@ -853,15 +888,23 @@
             .summary-card {
                 padding: 20px 15px;
             }
+            
+            .a4-paper {
+                padding: 15mm;
+            }
+            
+            .a4-paper::before {
+                font-size: 90px;
+            }
         }
 
-        /* Print Styles */
+        /* PRINT STYLES - UPDATED */
         @media print {
             body {
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
                 animation: none !important;
             }
             
@@ -869,6 +912,7 @@
                 max-width: 210mm !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                width: 210mm !important;
             }
             
             .a4-paper {
@@ -882,8 +926,28 @@
                 border-radius: 0 !important;
                 page-break-after: always;
                 overflow: visible !important;
-                font-size: 12px !important;
+                font-size: 11px !important;
                 animation: none !important;
+                background: #eaeaea !important;
+                background-image: none !important;
+            }
+            
+            .a4-paper::before {
+                content: "NOORUSSALAM" !important;
+                font-size: 100px !important;
+                color: rgba(45, 91, 255, 0.08) !important;
+                transform: translate(-50%, -50%) rotate(-45deg) !important;
+                opacity: 1 !important;
+                display: block !important;
+            }
+            
+            .result-content {
+                background: white !important;
+                padding: 20px !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                min-height: auto !important;
             }
             
             .performance-summary {
@@ -893,6 +957,7 @@
                 border: 1px solid #ddd !important;
                 box-shadow: none !important;
                 animation: none !important;
+                break-inside: avoid;
             }
             
             .summary-grid {
@@ -900,6 +965,7 @@
                 grid-template-rows: auto auto !important;
                 grid-template-columns: repeat(3, 1fr) !important;
                 gap: 10px !important;
+                break-inside: avoid;
             }
             
             .summary-card {
@@ -908,16 +974,17 @@
                 padding: 12px 8px !important;
                 min-height: auto !important;
                 transform: none !important;
+                break-inside: avoid;
             }
             
             .summary-value {
-                font-size: 18px !important;
+                font-size: 16px !important;
                 color: black !important;
                 text-shadow: none !important;
             }
             
             .summary-label {
-                font-size: 10px !important;
+                font-size: 9px !important;
             }
             
             .no-print,
@@ -930,7 +997,25 @@
             .error-message,
             .back-to-top,
             .mobile-menu,
-            .particles {
+            .particles,
+            .btn-outline-secondary {
+                display: none !important;
+            }
+            
+            /* Ensure tables don't break across pages */
+            table {
+                page-break-inside: avoid !important;
+            }
+            
+            /* Ensure important sections don't break */
+            .result-header,
+            .student-info,
+            .final-result {
+                page-break-inside: avoid !important;
+            }
+            
+            /* Print button adjustments */
+            .print-btn {
                 display: none !important;
             }
         }
@@ -1258,7 +1343,7 @@
             }
         });
 
-        // Display Result with enhanced animation
+        // Display Result with enhanced design
         function displayResult(data) {
             const student = data.student;
             const subjects = data.subjects || [];
@@ -1278,13 +1363,13 @@
                                  subject.grade === 'F' ? '#dc3545' : '#6c757d';
                 
                 subjectRows += `
-                    <tr style="animation: fadeInUp 0.5s ease-out ${index * 0.1}s both;">
-                        <td style="padding: 12px; text-align: center;">${index + 1}</td>
-                        <td style="padding: 12px; text-align: left;">${subject.name}</td>
-                        <td style="padding: 12px; text-align: center;">${subject.maxScore}</td>
-                        <td style="padding: 12px; text-align: center; color: ${statusColor}; font-weight: 600;">${subject.obtainedScore}</td>
-                        <td style="padding: 12px; text-align: center; color: ${gradeColor}; font-weight: 700; font-size: 15px;">${subject.grade}</td>
-                        <td style="padding: 12px; text-align: center; color: ${statusColor}; font-weight: 600;">${subject.status}</td>
+                    <tr>
+                        <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 12px;">${index + 1}</td>
+                        <td style="padding: 8px; text-align: left; border-bottom: 1px solid #dee2e6; font-size: 12px;">${subject.name}</td>
+                        <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 12px;">${subject.maxScore}</td>
+                        <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 12px; color: ${statusColor}; font-weight: 600;">${subject.obtainedScore}</td>
+                        <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 12px; color: ${gradeColor}; font-weight: 700;">${subject.grade}</td>
+                        <td style="padding: 8px; text-align: center; border-bottom: 1px solid #dee2e6; font-size: 12px; color: ${statusColor}; font-weight: 600;">${subject.status}</td>
                     </tr>
                 `;
             });
@@ -1295,48 +1380,52 @@
                                   percentage >= 60 ? '#0d6efd' : 
                                   percentage >= 40 ? '#ffc107' : '#dc3545';
             
-            // Create result HTML
+            // Create result HTML with new design
             const resultHTML = `
-                <div style="width: 100%; font-size: 14px; line-height: 1.4;">
+                <div class="result-content">
                     <!-- Header -->
-                    <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 3px solid #2D5BFF; animation: fadeIn 0.5s ease-out;">
-                        <div style="color: #2D5BFF; font-size: 22px; font-weight: 800; margin-bottom: 10px; font-family: 'Montserrat', sans-serif;">
+                    <div style="text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid #2D5BFF;">
+                        <div style="color: #2D5BFF; font-size: 20px; font-weight: 800; margin-bottom: 8px; font-family: 'Montserrat', sans-serif;">
                             NOORUSSALAM SECONDARY MADRASA
                         </div>
-                        <h2 style="color: #000; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; margin: 15px 0;">
+                        <h2 style="color: #000; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 18px; margin: 10px 0;">
                             ACADEMIC PERFORMANCE STATEMENT
                         </h2>
-                        <div style="color: #666; font-size: 15px; font-weight: 500;">ANNUAL EXAMINATION - 2025-26</div>
+                        <div style="color: #666; font-size: 14px; font-weight: 500;">ANNUAL EXAMINATION 2025-26</div>
+                        <div style="color: #999; font-size: 12px; margin-top: 5px;">Session: 2025-26 | Term: Annual</div>
                     </div>
                     
                     <!-- Student Info -->
-                    <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid #dee2e6; animation: fadeInUp 0.5s ease-out;">
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; font-size: 14px;">
-                            <div style="animation: fadeInUp 0.5s ease-out 0.1s both;">
-                                <div style="font-size: 13px; color: #6c757d; margin-bottom: 8px; font-weight: 600;">Student Name</div>
-                                <div style="font-size: 18px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.name || 'N/A'}</div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; font-size: 13px;">
+                            <div>
+                                <div style="font-size: 11px; color: #6c757d; margin-bottom: 5px; font-weight: 600;">Student Name</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.name || 'N/A'}</div>
                             </div>
-                            <div style="animation: fadeInUp 0.5s ease-out 0.2s both;">
-                                <div style="font-size: 13px; color: #6c757d; margin-bottom: 8px; font-weight: 600;">Registration No</div>
-                                <div style="font-size: 18px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.rollNumber}</div>
+                            <div>
+                                <div style="font-size: 11px; color: #6c757d; margin-bottom: 5px; font-weight: 600;">Registration No</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.rollNumber}</div>
                             </div>
-                            <div style="animation: fadeInUp 0.5s ease-out 0.3s both;">
-                                <div style="font-size: 13px; color: #6c757d; margin-bottom: 8px; font-weight: 600;">Class</div>
-                                <div style="font-size: 18px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.className || 'N/A'}</div>
+                            <div>
+                                <div style="font-size: 11px; color: #6c757d; margin-bottom: 5px; font-weight: 600;">Class</div>
+                                <div style="font-size: 16px; font-weight: 700; color: #2D5BFF; font-family: 'Montserrat', sans-serif;">${student.className || 'N/A'}</div>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Performance Summary -->
-                    <div class="performance-summary">
-                        <h3 class="form-title" style="margin-bottom: 20px; text-align: center; font-size: 18px; font-family: 'Montserrat', sans-serif;">PERFORMANCE SUMMARY</h3>
-                        <div class="summary-grid">
-                            <div class="summary-card" style="animation: fadeInUp 0.5s ease-out 0.1s both;">
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 15px; font-size: 16px; font-family: 'Montserrat', sans-serif; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
+                            PERFORMANCE SUMMARY
+                        </h3>
+                        
+                        <div class="summary-grid" style="margin-top: 15px;">
+                            <div class="summary-card">
                                 <div class="summary-value">${student.totalScore || '0'}</div>
                                 <div class="summary-label">Total Marks</div>
                                 <div class="summary-small">Max: ${student.totalMaxScore || '0'}</div>
                             </div>
-                            <div class="summary-card" style="animation: fadeInUp 0.5s ease-out 0.2s both;">
+                            <div class="summary-card">
                                 <div class="summary-value" style="color: ${percentageColor};">${student.percentage || '0'}%</div>
                                 <div class="summary-label">Percentage</div>
                                 <div class="summary-small" style="color: ${percentageColor}; font-weight: 600;">
@@ -1346,17 +1435,17 @@
                                       'Needs Improvement'}
                                 </div>
                             </div>
-                            <div class="summary-card" style="animation: fadeInUp 0.5s ease-out 0.3s both;">
+                            <div class="summary-card">
                                 <div class="summary-value">${student.rank || 'N/A'}</div>
                                 <div class="summary-label">Class Rank</div>
                             </div>
                             
-                            <div class="summary-card" style="animation: fadeInUp 0.5s ease-out 0.4s both;">
+                            <div class="summary-card">
                                 <div class="summary-value">${student.presents || '0'}</div>
                                 <div class="summary-label">Attendance</div>
-                                <div class="summary-small">Days: ${student.presents || '0'}/${student.totalMaxPresents || '0'}</div>
+                                <div class="summary-small">${student.presents || '0'}/${student.totalMaxPresents || '0'} Days</div>
                             </div>
-                            <div class="summary-card" style="animation: fadeInUp 0.5s ease-out 0.5s both;">
+                            <div class="summary-card">
                                 <div class="summary-value">${student.overallGrade || 'N/A'}</div>
                                 <div class="summary-label">Overall Grade</div>
                             </div>
@@ -1364,22 +1453,22 @@
                     </div>
                     
                     <!-- Subject-wise Performance -->
-                    <div style="margin-bottom: 30px; animation: fadeInUp 0.5s ease-out 0.6s both;">
-                        <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 20px; font-size: 18px; font-family: 'Montserrat', sans-serif;">
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: #2D5BFF; text-align: center; margin-bottom: 15px; font-size: 16px; font-family: 'Montserrat', sans-serif; padding-bottom: 8px; border-bottom: 1px solid #dee2e6;">
                             SUBJECT-WISE PERFORMANCE
                         </h3>
                         
                         ${subjects.length > 0 ? `
                         <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6; font-size: 13px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                            <table style="width: 100%; border-collapse: collapse; background: white; border: 1px solid #dee2e6; font-size: 12px; margin-top: 10px;">
                                 <thead>
-                                    <tr style="background: linear-gradient(90deg, #2D5BFF, #5A7BFF); color: white;">
-                                        <th style="padding: 15px; text-align: center; font-weight: 700; font-size: 13px;">#</th>
-                                        <th style="padding: 15px; text-align: left; font-weight: 700; font-size: 13px;">Subject</th>
-                                        <th style="padding: 15px; text-align: center; font-weight: 700; font-size: 13px;">Max</th>
-                                        <th style="padding: 15px; text-align: center; font-weight: 700; font-size: 13px;">Obtained</th>
-                                        <th style="padding: 15px; text-align: center; font-weight: 700; font-size: 13px;">Grade</th>
-                                        <th style="padding: 15px; text-align: center; font-weight: 700; font-size: 13px;">Status</th>
+                                    <tr style="background: #2D5BFF; color: white;">
+                                        <th style="padding: 10px; text-align: center; font-weight: 600; font-size: 11px; border-right: 1px solid rgba(255,255,255,0.2);">#</th>
+                                        <th style="padding: 10px; text-align: left; font-weight: 600; font-size: 11px; border-right: 1px solid rgba(255,255,255,0.2);">Subject</th>
+                                        <th style="padding: 10px; text-align: center; font-weight: 600; font-size: 11px; border-right: 1px solid rgba(255,255,255,0.2);">Max</th>
+                                        <th style="padding: 10px; text-align: center; font-weight: 600; font-size: 11px; border-right: 1px solid rgba(255,255,255,0.2);">Obtained</th>
+                                        <th style="padding: 10px; text-align: center; font-weight: 600; font-size: 11px; border-right: 1px solid rgba(255,255,255,0.2);">Grade</th>
+                                        <th style="padding: 10px; text-align: center; font-weight: 600; font-size: 11px;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1387,36 +1476,51 @@
                                 </tbody>
                             </table>
                         </div>
-                        ` : '<p style="text-align: center; color: #6c757d; padding: 25px; font-size: 15px; background: #f8f9fa; border-radius: 12px;">No subject data available.</p>'}
+                        ` : '<p style="text-align: center; color: #6c757d; padding: 20px; font-size: 13px; background: #f8f9fa; border-radius: 8px;">No subject data available.</p>'}
                     </div>
                     
                     <!-- Final Result -->
-                    <div style="background: linear-gradient(135deg, ${overallStatus === 'PASSED' ? '#d1e7dd' : '#f8d7da'}, ${overallStatus === 'PASSED' ? '#c3e6cb' : '#f5c6cb'}); 
-                             padding: 25px; border-radius: 15px; text-align: center; margin-top: 30px; border: 2px solid ${statusColor}; animation: fadeInUp 0.5s ease-out 0.7s both;">
-                        <div style="margin-bottom: 20px;">
-                            <div style="font-size: 22px; font-weight: 800; color: ${statusColor}; margin-bottom: 15px; font-family: 'Montserrat', sans-serif;">
-                                ${overallStatus === 'PASSED' ? '🎉 CONGRATULATIONS!' : '📝 NEEDS IMPROVEMENT'}
+                    <div style="background: ${overallStatus === 'PASSED' ? '#d1e7dd' : '#f8d7da'}; 
+                             padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; border: 2px solid ${statusColor};">
+                        <div style="margin-bottom: 15px;">
+                            <div style="font-size: 18px; font-weight: 800; color: ${statusColor}; margin-bottom: 10px; font-family: 'Montserrat', sans-serif;">
+                                ${overallStatus === 'PASSED' ? 'CONGRATULATIONS!' : 'NEEDS IMPROVEMENT'}
                             </div>
-                            <div style="font-size: 18px; font-weight: 700; color: #000; margin-bottom: 15px; font-family: 'Montserrat', sans-serif;">
+                            <div style="font-size: 16px; font-weight: 700; color: #000; margin-bottom: 10px; font-family: 'Montserrat', sans-serif;">
                                 FINAL RESULT: <span style="color: ${statusColor};">${overallStatus}</span>
                             </div>
                             ${overallStatus !== 'PASSED' && data.failedSubjects && data.failedSubjects.length > 0 ? 
-                                `<div style="font-size: 14px; color: #495057; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 8px; display: inline-block;">
+                                `<div style="font-size: 12px; color: #495057; background: rgba(255,255,255,0.7); padding: 8px; border-radius: 6px; display: inline-block;">
                                     <strong>Improvement needed in:</strong> ${data.failedSubjects.join(', ')}
                                 </div>` : ''}
                         </div>
                     </div>
                     
-                    <!-- Signature -->
-                    <div style="text-align: right; margin-top: 40px; padding-top: 20px; border-top: 1px solid #dee2e6; animation: fadeInUp 0.5s ease-out 0.8s both;">
-                        <div style="font-weight: 700; color: var(--primary-dark); font-size: 15px; font-family: 'Montserrat', sans-serif;">Swadar Mu'allim</div>
-                        <div style="font-size: 14px; color: #666; margin-top: 5px;">Suhail P</div>
+                    <!-- Approval Section -->
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                            <div style="text-align: center;">
+                                <div style="font-weight: 600; color: #495057; margin-bottom: 5px;">Swadar Muallim</div>
+                                <div style="height: 1px; background: #dee2e6; margin: 10px 0;"></div>
+                                <div style="color: #666; margin-top: 5px;">Suhail P</div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <!-- Footer -->
-                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 12px; text-align: center;">
-                        <div>Generated on: ${data.generatedOn || new Date().toLocaleDateString()}</div>
-                        <div style="margin-top: 8px;">This is an electronically generated document</div>
+                    <!-- Footer Notes -->
+                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 11px; text-align: center;">
+                        <div>Generated on: ${data.generatedOn || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                        <div style="margin-top: 5px;">This is an electronically generated document - Valid without signature</div>
+                        <div style="margin-top: 5px; font-size: 10px; color: #999;">Result ID: NSM-${Date.now().toString().slice(-8)}</div>
+                    </div>
+                    
+                    <!-- Action Buttons (Only for screen) -->
+                    <div class="no-print" style="display: flex; gap: 15px; justify-content: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+                        <button onclick="showForm()" style="padding: 10px 20px; background: white; border: 2px solid #2D5BFF; color: #2D5BFF; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease;">
+                            <i class="fas fa-redo"></i> Check Another
+                        </button>
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #2D5BFF; border: 2px solid #2D5BFF; color: white; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px; transition: all 0.3s ease;">
+                            <i class="fas fa-print"></i> Print Result
+                        </button>
                     </div>
                 </div>
             `;
