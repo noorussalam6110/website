@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Samastha Result Portal</title>
+    <title>Samastha Result 2025</title>
     <style>
         * {
             margin: 0;
@@ -12,7 +12,7 @@
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -43,7 +43,7 @@
         }
         
         h1 {
-            font-size: 24px;
+            font-size: 22px;
             margin-bottom: 10px;
         }
         
@@ -65,7 +65,6 @@
             margin-bottom: 8px;
             font-weight: 600;
             color: #2c3e50;
-            font-size: 16px;
         }
         
         select, input {
@@ -74,36 +73,28 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
-            transition: all 0.3s;
         }
         
         select:focus, input:focus {
             outline: none;
             border-color: #3498db;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
         }
         
         .submit-btn {
             width: 100%;
             padding: 18px;
-            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            background: #2ecc71;
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            transition: 0.3s;
         }
         
         .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-        
-        .submit-btn:active {
-            transform: translateY(0);
+            background: #27ae60;
         }
         
         .loader {
@@ -137,7 +128,7 @@
             display: none;
         }
         
-        .result-frame {
+        .result-container {
             width: 100%;
             height: 600px;
             border: 2px solid #ddd;
@@ -147,7 +138,7 @@
         }
         
         .test-buttons {
-            margin-top: 30px;
+            margin-top: 20px;
             text-align: center;
         }
         
@@ -175,36 +166,22 @@
             font-size: 14px;
             border-top: 1px solid #eee;
         }
-        
-        @media (max-width: 600px) {
-            .form-container {
-                padding: 25px;
-            }
-            
-            .header {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 20px;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <div class="logo">🎓</div>
-            <h1>SAMASTHA RESULT PORTAL</h1>
-            <div class="subtitle">Public Examination Result 2025</div>
+            <h1>SAMASTHA RESULT 2025</h1>
+            <div class="subtitle">Kerala Islam Matha Vidyabhyasa Board</div>
         </div>
         
         <div class="form-container">
             <form id="resultForm">
                 <div class="form-group">
-                    <label for="class">Select Class</label>
+                    <label for="class">SELECT CLASS</label>
                     <select id="class" required>
-                        <option value="">-- Select Class --</option>
+                        <option value="">-- Select --</option>
                         <option value="5">Class 5</option>
                         <option value="7">Class 7</option>
                         <option value="10">Class 10</option>
@@ -212,7 +189,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="reg">Register Number</label>
+                    <label for="reg">REGISTER NUMBER</label>
                     <input type="text" id="reg" placeholder="Enter register number" required>
                 </div>
                 
@@ -221,15 +198,15 @@
             
             <div class="loader" id="loader">
                 <div class="spinner"></div>
-                <div>Fetching result...</div>
+                <div>Loading result...</div>
             </div>
             
             <div class="error" id="error"></div>
             
-            <iframe class="result-frame" id="resultFrame"></iframe>
+            <iframe class="result-container" id="resultFrame"></iframe>
             
             <div class="test-buttons">
-                <p style="margin-bottom: 10px; color: #7f8c8d;">Test with sample data:</p>
+                <p style="margin-bottom: 10px; color: #666;">Test with sample data:</p>
                 <button class="test-btn" onclick="fillForm(5, '6565')">Class 5 - 6565</button>
                 <button class="test-btn" onclick="fillForm(7, '7001')">Class 7 - 7001</button>
                 <button class="test-btn" onclick="fillForm(10, '10001')">Class 10 - 10001</button>
@@ -243,64 +220,46 @@
     </div>
 
     <script>
-        // ================================================
-        // CONFIGURATION
-        // ================================================
         // IMPORTANT: Replace this with your deployed Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyufNjAq4O_28-enx0VTmQCk92SUjGJO4BteCTNeJvndIu88VPRdxaecxp2xzPxCoCJ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyI4ycAZjsxFrOcZn_WLl9AXRq1QB_Xl5_UF4_yNCpldm61Q9XqiNYNldZJinrJDCuV/exec';
         
-        // DOM Elements
         const form = document.getElementById('resultForm');
         const loader = document.getElementById('loader');
         const errorDiv = document.getElementById('error');
         const resultFrame = document.getElementById('resultFrame');
         
-        // ================================================
-        // FORM SUBMISSION
-        // ================================================
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const studentClass = document.getElementById('class').value;
             const regNumber = document.getElementById('reg').value.trim();
             
-            // Validate inputs
             if (!studentClass || !regNumber) {
                 showError('Please select class and enter register number');
                 return;
             }
             
-            // Clear previous results
             hideError();
             resultFrame.style.display = 'none';
-            
-            // Show loader
             showLoader();
             
-            // Build URL
-            const url = `${SCRIPT_URL}?class=${studentClass}&reg=${encodeURIComponent(regNumber)}`;
+            // Direct GET request to Apps Script
+            const url = `${SCRIPT_URL}?class=${studentClass}&reg=${regNumber}`;
             console.log('Fetching:', url);
             
-            // Load result in iframe
             resultFrame.src = url;
             resultFrame.onload = function() {
                 hideLoader();
                 resultFrame.style.display = 'block';
                 resultFrame.scrollIntoView({ behavior: 'smooth' });
-                
-                // Save to history
-                saveToHistory(studentClass, regNumber);
             };
             
             resultFrame.onerror = function() {
                 hideLoader();
-                showError('Failed to load result. Please check your internet connection.');
+                showError('Failed to load result. Please check internet connection.');
             };
         });
         
-        // ================================================
-        // HELPER FUNCTIONS
-        // ================================================
         function showLoader() {
             loader.style.display = 'block';
         }
@@ -324,77 +283,22 @@
             form.dispatchEvent(new Event('submit'));
         }
         
-        function saveToHistory(studentClass, regNumber) {
-            try {
-                let history = JSON.parse(localStorage.getItem('resultHistory') || '[]');
-                
-                history.unshift({
-                    class: studentClass,
-                    reg: regNumber,
-                    timestamp: new Date().toISOString()
-                });
-                
-                // Keep only last 5 searches
-                if (history.length > 5) {
-                    history = history.slice(0, 5);
-                }
-                
-                localStorage.setItem('resultHistory', JSON.stringify(history));
-            } catch (e) {
-                console.log('Could not save history:', e);
+        // Test connection on load
+        window.onload = function() {
+            if (SCRIPT_URL.includes('YOUR_DEPLOYED_URL')) {
+                showError('Please update SCRIPT_URL in the code with your actual Apps Script URL');
+            } else {
+                // Test if server is reachable
+                fetch(SCRIPT_URL + '?test=1')
+                    .then(response => response.text())
+                    .then(text => {
+                        console.log('Server test:', text);
+                    })
+                    .catch(error => {
+                        console.log('Server may not be reachable');
+                    });
             }
-        }
-        
-        function loadHistory() {
-            try {
-                const history = JSON.parse(localStorage.getItem('resultHistory') || '[]');
-                if (history.length > 0) {
-                    const last = history[0];
-                    document.getElementById('class').value = last.class;
-                    document.getElementById('reg').value = last.reg;
-                }
-            } catch (e) {
-                console.log('Could not load history:', e);
-            }
-        }
-        
-        // ================================================
-        // INITIALIZATION
-        // ================================================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Result Portal Loaded');
-            
-            // Load last search from history
-            loadHistory();
-            
-            // Test connection
-            testConnection();
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                // Ctrl+Enter to submit form
-                if (e.ctrlKey && e.key === 'Enter') {
-                    form.dispatchEvent(new Event('submit'));
-                }
-                
-                // F5 to refresh
-                if (e.key === 'F5') {
-                    e.preventDefault();
-                    location.reload();
-                }
-            });
-        });
-        
-        function testConnection() {
-            fetch(SCRIPT_URL + '?test=1')
-                .then(response => response.text())
-                .then(text => {
-                    console.log('Server test:', text);
-                })
-                .catch(error => {
-                    console.log('Server test failed:', error);
-                });
-        }
+        };
     </script>
 </body>
 </html>
