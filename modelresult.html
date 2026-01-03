@@ -772,8 +772,9 @@
         // ================================================
         // CONFIGURATION
         // ================================================
-        // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyemlKrSq7lh6zhH1vn252ztDkzFcS_7KDrZGKRh0YIMaP6f8ADKTj7aa0wZho_4UU0/exec;
+        // REPLACE THIS WITH YOUR GOOGLE APPS SCRIPT DEPLOYMENT URL
+        // Get it from: Deploy > New deployment > Web app > Copy URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOcdkDw7fP-EHisjtt4iZwihp6S83m8suPF9jqNPYVX_inpqOBhCh4ogQN1CIkmtiP/exec';
         
         // DOM Elements
         const form = document.getElementById('main-form');
@@ -788,7 +789,7 @@
             e.preventDefault();
             
             const studentClass = document.getElementById('class').value;
-            const regNumber = document.getElementById('reg').value;
+            const regNumber = document.getElementById('reg').value.trim();
             
             // Validate inputs
             if (!studentClass || !regNumber) {
@@ -796,8 +797,8 @@
                 return;
             }
             
-            if (regNumber.length < 4) {
-                showError('Register number must be at least 4 digits');
+            if (regNumber.length < 3) {
+                showError('Register number must be at least 3 digits');
                 return;
             }
             
@@ -811,21 +812,24 @@
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         class: studentClass,
                         reg: regNumber
-                    }),
-                    mode: 'no-cors' // Remove this line if you get CORS errors
+                    })
                 });
                 
-                console.log('Response received:', response);
+                console.log('Response status:', response.status);
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
                 // Parse response
                 const data = await response.json();
-                console.log('Parsed data:', data);
+                console.log('Response data:', data);
                 
                 // Handle response
                 if (data.resp) {
@@ -859,18 +863,30 @@
                 
                 // Try alternative method (GET request)
                 try {
-                    console.log('Trying alternative method...');
+                    console.log('Trying alternative method (GET)...');
                     const altResponse = await fetch(`${SCRIPT_URL}?class=${studentClass}&reg=${regNumber}`);
-                    const altData = await altResponse.json();
                     
-                    if (altData.resp) {
-                        resultContainer.innerHTML = altData.data;
-                    } else {
-                        showError(altData.error || 'Network error. Please check your connection and try again.');
+                    if (!altResponse.ok) {
+                        throw new Error(`GET request failed: ${altResponse.status}`);
                     }
+                    
+                    const altText = await altResponse.text();
+                    
+                    // Check if it's HTML (result) or text (error)
+                    if (altText.includes('result-card')) {
+                        resultContainer.innerHTML = altText;
+                        saveToHistory(studentClass, regNumber);
+                    } else {
+                        showError(altText || 'Result not found. Please check the register number and try again.');
+                    }
+                    
                 } catch (altError) {
                     console.error('Alternative method failed:', altError);
-                    showError('Network error. Please check: 1) Internet connection 2) Apps Script URL 3) CORS settings');
+                    showError(`Unable to fetch result. Please check:<br>
+                        1. Internet connection<br>
+                        2. Register number is correct<br>
+                        3. Class is selected<br>
+                        4. Try again later`);
                 }
                 
             } finally {
@@ -904,12 +920,21 @@
                     <strong>⚠️ Error</strong>
                     ${message}
                     <div style="margin-top: 15px; font-size: 16px; opacity: 0.9;">
-                        <strong>Troubleshooting:</strong><br>
+                        <strong>Tips:</strong><br>
                         1. Check your internet connection<br>
-                        2. Verify the Apps Script URL is correct<br>
-                        3. Make sure the script is deployed as "Anyone"<br>
-                        4. Check browser console for detailed errors
+                        2. Verify the register number<br>
+                        3. Make sure the correct class is selected<br>
+                        4. Contact support if problem persists
                     </div>
+                </div>
+            `;
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            resultContainer.innerHTML = `
+                <div class="success-message">
+                    ${message}
                 </div>
             `;
         }
@@ -939,7 +964,7 @@
                     };
                     
                     script.onerror = () => {
-                        alert('Failed to load download library. Please use print option instead.');
+                        alert('Download feature requires internet connection. Please use print option instead.');
                         hideLoader();
                     };
                     
@@ -958,18 +983,21 @@
         
         // Capture and download image
         async function captureAndDownload(element) {
-            const canvas = await html2canvas(element, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-                allowTaint: true
-            });
-            
-            const link = document.createElement('a');
-            link.download = `Result_Class${document.getElementById('class').value}_${document.getElementById('reg').value}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            try {
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+                
+                const link = document.createElement('a');
+                link.download = `Result_Class${document.getElementById('class').value}_${document.getElementById('reg').value}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            } catch (error) {
+                throw new Error('Failed to capture image: ' + error.message);
+            }
         }
         
         // Save search to localStorage
@@ -1060,10 +1088,11 @@
                     localStorage.removeItem('samastha_form_data');
                 }
                 
-                // F5 to refresh
-                if (e.key === 'F5') {
-                    e.preventDefault();
-                    location.reload();
+                // Enter to submit when focused on register number
+                if (e.key === 'Enter' && document.activeElement.id === 'reg') {
+                    if (form.checkValidity()) {
+                        form.dispatchEvent(new Event('submit'));
+                    }
                 }
             });
         });
@@ -1115,7 +1144,7 @@
         });
     </script>
     
-    <!-- html2canvas library (optional, loaded dynamically) -->
+    <!-- Optional: html2canvas library for download feature -->
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script> -->
 </body>
 </html>
