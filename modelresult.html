@@ -13,14 +13,17 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
         }
         
         .container {
+            width: 100%;
             max-width: 500px;
-            margin: 0 auto;
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -30,21 +33,13 @@
         .header {
             background: #2c3e50;
             color: white;
-            padding: 25px;
+            padding: 30px;
             text-align: center;
         }
         
         .logo {
-            width: 80px;
-            height: 80px;
-            background: white;
-            border-radius: 50%;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            color: #2c3e50;
+            font-size: 50px;
+            margin-bottom: 15px;
         }
         
         h1 {
@@ -54,12 +49,11 @@
         
         .subtitle {
             font-size: 14px;
-            opacity: 0.8;
-            margin-bottom: 5px;
+            opacity: 0.9;
         }
         
         .form-container {
-            padding: 30px;
+            padding: 40px;
         }
         
         .form-group {
@@ -76,7 +70,7 @@
         
         select, input {
             width: 100%;
-            padding: 14px;
+            padding: 15px;
             border: 2px solid #ddd;
             border-radius: 8px;
             font-size: 16px;
@@ -91,7 +85,7 @@
         
         .submit-btn {
             width: 100%;
-            padding: 16px;
+            padding: 18px;
             background: linear-gradient(135deg, #2ecc71, #27ae60);
             color: white;
             border: none;
@@ -133,37 +127,45 @@
             100% { transform: rotate(360deg); }
         }
         
-        .result-container {
-            display: none;
-            padding: 30px;
-        }
-        
-        .error-message {
+        .error {
             background: #ffecec;
             color: #e74c3c;
             padding: 15px;
             border-radius: 8px;
             margin-top: 20px;
             border-left: 4px solid #e74c3c;
+            display: none;
         }
         
-        .success-message {
-            background: #ecf9ec;
-            color: #27ae60;
-            padding: 15px;
+        .result-frame {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ddd;
             border-radius: 8px;
             margin-top: 20px;
-            border-left: 4px solid #27ae60;
+            display: none;
         }
         
-        .debug-info {
+        .test-buttons {
             margin-top: 30px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 12px;
-            display: none;
+            text-align: center;
+        }
+        
+        .test-btn {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .test-btn:hover {
+            background: #2980b9;
         }
         
         .footer {
@@ -174,40 +176,12 @@
             border-top: 1px solid #eee;
         }
         
-        .test-links {
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .test-link {
-            display: inline-block;
-            margin: 5px;
-            padding: 8px 15px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 14px;
-        }
-        
-        .test-link:hover {
-            background: #2980b9;
-        }
-        
         @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            
-            .container {
-                border-radius: 10px;
+            .form-container {
+                padding: 25px;
             }
             
             .header {
-                padding: 20px;
-            }
-            
-            .form-container {
                 padding: 20px;
             }
             
@@ -221,7 +195,7 @@
     <div class="container">
         <div class="header">
             <div class="logo">🎓</div>
-            <h1>SAMASTHA KERALA ISLAM MATHA VIDYABHYASA BOARD</h1>
+            <h1>SAMASTHA RESULT PORTAL</h1>
             <div class="subtitle">Public Examination Result 2025</div>
         </div>
         
@@ -234,16 +208,15 @@
                         <option value="5">Class 5</option>
                         <option value="7">Class 7</option>
                         <option value="10">Class 10</option>
-                        <option value="12">Class 12</option>
                     </select>
                 </div>
                 
                 <div class="form-group">
                     <label for="reg">Register Number</label>
-                    <input type="text" id="reg" placeholder="Enter your register number" required>
+                    <input type="text" id="reg" placeholder="Enter register number" required>
                 </div>
                 
-                <button type="submit" class="submit-btn">🔍 Check Result</button>
+                <button type="submit" class="submit-btn">🔍 CHECK RESULT</button>
             </form>
             
             <div class="loader" id="loader">
@@ -251,141 +224,78 @@
                 <div>Fetching result...</div>
             </div>
             
-            <div id="message"></div>
+            <div class="error" id="error"></div>
             
-            <div class="test-links">
+            <iframe class="result-frame" id="resultFrame"></iframe>
+            
+            <div class="test-buttons">
                 <p style="margin-bottom: 10px; color: #7f8c8d;">Test with sample data:</p>
-                <a href="javascript:void(0)" onclick="testCase(5, '6565')" class="test-link">Class 5 - 6565</a>
-                <a href="javascript:void(0)" onclick="testCase(7, '7001')" class="test-link">Class 7 - 7001</a>
-                <a href="javascript:void(0)" onclick="testCase(10, '10001')" class="test-link">Class 10 - 10001</a>
+                <button class="test-btn" onclick="fillForm(5, '6565')">Class 5 - 6565</button>
+                <button class="test-btn" onclick="fillForm(7, '7001')">Class 7 - 7001</button>
+                <button class="test-btn" onclick="fillForm(10, '10001')">Class 10 - 10001</button>
             </div>
         </div>
         
-        <div class="result-container" id="resultContainer">
-            <!-- Result will be loaded here -->
-        </div>
-        
-        <div class="debug-info" id="debugInfo"></div>
-        
         <div class="footer">
             <p>© 2025 Samastha Kerala Islam Matha Vidyabhyasa Board</p>
-            <p>Computer Generated Provisional Result</p>
+            <p>Computer Generated Result</p>
         </div>
     </div>
-    
+
     <script>
         // ================================================
         // CONFIGURATION
         // ================================================
-        // IMPORTANT: Replace with your deployed Apps Script URL
-        // Get it from: Deploy > New deployment > Web app > Copy URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyY4TPZrEszWiuYlbumsoYiE6nRcDUvkf-fR2poMaHI6LzMjPdzXESDtdmq_VjOyHkg/exec';
+        // IMPORTANT: Replace this with your deployed Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyufNjAq4O_28-enx0VTmQCk92SUjGJO4BteCTNeJvndIu88VPRdxaecxp2xzPxCoCJ/exec';
         
         // DOM Elements
         const form = document.getElementById('resultForm');
         const loader = document.getElementById('loader');
-        const messageDiv = document.getElementById('message');
-        const resultContainer = document.getElementById('resultContainer');
-        const debugInfo = document.getElementById('debugInfo');
+        const errorDiv = document.getElementById('error');
+        const resultFrame = document.getElementById('resultFrame');
         
         // ================================================
-        // FORM HANDLER
+        // FORM SUBMISSION
         // ================================================
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const studentClass = document.getElementById('class').value;
             const regNumber = document.getElementById('reg').value.trim();
             
-            // Validate
+            // Validate inputs
             if (!studentClass || !regNumber) {
-                showMessage('Please select class and enter register number', 'error');
+                showError('Please select class and enter register number');
                 return;
             }
             
-            // Reset previous results
-            resultContainer.style.display = 'none';
-            resultContainer.innerHTML = '';
+            // Clear previous results
+            hideError();
+            resultFrame.style.display = 'none';
             
             // Show loader
             showLoader();
-            clearMessage();
             
-            try {
-                console.log('Fetching result for:', { class: studentClass, reg: regNumber });
-                
-                // Try POST request first
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        class: studentClass,
-                        reg: regNumber
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                const data = await response.json();
-                console.log('Response received:', data);
-                
-                if (data.success) {
-                    // Success - display result
-                    resultContainer.innerHTML = data.message;
-                    resultContainer.style.display = 'block';
-                    
-                    // Scroll to result
-                    resultContainer.scrollIntoView({ behavior: 'smooth' });
-                    
-                    // Save to history
-                    saveToHistory(studentClass, regNumber);
-                    
-                } else {
-                    // Error from server
-                    showMessage(data.message, 'error');
-                }
-                
-            } catch (error) {
-                console.error('POST request failed:', error);
-                
-                // Fallback: Try GET request
-                try {
-                    console.log('Trying GET request as fallback...');
-                    const getResponse = await fetch(`${SCRIPT_URL}?class=${studentClass}&reg=${regNumber}`);
-                    
-                    if (!getResponse.ok) {
-                        throw new Error(`GET request failed: ${getResponse.status}`);
-                    }
-                    
-                    const html = await getResponse.text();
-                    
-                    if (html.includes('Error:')) {
-                        showMessage(html.replace('Error: ', ''), 'error');
-                    } else {
-                        resultContainer.innerHTML = html;
-                        resultContainer.style.display = 'block';
-                        resultContainer.scrollIntoView({ behavior: 'smooth' });
-                        saveToHistory(studentClass, regNumber);
-                    }
-                    
-                } catch (getError) {
-                    console.error('GET request also failed:', getError);
-                    showMessage(`
-                        <strong>Connection Failed</strong><br>
-                        Please check:<br>
-                        1. Internet connection<br>
-                        2. Apps Script URL is correct<br>
-                        3. Script is deployed as "Anyone"<br><br>
-                        Error: ${getError.message}
-                    `, 'error');
-                }
-            } finally {
+            // Build URL
+            const url = `${SCRIPT_URL}?class=${studentClass}&reg=${encodeURIComponent(regNumber)}`;
+            console.log('Fetching:', url);
+            
+            // Load result in iframe
+            resultFrame.src = url;
+            resultFrame.onload = function() {
                 hideLoader();
-            }
+                resultFrame.style.display = 'block';
+                resultFrame.scrollIntoView({ behavior: 'smooth' });
+                
+                // Save to history
+                saveToHistory(studentClass, regNumber);
+            };
+            
+            resultFrame.onerror = function() {
+                hideLoader();
+                showError('Failed to load result. Please check your internet connection.');
+            };
         });
         
         // ================================================
@@ -399,21 +309,16 @@
             loader.style.display = 'none';
         }
         
-        function showMessage(text, type = 'info') {
-            messageDiv.innerHTML = `
-                <div class="${type}-message">
-                    ${text}
-                </div>
-            `;
-            messageDiv.style.display = 'block';
+        function showError(message) {
+            errorDiv.innerHTML = message;
+            errorDiv.style.display = 'block';
         }
         
-        function clearMessage() {
-            messageDiv.innerHTML = '';
-            messageDiv.style.display = 'none';
+        function hideError() {
+            errorDiv.style.display = 'none';
         }
         
-        function testCase(studentClass, regNumber) {
+        function fillForm(studentClass, regNumber) {
             document.getElementById('class').value = studentClass;
             document.getElementById('reg').value = regNumber;
             form.dispatchEvent(new Event('submit'));
@@ -436,7 +341,7 @@
                 
                 localStorage.setItem('resultHistory', JSON.stringify(history));
             } catch (e) {
-                console.warn('Could not save to history:', e);
+                console.log('Could not save history:', e);
             }
         }
         
@@ -449,7 +354,7 @@
                     document.getElementById('reg').value = last.reg;
                 }
             } catch (e) {
-                console.warn('Could not load history:', e);
+                console.log('Could not load history:', e);
             }
         }
         
@@ -459,7 +364,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Result Portal Loaded');
             
-            // Load last search
+            // Load last search from history
             loadHistory();
             
             // Test connection
@@ -467,51 +372,28 @@
             
             // Keyboard shortcuts
             document.addEventListener('keydown', function(e) {
-                // Ctrl+Enter to submit
+                // Ctrl+Enter to submit form
                 if (e.ctrlKey && e.key === 'Enter') {
-                    if (form.checkValidity()) {
-                        form.dispatchEvent(new Event('submit'));
-                    }
+                    form.dispatchEvent(new Event('submit'));
                 }
                 
-                // F1 for help
-                if (e.key === 'F1') {
+                // F5 to refresh
+                if (e.key === 'F5') {
                     e.preventDefault();
-                    showMessage(`
-                        <strong>Help & Instructions</strong><br><br>
-                        1. Select your class from dropdown<br>
-                        2. Enter your register number<br>
-                        3. Click "Check Result" or press Ctrl+Enter<br>
-                        4. Use test links for sample data<br>
-                        5. Contact support if issues persist
-                    `, 'success');
-                }
-                
-                // Ctrl+D for debug
-                if (e.ctrlKey && e.key === 'd') {
-                    e.preventDefault();
-                    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-                    debugInfo.innerHTML = `
-                        <strong>Debug Information</strong><br>
-                        URL: ${SCRIPT_URL}<br>
-                        User Agent: ${navigator.userAgent}<br>
-                        Online: ${navigator.onLine}<br>
-                        Platform: ${navigator.platform}<br>
-                        Screen: ${screen.width}x${screen.height}<br>
-                        Time: ${new Date().toLocaleString()}
-                    `;
+                    location.reload();
                 }
             });
         });
         
-        async function testConnection() {
-            try {
-                const response = await fetch(SCRIPT_URL + '?test=1');
-                const text = await response.text();
-                console.log('Connection test:', text);
-            } catch (error) {
-                console.warn('Connection test failed:', error);
-            }
+        function testConnection() {
+            fetch(SCRIPT_URL + '?test=1')
+                .then(response => response.text())
+                .then(text => {
+                    console.log('Server test:', text);
+                })
+                .catch(error => {
+                    console.log('Server test failed:', error);
+                });
         }
     </script>
 </body>
