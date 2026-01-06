@@ -23,6 +23,7 @@
             --dark: #1E293B;
             --gradient-1: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
             --gradient-2: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             --shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.08);
             --shadow-md: 0 4px 16px rgba(30, 58, 138, 0.1);
             --shadow-lg: 0 8px 32px rgba(30, 58, 138, 0.12);
@@ -126,6 +127,86 @@
             margin-top: 12px;
             border: 2px solid white;
             box-shadow: var(--shadow-sm);
+        }
+
+        /* Class Toppers Button Container */
+        .toppers-btn-container {
+            display: none;
+            margin-top: 16px;
+            text-align: center;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .toppers-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--gradient-gold);
+            color: #000;
+            padding: 16px 28px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+            border: 3px solid white;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toppers-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+            color: #000;
+        }
+
+        .toppers-btn:active {
+            transform: translateY(0);
+        }
+
+        .toppers-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .toppers-btn:hover::after {
+            opacity: 1;
+            transform: rotate(45deg) translate(10%, 10%);
+        }
+
+        .toppers-btn i {
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .toppers-label {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         /* Countdown Container */
@@ -496,6 +577,11 @@
                 padding: 8px 14px;
             }
             
+            .toppers-btn {
+                padding: 14px 24px;
+                font-size: 0.9rem;
+            }
+            
             .countdown-unit {
                 min-width: 65px;
                 padding: 14px 8px;
@@ -556,6 +642,15 @@
                 font-size: 0.75rem;
             }
             
+            .toppers-btn {
+                padding: 12px 20px;
+                font-size: 0.85rem;
+            }
+            
+            .toppers-label {
+                font-size: 0.7rem;
+            }
+            
             .countdown-timer {
                 gap: 6px;
             }
@@ -596,6 +691,11 @@
         @media (max-width: 360px) {
             .college-name {
                 font-size: 0.9rem;
+            }
+            
+            .toppers-btn {
+                font-size: 0.8rem;
+                padding: 10px 16px;
             }
             
             .countdown-unit {
@@ -645,7 +745,8 @@
             .success-message-container,
             .loading-container,
             .error-message,
-            .back-to-top {
+            .back-to-top,
+            .toppers-btn-container {
                 display: none !important;
             }
         }
@@ -695,12 +796,12 @@
         }
 
         /* Enhanced touch feedback */
-        .btn-primary {
+        .btn-primary, .toppers-btn {
             position: relative;
             overflow: hidden;
         }
 
-        .btn-primary:after {
+        .btn-primary:after, .toppers-btn:after {
             content: '';
             position: absolute;
             top: 50%;
@@ -714,7 +815,8 @@
             transform-origin: 50% 50%;
         }
 
-        .btn-primary:focus:not(:active)::after {
+        .btn-primary:focus:not(:active)::after,
+        .toppers-btn:focus:not(:active)::after {
             animation: ripple 1s ease-out;
         }
 
@@ -739,6 +841,15 @@
             <p class="college-tagline">Kambippalam, Kerala Estate, Malappuram</p>
             <div class="exam-title">
                 <i class="fas fa-graduation-cap"></i> ACADEMIC RESULTS PORTAL 2025-26
+            </div>
+            
+            <!-- Class Toppers Button Container -->
+            <div class="toppers-btn-container" id="toppersBtnContainer">
+                <a href="toppers.html" class="toppers-btn">
+                    <i class="fas fa-crown"></i>
+                    <span>View Class Toppers & Generate Certificates</span>
+                    <span class="toppers-label">NEW</span>
+                </a>
             </div>
         </div>
 
@@ -888,6 +999,7 @@
         const resultForm = document.getElementById('resultForm');
         const rollInput = document.getElementById('roll');
         const classSelect = document.getElementById('class');
+        const toppersBtnContainer = document.getElementById('toppersBtnContainer');
         
         // Countdown elements
         const daysElement = document.getElementById('days');
@@ -920,6 +1032,16 @@
             return /^[rR][0-9]+$/.test(roll);
         }
 
+        // Show Class Toppers Button
+        function showToppersButton() {
+            toppersBtnContainer.style.display = 'block';
+        }
+
+        // Hide Class Toppers Button
+        function hideToppersButton() {
+            toppersBtnContainer.style.display = 'none';
+        }
+
         // Show temporary success message then form
         function showTemporarySuccessThenForm() {
             if (hasCountdownEnded) return;
@@ -932,6 +1054,7 @@
             resultContainer.style.display = 'none';
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'none';
+            hideToppersButton();
             
             // Show temporary success message
             successMessageContainer.style.display = 'block';
@@ -956,6 +1079,7 @@
             resultContainer.style.display = 'none';
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'none';
+            showToppersButton();
             
             setTimeout(() => {
                 rollInput.focus();
@@ -993,6 +1117,7 @@
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'none';
             countdownContainer.style.display = 'block';
+            hideToppersButton();
             
             countdownMessage.textContent = data.message || "Annual Examination Results 2025-26 will be available in:";
             publishDateTime.textContent = data.publishTimeFormatted || "";
@@ -1049,6 +1174,7 @@
             resultContainer.style.display = 'none';
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'block';
+            hideToppersButton();
         }
 
         // Show error with animation
@@ -1062,6 +1188,7 @@
             resultContainer.style.display = 'none';
             loadingContainer.style.display = 'none';
             errorContainer.style.display = 'block';
+            hideToppersButton();
         }
 
         // Scroll to top function
@@ -1309,6 +1436,19 @@
                             <i class="fas fa-print"></i> Print Result
                         </button>
                     </div>
+                    
+                    <!-- Class Toppers Link -->
+                    <div class="no-print" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255, 215, 0, 0.3); text-align: center;">
+                        <div style="font-size: 0.9rem; color: #6B7280; margin-bottom: 12px; font-weight: 500;">
+                            <i class="fas fa-star" style="color: #FFD700; margin-right: 8px;"></i>
+                            Check out the top performers in each class
+                        </div>
+                        <a href="certificate-generator.html" style="display: inline-flex; align-items: center; gap: 10px; background: var(--gradient-gold); color: #000; padding: 12px 24px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; text-decoration: none; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3); border: 2px solid white; transition: all 0.3s ease;">
+                            <i class="fas fa-crown"></i>
+                            View Class Toppers & Generate Certificates
+                            <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                        </a>
+                    </div>
                 </div>
             `;
             
@@ -1316,6 +1456,7 @@
             resultContainer.innerHTML = resultHTML;
             loadingContainer.style.display = 'none';
             resultContainer.style.display = 'block';
+            showToppersButton();
             
             setTimeout(() => {
                 resultContainer.scrollIntoView({ behavior: 'smooth' });
@@ -1328,6 +1469,7 @@
             serverPublishTime = Date.now() + (10 * 1000);
             
             showLoading("Loading result portal...");
+            hideToppersButton();
             
             // Check status after a short delay
             setTimeout(() => {
