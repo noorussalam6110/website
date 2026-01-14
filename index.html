@@ -661,7 +661,7 @@
       transform: scaleX(1);
     }
     
-    /* ===== PREMIUM ISLAMIC HERO ===== */
+    /* ===== PREMIUM ISLAMIC HERO WITH COUNTDOWN TIMER ===== */
     .hero-premium{
       position: relative;
       overflow: hidden;
@@ -868,22 +868,294 @@
       .hero-premium .star { animation: none; }
     }
 
-    /* 🔥 FLASH MESSAGE */
-    .flash-message {
-      background:#dc3545;
-      color:white;
-      padding:12px;
-      text-align:center;
-      font-size:18px;
-      font-weight:600;
-      animation: blinkMsg 1.5s infinite;
-      font-family:'Poppins', sans-serif;
+    /* ===== COUNTDOWN TIMER STYLES ===== */
+    .countdown-container {
+      margin: 40px auto;
+      max-width: 800px;
+      transition: all 0.5s ease;
     }
 
-    @keyframes blinkMsg {
-      0% { opacity:1; }
-      50% { opacity:0.3; }
-      100% { opacity:1; }
+    .countdown-timer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+      margin: 30px 0;
+      flex-wrap: wrap;
+    }
+
+    .countdown-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px 15px;
+      border: 1px solid rgba(255, 210, 77, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .countdown-item:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255, 210, 77, 0.4);
+      box-shadow: 0 12px 40px rgba(255, 210, 77, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .countdown-number {
+      font-size: 48px;
+      font-weight: 800;
+      font-family: 'Montserrat', sans-serif;
+      color: #ffd24d;
+      text-shadow: 0 0 20px rgba(255, 210, 77, 0.5);
+      margin-bottom: 5px;
+      line-height: 1;
+    }
+
+    .countdown-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      font-family: 'Anek Malayalam', sans-serif;
+    }
+
+    .countdown-separator {
+      font-size: 40px;
+      font-weight: 700;
+      color: rgba(255, 210, 77, 0.7);
+      margin-top: -10px;
+    }
+
+    /* Urgent warning for last 24 hours */
+    @keyframes pulseWarning {
+      0%, 100% { 
+        color: #ffd24d;
+        text-shadow: 0 0 20px rgba(255, 210, 77, 0.5);
+      }
+      50% { 
+        color: #ff6b6b;
+        text-shadow: 0 0 25px rgba(255, 107, 107, 0.7);
+      }
+    }
+
+    .countdown-timer.urgent .countdown-number {
+      animation: pulseWarning 1s infinite;
+    }
+
+    .countdown-timer.urgent .countdown-item {
+      border-color: rgba(255, 107, 107, 0.4);
+    }
+
+    /* Pulse animation for urgent message */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    .urgent-message {
+        color: #ff6b6b !important;
+        font-weight: bold !important;
+        text-align: center;
+        margin-top: 15px;
+        font-size: 18px;
+        animation: pulse 1s infinite;
+    }
+
+    .exam-status-message {
+        color: rgba(255,255,255,0.8);
+        margin-top: 10px;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .countdown-timer {
+        gap: 10px;
+      }
+      
+      .countdown-item {
+        min-width: 80px;
+        padding: 15px 10px;
+      }
+      
+      .countdown-number {
+        font-size: 36px;
+      }
+      
+      .countdown-label {
+        font-size: 12px;
+      }
+      
+      .countdown-separator {
+        font-size: 30px;
+        margin-top: -5px;
+      }
+      
+      .urgent-message {
+        font-size: 16px !important;
+        padding: 0 15px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .countdown-timer {
+        gap: 8px;
+      }
+      
+      .countdown-item {
+        min-width: 70px;
+        padding: 12px 8px;
+      }
+      
+      .countdown-number {
+        font-size: 28px;
+      }
+      
+      .countdown-label {
+        font-size: 11px;
+      }
+      
+      .countdown-separator {
+        font-size: 24px;
+        margin-top: 0;
+      }
+    }
+
+    /* ===== AUTO HIDE/SHOW FLASH MESSAGE ===== */
+    .flash-message-container {
+      position: relative;
+      width: 100%;
+      height: 50px;
+      overflow: hidden;
+      margin: 0;
+      background: transparent;
+    }
+
+    .flash-message {
+      background: linear-gradient(90deg, #dc3545, #c82333, #dc3545);
+      color: white;
+      padding: 12px 20px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform: translateY(0);
+      transition: transform 0.5s ease, opacity 0.5s ease;
+      z-index: 100;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .flash-message.hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .flash-message.visible {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .flash-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .flash-icon {
+      font-size: 20px;
+      animation: flashIcon 2s infinite;
+    }
+
+    @keyframes flashIcon {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.2); opacity: 0.8; }
+    }
+
+    .flash-close-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .flash-close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    .flash-timer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.7);
+      width: 100%;
+      transform-origin: left;
+      transform: scaleX(1);
+      transition: transform 5s linear;
+    }
+
+    .flash-timer.hidden {
+      transform: scaleX(0);
+    }
+
+    @media (max-width: 768px) {
+      .flash-message {
+        font-size: 16px;
+        padding: 10px 15px;
+      }
+      
+      .flash-content {
+        gap: 8px;
+      }
+      
+      .flash-icon {
+        font-size: 18px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .flash-message {
+        font-size: 15px;
+        padding: 8px 10px;
+      }
+      
+      .flash-content {
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      
+      .flash-close-btn {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
+        margin-left: 10px;
+      }
     }
 
     /* News Ticker */
@@ -1602,7 +1874,7 @@
   </div>
 </nav>
   
-<!-- ===== PREMIUM ISLAMIC HERO ===== -->
+<!-- ===== PREMIUM ISLAMIC HERO WITH COUNTDOWN TIMER ===== -->
 <section id="hero-premium" aria-label="Noorussalam Madrasa hero" class="hero-premium">
   <!-- geometric pattern (SVG) -->
   <svg class="pattern" aria-hidden="true" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid slice">
@@ -1681,17 +1953,53 @@
     </div>
 
     <h3 class="hero-heading">
-      NSM - Knowledge, Character & Service
+      Annual Examination Countdown
     </h3>
 
     <p class="hero-lead">
-      Combining traditional Islamic studies with modern education — preparing students for both Deen and Dunya.
+      The 2025-26 Annual Examination begins on January 27, 2026. Prepare well and make the best use of remaining time!
+    </p>
+
+    <!-- Countdown Timer -->
+    <div class="countdown-container" id="countdownContainer">
+      <div class="countdown-timer">
+        <div class="countdown-item">
+          <div class="countdown-number" id="days">00</div>
+          <div class="countdown-label">Days</div>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <div class="countdown-number" id="hours">00</div>
+          <div class="countdown-label">Hours</div>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <div class="countdown-number" id="minutes">00</div>
+          <div class="countdown-label">Minutes</div>
+        </div>
+        <div class="countdown-separator">:</div>
+        <div class="countdown-item">
+          <div class="countdown-number" id="seconds">00</div>
+          <div class="countdown-label">Seconds</div>
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-top: 25px; color: rgba(255,255,255,0.8); font-size: 14px; text-align: center;">
+      <i class="fas fa-calendar-alt" style="margin-right: 8px;"></i>
+      Examination Dates: January 27, 28, 29 & February 10, 11, 12, 2026
     </p>
 
     <div class="hero-ctas">
-      <a href="forms.html" class="btn primary">Join Admissions</a>
-      <a href="#about" class="btn outline">Learn More</a>
-      <a href="result.html" class="btn outline">Results</a>
+      <a href="result.html" class="btn primary">
+        <i class="fas fa-chart-line"></i> Check Previous Results
+      </a>
+      <a href="downloads.html" class="btn outline">
+        <i class="fas fa-download"></i> Study Materials
+      </a>
+      <a href="forms.html" class="btn outline">
+        <i class="fas fa-calendar-check"></i> Exam Schedule
+      </a>
     </div>
   </div>
 
@@ -1720,9 +2028,18 @@
 
 </section>
 
-<!-- 🔥 FLASH MESSAGE -->
-<div class="flash-message">
-  ⚠ Important Notice: Model public exam results published...
+<!-- AUTO HIDE/SHOW FLASH MESSAGE -->
+<div class="flash-message-container" id="flashContainer">
+  <div class="flash-message visible" id="flashMessage">
+    <div class="flash-content">
+      <span class="flash-icon">⚠</span>
+      <span id="flashText">Important Notice: Model public exam results published. Check your results now!</span>
+      <button class="flash-close-btn" id="flashCloseBtn">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="flash-timer" id="flashTimer"></div>
+  </div>
 </div>
 
 <!-- News Ticker START -->
@@ -2315,10 +2632,395 @@
       if (track) track.style.animationPlayState = '';
     }, {passive:true});
   })();
+
+  // ===========================================
+  // ENHANCED COUNTDOWN TIMER WITH AUTO-HIDE
+  // ===========================================
+
+  function initializeCountdown() {
+    const countdownContainer = document.getElementById('countdownContainer');
+    const heroHeading = document.querySelector('.hero-heading');
+    const heroLead = document.querySelector('.hero-lead');
+    
+    // If no countdown container exists, exit
+    if (!countdownContainer) return;
+    
+    // Exam dates: Jan 27-29 & Feb 10-12, 2026
+    const examStart = new Date('2026-01-27T09:00:00');
+    const examEnd = new Date('2026-02-12T23:59:59');
+    const now = new Date();
+    
+    // Check if exam has started
+    if (now >= examStart) {
+        // Check if exam is in progress (between start and end)
+        if (now <= examEnd) {
+            // Exam is in progress - hide countdown, show message
+            countdownContainer.style.opacity = '0';
+            countdownContainer.style.transform = 'translateY(-20px)';
+            countdownContainer.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                countdownContainer.style.display = 'none';
+                heroHeading.innerHTML = 'Annual Examination 2025-26 <span style="color:#2ecc71">In Progress</span>';
+                heroHeading.style.fontSize = 'clamp(1.5rem, 3vw, 2.8rem)';
+                
+                if (heroLead) {
+                    heroLead.innerHTML = '<i class="fas fa-hourglass-half"></i> Exams are currently underway. Best wishes to all students!';
+                }
+                
+                // Add a small notice below the heading
+                const examNotice = document.createElement('p');
+                examNotice.innerHTML = '<i class="fas fa-hourglass-half"></i> Exams ongoing. Best wishes to all students!';
+                examNotice.className = 'exam-status-message';
+                heroHeading.parentNode.insertBefore(examNotice, heroHeading.nextSibling);
+                
+            }, 500);
+            
+            return; // Don't initialize countdown
+        } else {
+            // Exam has ended - hide countdown, show completion message
+            countdownContainer.style.opacity = '0';
+            countdownContainer.style.transform = 'translateY(-20px)';
+            countdownContainer.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                countdownContainer.style.display = 'none';
+                heroHeading.innerHTML = 'Annual Examination 2025-26 <span style="color:#f1c40f">Completed</span>';
+                heroHeading.style.fontSize = 'clamp(1.5rem, 3vw, 2.8rem)';
+                
+                if (heroLead) {
+                    heroLead.innerHTML = '<i class="fas fa-check-circle"></i> All examinations have concluded successfully. Results will be announced soon!';
+                }
+                
+                // Add completion message
+                const completionMessage = document.createElement('p');
+                completionMessage.innerHTML = '<i class="fas fa-check-circle"></i> All exams have concluded. Results will be announced soon.';
+                completionMessage.className = 'exam-status-message';
+                heroHeading.parentNode.insertBefore(completionMessage, heroHeading.nextSibling);
+                
+            }, 500);
+            
+            return; // Don't initialize countdown
+        }
+    }
+    
+    // If we reach here, exam hasn't started yet - show countdown
+    const daysElement = document.getElementById('days');
+    const hoursElement = document.getElementById('hours');
+    const minutesElement = document.getElementById('minutes');
+    const secondsElement = document.getElementById('seconds');
+    const countdownTimer = document.querySelector('.countdown-timer');
+    
+    // Set target date to first exam day
+    const targetDate = examStart;
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+        
+        // If exam has started, hide countdown
+        if (distance <= 0) {
+            countdownContainer.style.opacity = '0';
+            countdownContainer.style.transform = 'translateY(-20px)';
+            countdownContainer.style.transition = 'all 0.5s ease';
+            
+            setTimeout(() => {
+                countdownContainer.style.display = 'none';
+                heroHeading.innerHTML = 'Annual Examination 2025-26 <span style="color:#2ecc71">Has Begun</span>';
+                heroHeading.style.fontSize = 'clamp(1.5rem, 3vw, 2.8rem)';
+                
+                if (heroLead) {
+                    heroLead.innerHTML = '<i class="fas fa-hourglass-start"></i> Examinations are now underway. All the best to all students!';
+                }
+                
+                // Show exam in progress message
+                const progressMessage = document.createElement('p');
+                progressMessage.innerHTML = '<i class="fas fa-hourglass-start"></i> Exams are now underway. All the best!';
+                progressMessage.className = 'exam-status-message';
+                heroHeading.parentNode.insertBefore(progressMessage, heroHeading.nextSibling);
+            }, 500);
+            
+            return;
+        }
+        
+        // Calculate time units
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        
+        // Update display with leading zeros
+        daysElement.textContent = days < 10 ? '0' + days : days;
+        hoursElement.textContent = hours < 10 ? '0' + hours : hours;
+        minutesElement.textContent = minutes < 10 ? '0' + minutes : minutes;
+        secondsElement.textContent = seconds < 10 ? '0' + seconds : seconds;
+        
+        // Add urgent class for last 24 hours
+        if (countdownTimer) {
+            if (days === 0 && hours < 24) {
+                countdownTimer.classList.add('urgent');
+                
+                // Add emergency message
+                let urgentMessage = document.querySelector('.urgent-message');
+                if (!urgentMessage) {
+                    urgentMessage = document.createElement('p');
+                    urgentMessage.className = 'urgent-message';
+                    urgentMessage.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Last 24 hours! Final preparations time!';
+                    countdownContainer.appendChild(urgentMessage);
+                }
+            } else {
+                countdownTimer.classList.remove('urgent');
+                const urgentMessage = document.querySelector('.urgent-message');
+                if (urgentMessage) {
+                    urgentMessage.remove();
+                }
+            }
+        }
+        
+        // Auto-hide countdown when less than 1 hour remains (optional)
+        if (days === 0 && hours === 0 && minutes < 60) {
+            countdownContainer.style.opacity = '0.7';
+            countdownContainer.style.transform = 'scale(0.98)';
+        } else {
+            countdownContainer.style.opacity = '1';
+            countdownContainer.style.transform = 'scale(1)';
+        }
+    }
+    
+    // Initial call
+    updateCountdown();
+    
+    // Update every second
+    const countdownInterval = setInterval(updateCountdown, 1000);
+    
+    // Clear interval when page is hidden to save resources
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            clearInterval(countdownInterval);
+        } else {
+            setInterval(updateCountdown, 1000);
+        }
+    });
+  }
+
+  // ===========================================
+  // AUTO HIDE/SHOW FLASH MESSAGE SYSTEM
+  // ===========================================
+  class FlashMessageSystem {
+    constructor() {
+      this.flashMessage = document.getElementById('flashMessage');
+      this.flashTimer = document.getElementById('flashTimer');
+      this.flashCloseBtn = document.getElementById('flashCloseBtn');
+      this.flashText = document.getElementById('flashText');
+      
+      // Configuration
+      this.config = {
+        showDuration: 5000,    // Show for 5 seconds
+        hideDuration: 10000,   // Hide for 10 seconds
+        messageQueue: [
+          "⚠ Important Notice: Model public exam results published. Check your results now!",
+          "📢 Annual Examination begins January 27, 2026. Prepare well!",
+          "🎓 Admission open for 2025-26 academic year. Apply now!",
+          "📅 Parents meeting scheduled for November 16, 2025.",
+          "🏆 Congratulations to all toppers of Half Yearly Examination!"
+        ],
+        currentMessageIndex: 0
+      };
+      
+      this.isVisible = true;
+      this.cycleInterval = null;
+      this.timerAnimation = null;
+      
+      this.init();
+    }
+    
+    init() {
+      // Start the first cycle
+      this.startCycle();
+      
+      // Add close button event listener
+      if (this.flashCloseBtn) {
+        this.flashCloseBtn.addEventListener('click', () => this.hideMessage(true));
+      }
+      
+      // Add hover pause/resume
+      this.flashMessage.addEventListener('mouseenter', () => this.pauseCycle());
+      this.flashMessage.addEventListener('mouseleave', () => this.resumeCycle());
+      
+      // Start the auto-cycle
+      this.startAutoCycle();
+    }
+    
+    showMessage() {
+      if (!this.flashMessage) return;
+      
+      this.isVisible = true;
+      this.flashMessage.classList.remove('hidden');
+      this.flashMessage.classList.add('visible');
+      
+      // Update message text
+      this.flashText.textContent = this.config.messageQueue[this.config.currentMessageIndex];
+      
+      // Update current index for next message
+      this.config.currentMessageIndex = (this.config.currentMessageIndex + 1) % this.config.messageQueue.length;
+      
+      // Start timer animation
+      this.startTimer();
+    }
+    
+    hideMessage(manual = false) {
+      if (!this.flashMessage) return;
+      
+      this.isVisible = false;
+      this.flashMessage.classList.remove('visible');
+      this.flashMessage.classList.add('hidden');
+      
+      // Reset timer
+      this.resetTimer();
+      
+      // If manually closed, wait longer before showing again
+      if (manual) {
+        setTimeout(() => this.showMessage(), this.config.hideDuration * 2);
+      }
+    }
+    
+    startTimer() {
+      if (!this.flashTimer) return;
+      
+      // Reset timer
+      this.resetTimer();
+      
+      // Show timer
+      this.flashTimer.classList.remove('hidden');
+      
+      // Animate timer
+      this.flashTimer.style.transition = `transform ${this.config.showDuration}ms linear`;
+      this.flashTimer.style.transform = 'scaleX(0)';
+      
+      // Store animation reference
+      this.timerAnimation = setTimeout(() => {
+        this.flashTimer.classList.add('hidden');
+      }, this.config.showDuration);
+    }
+    
+    resetTimer() {
+      if (!this.flashTimer) return;
+      
+      // Clear any existing timer animation
+      if (this.timerAnimation) {
+        clearTimeout(this.timerAnimation);
+        this.timerAnimation = null;
+      }
+      
+      // Reset timer to full width
+      this.flashTimer.style.transition = 'none';
+      this.flashTimer.style.transform = 'scaleX(1)';
+      
+      // Force reflow
+      this.flashTimer.offsetHeight;
+    }
+    
+    startCycle() {
+      // Show message immediately
+      this.showMessage();
+      
+      // Set timeout to hide message
+      setTimeout(() => {
+        this.hideMessage();
+      }, this.config.showDuration);
+    }
+    
+    startAutoCycle() {
+      // Clear any existing interval
+      if (this.cycleInterval) {
+        clearInterval(this.cycleInterval);
+      }
+      
+      // Calculate total cycle duration
+      const totalCycleDuration = this.config.showDuration + this.config.hideDuration;
+      
+      // Start auto-cycle
+      this.cycleInterval = setInterval(() => {
+        this.startCycle();
+      }, totalCycleDuration);
+    }
+    
+    pauseCycle() {
+      if (this.cycleInterval) {
+        clearInterval(this.cycleInterval);
+        this.cycleInterval = null;
+      }
+      
+      // Pause timer animation
+      if (this.timerAnimation && this.isVisible) {
+        // Calculate remaining time
+        const computedStyle = getComputedStyle(this.flashTimer);
+        const transform = computedStyle.transform;
+        const matrix = new DOMMatrixReadOnly(transform);
+        const scaleX = matrix.m11;
+        
+        // Calculate remaining duration based on current scale
+        const remainingDuration = this.config.showDuration * scaleX;
+        
+        // Clear current animation
+        clearTimeout(this.timerAnimation);
+        
+        // Pause the animation by setting transition to none
+        this.flashTimer.style.transition = 'none';
+      }
+    }
+    
+    resumeCycle() {
+      if (this.isVisible) {
+        // Resume timer if visible
+        const computedStyle = getComputedStyle(this.flashTimer);
+        const transform = computedStyle.transform;
+        const matrix = new DOMMatrixReadOnly(transform);
+        const scaleX = matrix.m11;
+        
+        // Calculate remaining duration
+        const remainingDuration = this.config.showDuration * scaleX;
+        
+        // Resume animation
+        this.flashTimer.style.transition = `transform ${remainingDuration}ms linear`;
+        this.flashTimer.style.transform = 'scaleX(0)';
+        
+        // Set timeout for remaining duration
+        this.timerAnimation = setTimeout(() => {
+          this.flashTimer.classList.add('hidden');
+        }, remainingDuration);
+      }
+      
+      // Restart auto-cycle
+      this.startAutoCycle();
+    }
+    
+    // Public method to manually trigger a new message
+    showNextMessage() {
+      this.hideMessage();
+      setTimeout(() => this.showMessage(), 500);
+    }
+  }
+
+  // Initialize everything when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize countdown timer with auto-hide
+    initializeCountdown();
+    
+    // Also initialize on page show (for browser back/forward)
+    document.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        initializeCountdown();
+      }
+    });
+    
+    // Initialize flash message system
+    const flashSystem = new FlashMessageSystem();
+    
+    // Expose flash system to global scope for debugging (optional)
+    window.flashSystem = flashSystem;
+  });
 </script>
 
 </body>
 </html>
-
-
-
