@@ -141,6 +141,18 @@
       color: #ff6666 !important;
       border: 1px solid #ff6666 !important;
     }
+    
+    /* WhatsApp specific button */
+    .whatsapp-btn {
+      background-color: #25D366;
+      color: white;
+      font-weight: 600;
+      transition: 0.3s;
+    }
+    .whatsapp-btn:hover {
+      background-color: #128C7E;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -211,14 +223,28 @@
         <!-- Contact Form -->
         <div class="col-md-6" data-aos="fade-left">
           <h5 class="text-warning mb-3">Send a Message</h5>
-          <form id="contactForm" onsubmit="return submitContact(event)">
+          <form id="contactForm">
             <div class="mb-3"><input class="form-control" id="cname" placeholder="Your Name" required></div>
             <div class="mb-3"><input class="form-control" id="cemail" type="email" placeholder="Email" required></div>
+            <div class="mb-3"><input class="form-control" id="cphone" type="tel" placeholder="Phone Number (optional)"></div>
             <div class="mb-3"><textarea class="form-control" id="cmsg" rows="4" placeholder="Message" required></textarea></div>
-            <button class="btn btn-primary w-100">Send Message</button>
+            
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-primary flex-fill" onclick="sendToWhatsApp()">
+                <i class="fab fa-whatsapp me-2"></i>Send via WhatsApp
+              </button>
+              <button type="button" class="btn btn-outline-primary" onclick="sendEmail()">
+                <i class="fas fa-envelope me-2"></i>Email
+              </button>
+            </div>
           </form>
 
           <div id="contactAlert" class="mt-3" style="display:none"></div>
+          
+          <!-- WhatsApp Instructions -->
+          <div class="alert alert-warning mt-3" style="background-color: #FFD70022; border-color: #FFD700; color: #FFD700;">
+            <small><i class="fas fa-info-circle me-2"></i>Click "Send via WhatsApp" to open WhatsApp with your pre-filled message. Make sure WhatsApp is installed on your device.</small>
+          </div>
         </div>
 
       </div>
@@ -244,20 +270,82 @@
       offset: 120,
     });
 
-    function submitContact(e){
-      e.preventDefault();
-
+    function sendToWhatsApp() {
       const name = document.getElementById('cname').value.trim();
       const email = document.getElementById('cemail').value.trim();
+      const phone = document.getElementById('cphone').value.trim();
       const msg = document.getElementById('cmsg').value.trim();
 
       if(!name || !email || !msg){
-        showAlert('contactAlert','Please complete all fields.','danger');
+        showAlert('contactAlert','Please complete all required fields (Name, Email, Message).','danger');
         return false;
       }
 
-      showAlert('contactAlert','Message sent successfully. Thank you, ' + name + '!','success');
-      e.target.reset();
+      // WhatsApp phone number (without + sign)
+      const whatsappNumber = '917034678818';
+      
+      // Create the message with proper formatting
+      let whatsappMessage = `*New Message from Noorussalam Madrasa Contact Form*%0A%0A`;
+      whatsappMessage += `*Name:* ${name}%0A`;
+      whatsappMessage += `*Email:* ${email}%0A`;
+      if(phone) {
+        whatsappMessage += `*Phone:* ${phone}%0A`;
+      }
+      whatsappMessage += `*Message:*%0A${msg}%0A%0A`;
+      whatsappMessage += `_Sent via Noorussalam Madrasa Website_`;
+      
+      // Encode the message for URL
+      const encodedMessage = encodeURIComponent(whatsappMessage).replace(/%20/g, '%20');
+      
+      // Create WhatsApp URL
+      const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+      
+      // Show success message
+      showAlert('contactAlert', 'Opening WhatsApp with your message...', 'success');
+      
+      // Open WhatsApp in a new tab
+      setTimeout(() => {
+        window.open(whatsappURL, '_blank');
+        
+        // Optionally clear the form
+        document.getElementById('contactForm').reset();
+      }, 1000);
+      
+      return false;
+    }
+
+    function sendEmail() {
+      const name = document.getElementById('cname').value.trim();
+      const email = document.getElementById('cemail').value.trim();
+      const phone = document.getElementById('cphone').value.trim();
+      const msg = document.getElementById('cmsg').value.trim();
+
+      if(!name || !email || !msg){
+        showAlert('contactAlert','Please complete all required fields (Name, Email, Message).','danger');
+        return false;
+      }
+
+      // Email parameters
+      const subject = `Message from ${name} - Noorussalam Madrasa Contact Form`;
+      let body = `Name: ${name}\n`;
+      body += `Email: ${email}\n`;
+      if(phone) {
+        body += `Phone: ${phone}\n`;
+      }
+      body += `\nMessage:\n${msg}\n\n`;
+      body += `This message was sent from the Noorussalam Madrasa website contact form.`;
+      
+      // Create mailto link
+      const mailtoLink = `mailto:noorussalam6110@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      
+      // Show success message
+      showAlert('contactAlert', 'Opening your email client...', 'success');
+      
+      // Open email client
+      setTimeout(() => {
+        window.location.href = mailtoLink;
+      }, 1000);
+      
       return false;
     }
 
@@ -274,6 +362,14 @@
       setTimeout(() => { el.classList.remove('show'); }, 5000);
       setTimeout(() => { el.style.display = 'none'; }, 5600);
     }
+    
+    // Allow form submission with Enter key in textarea
+    document.getElementById('cmsg').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendToWhatsApp();
+      }
+    });
   </script>
 
 </body>
