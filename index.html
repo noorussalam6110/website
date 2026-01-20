@@ -1056,14 +1056,32 @@
       padding: 0 !important;
     }
 
-    .exam-message {
+    /* ===== POST-EXAM BOX WITH AUTO-HIDE ===== */
+    .post-exam-box {
       background: linear-gradient(135deg, #2ecc71, #27ae60);
       color: white;
-      padding: 20px;
+      padding: 25px;
       border-radius: 15px;
       text-align: center;
       animation: fadeInUp 0.5s ease;
-      margin-top: 20px;
+      margin-top: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .post-exam-box.fade-out {
+      animation: fadeOutDown 0.5s ease forwards;
+    }
+
+    .post-exam-box .countdown-badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      margin-top: 15px;
+      display: inline-block;
+      animation: pulse 2s infinite;
     }
 
     @keyframes fadeInUp {
@@ -1077,23 +1095,81 @@
       }
     }
 
-    .exam-message h4 {
-      color: white;
-      margin-bottom: 15px;
+    @keyframes fadeOutDown {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+        height: auto;
+        margin-top: 30px;
+        padding: 25px;
+      }
+      to {
+        opacity: 0;
+        transform: translateY(20px);
+        height: 0;
+        margin-top: 0;
+        padding: 0;
+        overflow: hidden;
+      }
     }
 
-    .exam-message .btn-light {
-      background: white;
-      color: #27ae60;
-      font-weight: 600;
-      padding: 8px 20px;
-      border-radius: 25px;
+    @keyframes pulse {
+      0%, 100% { 
+        background: rgba(255, 255, 255, 0.2); 
+        transform: scale(1); 
+      }
+      50% { 
+        background: rgba(255, 255, 255, 0.3); 
+        transform: scale(1.05); 
+      }
+    }
+
+    .post-exam-box .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
       transition: all 0.3s ease;
     }
 
-    .exam-message .btn-light:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    .post-exam-box .close-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    .post-exam-progress {
+      margin-top: 15px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .post-exam-progress-bar {
+      height: 100%;
+      background: white;
+      width: 100%;
+      border-radius: 2px;
+      transform-origin: left;
+      transform: scaleX(1);
+      transition: transform linear;
+    }
+
+    .post-exam-time-remaining {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.9);
+      margin-top: 10px;
+      display: block;
     }
 
     /* ===== AUTO HIDE/SHOW FLASH MESSAGE ===== */
@@ -1206,6 +1282,14 @@
       .flash-icon {
         font-size: 18px;
       }
+      
+      .post-exam-box {
+        padding: 20px 15px;
+      }
+      
+      .post-exam-box h4 {
+        font-size: 1.3rem;
+      }
     }
 
     @media (max-width: 576px) {
@@ -1224,6 +1308,20 @@
         height: 25px;
         font-size: 14px;
         margin-left: 10px;
+      }
+      
+      .post-exam-box {
+        padding: 15px 10px;
+      }
+      
+      .post-exam-box h4 {
+        font-size: 1.1rem;
+      }
+      
+      .post-exam-box .btn-light,
+      .post-exam-box .btn-outline-light {
+        padding: 8px 15px;
+        font-size: 0.9rem;
       }
     }
 
@@ -2649,15 +2747,26 @@
     }, {passive:true});
   })();
 
-  // Professional Countdown Timer with Auto-Hide Feature
+  // Professional Countdown Timer with Auto-Hide Post-Exam Box
   function initializeProfessionalCountdown() {
       // Exam dates: January 27-29 & February 10-12, 2026
-      const examStart = new Date('2026-01-20T12:30:00');
-      const examEnd = new Date('2026-01-20T12:35:00');
+      const examStart = new Date('2026-01-27T09:00:00');
+      const examEnd = new Date('2026-02-12T17:00:00');
       const now = new Date();
+      
+      // Post-exam box will auto-hide after 14 days (14 * 24 * 60 * 60 * 1000 = 1209600000 ms)
+      const postExamShowDuration = 14 * 24 * 60 * 60 * 1000; // 14 days in milliseconds
+      const postExpiryDate = new Date(examEnd.getTime() + postExamShowDuration);
       
       // Get the countdown section element
       const countdownSection = document.getElementById('countdown-section');
+      
+      // Check if post-exam box should be hidden (after 14 days)
+      if (now >= postExpiryDate) {
+          // Post-exam box has expired - remove any existing post-exam boxes
+          removePostExamBox();
+          return;
+      }
       
       // Check if exam has ended
       if (now >= examEnd) {
@@ -2665,26 +2774,9 @@
           if (countdownSection) {
               countdownSection.classList.add('countdown-section-hidden');
               
-              // Show a completion message after hiding
+              // Show post-exam box after hiding countdown
               setTimeout(() => {
-                  const heroRow = document.querySelector('#hero-premium .row');
-                  if (heroRow && !document.querySelector('.exam-message')) {
-                      const messageDiv = document.createElement('div');
-                      messageDiv.className = 'col-12 exam-message mt-4';
-                      messageDiv.innerHTML = `
-                          <h4><i class="fas fa-check-circle me-2"></i> Annual Examination 2025-26 Completed</h4>
-                          <p class="mb-3">The examination period has ended. Results will be published soon.</p>
-                          <div class="d-flex justify-content-center gap-3">
-                              <a href="result.html" class="btn btn-light">
-                                  <i class="fas fa-chart-line me-2"></i> Check Results
-                              </a>
-                              <a href="gallery.html" class="btn btn-outline-light">
-                                  <i class="fas fa-images me-2"></i> Exam Gallery
-                              </a>
-                          </div>
-                      `;
-                      heroRow.appendChild(messageDiv);
-                  }
+                  showPostExamBox(examEnd, postExpiryDate);
               }, 500);
           }
           return;
@@ -2722,7 +2814,7 @@
           minutesWhite.textContent = minutes < 10 ? '0' + minutes : minutes;
           secondsWhite.textContent = seconds < 10 ? '0' + seconds : seconds;
           
-          // Update progress bar (reverse - time until exam ends)
+          // Update progress bar
           const totalExamDuration = examEnd - examStart;
           const timePassed = now - examStart;
           const examProgress = Math.min(100, Math.max(0, (timePassed / totalExamDuration) * 100));
@@ -2743,26 +2835,9 @@
                   if (countdownSection) {
                       countdownSection.classList.add('countdown-section-hidden');
                       
-                      // Show completion message
+                      // Show post-exam box
                       setTimeout(() => {
-                          const heroRow = document.querySelector('#hero-premium .row');
-                          if (heroRow && !document.querySelector('.exam-message')) {
-                              const messageDiv = document.createElement('div');
-                              messageDiv.className = 'col-12 exam-message mt-4';
-                              messageDiv.innerHTML = `
-                                  <h4><i class="fas fa-check-circle me-2"></i> Examination Completed!</h4>
-                                  <p class="mb-3">Annual Examination 2025-26 has concluded. Results will be available soon.</p>
-                                  <div class="d-flex justify-content-center gap-3">
-                                      <a href="result.html" class="btn btn-light">
-                                          <i class="fas fa-chart-line me-2"></i> Check Results (Coming Soon)
-                                      </a>
-                                      <a href="gallery.html" class="btn btn-outline-light">
-                                          <i class="fas fa-images me-2"></i> View Photos
-                                      </a>
-                                  </div>
-                              `;
-                              heroRow.appendChild(messageDiv);
-                          }
+                          showPostExamBox(examEnd, postExpiryDate);
                       }, 500);
                   }
                   
@@ -2835,6 +2910,219 @@
       
       // Update every second
       const interval = setInterval(updateCountdown, 1000);
+  }
+
+  // Show Post-Exam Box with Auto-Hide Timer
+  function showPostExamBox(examEndDate, expiryDate) {
+      const heroRow = document.querySelector('#hero-premium .row');
+      if (!heroRow || document.querySelector('.post-exam-box')) {
+          return; // Already showing or no hero row
+      }
+      
+      const now = new Date();
+      const timeUntilHide = expiryDate - now;
+      
+      if (timeUntilHide <= 0) {
+          return; // Don't show if already expired
+      }
+      
+      // Calculate days remaining until auto-hide
+      const daysRemaining = Math.ceil(timeUntilHide / (1000 * 60 * 60 * 24));
+      
+      // Create post-exam box
+      const postExamBox = document.createElement('div');
+      postExamBox.className = 'post-exam-box';
+      postExamBox.innerHTML = `
+          <button class="close-btn" id="close-post-exam-btn">
+              <i class="fas fa-times"></i>
+          </button>
+          <h4><i class="fas fa-check-circle me-2"></i> Annual Examination 2025-26 Completed</h4>
+          <p class="mb-3">The examination period has ended. Results will be published soon.</p>
+          
+          <div class="post-exam-progress">
+              <div class="post-exam-progress-bar" id="post-exam-progress-bar"></div>
+          </div>
+          
+          <span class="post-exam-time-remaining" id="post-exam-time-remaining">
+              This message will auto-hide in <span id="days-remaining">${daysRemaining}</span> days
+          </span>
+          
+          <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+              <a href="result.html" class="btn btn-light">
+                  <i class="fas fa-chart-line me-2"></i> Check Results
+              </a>
+              <a href="gallery.html" class="btn btn-outline-light">
+                  <i class="fas fa-images me-2"></i> Exam Gallery
+              </a>
+              <a href="downloads.html" class="btn btn-outline-light">
+                  <i class="fas fa-download me-2"></i> Materials
+              </a>
+          </div>
+          
+          <div class="countdown-badge">
+              <i class="fas fa-clock me-2"></i>
+              Auto-hides: ${formatDate(expiryDate)}
+          </div>
+      `;
+      
+      heroRow.appendChild(postExamBox);
+      
+      // Add close button event
+      const closeBtn = document.getElementById('close-post-exam-btn');
+      if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+              hidePostExamBox(postExamBox, true); // true = manual close
+          });
+      }
+      
+      // Start auto-hide countdown
+      startPostExamCountdown(postExamBox, examEndDate, expiryDate);
+  }
+
+  // Start countdown for post-exam box auto-hide
+  function startPostExamCountdown(postExamBox, examEndDate, expiryDate) {
+      const progressBar = postExamBox.querySelector('#post-exam-progress-bar');
+      const daysRemainingSpan = postExamBox.querySelector('#days-remaining');
+      
+      function updatePostExamCountdown() {
+          const now = new Date().getTime();
+          const totalDuration = expiryDate - examEndDate;
+          const timePassed = now - examEndDate;
+          const timeLeft = expiryDate - now;
+          
+          // Calculate progress percentage
+          const progressPercentage = Math.min(100, Math.max(0, (timePassed / totalDuration) * 100));
+          
+          // Update progress bar
+          if (progressBar) {
+              progressBar.style.transform = `scaleX(${1 - (progressPercentage / 100)})`;
+          }
+          
+          // Update days remaining
+          if (daysRemainingSpan) {
+              const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
+              daysRemainingSpan.textContent = daysLeft;
+          }
+          
+          // If time's up, hide the box
+          if (timeLeft <= 0) {
+              hidePostExamBox(postExamBox);
+              return;
+          }
+      }
+      
+      // Initial update
+      updatePostExamCountdown();
+      
+      // Update every hour (for better performance)
+      const countdownInterval = setInterval(updatePostExamCountdown, 60 * 60 * 1000);
+      
+      // Store interval reference in box dataset
+      postExamBox.dataset.countdownInterval = countdownInterval;
+  }
+
+  // Hide post-exam box with animation
+  function hidePostExamBox(postExamBox, manual = false) {
+      if (!postExamBox) return;
+      
+      // Clear countdown interval
+      if (postExamBox.dataset.countdownInterval) {
+          clearInterval(parseInt(postExamBox.dataset.countdownInterval));
+      }
+      
+      // Add fade-out animation
+      postExamBox.classList.add('fade-out');
+      
+      // Remove from DOM after animation
+      setTimeout(() => {
+          if (postExamBox.parentNode) {
+              postExamBox.parentNode.removeChild(postExamBox);
+          }
+          
+          // If manually closed, save preference in localStorage
+          if (manual) {
+              localStorage.setItem('postExamBoxClosed', 'true');
+              
+              // Set expiry for manual close (hide for 30 days)
+              const expiryDate = new Date();
+              expiryDate.setDate(expiryDate.getDate() + 30);
+              localStorage.setItem('postExamBoxExpiry', expiryDate.getTime());
+          }
+      }, 500);
+  }
+
+  // Remove existing post-exam boxes
+  function removePostExamBox() {
+      const postExamBoxes = document.querySelectorAll('.post-exam-box');
+      postExamBoxes.forEach(box => {
+          if (box.parentNode) {
+              box.parentNode.removeChild(box);
+          }
+      });
+  }
+
+  // Format date for display
+  function formatDate(date) {
+      return date.toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+      });
+  }
+
+  // Check if post-exam box should be shown (respects manual close preference)
+  function shouldShowPostExamBox(examEndDate) {
+      // Check if user manually closed the box
+      const manuallyClosed = localStorage.getItem('postExamBoxClosed');
+      const expiryTimestamp = localStorage.getItem('postExamBoxExpiry');
+      
+      if (manuallyClosed === 'true' && expiryTimestamp) {
+          const expiryDate = new Date(parseInt(expiryTimestamp));
+          const now = new Date();
+          
+          // If manual close hasn't expired yet, don't show
+          if (now < expiryDate) {
+              return false;
+          } else {
+              // Expired - clear the setting
+              localStorage.removeItem('postExamBoxClosed');
+              localStorage.removeItem('postExamBoxExpiry');
+          }
+      }
+      
+      // Check if within post-exam period
+      const postExamDuration = 14 * 24 * 60 * 60 * 1000; // 14 days
+      const postExpiryDate = new Date(examEndDate.getTime() + postExamDuration);
+      const now = new Date();
+      
+      return now >= examEndDate && now < postExpiryDate;
+  }
+
+  // Enhanced initialization that checks all conditions
+  function initializeEnhancedCountdown() {
+      const examEnd = new Date('2026-02-12T17:00:00');
+      const now = new Date();
+      
+      // First check if we should show post-exam box
+      if (shouldShowPostExamBox(examEnd)) {
+          // Hide countdown section
+          const countdownSection = document.getElementById('countdown-section');
+          if (countdownSection) {
+              countdownSection.classList.add('countdown-section-hidden');
+          }
+          
+          // Show post-exam box
+          const postExamDuration = 14 * 24 * 60 * 60 * 1000; // 14 days
+          const expiryDate = new Date(examEnd.getTime() + postExamDuration);
+          setTimeout(() => {
+              showPostExamBox(examEnd, expiryDate);
+          }, 500);
+          
+          return;
+      }
+      
+      // Otherwise, initialize normal countdown
+      initializeProfessionalCountdown();
   }
 
   // ===========================================
@@ -3038,8 +3326,8 @@
 
   // Initialize everything when DOM is loaded
   document.addEventListener('DOMContentLoaded', function() {
-    // Initialize professional countdown timer for white box
-    initializeProfessionalCountdown();
+    // Initialize enhanced countdown with auto-hide post-exam box
+    initializeEnhancedCountdown();
     
     // Initialize flash message system
     const flashSystem = new FlashMessageSystem();
@@ -3051,4 +3339,3 @@
 
 </body>
 </html>
-
