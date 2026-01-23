@@ -1,22 +1,693 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Madrasa Alumni</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Madrasa Alumni | Noorussalam Madrasa</title>
 
+  <!-- Bootstrap & Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
 
   <style>
+    :root {
+      --primary: #0a194f;
+      --secondary: #122f7a;
+      --accent: #3a8df3;
+      --light: #f8f9fa;
+      --blue-1: #022a66;
+      --blue-2: #003a88;
+      --blue-3: #001f4f;
+      --blue-4: #1a3b8f;
+      --blue-5: #2a4bbf;
+      --light-blue: #4cc9f0;
+      --muted-white: rgba(255,255,255,0.92);
+    }
+
     body {
-      background: #f5f9ff;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+      padding-top: 100px;
+    }
+
+    /* ===== ENHANCED NAVBAR STYLES ===== */
+    .navbar {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      transition: all 0.4s ease;
+      padding: 12px 0;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .navbar.scrolled {
+      background: rgba(10, 25, 79, 0.98);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+      padding: 8px 0;
+    }
+    
+    .logo-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .logo-img {
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      position: relative;
+      z-index: 2;
+      border: 2px solid var(--accent);
+    }
+    
+    .logo-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      border-radius: 50%;
+      z-index: 1;
+    }
+    
+    .navbar-brand:hover .logo-img {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    .navbar-brand:hover .logo-glow {
+      opacity: 0.3;
+    }
+    
+    .navbar-toggler {
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      background: transparent !important;
+    }
+    
+    .navbar-toggler:focus {
+      box-shadow: 0 0 0 3px rgba(58, 141, 243, 0.3);
+    }
+    
+    .toggler-text {
+      font-size: 0.85rem;
+      margin-left: 8px;
+      color: white;
+      font-weight: 500;
+    }
+    
+    .nav-icon {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 10px 16px !important;
+      margin: 0 4px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      overflow: hidden;
+      color: white !important;
+      text-decoration: none !important;
+    }
+    
+    .nav-icon i {
+      margin-right: 10px;
+      font-size: 1.1rem;
+      width: 24px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-icon span {
+      position: relative;
+      z-index: 2;
+      font-weight: 500;
+    }
+    
+    .nav-hover-effect {
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(58, 141, 243, 0.1), transparent);
+      transition: left 0.6s ease;
+      z-index: 1;
+    }
+    
+    .nav-icon:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(-2px);
+    }
+    
+    .nav-icon:hover .nav-hover-effect {
+      left: 100%;
+    }
+    
+    .nav-icon:hover i {
+      color: var(--accent) !important;
+      transform: scale(1.2);
+    }
+    
+    .nav-icon.active {
+      background: rgba(58, 141, 243, 0.15);
+      color: var(--accent) !important;
+    }
+    
+    .nav-icon.active i {
+      color: var(--accent) !important;
+    }
+    
+    .nav-icon.active::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 30px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: pulseLine 2s infinite;
+    }
+    
+    @keyframes pulseLine {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* ===== DROPDOWN STYLES ===== */
+    .dropdown-menu {
+      background: rgba(10, 25, 79, 0.98);
+      backdrop-filter: blur(15px);
+      border: 1px solid rgba(58, 141, 243, 0.3);
+      border-radius: 12px;
+      padding: 8px 0;
+      margin-top: 10px;
+      min-width: 280px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      animation: dropdownSlide 0.3s ease;
+    }
+    
+    @keyframes dropdownSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .dropdown-item {
+      color: #f8f9fa !important;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin: 4px 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none !important;
+    }
+    
+    .dropdown-item:hover {
+      background: rgba(58, 141, 243, 0.15) !important;
+      transform: translateX(5px);
+    }
+    
+    .dropdown-item-content {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .dropdown-item-content i {
+      font-size: 1.2rem;
+      color: var(--accent);
+      width: 30px;
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    
+    .dropdown-item:hover .dropdown-item-content i {
+      transform: scale(1.2);
+    }
+    
+    .dropdown-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: white;
+    }
+    
+    .dropdown-sub {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 2px;
+    }
+    
+    .dropdown-divider {
+      border-color: rgba(58, 141, 243, 0.2);
+      margin: 6px 20px;
+    }
+    
+    /* ===== STUDENT ZONE DROPDOWN ===== */
+    .student-dropdown-normalized {
+      width: 320px;
+      padding: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .dropdown-header {
+      padding: 20px;
+      background: rgba(58, 141, 243, 0.05);
+      border-bottom: 1px solid rgba(58, 141, 243, 0.1);
+    }
+    
+    .dropdown-header h6 {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    
+    .dropdown-header small {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.85rem;
+    }
+    
+    .primary-action {
+      background: linear-gradient(135deg, rgba(10, 25, 79, 0.9), rgba(18, 47, 122, 0.9));
+      margin: 0;
+      padding: 16px 20px;
+      border-radius: 0;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: block !important;
+      text-decoration: none !important;
+    }
+    
+    .primary-action::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent);
+    }
+    
+    .primary-action:hover {
+      background: linear-gradient(135deg, rgba(18, 47, 122, 0.9), rgba(10, 25, 79, 0.9));
+      transform: none;
+      padding-left: 25px;
+    }
+    
+    .result-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #5c9dff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+    
+    .action-title {
+      font-weight: 600;
+      color: white;
+      font-size: 1rem;
+      margin-bottom: 2px;
+    }
+    
+    .action-desc {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.85rem;
+    }
+    
+    .dropdown-actions {
+      padding: 15px 20px;
+    }
+    
+    .dropdown-action-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      text-decoration: none !important;
+      transition: all 0.3s ease;
+      background: transparent;
+      color: white !important;
+    }
+    
+    .dropdown-action-item:hover {
+      background: rgba(58, 141, 243, 0.1);
+      transform: translateX(5px);
+    }
+    
+    .dropdown-action-item .action-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: rgba(58, 141, 243, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 1rem;
+    }
+    
+    .action-arrow {
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-action-item:hover .action-arrow {
+      color: var(--accent);
+      transform: translateX(3px);
+    }
+    
+    .enter-badge {
+      background: linear-gradient(135deg, var(--accent), #5c9dff);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(58, 141, 243, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-action-item:hover .enter-badge {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(58, 141, 243, 0.4);
+    }
+    
+    .notification-badge {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: linear-gradient(135deg, #ff4757, #ff3838);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: badgePulse 2s infinite;
+    }
+    
+    @keyframes badgePulse {
+      0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+      }
+      50% { 
+        transform: scale(1.1); 
+        box-shadow: 0 0 0 5px rgba(255, 71, 87, 0);
+      }
+    }
+    
+    .student-zone-btn {
+      position: relative;
+      background: rgba(58, 141, 243, 0.1);
+      border-radius: 8px;
+      margin-left: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .student-zone-btn:hover {
+      background: rgba(58, 141, 243, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .student-zone-nav .nav-icon i {
+      color: var(--accent) !important;
+    }
+    
+    .badge.bg-success {
+      background: linear-gradient(135deg, #2ed573, #1dd1a1) !important;
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      animation: livePulse 1.5s infinite;
+    }
+    
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    /* ===== MOBILE NAVBAR FIXES ===== */
+    @media (max-width: 992px) {
+      body {
+        padding-top: 70px;
+      }
+      
+      .navbar-nav {
+        padding: 10px 0 !important;
+        max-height: 70vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .nav-item {
+        width: 100%;
+        margin: 0 !important;
+      }
+      
+      .nav-icon {
+        margin: 2px 0 !important;
+        padding: 14px 20px !important;
+        justify-content: flex-start;
+        width: 100%;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        min-height: 55px;
+      }
+      
+      .navbar-collapse {
+        background: rgba(10, 25, 79, 0.99);
+        border-radius: 0 0 12px 12px;
+        padding: 0 !important;
+        margin-top: 8px;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      
+      .dropdown-menu {
+        position: static !important;
+        float: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: rgba(18, 47, 122, 0.95) !important;
+        padding: 0 !important;
+        animation: none !important;
+      }
+      
+      .student-dropdown-normalized {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+      
+      .dropdown-item, 
+      .dropdown-action-item,
+      .primary-action {
+        padding: 16px 25px !important;
+        margin: 0 !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        min-height: 55px;
+        display: flex !important;
+        align-items: center !important;
+      }
+      
+      .dropdown-header {
+        padding: 18px 25px !important;
+      }
+      
+      .dropdown-actions {
+        padding: 0 !important;
+      }
+      
+      .dropdown-divider {
+        margin: 0 !important;
+      }
+      
+      .notification-badge {
+        position: relative !important;
+        top: 0 !important;
+        right: 0 !important;
+        margin-left: 10px;
+        width: 20px;
+        height: 20px;
+      }
+      
+      .dropdown-toggle::after {
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      
+      .nav-icon:hover,
+      .dropdown-item:hover,
+      .dropdown-action-item:hover {
+        background: transparent !important;
+        transform: none !important;
+      }
+      
+      .nav-icon:active,
+      .dropdown-item:active,
+      .dropdown-action-item:active {
+        background: rgba(58, 141, 243, 0.15) !important;
+      }
+      
+      .navbar-brand {
+        max-width: 75%;
+      }
+      
+      .navbar-brand div {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      
+      .dropdown-item-content {
+        min-height: 40px;
+        align-items: center !important;
+      }
+      
+      .logo-img {
+        width: 40px;
+        height: 40px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .navbar-brand {
+        max-width: 70%;
+      }
+      
+      .navbar-toggler {
+        padding: 5px 10px;
+      }
+      
+      .toggler-text {
+        font-size: 0.75rem;
+      }
+      
+      .nav-icon {
+        padding: 12px 15px !important;
+        font-size: 15px;
+      }
+      
+      .nav-icon i {
+        font-size: 1.1rem !important;
+        margin-right: 12px !important;
+        width: 24px !important;
+      }
+      
+      .dropdown-item,
+      .dropdown-action-item,
+      .primary-action {
+        padding: 14px 20px !important;
+      }
+      
+      .dropdown-title {
+        font-size: 0.9rem;
+      }
+      
+      .dropdown-sub {
+        font-size: 0.75rem;
+      }
+      
+      .logo-img {
+        width: 35px;
+        height: 35px;
+      }
+    }
+    
+    @media (hover: none) and (pointer: coarse) {
+      .nav-icon:hover,
+      .dropdown-item:hover,
+      .dropdown-action-item:hover {
+        background: transparent !important;
+        transform: none !important;
+      }
+      
+      .nav-icon:active,
+      .dropdown-item:active,
+      .dropdown-action-item:active {
+        background: rgba(58, 141, 243, 0.15) !important;
+      }
+    }
+    
+    .navbar::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), #5c9dff, var(--accent));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    
+    .navbar.scrolled::after {
+      transform: scaleX(1);
+    }
+
+    /* Alumni Page Specific Styles */
+    .alumni-header {
+      background: linear-gradient(90deg, #0d47a1, #1976d2);
+      text-align: center;
+      padding: 40px 15px;
+      margin-bottom: 40px;
+      border-radius: 0 0 20px 20px;
+      color: white;
+    }
+
+    .alumni-header h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .alumni-header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
     }
 
     .section-title {
       font-size: 2.2rem;
       font-weight: 700;
-      color: #0054d1;
+      color: var(--primary);
       text-align: center;
       margin-bottom: 30px;
     }
@@ -24,7 +695,7 @@
     .section-line {
       width: 80px;
       height: 4px;
-      background: #0054d1;
+      background: var(--accent);
       margin: 10px auto 40px;
       border-radius: 5px;
     }
@@ -32,96 +703,475 @@
     .alumni-card {
       background: #ffffff;
       border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      padding: 25px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      padding: 30px 25px;
       transition: 0.3s;
-      border-top: 5px solid #0054d1;
+      border-top: 5px solid var(--accent);
+      text-align: center;
+      height: 100%;
     }
 
     .alumni-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+      transform: translateY(-10px);
+      box-shadow: 0 15px 35px rgba(58, 141, 243, 0.15);
     }
 
     .alumni-img {
-      width: 100px;
-      height: 100px;
+      width: 150px;
+      height: 150px;
       border-radius: 50%;
       object-fit: cover;
-      border: 3px solid #0054d1;
-      margin-bottom: 15px;
+      border: 4px solid var(--accent);
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     }
 
     .alumni-name {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #003f9e;
-    }
-
-    .alumni-year {
-      color: #777;
-      font-size: 0.95rem;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
       margin-bottom: 8px;
     }
 
+    .alumni-year {
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+
     .alumni-profession {
-      color: #0054d1;
-      font-weight: 500;
+      color: #666;
       font-size: 1rem;
+      line-height: 1.6;
     }
 
     .testimonial-box {
       background: #ffffff;
-      padding: 25px;
+      padding: 30px;
       border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      border-left: 5px solid #0054d1;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      border-left: 5px solid var(--accent);
+      position: relative;
+      height: 100%;
+    }
+
+    .testimonial-box::before {
+      content: "❝";
+      font-size: 4rem;
+      color: var(--accent);
+      opacity: 0.2;
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      line-height: 1;
     }
 
     .quote {
       font-size: 1.1rem;
-      color: #333;
+      color: #444;
       font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      padding-left: 20px;
+    }
+
+    .quote-author {
+      font-weight: 600;
+      color: var(--primary);
+      text-align: right;
+      font-size: 1rem;
+    }
+
+    .quote-author span {
+      color: #777;
+      font-weight: 400;
+      font-size: 0.9rem;
+    }
+
+    /* MODERN FOOTER */
+    .modern-footer {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 60px 0 20px;
+      margin-top: 60px;
+    }
+
+    .modern-footer h4, .modern-footer h5 {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .modern-footer ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .modern-footer ul li {
+      margin-bottom: 10px;
+    }
+
+    .modern-footer a {
+      color: #d1d5db;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .modern-footer a:hover {
+      color: var(--accent);
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .social-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    .social-icon:hover {
+      background: var(--accent);
+      color: var(--primary);
+      transform: translateY(-3px);
+    }
+
+    .newsletter-form {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .newsletter-form input {
+      flex: 1;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px 0 0 5px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .newsletter-form input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .newsletter-form button {
+      background: var(--accent);
+      color: var(--primary);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 0 5px 5px 0;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s ease;
+    }
+
+    .newsletter-form button:hover {
+      background: #5c9dff;
+    }
+
+    .footer-bottom {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* WhatsApp Floating Button */
+    .whatsapp-float {
+      position: fixed;
+      width: 48px;
+      height: 48px;
+      bottom: 20px;
+      right: 20px;
+      background-color: #25d366;
+      color: #fff;
+      border-radius: 50%;
+      text-align: center;
+      font-size: 24px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .whatsapp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+    }
+
+    .whatsapp-float img {
+      width: 26px;
+      height: 26px;
+      filter: brightness(0) invert(1);
     }
   </style>
 </head>
-
 <body>
 
-<!-- ⭐ TITLE -->
+<!-- ENHANCED NAVBAR WITH ALL REQUIRED DROPDOWNS -->
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+      <div class="logo-container">
+        <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="50" class="logo-img">
+        <div class="logo-glow"></div>
+      </div>
+      <div>
+        <span class="fw-bold" style="font-size: 1.1rem;">NSM</span>
+        <small class="d-block" style="font-size: 0.75rem; opacity: 0.8;">Kambippalam</small>
+      </div>
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+      <span class="toggler-text">Menu</span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+        
+        <!-- Board Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link nav-icon dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-users"></i>
+            <span>Board</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-dark">
+            <li>
+              <a class="dropdown-item" href="faculties.html">
+                <div class="dropdown-item-content">
+                  <i class="fas fa-chalkboard-teacher"></i>
+                  <div>
+                    <div class="dropdown-title">Staff</div>
+                    <div class="dropdown-sub">Faculty & Administration</div>
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="pta.html">
+                <div class="dropdown-item-content">
+                  <i class="fas fa-handshake"></i>
+                  <div>
+                    <div class="dropdown-title">PTA</div>
+                    <div class="dropdown-sub">Parent Teacher Association</div>
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item active" href="alumni.html">
+                <div class="dropdown-item-content">
+                  <i class="fas fa-graduation-cap"></i>
+                  <div>
+                    <div class="dropdown-title">Alumni</div>
+                    <div class="dropdown-sub">Former Students Network</div>
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item" href="sbv.html">
+                <div class="dropdown-item-content">
+                  <i class="fas fa-users"></i>
+                  <div>
+                    <div class="dropdown-title">SKSBV</div>
+                    <div class="dropdown-sub">Samastha Kerala Sunni Bala vedhi Unit</div>
+                  </div>
+                </div>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Student Zone Dropdown -->
+        <li class="nav-item dropdown student-zone-nav">
+          <a class="nav-link nav-icon student-zone-btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user-graduate"></i>
+            <span>Student Zone</span>
+            <div class="nav-hover-effect"></div>
+            <span class="notification-badge">3</span>
+          </a>
+          
+          <div class="dropdown-menu dropdown-menu-dark student-dropdown-normalized">
+            <!-- Dropdown Header -->
+            <div class="dropdown-header">
+              <h6 class="mb-0">Student Portal</h6>
+              <small>Access student resources and services</small>
+            </div>
+            
+            <div class="dropdown-divider"></div>
+            
+            <!-- Primary Action - Result -->
+            <a class="dropdown-item primary-action" href="result.html">
+              <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <div class="action-icon result-icon">
+                    <i class="fas fa-chart-line"></i>
+                  </div>
+                  <div class="ms-3">
+                    <div class="action-title">Check Results</div>
+                    <div class="action-desc">View academic performance</div>
+                  </div>
+                </div>
+                <span class="badge bg-success ms-2">Live</span>
+              </div>
+            </a>
+            
+            <div class="dropdown-divider"></div>
+            
+            <!-- Secondary Actions -->
+            <div class="dropdown-actions">
+              <a class="dropdown-action-item" href="idcard.html">
+                <div class="action-icon">
+                  <i class="fas fa-id-card"></i>
+                </div>
+                <div class="ms-3">
+                  <div class="action-title">ID Card</div>
+                  <div class="action-desc">Digital identity card</div>
+                </div>
+                <div class="ms-auto">
+                  <i class="fas fa-external-link-alt action-arrow"></i>
+                </div>
+              </a>
+              
+              <a class="dropdown-action-item" href="login.html">
+                <div class="action-icon">
+                  <i class="fas fa-sign-in-alt"></i>
+                </div>
+                <div class="ms-3">
+                  <div class="action-title">Login</div>
+                  <div class="action-desc">Student portal access</div>
+                </div>
+                <div class="ms-auto">
+                  <span class="enter-badge">Enter</span>
+                </div>
+              </a>
+              
+              <a class="dropdown-action-item" href="student-zone.html">
+                <div class="action-icon">
+                  <i class="fas fa-door-open"></i>
+                </div>
+                <div class="ms-3">
+                  <div class="action-title">Student Zone</div>
+                  <div class="action-desc">Full access dashboard</div>
+                </div>
+                <div class="ms-auto">
+                  <i class="fas fa-arrow-right action-arrow"></i>
+                </div>
+              </a>
+            </div>
+          </div>
+        </li>
+
+        <!-- SAMASTHA -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon" href="https://samastha.info/" target="_blank">
+            <i class="fas fa-university"></i>
+            <span>Samastha</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+        
+        <!-- Downloads -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon" href="downloads.html">
+            <i class="fas fa-download"></i>
+            <span>Downloads</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+        
+        <!-- Gallery -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon" href="gallery.html">
+            <i class="fas fa-images"></i>
+            <span>Gallery</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+        
+        <!-- Library -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon" href="#">
+            <i class="fas fa-book"></i>
+            <span>Library</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+        
+        <!-- Contact -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon" href="contact.html">
+            <i class="fas fa-envelope"></i>
+            <span>Contact</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- HEADER -->
+<header class="alumni-header">
+  <div class="container">
+    <h1>Our Proud Alumni</h1>
+    <p>Successful graduates making a difference in the world</p>
+  </div>
+</header>
+
+<!-- ⭐ ALUMNI SECTION -->
 <section class="container py-5">
-  <h2 class="section-title">Our Proud Alumni</h2>
-  <div class="section-line"></div>
+  <div class="text-center mb-5">
+    <h2 class="section-title">Distinguished Alumni</h2>
+    <div class="section-line"></div>
+  </div>
 
   <div class="row g-4">
 
     <!-- Card 1 -->
-    <div class="col-md-4">
-      <div class="alumni-card text-center">
-        <img src="https://via.placeholder.com/150" class="alumni-img" />
-        <div class="alumni-name">Ameer</div>
+    <div class="col-md-4" data-aos="fade-up">
+      <div class="alumni-card">
+        <img src="https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="alumni-img" alt="Ameer">
+        <div class="alumni-name">Ameer P</div>
         <div class="alumni-year">Batch 2010</div>
-        <div class="alumni-profession"> Teacher</div>
+        <div class="alumni-profession">Islamic Scholar & Teacher at Darul Huda Islamic University</div>
       </div>
     </div>
 
     <!-- Card 2 -->
-    <div class="col-md-4">
-      <div class="alumni-card text-center">
-        <img src="https://via.placeholder.com/150" class="alumni-img" />
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+      <div class="alumni-card">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="alumni-img" alt="Shihab">
         <div class="alumni-name">Shihab P</div>
         <div class="alumni-year">Batch 2001</div>
-        <div class="alumni-profession">Engineer</div>
+        <div class="alumni-profession">Software Engineer at Tech Solutions, Dubai</div>
       </div>
     </div>
 
     <!-- Card 3 -->
-    <div class="col-md-4">
-      <div class="alumni-card text-center">
-        <img src="https://via.placeholder.com/150" class="alumni-img" />
+    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+      <div class="alumni-card">
+        <img src="https://images.unsplash.com/photo-1507591064344-4c6ce005-128b-97dc4c1c77dc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" class="alumni-img" alt="Muhsin">
         <div class="alumni-name">Muhsin P</div>
         <div class="alumni-year">Batch 2019</div>
-        <div class="alumni-profession">Public Speaker</div>
+        <div class="alumni-profession">Public Speaker & Social Activist</div>
       </div>
     </div>
 
@@ -130,50 +1180,181 @@
 
 <!-- ⭐ TESTIMONIALS -->
 <section class="container pb-5">
-  <h2 class="section-title">Alumni Messages</h2>
-  <div class="section-line"></div>
+  <div class="text-center mb-5">
+    <h2 class="section-title">Alumni Messages</h2>
+    <div class="section-line"></div>
+  </div>
 
   <div class="row g-4">
 
-    <div class="col-md-6">
+    <div class="col-md-6" data-aos="fade-up">
       <div class="testimonial-box">
         <p class="quote">
-          “Studying at Noorussalam Madrasa changed my life. The discipline and Islamic values I learned continue to guide me.”
+          “Studying at Noorussalam Madrasa changed my life. The discipline and Islamic values I learned continue to guide me in my career and personal life. The teachers were not just educators but mentors who shaped our character.”
         </p>
-        <p class="mt-3"><strong>— Hafiz Shahajas, Batch 2018</strong></p>
+        <p class="quote-author">— Hafiz Shahajas <span>| Batch 2018 | Islamic Scholar</span></p>
       </div>
     </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6" data-aos="fade-up" data-aos-delay="100">
       <div class="testimonial-box">
         <p class="quote">
-          “The teachers at Noorussalam always encouraged us to excel. Today I work in IT, but my foundation is from this Madrasa.”
+          “The teachers at Noorussalam always encouraged us to excel both in religious and secular education. Today I work in IT, but my foundation in Islamic values from this Madrasa helps me maintain balance in a fast-paced corporate world.”
         </p>
-        <p class="mt-3"><strong>— Amanudheen, Batch 2020</strong></p>
+        <p class="quote-author">— Amanudheen <span>| Batch 2020 | Software Engineer</span></p>
       </div>
     </div>
 
   </div>
 </section>
-<!-- BACK TO HOME BUTTON -->
-<div style="text-align:center; margin-bottom:35px;">
-  <a href="index.html"
-     style="
-       display:inline-block;
-       background:#0054d1;
-       color:white;
-       padding:12px 28px;
-       border-radius:50px;
-       text-decoration:none;
-       font-weight:600;
-       font-size:1rem;
-       box-shadow:0 6px 18px rgba(0, 84, 209, 0.3);
-       transition:0.3s ease;
-     "
-     onmouseover="this.style.boxShadow='0 8px 25px rgba(0, 84, 209, 0.55)'; this.style.transform='translateY(-3px)'"
-     onmouseout="this.style.boxShadow='0 6px 18px rgba(0, 84, 209, 0.3)'; this.style.transform='translateY(0)'">
-    ⬅ Back to Home
-  </a>
-</div>
+
+<!-- ALUMNI REUNION SECTION -->
+<section class="container py-5" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 20px;">
+  <div class="text-center text-white py-4">
+    <h2 class="mb-3">Annual Alumni Reunion 2025</h2>
+    <p class="mb-4">Join us for the annual alumni gathering on December 25, 2025</p>
+    <a href="#" class="btn btn-light px-4 py-2 rounded-pill">Register Now <i class="fas fa-arrow-right ms-2"></i></a>
+  </div>
+</section>
+
+<!-- MODERN FOOTER -->
+<footer class="modern-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4 mb-4 mb-lg-0">
+        <div class="d-flex align-items-center mb-4">
+          <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="60" class="me-3 rounded" style="border: 2px solid var(--accent);">
+          <div>
+            <h4 class="fw-bold mb-0">Noorussalam Madrasa</h4>
+            <small class="text-muted">Kambippalam, Kerala Estate</small>
+          </div>
+        </div>
+        <p class="mb-4" style="color: #d1d5db;">
+          Providing quality Islamic education integrated with modern curriculum since 1989. 
+          Registered under SKIMVB Reg No: 6110.
+        </p>
+        <div class="social-icons">
+          <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-youtube"></i></a>
+          <a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a>
+        </div>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+        <h5>Quick Links</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="faculties.html">Our Staff</a></li>
+          <li><a href="pta.html">PTA</a></li>
+          <li><a href="alumni.html">Alumni</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      
+      <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+        <h5>Academics</h5>
+        <ul>
+          <li><a href="courses.html">Courses</a></li>
+          <li><a href="schedule.html">Schedule</a></li>
+          <li><a href="library.html">Library</a></li>
+          <li><a href="result.html">Results</a></li>
+          <li><a href="gallery.html">Gallery</a></li>
+        </ul>
+      </div>
+      
+      <div class="col-lg-4 col-md-4">
+        <h5>Contact Info</h5>
+        <ul class="list-unstyled" style="color: #d1d5db;">
+          <li class="mb-3">
+            <i class="fas fa-map-marker-alt me-2" style="color: var(--accent);"></i>
+            Noorussalam Madrasa, Kambippalam, Kerala Estate
+          </li>
+          <li class="mb-3">
+            <i class="fas fa-phone me-2" style="color: var(--accent);"></i>
+            +91 70346 78818
+          </li>
+          <li class="mb-3">
+            <i class="fas fa-envelope me-2" style="color: var(--accent);"></i>
+            noorussalam6110@gmail.com
+          </li>
+          <li class="mb-3">
+            <i class="fas fa-clock me-2" style="color: var(--accent);"></i>
+            Sat - Thu: 6:00 AM - 10:00 AM
+          </li>
+        </ul>
+        
+        <!-- Newsletter -->
+        <h5 class="mt-4">Newsletter</h5>
+        <p style="color: #d1d5db; font-size: 0.9rem;">Subscribe for updates</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Your email">
+          <button type="submit"><i class="fas fa-paper-plane"></i></button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <p class="mb-0" style="color: #9ca3af;">
+            © <span id="year"></span> Noorussalam Madrasa. All rights reserved.
+          </p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <p class="mb-0" style="color: #9ca3af;">
+            Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- WhatsApp Chat Button -->
+<a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" 
+   class="whatsapp-float" target="_blank" 
+   title="Chat with us on WhatsApp">
+  <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" />
+</a>
+
+<!-- JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  // Set current year
+  document.getElementById("year").textContent = new Date().getFullYear();
+  
+  // Initialize AOS
+  AOS.init({ duration: 1000, once: true });
+  
+  // Navbar scroll effect
+  window.addEventListener('scroll', function() {
+    const navbar = document.querySelector('.navbar');
+    navbar.classList.toggle('scrolled', window.scrollY > 20);
+  });
+  
+  // Newsletter form submission
+  document.querySelector('.newsletter-form button').addEventListener('click', function() {
+    const email = document.querySelector('.newsletter-form input').value;
+    if(email) {
+      alert('Thank you for subscribing to our newsletter!');
+      document.querySelector('.newsletter-form input').value = '';
+    }
+  });
+  
+  // Add active class to current page in navbar
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentPage = window.location.pathname.split('/').pop();
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      if (link.getAttribute('href') === currentPage) {
+        link.classList.add('active');
+      }
+    });
+  });
+</script>
+
 </body>
 </html>
