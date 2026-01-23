@@ -1468,6 +1468,7 @@
       transition: all 0.5s ease-in-out;
       margin: 0 !important;
       padding: 0 !important;
+      pointer-events: none;
     }
 
     /* ===== POST-EXAM BOX WITH AUTO-HIDE ===== */
@@ -1482,6 +1483,7 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
       position: relative;
       overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
     }
 
     .post-exam-box.fade-out {
@@ -1554,6 +1556,7 @@
       cursor: pointer;
       font-size: 14px;
       transition: all 0.3s ease;
+      z-index: 10;
     }
 
     .post-exam-box .close-btn:hover {
@@ -2366,6 +2369,15 @@
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
         
+        <!-- Home Button - Added -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon active" href="index.html">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+
         <!-- Board Dropdown -->
         <li class="nav-item dropdown">
           <a class="nav-link nav-icon dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -2553,7 +2565,6 @@
     </div>
   </div>
 </nav>
-
 <!-- ===== ENHANCED PROFESSIONAL HERO SECTION WITH BUBBLES & COUNTDOWN ===== -->
 <section id="hero-premium" aria-label="Noorussalam Madrasa hero" class="hero-premium-pro-enhanced">
   <!-- Animated Background Bubbles -->
@@ -2753,6 +2764,34 @@
     </div>
   </div>
 </section>
+
+<!-- POST-EXAM BOX (Will appear after exam ends) -->
+<div class="container mt-5" id="post-exam-container" style="display: none;">
+  <div class="post-exam-box">
+    <button class="close-btn" onclick="hidePostExamBox()">
+      <i class="fas fa-times"></i>
+    </button>
+    <h4><i class="fas fa-check-circle me-2"></i>Exam Completed Successfully!</h4>
+    <p>Congratulations on completing your annual examination 2025-26. Results will be published soon on the results page.</p>
+    <p><strong>Next Steps:</strong></p>
+    <ul class="text-start ps-4">
+      <li>Results will be available from February 20, 2026</li>
+      <li>Check your results on the <a href="result.html" class="text-white fw-bold">Results Page</a></li>
+      <li>Contact administration for any queries</li>
+    </ul>
+    <div class="post-exam-progress">
+      <div class="post-exam-progress-bar" id="post-exam-progress"></div>
+    </div>
+    <div class="countdown-badge mt-3">
+      <i class="fas fa-clock me-2"></i>
+      Auto-hiding in <span id="hide-timer">10</span> seconds
+    </div>
+    <div class="mt-3">
+      <a href="result.html" class="btn btn-light me-2">Check Results</a>
+      <a href="#" class="btn btn-outline-light">View Schedule</a>
+    </div>
+  </div>
+</div>
 
 <!-- AUTO HIDE/SHOW FLASH MESSAGE -->
 <div class="flash-message-container" id="flashContainer">
@@ -3242,6 +3281,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
+  // ===========================================
+  // INITIALIZATION FUNCTIONS
+  // ===========================================
+  
   // Set current year
   document.getElementById("year").textContent = new Date().getFullYear();
   
@@ -3360,11 +3403,11 @@
   })();
 
   // ===========================================
-  // ENHANCED COUNTDOWN TIMER WITH 3D EFFECTS
+  // ENHANCED COUNTDOWN TIMER WITH AUTO-HIDE FEATURES
   // ===========================================
   function initializeEnhancedCountdownTimer() {
     // Exam dates: January 27-29 & February 10-12, 2026
-    const examStart = new Date('2026-01-23T12:45:00');
+    const examStart = new Date('2026-01-27T06:30:00');
     const examEnd = new Date('2026-02-12T09:00:00');
     const now = new Date();
     
@@ -3375,85 +3418,97 @@
     const secondsWhite = document.getElementById('seconds-white');
     const progressBar = document.getElementById('countdown-progress');
     const progressPercentage = document.getElementById('progress-percentage');
+    const countdownSection = document.getElementById('countdown-section');
+    const postExamContainer = document.getElementById('post-exam-container');
     
     if (!daysWhite) return;
     
     function updateCountdown() {
-      const now = new Date().getTime();
-      
-      // Check if exam has started
-      if (now >= examStart) {
-        // Exam in progress or ended
-        const distance = examEnd - now;
+        const now = new Date().getTime();
         
-        if (distance <= 0) {
-          // Exam ended
-          daysWhite.textContent = '00';
-          hoursWhite.textContent = '00';
-          minutesWhite.textContent = '00';
-          secondsWhite.textContent = '00';
-          progressBar.style.width = '100%';
-          progressPercentage.textContent = '100%';
-          return;
+        // Check if exam has started
+        if (now >= examStart) {
+            // Exam in progress or ended
+            const distance = examEnd - now;
+            
+            if (distance <= 0) {
+                // Exam ended - HIDE COUNTDOWN SECTION
+                countdownSection.classList.add('countdown-section-hidden');
+                daysWhite.textContent = '00';
+                hoursWhite.textContent = '00';
+                minutesWhite.textContent = '00';
+                secondsWhite.textContent = '00';
+                progressBar.style.width = '100%';
+                progressPercentage.textContent = '100%';
+                
+                // SHOW POST-EXAM BOX
+                showPostExamBox();
+                return;
+            }
+            
+            // Show countdown normally (exam in progress)
+            countdownSection.classList.remove('countdown-section-hidden');
+            postExamContainer.style.display = 'none';
+            
+            // Calculate time units
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // Update display with animation
+            animateValue(daysWhite, days);
+            animateValue(hoursWhite, hours);
+            animateValue(minutesWhite, minutes);
+            animateValue(secondsWhite, seconds);
+            
+            // Update progress
+            const totalDuration = examEnd - examStart;
+            const timePassed = now - examStart;
+            const progress = Math.min(100, Math.max(0, (timePassed / totalDuration) * 100));
+            progressBar.style.width = progress + '%';
+            progressPercentage.textContent = Math.round(progress) + '%';
+            
+        } else {
+            // Countdown to exam start (exam hasn't started yet)
+            const distance = examStart - now;
+            countdownSection.classList.remove('countdown-section-hidden');
+            postExamContainer.style.display = 'none';
+            
+            // Calculate time units
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            // Update display with animation
+            animateValue(daysWhite, days);
+            animateValue(hoursWhite, hours);
+            animateValue(minutesWhite, minutes);
+            animateValue(secondsWhite, seconds);
+            
+            // Update progress (starting from Nov 1, 2025)
+            const startDate = new Date('2025-11-01T00:00:00');
+            const totalDuration = examStart - startDate;
+            const timePassed = now - startDate;
+            const progress = Math.min(100, Math.max(0, (timePassed / totalDuration) * 100));
+            progressBar.style.width = progress + '%';
+            progressPercentage.textContent = Math.round(progress) + '%';
         }
-        
-        // Calculate time units
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
-        // Update display with animation
-        animateValue(daysWhite, days);
-        animateValue(hoursWhite, hours);
-        animateValue(minutesWhite, minutes);
-        animateValue(secondsWhite, seconds);
-        
-        // Update progress
-        const totalDuration = examEnd - examStart;
-        const timePassed = now - examStart;
-        const progress = Math.min(100, Math.max(0, (timePassed / totalDuration) * 100));
-        progressBar.style.width = progress + '%';
-        progressPercentage.textContent = Math.round(progress) + '%';
-        
-      } else {
-        // Countdown to exam start
-        const distance = examStart - now;
-        
-        // Calculate time units
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
-        // Update display with animation
-        animateValue(daysWhite, days);
-        animateValue(hoursWhite, hours);
-        animateValue(minutesWhite, minutes);
-        animateValue(secondsWhite, seconds);
-        
-        // Update progress (starting from Nov 1, 2025)
-        const startDate = new Date('2025-11-01T00:00:00');
-        const totalDuration = examStart - startDate;
-        const timePassed = now - startDate;
-        const progress = Math.min(100, Math.max(0, (timePassed / totalDuration) * 100));
-        progressBar.style.width = progress + '%';
-        progressPercentage.textContent = Math.round(progress) + '%';
-      }
     }
     
     // Animate number changes
     function animateValue(element, newValue) {
-      const currentValue = parseInt(element.textContent);
-      if (currentValue !== newValue) {
-        element.style.transform = 'scale(1.2)';
-        setTimeout(() => {
-          element.textContent = newValue < 10 ? '0' + newValue : newValue;
-          element.style.transform = 'scale(1)';
-        }, 150);
-      } else {
-        element.textContent = newValue < 10 ? '0' + newValue : newValue;
-      }
+        const currentValue = parseInt(element.textContent);
+        if (currentValue !== newValue) {
+            element.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                element.textContent = newValue < 10 ? '0' + newValue : newValue;
+                element.style.transform = 'scale(1)';
+            }, 150);
+        } else {
+            element.textContent = newValue < 10 ? '0' + newValue : newValue;
+        }
     }
     
     // Initial update
@@ -3465,309 +3520,413 @@
     // Add 3D effect to countdown card on mousemove
     const countdownCard = document.querySelector('.countdown-card-3d');
     if (countdownCard) {
-      countdownCard.addEventListener('mousemove', (e) => {
-        const rect = countdownCard.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        countdownCard.addEventListener('mousemove', (e) => {
+            const rect = countdownCard.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const rotateY = (x - centerX) / 25;
+            const rotateX = (centerY - y) / 25;
+            
+            countdownCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
+        });
         
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        
-        const rotateY = (x - centerX) / 25;
-        const rotateX = (centerY - y) / 25;
-        
-        countdownCard.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px)`;
-      });
-      
-      countdownCard.addEventListener('mouseleave', () => {
-        countdownCard.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(-10px)';
-      });
+        countdownCard.addEventListener('mouseleave', () => {
+            countdownCard.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(-10px)';
+        });
     }
     
     // Add particle interaction
     const particles = document.querySelectorAll('.particle');
     particles.forEach(particle => {
-      particle.addEventListener('mouseenter', () => {
-        particle.style.transform = 'scale(2)';
-        particle.style.opacity = '1';
-      });
-      
-      particle.addEventListener('mouseleave', () => {
-        particle.style.transform = 'scale(1)';
-        particle.style.opacity = '0.5';
-      });
+        particle.addEventListener('mouseenter', () => {
+            particle.style.transform = 'scale(2)';
+            particle.style.opacity = '1';
+        });
+        
+        particle.addEventListener('mouseleave', () => {
+            particle.style.transform = 'scale(1)';
+            particle.style.opacity = '0.5';
+        });
     });
   }
 
   // ===========================================
-  // AUTO HIDE/SHOW FLASH MESSAGE SYSTEM
+  // POST-EXAM BOX AUTO-HIDE FUNCTIONALITY
+  // ===========================================
+  let postExamHideTimer = null;
+  let postExamProgressTimer = null;
+  let hideCountdown = 10; // seconds to auto-hide
+
+  function showPostExamBox() {
+      const postExamContainer = document.getElementById('post-exam-container');
+      const hideTimerElement = document.getElementById('hide-timer');
+      const progressBar = document.getElementById('post-exam-progress');
+      
+      if (!postExamContainer) return;
+      
+      // Show the post-exam box
+      postExamContainer.style.display = 'block';
+      postExamContainer.style.opacity = '0';
+      postExamContainer.style.transform = 'translateY(20px)';
+      
+      // Animate in
+      setTimeout(() => {
+          postExamContainer.style.transition = 'all 0.5s ease';
+          postExamContainer.style.opacity = '1';
+          postExamContainer.style.transform = 'translateY(0)';
+      }, 100);
+      
+      // Reset countdown
+      hideCountdown = 10;
+      hideTimerElement.textContent = hideCountdown;
+      progressBar.style.width = '100%';
+      progressBar.style.transition = 'none';
+      
+      // Start auto-hide countdown
+      startPostExamCountdown();
+  }
+
+  function hidePostExamBox() {
+      const postExamContainer = document.getElementById('post-exam-container');
+      
+      if (!postExamContainer) return;
+      
+      // Add fade-out animation
+      postExamContainer.classList.add('fade-out');
+      
+      // Clear timers
+      if (postExamHideTimer) {
+          clearTimeout(postExamHideTimer);
+          postExamHideTimer = null;
+      }
+      if (postExamProgressTimer) {
+          clearInterval(postExamProgressTimer);
+          postExamProgressTimer = null;
+      }
+      
+      // Remove element after animation
+      setTimeout(() => {
+          postExamContainer.style.display = 'none';
+          postExamContainer.classList.remove('fade-out');
+      }, 500);
+  }
+
+  function startPostExamCountdown() {
+      const hideTimerElement = document.getElementById('hide-timer');
+      const progressBar = document.getElementById('post-exam-progress');
+      
+      if (!hideTimerElement) return;
+      
+      // Clear any existing timers
+      if (postExamHideTimer) clearTimeout(postExamHideTimer);
+      if (postExamProgressTimer) clearInterval(postExamProgressTimer);
+      
+      // Set auto-hide timeout
+      postExamHideTimer = setTimeout(() => {
+          hidePostExamBox();
+      }, hideCountdown * 1000);
+      
+      // Update countdown display every second
+      postExamProgressTimer = setInterval(() => {
+          hideCountdown--;
+          
+          if (hideCountdown <= 0) {
+              clearInterval(postExamProgressTimer);
+              hideTimerElement.textContent = '0';
+              progressBar.style.width = '0%';
+              return;
+          }
+          
+          hideTimerElement.textContent = hideCountdown;
+          
+          // Update progress bar
+          const progressPercent = (hideCountdown / 10) * 100;
+          progressBar.style.width = progressPercent + '%';
+          progressBar.style.transition = 'width 1s linear';
+          
+      }, 1000);
+  }
+
+  // ===========================================
+  // FLASH MESSAGE AUTO-HIDE FUNCTIONALITY
   // ===========================================
   class FlashMessageSystem {
-    constructor() {
-      this.flashMessage = document.getElementById('flashMessage');
-      this.flashTimer = document.getElementById('flashTimer');
-      this.flashCloseBtn = document.getElementById('flashCloseBtn');
-      this.flashText = document.getElementById('flashText');
-      
-      // Configuration
-      this.config = {
-        showDuration: 5000,    // Show for 5 seconds
-        hideDuration: 1000,   // Hide for 1 seconds
-        messageQueue: [
-          "⚠ Model public exam results published. Check your results now!",
-          "📢 Annual Examination begins January 27, 2026. Prepare well!",
-          "🎓 Admission open for 2026-27 academic year. Apply now!",
-          "📅 Samastha Public examination on January 24,25 Saturday,Sunday.",
-          "🏆 Congratulations to all toppers of Half Yearly Examination!"
-        ],
-        currentMessageIndex: 0
-      };
-      
-      this.isVisible = true;
-      this.cycleInterval = null;
-      this.timerAnimation = null;
-      
-      this.init();
-    }
-    
-    init() {
-      // Start the first cycle
-      this.startCycle();
-      
-      // Add close button event listener
-      if (this.flashCloseBtn) {
-        this.flashCloseBtn.addEventListener('click', () => this.hideMessage(true));
+      constructor() {
+          this.flashMessage = document.getElementById('flashMessage');
+          this.flashTimer = document.getElementById('flashTimer');
+          this.flashCloseBtn = document.getElementById('flashCloseBtn');
+          this.flashText = document.getElementById('flashText');
+          
+          // Configuration
+          this.config = {
+              showDuration: 5000,    // Show for 5 seconds
+              hideDuration: 1000,   // Hide for 1 second
+              messageQueue: [
+                  "⚠ Model public exam results published. Check your results now!",
+                  "📢 Annual Examination begins January 27, 2026. Prepare well!",
+                  "🎓 Admission open for 2026-27 academic year. Apply now!",
+                  "📅 Samastha Public examination on January 24,25 Saturday,Sunday.",
+                  "🏆 Congratulations to all toppers of Half Yearly Examination!"
+              ],
+              currentMessageIndex: 0
+          };
+          
+          this.isVisible = true;
+          this.cycleInterval = null;
+          this.timerAnimation = null;
+          
+          this.init();
       }
       
-      // Add hover pause/resume
-      this.flashMessage.addEventListener('mouseenter', () => this.pauseCycle());
-      this.flashMessage.addEventListener('mouseleave', () => this.resumeCycle());
-      
-      // Start the auto-cycle
-      this.startAutoCycle();
-    }
-    
-    showMessage() {
-      if (!this.flashMessage) return;
-      
-      this.isVisible = true;
-      this.flashMessage.classList.remove('hidden');
-      this.flashMessage.classList.add('visible');
-      
-      // Update message text
-      this.flashText.textContent = this.config.messageQueue[this.config.currentMessageIndex];
-      
-      // Update current index for next message
-      this.config.currentMessageIndex = (this.config.currentMessageIndex + 1) % this.config.messageQueue.length;
-      
-      // Start timer animation
-      this.startTimer();
-    }
-    
-    hideMessage(manual = false) {
-      if (!this.flashMessage) return;
-      
-      this.isVisible = false;
-      this.flashMessage.classList.remove('visible');
-      this.flashMessage.classList.add('hidden');
-      
-      // Reset timer
-      this.resetTimer();
-      
-      // If manually closed, wait longer before showing again
-      if (manual) {
-        setTimeout(() => this.showMessage(), this.config.hideDuration * 2);
-      }
-    }
-    
-    startTimer() {
-      if (!this.flashTimer) return;
-      
-      // Reset timer
-      this.resetTimer();
-      
-      // Show timer
-      this.flashTimer.classList.remove('hidden');
-      
-      // Animate timer
-      this.flashTimer.style.transition = `transform ${this.config.showDuration}ms linear`;
-      this.flashTimer.style.transform = 'scaleX(0)';
-      
-      // Store animation reference
-      this.timerAnimation = setTimeout(() => {
-        this.flashTimer.classList.add('hidden');
-      }, this.config.showDuration);
-    }
-    
-    resetTimer() {
-      if (!this.flashTimer) return;
-      
-      // Clear any existing timer animation
-      if (this.timerAnimation) {
-        clearTimeout(this.timerAnimation);
-        this.timerAnimation = null;
+      init() {
+          // Start the first cycle
+          this.startCycle();
+          
+          // Add close button event listener
+          if (this.flashCloseBtn) {
+              this.flashCloseBtn.addEventListener('click', () => this.hideMessage(true));
+          }
+          
+          // Add hover pause/resume
+          this.flashMessage.addEventListener('mouseenter', () => this.pauseCycle());
+          this.flashMessage.addEventListener('mouseleave', () => this.resumeCycle());
+          
+          // Start the auto-cycle
+          this.startAutoCycle();
       }
       
-      // Reset timer to full width
-      this.flashTimer.style.transition = 'none';
-      this.flashTimer.style.transform = 'scaleX(1)';
-      
-      // Force reflow
-      this.flashTimer.offsetHeight;
-    }
-    
-    startCycle() {
-      // Show message immediately
-      this.showMessage();
-      
-      // Set timeout to hide message
-      setTimeout(() => {
-        this.hideMessage();
-      }, this.config.showDuration);
-    }
-    
-    startAutoCycle() {
-      // Clear any existing interval
-      if (this.cycleInterval) {
-        clearInterval(this.cycleInterval);
+      showMessage() {
+          if (!this.flashMessage) return;
+          
+          this.isVisible = true;
+          this.flashMessage.classList.remove('hidden');
+          this.flashMessage.classList.add('visible');
+          
+          // Update message text
+          this.flashText.textContent = this.config.messageQueue[this.config.currentMessageIndex];
+          
+          // Update current index for next message
+          this.config.currentMessageIndex = (this.config.currentMessageIndex + 1) % this.config.messageQueue.length;
+          
+          // Start timer animation
+          this.startTimer();
       }
       
-      // Calculate total cycle duration
-      const totalCycleDuration = this.config.showDuration + this.config.hideDuration;
-      
-      // Start auto-cycle
-      this.cycleInterval = setInterval(() => {
-        this.startCycle();
-      }, totalCycleDuration);
-    }
-    
-    pauseCycle() {
-      if (this.cycleInterval) {
-        clearInterval(this.cycleInterval);
-        this.cycleInterval = null;
+      hideMessage(manual = false) {
+          if (!this.flashMessage) return;
+          
+          this.isVisible = false;
+          this.flashMessage.classList.remove('visible');
+          this.flashMessage.classList.add('hidden');
+          
+          // Reset timer
+          this.resetTimer();
+          
+          // If manually closed, wait longer before showing again
+          if (manual) {
+              setTimeout(() => this.showMessage(), this.config.hideDuration * 2);
+          }
       }
       
-      // Pause timer animation
-      if (this.timerAnimation && this.isVisible) {
-        // Calculate remaining time
-        const computedStyle = getComputedStyle(this.flashTimer);
-        const transform = computedStyle.transform;
-        const matrix = new DOMMatrixReadOnly(transform);
-        const scaleX = matrix.m11;
-        
-        // Calculate remaining duration based on current scale
-        const remainingDuration = this.config.showDuration * scaleX;
-        
-        // Clear current animation
-        clearTimeout(this.timerAnimation);
-        
-        // Pause the animation by setting transition to none
-        this.flashTimer.style.transition = 'none';
-      }
-    }
-    
-    resumeCycle() {
-      if (this.isVisible) {
-        // Resume timer if visible
-        const computedStyle = getComputedStyle(this.flashTimer);
-        const transform = computedStyle.transform;
-        const matrix = new DOMMatrixReadOnly(transform);
-        const scaleX = matrix.m11;
-        
-        // Calculate remaining duration
-        const remainingDuration = this.config.showDuration * scaleX;
-        
-        // Resume animation
-        this.flashTimer.style.transition = `transform ${remainingDuration}ms linear`;
-        this.flashTimer.style.transform = 'scaleX(0)';
-        
-        // Set timeout for remaining duration
-        this.timerAnimation = setTimeout(() => {
-          this.flashTimer.classList.add('hidden');
-        }, remainingDuration);
+      startTimer() {
+          if (!this.flashTimer) return;
+          
+          // Reset timer
+          this.resetTimer();
+          
+          // Show timer
+          this.flashTimer.classList.remove('hidden');
+          
+          // Animate timer
+          this.flashTimer.style.transition = `transform ${this.config.showDuration}ms linear`;
+          this.flashTimer.style.transform = 'scaleX(0)';
+          
+          // Store animation reference
+          this.timerAnimation = setTimeout(() => {
+              this.flashTimer.classList.add('hidden');
+          }, this.config.showDuration);
       }
       
-      // Restart auto-cycle
-      this.startAutoCycle();
-    }
-    
-    // Public method to manually trigger a new message
-    showNextMessage() {
-      this.hideMessage();
-      setTimeout(() => this.showMessage(), 500);
-    }
+      resetTimer() {
+          if (!this.flashTimer) return;
+          
+          // Clear any existing timer animation
+          if (this.timerAnimation) {
+              clearTimeout(this.timerAnimation);
+              this.timerAnimation = null;
+          }
+          
+          // Reset timer to full width
+          this.flashTimer.style.transition = 'none';
+          this.flashTimer.style.transform = 'scaleX(1)';
+          
+          // Force reflow
+          this.flashTimer.offsetHeight;
+      }
+      
+      startCycle() {
+          // Show message immediately
+          this.showMessage();
+          
+          // Set timeout to hide message
+          setTimeout(() => {
+              this.hideMessage();
+          }, this.config.showDuration);
+      }
+      
+      startAutoCycle() {
+          // Clear any existing interval
+          if (this.cycleInterval) {
+              clearInterval(this.cycleInterval);
+          }
+          
+          // Calculate total cycle duration
+          const totalCycleDuration = this.config.showDuration + this.config.hideDuration;
+          
+          // Start auto-cycle
+          this.cycleInterval = setInterval(() => {
+              this.startCycle();
+          }, totalCycleDuration);
+      }
+      
+      pauseCycle() {
+          if (this.cycleInterval) {
+              clearInterval(this.cycleInterval);
+              this.cycleInterval = null;
+          }
+          
+          // Pause timer animation
+          if (this.timerAnimation && this.isVisible) {
+              // Calculate remaining time
+              const computedStyle = getComputedStyle(this.flashTimer);
+              const transform = computedStyle.transform;
+              const matrix = new DOMMatrixReadOnly(transform);
+              const scaleX = matrix.m11;
+              
+              // Calculate remaining duration based on current scale
+              const remainingDuration = this.config.showDuration * scaleX;
+              
+              // Clear current animation
+              clearTimeout(this.timerAnimation);
+              
+              // Pause the animation by setting transition to none
+              this.flashTimer.style.transition = 'none';
+          }
+      }
+      
+      resumeCycle() {
+          if (this.isVisible) {
+              // Resume timer if visible
+              const computedStyle = getComputedStyle(this.flashTimer);
+              const transform = computedStyle.transform;
+              const matrix = new DOMMatrixReadOnly(transform);
+              const scaleX = matrix.m11;
+              
+              // Calculate remaining duration
+              const remainingDuration = this.config.showDuration * scaleX;
+              
+              // Resume animation
+              this.flashTimer.style.transition = `transform ${remainingDuration}ms linear`;
+              this.flashTimer.style.transform = 'scaleX(0)';
+              
+              // Set timeout for remaining duration
+              this.timerAnimation = setTimeout(() => {
+                  this.flashTimer.classList.add('hidden');
+              }, remainingDuration);
+          }
+          
+          // Restart auto-cycle
+          this.startAutoCycle();
+      }
+      
+      // Public method to manually trigger a new message
+      showNextMessage() {
+          this.hideMessage();
+          setTimeout(() => this.showMessage(), 500);
+      }
   }
 
   // Initialize everything when DOM is loaded
   document.addEventListener('DOMContentLoaded', function() {
-    // Initialize enhanced countdown timer
-    initializeEnhancedCountdownTimer();
-    
-    // Initialize flash message system
-    const flashSystem = new FlashMessageSystem();
-    
-    // Expose flash system to global scope for debugging (optional)
-    window.flashSystem = flashSystem;
-    
-    // Add scroll animation for bubbles
-    window.addEventListener('scroll', () => {
-      const bubbles = document.querySelectorAll('.bubble');
-      const scrolled = window.pageYOffset;
+      // Initialize enhanced countdown timer
+      initializeEnhancedCountdownTimer();
       
-      bubbles.forEach((bubble, index) => {
-        const speed = 0.5 + (index * 0.1);
-        const yPos = -(scrolled * speed * 0.1);
-        bubble.style.transform = `translateY(${yPos}px)`;
+      // Initialize flash message system
+      const flashSystem = new FlashMessageSystem();
+      
+      // Expose functions for manual control (for testing)
+      window.showPostExamBox = showPostExamBox;
+      window.hidePostExamBox = hidePostExamBox;
+      
+      // Test function (remove in production)
+      window.testExamEnd = function() {
+          // Force show post-exam box for testing
+          document.getElementById('countdown-section').classList.add('countdown-section-hidden');
+          showPostExamBox();
+      };
+      
+      // Add scroll animation for bubbles
+      window.addEventListener('scroll', () => {
+          const bubbles = document.querySelectorAll('.bubble');
+          const scrolled = window.pageYOffset;
+          
+          bubbles.forEach((bubble, index) => {
+              const speed = 0.5 + (index * 0.1);
+              const yPos = -(scrolled * speed * 0.1);
+              bubble.style.transform = `translateY(${yPos}px)`;
+          });
       });
-    });
-    
-    // Add click effect to buttons
-    const buttons = document.querySelectorAll('.hero-btn-enhanced');
-    buttons.forEach(button => {
-      button.addEventListener('click', function(e) {
-        // Create ripple effect
-        const ripple = document.createElement('span');
-        const rect = this.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-        
-        ripple.style.cssText = `
-          position: absolute;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
-          transform: scale(0);
-          animation: ripple 0.6s linear;
-          width: ${size}px;
-          height: ${size}px;
-          top: ${y}px;
-          left: ${x}px;
-          pointer-events: none;
-          z-index: 1;
-        `;
-        
-        this.appendChild(ripple);
-        
-        setTimeout(() => {
-          ripple.remove();
-        }, 600);
+      
+      // Add click effect to buttons
+      const buttons = document.querySelectorAll('.hero-btn-enhanced');
+      buttons.forEach(button => {
+          button.addEventListener('click', function(e) {
+              // Create ripple effect
+              const ripple = document.createElement('span');
+              const rect = this.getBoundingClientRect();
+              const size = Math.max(rect.width, rect.height);
+              const x = e.clientX - rect.left - size / 2;
+              const y = e.clientY - rect.top - size / 2;
+              
+              ripple.style.cssText = `
+                  position: absolute;
+                  border-radius: 50%;
+                  background: rgba(255, 255, 255, 0.3);
+                  transform: scale(0);
+                  animation: ripple 0.6s linear;
+                  width: ${size}px;
+                  height: ${size}px;
+                  top: ${y}px;
+                  left: ${x}px;
+                  pointer-events: none;
+                  z-index: 1;
+              `;
+              
+              this.appendChild(ripple);
+              
+              setTimeout(() => {
+                  ripple.remove();
+              }, 600);
+          });
       });
-    });
-    
-    // Add CSS for ripple effect
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes ripple {
-        to {
-          transform: scale(4);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(style);
+      
+      // Add CSS for ripple effect
+      const style = document.createElement('style');
+      style.textContent = `
+          @keyframes ripple {
+              to {
+                  transform: scale(4);
+                  opacity: 0;
+              }
+          }
+      `;
+      document.head.appendChild(style);
   });
 </script>
 
 </body>
 </html>
-
