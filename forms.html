@@ -11,6 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
 
+  <!-- PDF Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <style>
     :root {
       --primary: #0a194f;
@@ -1044,38 +1048,6 @@
       margin: 0;
     }
 
-    /* Success Message */
-    .success-message {
-      display: none;
-      background: linear-gradient(135deg, #22c55e, #06b6d4);
-      color: white;
-      padding: 20px;
-      border-radius: 15px;
-      margin-top: 20px;
-      animation: slideDown 0.5s ease;
-      box-shadow: 0 10px 25px rgba(34, 197, 94, 0.3);
-    }
-
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Loading Animation */
-    .loading-spinner {
-      display: none;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
     /* Malayalam font classes */
     .ml-font {
       font-family: 'Anek Malayalam', sans-serif !important;
@@ -1114,6 +1086,403 @@
       font-weight: 400;
       color: #555;
       font-size: 0.9em;
+    }
+
+    /* =========================================== */
+    /* BEAUTIFUL RECEIPT STYLES */
+    /* =========================================== */
+    
+    .receipt-container {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 20px;
+        padding: 40px;
+        margin: 30px 0;
+        border: 2px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    }
+
+    .receipt-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--accent), var(--light-blue));
+    }
+
+    .receipt-header {
+        text-align: center;
+        margin-bottom: 40px;
+        position: relative;
+        padding-bottom: 20px;
+    }
+
+    .receipt-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--light-blue));
+        border-radius: 2px;
+    }
+
+    .receipt-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 20px;
+        border-radius: 15px;
+        border: 3px solid var(--accent);
+        padding: 5px;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .receipt-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .receipt-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .receipt-subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    /* Reference Section */
+    .reference-section {
+        background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 40px;
+        border: 2px dashed var(--accent);
+        text-align: center;
+    }
+
+    .reference-id {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary);
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+
+    .reference-date {
+        color: #666;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .reference-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 15px;
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+    }
+
+    /* Receipt Grid Layout */
+    .receipt-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+
+    .receipt-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        border-left: 4px solid var(--accent);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease;
+    }
+
+    .receipt-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .receipt-card-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    /* Info Rows */
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: var(--primary);
+        font-size: 0.95rem;
+        flex: 1;
+    }
+
+    .info-value {
+        color: #333;
+        font-size: 1rem;
+        font-weight: 500;
+        text-align: right;
+        flex: 1;
+    }
+
+    /* Application Details */
+    .application-details {
+        background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 40px 0;
+        border: 2px solid var(--accent);
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid rgba(58, 141, 243, 0.3);
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Instructions */
+    .instructions-box {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin: 40px 0;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .instruction-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 10px;
+    }
+
+    .instruction-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f59e0b;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* Signature Section */
+    .signature-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 30px;
+        margin-top: 50px;
+        padding-top: 40px;
+        border-top: 2px dashed #e5e7eb;
+    }
+
+    .signature-box {
+        text-align: center;
+        padding: 25px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .signature-line {
+        width: 180px;
+        height: 1px;
+        background: #333;
+        margin: 40px auto 10px;
+    }
+
+    /* Receipt Actions */
+    .receipt-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .download-btn {
+        background: linear-gradient(135deg, var(--accent), var(--light-blue));
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .download-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(58, 141, 243, 0.3);
+    }
+
+    .print-btn {
+        background: white;
+        color: var(--primary);
+        border: 2px solid var(--accent);
+        padding: 12px 30px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .print-btn:hover {
+        background: #f0f7ff;
+        transform: translateY(-3px);
+    }
+
+    /* Watermark */
+    .receipt-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 100px;
+        font-weight: 900;
+        color: rgba(10, 25, 79, 0.03);
+        pointer-events: none;
+        user-select: none;
+        white-space: nowrap;
+        z-index: 1;
+    }
+
+    /* Print Styles */
+    @media print {
+        .receipt-container {
+            box-shadow: none !important;
+            border: 1px solid #ccc !important;
+            padding: 20px !important;
+        }
+        
+        .receipt-actions {
+            display: none !important;
+        }
+        
+        .receipt-watermark {
+            opacity: 0.1 !important;
+        }
+    }
+
+    /* Responsive Design for Receipt */
+    @media (max-width: 768px) {
+        .receipt-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .receipt-title {
+            font-size: 1.8rem;
+        }
+        
+        .reference-id {
+            font-size: 1.5rem;
+        }
+        
+        .signature-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .receipt-actions {
+            flex-direction: column;
+        }
+        
+        .download-btn, .print-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .receipt-container {
+            padding: 25px 20px;
+        }
+        
+        .receipt-title {
+            font-size: 1.5rem;
+        }
+        
+        .reference-id {
+            font-size: 1.2rem;
+        }
+        
+        .info-row {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .info-value {
+            text-align: left;
+        }
+        
+        .receipt-watermark {
+            font-size: 60px;
+        }
     }
 
     /* MODERN FOOTER (From index.html) */
@@ -1572,15 +1941,218 @@
               </p>
             </div>
 
-            <!-- Success Message -->
-            <div class="success-message" id="successMessage">
-              <div class="d-flex align-items-center gap-3">
-                <i class="fas fa-check-circle fa-2x"></i>
-                <div>
-                  <h5 class="mb-1">Application Submitted Successfully!</h5>
-                  <p class="mb-0">Your application has been received. Reference ID: <strong id="referenceId"></strong></p>
-                  <p class="mb-0 mt-2 small">A copy has been sent to your email (if provided).</p>
+            <!-- Success Message with Beautiful Receipt -->
+            <div class="receipt-container" id="successMessage" style="display: none;">
+              <div class="receipt-watermark">NOORUSSALAM MADRASA</div>
+              
+              <!-- Receipt Header -->
+              <div class="receipt-header">
+                <div class="receipt-logo">
+                  <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo">
                 </div>
+                <h1 class="receipt-title">ADMISSION APPLICATION RECEIPT</h1>
+                <p class="receipt-subtitle">Official Confirmation • Academic Year 2024-25</p>
+              </div>
+              
+              <!-- Reference Section -->
+              <div class="reference-section">
+                <div class="reference-id" id="referenceIdDisplay">REF: NSM-2024-001234</div>
+                <div class="reference-date">
+                  <i class="far fa-calendar-alt"></i>
+                  <span id="receiptDate">25 January 2024</span>
+                  <i class="far fa-clock"></i>
+                  <span id="receiptTime">14:30:45 IST</span>
+                </div>
+                <div class="reference-status">
+                  <i class="fas fa-check-circle"></i>
+                  SUBMITTED SUCCESSFULLY
+                </div>
+              </div>
+              
+              <!-- Student Information -->
+              <div class="receipt-grid">
+                <div class="receipt-card">
+                  <h3 class="receipt-card-title">
+                    <i class="fas fa-user-graduate"></i>
+                    STUDENT INFORMATION
+                  </h3>
+                  <div class="info-row">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value" id="receiptStudentName">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Date of Birth</div>
+                    <div class="info-value" id="receiptDOB">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Gender</div>
+                    <div class="info-value" id="receiptGender">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Applying Class</div>
+                    <div class="info-value" id="receiptClass">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">House Name</div>
+                    <div class="info-value" id="receiptHouseName">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Aadhar Number</div>
+                    <div class="info-value" id="receiptAadhar">-</div>
+                  </div>
+                </div>
+                
+                <div class="receipt-card">
+                  <h3 class="receipt-card-title">
+                    <i class="fas fa-users"></i>
+                    GUARDIAN INFORMATION
+                  </h3>
+                  <div class="info-row">
+                    <div class="info-label">Guardian Name</div>
+                    <div class="info-value" id="receiptGuardian">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Contact Number</div>
+                    <div class="info-value" id="receiptPhone">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Email Address</div>
+                    <div class="info-value" id="receiptEmail">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Address</div>
+                    <div class="info-value" id="receiptAddress">-</div>
+                  </div>
+                  <div class="info-row">
+                    <div class="info-label">Previous Madrasa</div>
+                    <div class="info-value" id="receiptPreviousMadrasa">-</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Application Details -->
+              <div class="application-details">
+                <h3 class="receipt-card-title">
+                  <i class="fas fa-file-contract"></i>
+                  APPLICATION DETAILS
+                </h3>
+                <div class="detail-row">
+                  <div class="info-label">Application Type</div>
+                  <div class="info-value">New Admission</div>
+                </div>
+                <div class="detail-row">
+                  <div class="info-label">Academic Year</div>
+                  <div class="info-value">2024-25</div>
+                </div>
+                <div class="detail-row">
+                  <div class="info-label">Submission Date</div>
+                  <div class="info-value" id="receiptSubmissionDate">-</div>
+                </div>
+                <div class="detail-row">
+                  <div class="info-label">Status</div>
+                  <div class="info-value">
+                    <span class="badge bg-success">Submitted for Review</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <div class="info-label">Expected Processing</div>
+                  <div class="info-value">2-3 working days</div>
+                </div>
+              </div>
+              
+              <!-- Important Instructions -->
+              <div class="instructions-box">
+                <h3 class="receipt-card-title" style="border-color: #f59e0b;">
+                  <i class="fas fa-info-circle"></i>
+                  IMPORTANT INSTRUCTIONS
+                </h3>
+                <div class="instruction-item">
+                  <div class="instruction-icon">
+                    <i class="fas fa-calendar-check"></i>
+                  </div>
+                  <div>
+                    <h6>Save Your Reference ID</h6>
+                    <p>Please save the reference ID <strong id="referenceIdText">NSM-2024-001234</strong> for future correspondence and status tracking.</p>
+                  </div>
+                </div>
+                <div class="instruction-item">
+                  <div class="instruction-icon">
+                    <i class="fas fa-phone-alt"></i>
+                  </div>
+                  <div>
+                    <h6>Contact Information</h6>
+                    <p>For any queries, contact +91 70346 78818 or visit the madrasa office during working hours.</p>
+                  </div>
+                </div>
+                <div class="instruction-item">
+                  <div class="instruction-icon">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <div>
+                    <h6>Processing Time</h6>
+                    <p>Your application will be processed within 2-3 working days. You'll be contacted for any additional information needed.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Signature Section -->
+              <div class="signature-section">
+                <div class="signature-box">
+                  <div class="receipt-card-title">
+                    <i class="fas fa-user-check"></i>
+                    STUDENT/GUARDIAN
+                  </div>
+                  <div class="signature-line"></div>
+                  <div class="mt-3">
+                    <div id="receiptGuardianSignature">-</div>
+                    <small class="text-muted">Signature</small>
+                  </div>
+                </div>
+                
+                <div class="signature-box">
+                  <div class="receipt-card-title">
+                    <i class="fas fa-user-tie"></i>
+                    ADMISSION IN-CHARGE
+                  </div>
+                  <div class="signature-line"></div>
+                  <div class="mt-3">
+                    <div>Muhammed Rafeeq</div>
+                    <small class="text-muted">Admission Officer</small>
+                  </div>
+                </div>
+                
+                <div class="signature-box">
+                  <div class="receipt-card-title">
+                    <i class="fas fa-stamp"></i>
+                    MADRASA SEAL
+                  </div>
+                  <div class="signature-line"></div>
+                  <div class="mt-3">
+                    <div>Noorussalam Madrasa</div>
+                    <small class="text-muted">Official Stamp</small>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Download Actions -->
+              <div class="receipt-actions">
+                <button class="download-btn" onclick="downloadReceiptPDF()">
+                  <i class="fas fa-download"></i>
+                  DOWNLOAD AS PDF
+                </button>
+                <button class="print-btn" onclick="window.print()">
+                  <i class="fas fa-print"></i>
+                  PRINT RECEIPT
+                </button>
+              </div>
+              
+              <!-- Footer Note -->
+              <div class="text-center mt-4" style="color: #666; font-size: 0.9rem;">
+                <p class="mb-0">
+                  <i class="fas fa-info-circle me-1"></i>
+                  This is a computer generated receipt. No physical signature required.
+                </p>
+                <p class="mb-0">Noorussalam Madrasa, Kambippalam • SKIMVB Reg No: 6110</p>
               </div>
             </div>
 
@@ -2027,6 +2599,20 @@
   <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" />
 </a>
 
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  <div id="toastNotification" class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="display: none;">
+    <div class="toast-header" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white;">
+      <i class="fas fa-check-circle me-2"></i>
+      <strong class="me-auto">Success</strong>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body" id="toastMessage">
+      PDF downloaded successfully!
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
@@ -2114,8 +2700,11 @@
   const buttonText = document.getElementById('buttonText');
   const loadingSpinner = document.getElementById('loadingSpinner');
   const successMessage = document.getElementById('successMessage');
-  const referenceId = document.getElementById('referenceId');
   const resetBtn = document.getElementById('resetBtn');
+
+  // Initialize toast
+  const toastEl = document.getElementById('toastNotification');
+  const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
 
   // Generate unique reference ID
   function generateReferenceId() {
@@ -2130,6 +2719,26 @@
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
+    });
+  }
+
+  // Format date with full month
+  function formatDateFull(date) {
+    return new Date(date).toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  // Format time
+  function formatTime(date) {
+    return date.toLocaleTimeString('en-IN', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
   }
 
@@ -2150,6 +2759,32 @@
     if (!aadhar) return true; // Optional field
     const re = /^[0-9]{12}$/;
     return re.test(aadhar);
+  }
+
+  // Populate receipt with form data
+  function populateReceipt(data, reference) {
+    const now = new Date();
+    
+    // Populate receipt data
+    document.getElementById('referenceIdDisplay').textContent = `REF: ${reference}`;
+    document.getElementById('referenceIdText').textContent = reference;
+    document.getElementById('receiptStudentName').textContent = data.full_name || '-';
+    document.getElementById('receiptDOB').textContent = formatDate(data.dob) || '-';
+    document.getElementById('receiptGender').textContent = data.gender || '-';
+    document.getElementById('receiptClass').textContent = 'Class ' + (data.class_level || '-');
+    document.getElementById('receiptHouseName').textContent = data.house_name || '-';
+    document.getElementById('receiptAadhar').textContent = data.aadhar_number || '-';
+    document.getElementById('receiptGuardian').textContent = data.guardian_name || '-';
+    document.getElementById('receiptPhone').textContent = data.phone || '-';
+    document.getElementById('receiptEmail').textContent = data.email || '-';
+    document.getElementById('receiptAddress').textContent = data.address || '-';
+    document.getElementById('receiptPreviousMadrasa').textContent = data.previous_madrasa || '-';
+    document.getElementById('receiptGuardianSignature').textContent = data.guardian_name || '-';
+    document.getElementById('receiptSubmissionDate').textContent = formatDate(now);
+    
+    // Set current date and time
+    document.getElementById('receiptDate').textContent = formatDateFull(now);
+    document.getElementById('receiptTime').textContent = formatTime(now) + ' IST';
   }
 
   // Form submission
@@ -2219,7 +2854,6 @@
     submitBtn.disabled = true;
     buttonText.style.display = 'none';
     loadingSpinner.style.display = 'block';
-    successMessage.style.display = 'none';
     
     // Generate reference ID and set submission date
     const reference = generateReferenceId();
@@ -2289,9 +2923,11 @@
         // Continue anyway - at least show success message
       }
       
-      // Show success message regardless of backend success
+      // Populate receipt with data
+      populateReceipt(data, reference);
+      
+      // Show success message
       successMessage.style.display = 'block';
-      referenceId.textContent = reference;
       
       // Reset button state
       submitBtn.disabled = false;
@@ -2299,20 +2935,6 @@
       loadingSpinner.style.display = 'none';
       buttonText.innerHTML = '<i class="fas fa-check me-2"></i> Submitted Successfully!';
       submitBtn.style.background = 'linear-gradient(135deg, #22c55e, #06b6d4)';
-      
-      // Download as PDF option
-      const downloadBtn = document.createElement('button');
-      downloadBtn.className = 'btn btn-light btn-sm mt-2';
-      downloadBtn.innerHTML = '<i class="fas fa-download me-1"></i> Download Receipt';
-      downloadBtn.onclick = function() {
-        downloadReceipt(data, reference);
-      };
-      
-      const successContent = successMessage.querySelector('.d-flex div');
-      if (successContent && !successMessage.querySelector('.download-btn')) {
-        downloadBtn.classList.add('download-btn');
-        successContent.appendChild(downloadBtn);
-      }
       
       // Reset form after delay
       setTimeout(() => {
@@ -2355,87 +2977,77 @@
       
       // Still show success for user experience
       successMessage.style.display = 'block';
-      referenceId.textContent = reference;
       
       alert('Form submitted locally. Reference ID: ' + reference + '\n\nPlease note this ID and contact the madrasa office for confirmation.');
     }
   });
   
-  // Download receipt as PDF
-  function downloadReceipt(data, reference) {
-    const receiptContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; padding: 20px; }
-          .header { text-align: center; margin-bottom: 30px; }
-          .header h1 { color: #0a194f; }
-          .receipt { border: 2px solid #0a194f; padding: 20px; border-radius: 10px; }
-          .section { margin-bottom: 20px; }
-          .label { font-weight: bold; color: #0a194f; }
-          .value { margin-left: 10px; }
-          .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
-          .reference { background: #f0f8ff; padding: 10px; border-radius: 5px; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <h1>Noorussalam Madrasa</h1>
-          <h3>Admission Application Receipt</h3>
-        </div>
-        
-        <div class="receipt">
-          <div class="reference">
-            Reference ID: ${reference}<br>
-            Submission Date: ${formatDate(data.submission_date || new Date().toISOString())}
-          </div>
-          
-          <div class="section">
-            <h4>Student Information</h4>
-            <div><span class="label">Full Name:</span><span class="value">${data.full_name}</span></div>
-            <div><span class="label">Date of Birth:</span><span class="value">${formatDate(data.dob)}</span></div>
-            <div><span class="label">Gender:</span><span class="value">${data.gender}</span></div>
-            <div><span class="label">Applying Class:</span><span class="value">Class ${data.class_level}</span></div>
-            ${data.house_name ? `<div><span class="label">House Name:</span><span class="value">${data.house_name}</span></div>` : ''}
-            ${data.previous_madrasa ? `<div><span class="label">Previous Madrasa:</span><span class="value">${data.previous_madrasa}</span></div>` : ''}
-            ${data.aadhar_number ? `<div><span class="label">Aadhar Number:</span><span class="value">${data.aadhar_number}</span></div>` : ''}
-          </div>
-          
-          <div class="section">
-            <h4>Guardian Information</h4>
-            <div><span class="label">Guardian Name:</span><span class="value">${data.guardian_name}</span></div>
-            <div><span class="label">Contact Number:</span><span class="value">${data.phone}</span></div>
-            ${data.email ? `<div><span class="label">Email:</span><span class="value">${data.email}</span></div>` : ''}
-            <div><span class="label">Address:</span><span class="value">${data.address}</span></div>
-          </div>
-          
-          <div class="section">
-            <h4>Application Status</h4>
-            <div><span class="label">Status:</span><span class="value">Submitted - Under Review</span></div>
-            <div><span class="label">Expected Processing:</span><span class="value">2-3 working days</span></div>
-          </div>
-        </div>
-        
-        <div class="footer">
-          <p>Noorussalam Madrasa, Kambippalam, Kerala Estate</p>
-          <p>SKIMVB Reg No: 6110 | Phone: +91 70346 78818</p>
-          <p>This is a computer generated receipt. No signature required.</p>
-        </div>
-      </body>
-      </html>
-    `;
-    
-    // Create a blob and download
-    const blob = new Blob([receiptContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `NSM-Admission-${reference}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  // Download PDF function
+  async function downloadReceiptPDF() {
+    try {
+      const receiptElement = document.querySelector('.receipt-container');
+      
+      // Show loading state on button
+      const downloadBtn = document.querySelector('.download-btn');
+      const originalText = downloadBtn.innerHTML;
+      downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING PDF...';
+      downloadBtn.disabled = true;
+      
+      // Use html2canvas to capture the receipt
+      const canvas = await html2canvas(receiptElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      
+      // Initialize jsPDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      // Calculate dimensions
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Generate filename
+      const refId = document.getElementById('referenceIdDisplay').textContent.replace('REF: ', '');
+      const filename = `NSM-Admission-Receipt-${refId}.pdf`;
+      
+      // Save the PDF
+      pdf.save(filename);
+      
+      // Restore button
+      downloadBtn.innerHTML = originalText;
+      downloadBtn.disabled = false;
+      
+      // Show success toast
+      document.getElementById('toastMessage').textContent = 'PDF downloaded successfully!';
+      toast.show();
+      
+      // Log download event
+      console.log(`PDF downloaded: ${filename}`);
+      
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      
+      // Restore button
+      const downloadBtn = document.querySelector('.download-btn');
+      downloadBtn.innerHTML = '<i class="fas fa-download"></i> DOWNLOAD AS PDF';
+      downloadBtn.disabled = false;
+      
+      // Show error toast
+      document.getElementById('toastMessage').textContent = 'Failed to generate PDF. Please try again.';
+      toast.show();
+    }
   }
   
   // Send email notification (simulated)
@@ -2548,8 +3160,11 @@ Phone: +91 70346 78818
     const lastSubmission = sessionStorage.getItem('last_submission');
     if (lastSubmission) {
       const submission = JSON.parse(lastSubmission);
+      
+      // Populate receipt with last submission data
+      populateReceipt(submission.data, submission.id);
+      
       successMessage.style.display = 'block';
-      referenceId.textContent = submission.id;
       
       // Auto-hide success message after 10 seconds
       setTimeout(() => {
@@ -2573,6 +3188,29 @@ Phone: +91 70346 78818
           behavior: 'smooth'
         });
       }
+    });
+  });
+
+  // Keyboard shortcuts for PDF download
+  document.addEventListener('keydown', function(e) {
+    // Ctrl/Cmd + P for print
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p' && successMessage.style.display === 'block') {
+      e.preventDefault();
+      window.print();
+    }
+    
+    // Ctrl/Cmd + S for save PDF
+    if ((e.ctrlKey || e.metaKey) && e.key === 's' && successMessage.style.display === 'block') {
+      e.preventDefault();
+      downloadReceiptPDF();
+    }
+  });
+
+  // Add animation to receipt cards
+  document.addEventListener('DOMContentLoaded', function() {
+    const receiptCards = document.querySelectorAll('.receipt-card');
+    receiptCards.forEach((card, index) => {
+      card.style.animationDelay = `${index * 0.1}s`;
     });
   });
 </script>
