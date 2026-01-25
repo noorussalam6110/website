@@ -1089,7 +1089,7 @@
     }
 
     /* =========================================== */
-    /* BEAUTIFUL RECEIPT STYLES */
+    /* BEAUTIFUL RECEIPT STYLES - ENHANCED */
     /* =========================================== */
     
     .receipt-container {
@@ -1101,6 +1101,16 @@
         position: relative;
         overflow: hidden;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+        animation: receiptSlideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    @keyframes receiptSlideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .receipt-container::before {
@@ -1113,11 +1123,36 @@
         background: linear-gradient(90deg, var(--accent), var(--light-blue));
     }
 
+    .receipt-glow {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background: linear-gradient(135deg, 
+            rgba(58, 141, 243, 0.1) 0%, 
+            rgba(76, 201, 240, 0.1) 50%,
+            transparent 100%);
+        border-radius: 30px;
+        z-index: -1;
+        filter: blur(20px);
+        animation: glowPulse 3s infinite alternate;
+    }
+    
+    @keyframes glowPulse {
+        from { opacity: 0.5; }
+        to { opacity: 0.8; }
+    }
+
     .receipt-header {
         text-align: center;
         margin-bottom: 40px;
         position: relative;
-        padding-bottom: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, 
+            rgba(10, 25, 79, 0.05) 0%, 
+            rgba(18, 47, 122, 0.05) 100%);
+        border-radius: 20px 20px 0 0;
     }
 
     .receipt-header::after {
@@ -1130,6 +1165,28 @@
         height: 3px;
         background: linear-gradient(90deg, var(--accent), var(--light-blue));
         border-radius: 2px;
+    }
+
+    .receipt-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        animation: badgeFloat 3s ease-in-out infinite;
+    }
+    
+    @keyframes badgeFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
     }
 
     .receipt-logo {
@@ -1170,21 +1227,56 @@
 
     /* Reference Section */
     .reference-section {
+        position: relative;
+        overflow: hidden;
         background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
         border-radius: 15px;
-        padding: 25px;
+        padding: 30px;
         margin-bottom: 40px;
         border: 2px dashed var(--accent);
+    }
+
+    .reference-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, 
+            transparent 30%, 
+            rgba(255, 255, 255, 0.3) 50%, 
+            transparent 70%);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .reference-id-container {
+        position: relative;
+        padding: 30px;
+        background: linear-gradient(135deg, #0a194f, #122f7a);
+        border-radius: 15px;
+        margin: 20px 0;
+        color: white;
         text-align: center;
+        border: 2px solid var(--accent);
+        box-shadow: 0 10px 30px rgba(10, 25, 79, 0.3);
     }
 
     .reference-id {
         font-family: 'Montserrat', sans-serif;
-        font-size: 2rem;
+        font-size: 2.2rem;
         font-weight: 800;
-        color: var(--primary);
         letter-spacing: 2px;
         margin-bottom: 10px;
+        background: linear-gradient(135deg, #fff 0%, var(--light-blue) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
     .reference-date {
@@ -1195,20 +1287,34 @@
         justify-content: center;
         gap: 10px;
         flex-wrap: wrap;
+        color: rgba(255, 255, 255, 0.9);
     }
 
-    .reference-status {
+    .copy-reference-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        background: linear-gradient(135deg, #22c55e, #16a34a);
-        color: white;
-        padding: 8px 20px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.9rem;
+        gap: 8px;
         margin-top: 15px;
-        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        font-weight: 500;
+    }
+    
+    .copy-reference-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+    }
+    
+    .copy-reference-btn.copied {
+        background: #22c55e;
+        border-color: #16a34a;
     }
 
     /* Receipt Grid Layout */
@@ -1226,6 +1332,17 @@
         border-left: 4px solid var(--accent);
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
         transition: transform 0.3s ease;
+        animation: cardSlideIn 0.6s ease-out forwards;
+        animation-delay: calc(var(--card-index) * 0.1s);
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    
+    @keyframes cardSlideIn {
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
     }
 
     .receipt-card:hover {
@@ -1252,6 +1369,16 @@
         align-items: flex-start;
         padding: 12px 0;
         border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s ease;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 5px 0;
+    }
+    
+    .info-row:hover {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     }
 
     .info-row:last-child {
@@ -1294,6 +1421,78 @@
         border-bottom: none;
     }
 
+    /* Timeline Progress */
+    .timeline-progress {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 40px 0;
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline-progress::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50px;
+        right: 50px;
+        height: 4px;
+        background: linear-gradient(90deg, #e2e8f0, #e2e8f0);
+        z-index: 1;
+        transform: translateY(-50%);
+        border-radius: 2px;
+    }
+    
+    .timeline-step {
+        text-align: center;
+        position: relative;
+        z-index: 2;
+        flex: 1;
+    }
+    
+    .step-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-weight: 700;
+        color: #94a3b8;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+    
+    .timeline-step.active .step-circle {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: white;
+        box-shadow: 0 5px 15px rgba(58, 141, 243, 0.3);
+        transform: scale(1.1);
+    }
+    
+    .timeline-step.completed .step-circle {
+        background: #22c55e;
+        border-color: #16a34a;
+        color: white;
+    }
+    
+    .step-label {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+    
+    .timeline-step.active .step-label {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
     /* Instructions */
     .instructions-box {
         background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
@@ -1325,6 +1524,51 @@
         flex-shrink: 0;
     }
 
+    /* QR Code Section */
+    .qr-code-section {
+        text-align: center;
+        padding: 30px;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 15px;
+        margin: 40px 0;
+        border: 2px dashed var(--accent);
+    }
+    
+    .qr-placeholder {
+        width: 180px;
+        height: 180px;
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+        margin: 0 auto 20px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .qr-placeholder::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, 
+            transparent 30%, 
+            rgba(255, 255, 255, 0.5) 50%, 
+            transparent 70%);
+        animation: qrShine 3s infinite linear;
+    }
+    
+    @keyframes qrShine {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     /* Signature Section */
     .signature-section {
         display: grid;
@@ -1341,6 +1585,32 @@
         background: #f8fafc;
         border-radius: 12px;
         border: 1px solid #e2e8f0;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .signature-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border-color: var(--accent);
+    }
+    
+    .signature-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent), var(--light-blue));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .signature-box:hover::before {
+        opacity: 1;
     }
 
     .signature-line {
@@ -1398,6 +1668,133 @@
         transform: translateY(-3px);
     }
 
+    /* Floating Action Buttons */
+    .floating-actions {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+    }
+    
+    .floating-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, var(--accent), var(--light-blue));
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(58, 141, 243, 0.4);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .floating-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 255, 255, 0.4), 
+            transparent);
+        transition: left 0.7s ease;
+    }
+    
+    .floating-btn:hover::before {
+        left: 100%;
+    }
+    
+    .floating-btn:hover {
+        transform: scale(1.15);
+        box-shadow: 0 12px 30px rgba(58, 141, 243, 0.6);
+    }
+    
+    .floating-btn-label {
+        position: absolute;
+        right: 70px;
+        background: var(--primary);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 25px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .floating-btn:hover .floating-btn-label {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Receipt Close Button */
+    .receipt-close-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 10;
+        font-size: 1.2rem;
+    }
+    
+    .receipt-close-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+
+    /* Progress Bar for PDF Generation */
+    .pdf-progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0%;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--light-blue));
+        z-index: 9999;
+        transition: width 0.3s ease;
+        opacity: 0;
+    }
+
+    /* Confetti Animation */
+    .confetti {
+        position: fixed;
+        width: 12px;
+        height: 12px;
+        background: var(--accent);
+        top: -10px;
+        z-index: 9999;
+        opacity: 0;
+        pointer-events: none;
+    }
+
     /* Watermark */
     .receipt-watermark {
         position: absolute;
@@ -1421,7 +1818,9 @@
             padding: 20px !important;
         }
         
-        .receipt-actions {
+        .receipt-actions,
+        .floating-actions,
+        .receipt-close-btn {
             display: none !important;
         }
         
@@ -1456,6 +1855,57 @@
             width: 100%;
             justify-content: center;
         }
+        
+        .floating-actions {
+            bottom: 80px;
+            right: 15px;
+        }
+        
+        .floating-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.1rem;
+        }
+        
+        .timeline-progress {
+            flex-direction: column;
+            gap: 25px;
+            padding: 30px 0;
+        }
+        
+        .timeline-progress::before {
+            top: 0;
+            left: 50%;
+            right: auto;
+            width: 4px;
+            height: calc(100% - 100px);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            text-align: left;
+            gap: 20px;
+        }
+        
+        .step-circle {
+            margin: 0;
+            flex-shrink: 0;
+        }
+        
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            font-size: 2rem;
+        }
+        
+        .floating-btn-label {
+            right: 65px;
+            font-size: 0.85rem;
+            padding: 8px 15px;
+        }
     }
 
     @media (max-width: 480px) {
@@ -1482,6 +1932,27 @@
         
         .receipt-watermark {
             font-size: 60px;
+        }
+        
+        .floating-actions {
+            bottom: 70px;
+            right: 10px;
+        }
+        
+        .floating-btn {
+            width: 45px;
+            height: 45px;
+            font-size: 1rem;
+        }
+        
+        .timeline-step {
+            gap: 15px;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            font-size: 1rem;
         }
     }
 
@@ -1944,6 +2415,12 @@
             <!-- Success Message with Beautiful Receipt -->
             <div class="receipt-container" id="successMessage" style="display: none;">
               <div class="receipt-watermark">NOORUSSALAM MADRASA</div>
+              <div class="receipt-glow"></div>
+              
+              <!-- Close Button -->
+              <button class="receipt-close-btn" onclick="closeReceipt()">
+                <i class="fas fa-times"></i>
+              </button>
               
               <!-- Receipt Header -->
               <div class="receipt-header">
@@ -1951,21 +2428,56 @@
                   <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo">
                 </div>
                 <h1 class="receipt-title">ADMISSION APPLICATION RECEIPT</h1>
-                <p class="receipt-subtitle">Official Confirmation • Academic Year 2024-25</p>
+                <p class="receipt-subtitle">Official Confirmation • Academic Year 2026-27</p>
+                <div class="receipt-badge">
+                  <i class="fas fa-check-circle"></i>
+                  SUBMITTED SUCCESSFULLY
+                </div>
               </div>
               
               <!-- Reference Section -->
               <div class="reference-section">
-                <div class="reference-id" id="referenceIdDisplay">REF: NSM-2024-001234</div>
-                <div class="reference-date">
-                  <i class="far fa-calendar-alt"></i>
-                  <span id="receiptDate">25 January 2024</span>
-                  <i class="far fa-clock"></i>
-                  <span id="receiptTime">14:30:45 IST</span>
+                <div class="reference-id-container">
+                  <h4 style="color: rgba(255, 255, 255, 0.9); margin-bottom: 15px;">
+                    <i class="fas fa-hashtag me-2"></i>
+                    REFERENCE ID
+                  </h4>
+                  
+                  <div class="reference-id" id="referenceIdDisplay">REF: NSM-2024-001234</div>
+                  
+                  <div class="reference-date">
+                    <i class="far fa-calendar-alt me-1"></i>
+                    <span id="receiptDate">25 January 2024</span>
+                    <i class="far fa-clock ms-3 me-1"></i>
+                    <span id="receiptTime">14:30:45 IST</span>
+                  </div>
+                  
+                  <button class="copy-reference-btn" onclick="copyReferenceId()">
+                    <i class="far fa-copy"></i>
+                    Copy Reference ID
+                  </button>
                 </div>
-                <div class="reference-status">
-                  <i class="fas fa-check-circle"></i>
-                  SUBMITTED SUCCESSFULLY
+              </div>
+              
+              <!-- Timeline Progress -->
+              <div class="timeline-progress">
+                <div class="timeline-step completed">
+                  <div class="step-circle">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div class="step-label">Submitted</div>
+                </div>
+                <div class="timeline-step active">
+                  <div class="step-circle">2</div>
+                  <div class="step-label">Under Review</div>
+                </div>
+                <div class="timeline-step">
+                  <div class="step-circle">3</div>
+                  <div class="step-label">Approval</div>
+                </div>
+                <div class="timeline-step">
+                  <div class="step-circle">4</div>
+                  <div class="step-label">Completed</div>
                 </div>
               </div>
               
@@ -2042,7 +2554,7 @@
                 </div>
                 <div class="detail-row">
                   <div class="info-label">Academic Year</div>
-                  <div class="info-value">2024-25</div>
+                  <div class="info-value">2026-27</div>
                 </div>
                 <div class="detail-row">
                   <div class="info-label">Submission Date</div>
@@ -2058,6 +2570,24 @@
                   <div class="info-label">Expected Processing</div>
                   <div class="info-value">2-3 working days</div>
                 </div>
+              </div>
+              
+              <!-- QR Code Section -->
+              <div class="qr-code-section">
+                <h3 class="receipt-card-title">
+                  <i class="fas fa-qrcode"></i>
+                  QUICK ACCESS
+                </h3>
+                <div class="qr-placeholder">
+                  <i class="fas fa-qrcode"></i>
+                </div>
+                <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
+                  Scan to save this receipt or track application status
+                </p>
+                <button class="copy-reference-btn" style="background: var(--accent); border: none; color: white;" onclick="shareReceipt()">
+                  <i class="fas fa-external-link-alt"></i>
+                  Share Application Status
+                </button>
               </div>
               
               <!-- Important Instructions -->
@@ -2613,6 +3143,29 @@
   </div>
 </div>
 
+<!-- Floating Action Buttons -->
+<div class="floating-actions" id="floatingActions">
+    <button class="floating-btn" onclick="downloadReceiptPDF()" title="Download PDF">
+        <i class="fas fa-download"></i>
+        <span class="floating-btn-label">Download PDF</span>
+    </button>
+    <button class="floating-btn" onclick="window.print()" title="Print Receipt">
+        <i class="fas fa-print"></i>
+        <span class="floating-btn-label">Print</span>
+    </button>
+    <button class="floating-btn" onclick="shareReceipt()" title="Share">
+        <i class="fas fa-share-alt"></i>
+        <span class="floating-btn-label">Share</span>
+    </button>
+    <button class="floating-btn" onclick="scrollToTop()" title="Scroll to Top">
+        <i class="fas fa-arrow-up"></i>
+        <span class="floating-btn-label">Top</span>
+    </button>
+</div>
+
+<!-- Progress Bar for PDF Generation -->
+<div class="pdf-progress-bar" id="pdfProgressBar"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
@@ -2688,29 +3241,214 @@
         document.body.style.overflow = '';
       });
     }
+    
+    // Initialize floating actions
+    hideFloatingActions();
   });
 
   // ===========================================
-  // FORM SUBMISSION FUNCTIONALITY
+  // ENHANCED RECEIPT FUNCTIONALITY
   // ===========================================
 
-  // Form elements
-  const admissionForm = document.getElementById('admissionForm');
-  const submitBtn = document.getElementById('submitBtn');
-  const buttonText = document.getElementById('buttonText');
-  const loadingSpinner = document.getElementById('loadingSpinner');
-  const successMessage = document.getElementById('successMessage');
-  const resetBtn = document.getElementById('resetBtn');
+  // Show floating actions when receipt is visible
+  function showFloatingActions() {
+    const floatingActions = document.getElementById('floatingActions');
+    if (floatingActions) {
+      floatingActions.style.display = 'flex';
+      setTimeout(() => {
+        floatingActions.style.opacity = '1';
+        floatingActions.style.transform = 'translateY(0)';
+      }, 100);
+    }
+  }
 
-  // Initialize toast
-  const toastEl = document.getElementById('toastNotification');
-  const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+  // Hide floating actions
+  function hideFloatingActions() {
+    const floatingActions = document.getElementById('floatingActions');
+    if (floatingActions) {
+      floatingActions.style.opacity = '0';
+      floatingActions.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        floatingActions.style.display = 'none';
+      }, 300);
+    }
+  }
 
-  // Generate unique reference ID
-  function generateReferenceId() {
-    const timestamp = Date.now().toString();
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    return 'NSM-' + timestamp.slice(-6) + '-' + randomNum;
+  // Create confetti effect
+  function createConfetti() {
+    const colors = ['var(--accent)', 'var(--light-blue)', '#22c55e', '#f59e0b', '#8b5cf6'];
+    const confettiCount = 150;
+    
+    for (let i = 0; i < confettiCount; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.width = Math.random() * 12 + 5 + 'px';
+      confetti.style.height = Math.random() * 12 + 5 + 'px';
+      confetti.style.opacity = Math.random() * 0.5 + 0.5;
+      confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      
+      document.body.appendChild(confetti);
+      
+      const animation = confetti.animate([
+        {
+          transform: `translateY(0) rotate(0deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 720 - 360}deg)`,
+          opacity: 0
+        }
+      ], {
+        duration: Math.random() * 3000 + 2000,
+        easing: 'cubic-bezier(0.215, 0.610, 0.355, 1)'
+      });
+      
+      animation.onfinish = () => {
+        confetti.remove();
+      };
+    }
+  }
+
+  // Copy reference ID to clipboard
+  function copyReferenceId() {
+    const refId = document.getElementById('referenceIdDisplay').textContent.replace('REF: ', '');
+    const button = event.currentTarget;
+    
+    navigator.clipboard.writeText(refId).then(() => {
+      // Change button appearance
+      const originalHTML = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      button.classList.add('copied');
+      
+      // Show toast notification
+      showToast('Reference ID copied to clipboard!');
+      
+      // Create mini confetti
+      createMiniConfetti(button);
+      
+      // Revert button after 2 seconds
+      setTimeout(() => {
+        button.innerHTML = originalHTML;
+        button.classList.remove('copied');
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      showToast('Failed to copy. Please try again.', 'error');
+    });
+  }
+
+  // Mini confetti for button feedback
+  function createMiniConfetti(element) {
+    const rect = element.getBoundingClientRect();
+    const colors = ['var(--accent)', '#22c55e', '#f59e0b'];
+    
+    for (let i = 0; i < 15; i++) {
+      const confetti = document.createElement('div');
+      confetti.className = 'confetti';
+      confetti.style.left = rect.left + rect.width / 2 + 'px';
+      confetti.style.top = rect.top + rect.height / 2 + 'px';
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.width = '6px';
+      confetti.style.height = '6px';
+      confetti.style.opacity = '0.8';
+      
+      document.body.appendChild(confetti);
+      
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 50 + Math.random() * 50;
+      const x = Math.cos(angle) * distance;
+      const y = Math.sin(angle) * distance;
+      
+      const animation = confetti.animate([
+        {
+          transform: `translate(0, 0) rotate(0deg)`,
+          opacity: 1
+        },
+        {
+          transform: `translate(${x}px, ${y}px) rotate(${Math.random() * 360}deg)`,
+          opacity: 0
+        }
+      ], {
+        duration: 1000,
+        easing: 'cubic-bezier(0.215, 0.610, 0.355, 1)'
+      });
+      
+      animation.onfinish = () => {
+        confetti.remove();
+      };
+    }
+  }
+
+  // Share receipt functionality
+  function shareReceipt() {
+    const refId = document.getElementById('referenceIdDisplay').textContent;
+    const studentName = document.getElementById('receiptStudentName').textContent;
+    const currentUrl = window.location.href.split('#')[0];
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Noorussalam Madrasa - Admission Application',
+        text: `Admission application receipt for ${studentName}. Reference: ${refId}`,
+        url: currentUrl
+      }).then(() => {
+        showToast('Receipt shared successfully!');
+      }).catch(err => {
+        console.error('Share failed:', err);
+        // Fallback to copy if share fails
+        copyShareableText(refId, studentName, currentUrl);
+      });
+    } else {
+      // Fallback: copy shareable text
+      copyShareableText(refId, studentName, currentUrl);
+    }
+  }
+
+  function copyShareableText(refId, studentName, url) {
+    const shareText = `Noorussalam Madrasa Admission Receipt\n\n` +
+                     `Student: ${studentName}\n` +
+                     `Reference ID: ${refId}\n` +
+                     `Status: Submitted for Review\n` +
+                     `Date: ${new Date().toLocaleDateString('en-IN')}\n\n` +
+                     `For more details, contact: +91 70346 78818`;
+    
+    navigator.clipboard.writeText(shareText).then(() => {
+      showToast('Receipt information copied to clipboard!');
+    }).catch(err => {
+      showToast('Please manually copy the reference ID.', 'error');
+    });
+  }
+
+  // Enhanced toast notification
+  function showToast(message, type = 'success') {
+    const toastEl = document.getElementById('toastNotification');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    // Set message
+    toastMessage.textContent = message;
+    
+    // Set color based on type
+    const toastHeader = toastEl.querySelector('.toast-header');
+    if (type === 'success') {
+      toastHeader.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+    } else if (type === 'error') {
+      toastHeader.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    } else {
+      toastHeader.style.background = 'linear-gradient(135deg, var(--accent), var(--light-blue))';
+    }
+    
+    // Show toast
+    const toast = bootstrap.Toast.getOrCreateInstance(toastEl);
+    toast.show();
+  }
+
+  // Add card index for staggered animations
+  function addCardAnimations() {
+    const receiptCards = document.querySelectorAll('.receipt-card');
+    receiptCards.forEach((card, index) => {
+      card.style.setProperty('--card-index', index);
+    });
   }
 
   // Format date for display
@@ -2742,26 +3480,7 @@
     });
   }
 
-  // Validate email
-  function validateEmail(email) {
-    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(String(email).toLowerCase());
-  }
-
-  // Validate phone number
-  function validatePhone(phone) {
-    const re = /^[0-9]{10}$/;
-    return re.test(phone);
-  }
-
-  // Validate Aadhar number
-  function validateAadhar(aadhar) {
-    if (!aadhar) return true; // Optional field
-    const re = /^[0-9]{12}$/;
-    return re.test(aadhar);
-  }
-
-  // Populate receipt with form data
+  // Enhanced populate receipt function
   function populateReceipt(data, reference) {
     const now = new Date();
     
@@ -2785,6 +3504,231 @@
     // Set current date and time
     document.getElementById('receiptDate').textContent = formatDateFull(now);
     document.getElementById('receiptTime').textContent = formatTime(now) + ' IST';
+    
+    // Add animations
+    addCardAnimations();
+    
+    // Show floating actions after delay
+    setTimeout(showFloatingActions, 1000);
+    
+    // Create confetti effect
+    setTimeout(createConfetti, 500);
+    
+    // Scroll to receipt with smooth animation
+    setTimeout(() => {
+      document.getElementById('successMessage').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'center'
+      });
+    }, 300);
+  }
+
+  // Close receipt and hide floating actions
+  function closeReceipt() {
+    const successMessage = document.getElementById('successMessage');
+    successMessage.style.animation = 'receiptSlideUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) reverse forwards';
+    
+    setTimeout(() => {
+      successMessage.style.display = 'none';
+      successMessage.style.animation = '';
+      hideFloatingActions();
+      
+      // Reset form button
+      const buttonText = document.getElementById('buttonText');
+      const submitBtn = document.getElementById('submitBtn');
+      buttonText.innerHTML = '<i class="fas fa-paper-plane me-2"></i> Submit Application';
+      submitBtn.style.background = '';
+      submitBtn.disabled = false;
+    }, 800);
+  }
+
+  // Enhanced PDF download with progress indicator
+  async function downloadReceiptPDF() {
+    try {
+      const downloadBtn = document.querySelector('.download-btn');
+      const floatingBtn = document.querySelector('.floating-btn');
+      const progressBar = document.getElementById('pdfProgressBar');
+      
+      // Show loading state
+      if (downloadBtn) {
+        const originalHTML = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING...';
+        downloadBtn.disabled = true;
+        setTimeout(() => {
+          downloadBtn.innerHTML = originalHTML;
+          downloadBtn.disabled = false;
+        }, 3000);
+      }
+      
+      if (floatingBtn) {
+        floatingBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        floatingBtn.disabled = true;
+        setTimeout(() => {
+          floatingBtn.innerHTML = '<i class="fas fa-download"></i>';
+          floatingBtn.disabled = false;
+        }, 3000);
+      }
+      
+      // Show progress bar
+      progressBar.style.opacity = '1';
+      progressBar.style.width = '30%';
+      
+      // Generate PDF
+      const receiptElement = document.querySelector('.receipt-container');
+      const canvas = await html2canvas(receiptElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        allowTaint: true,
+        onclone: function(clonedDoc) {
+          // Hide floating elements in PDF
+          const floatingActions = clonedDoc.querySelector('.floating-actions');
+          if (floatingActions) floatingActions.style.display = 'none';
+          
+          const closeBtn = clonedDoc.querySelector('.receipt-close-btn');
+          if (closeBtn) closeBtn.style.display = 'none';
+        }
+      });
+      
+      progressBar.style.width = '70%';
+      
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = 210;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Add background color
+      pdf.setFillColor(248, 250, 252);
+      pdf.rect(0, 0, pdfWidth, pdfHeight, 'F');
+      
+      // Add image to PDF
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Add footer text
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('This is a computer generated receipt. No physical signature required.', 
+               pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+      pdf.text('Noorussalam Madrasa, Kambippalam • SKIMVB Reg No: 6110', 
+               pdfWidth / 2, pdfHeight - 5, { align: 'center' });
+      
+      // Complete progress
+      progressBar.style.width = '100%';
+      
+      // Generate filename
+      const refId = document.getElementById('referenceIdDisplay').textContent.replace('REF: ', '');
+      const studentName = document.getElementById('receiptStudentName').textContent;
+      const filename = `NSM-Admission-${studentName.replace(/\s+/g, '-')}-${refId}.pdf`;
+      
+      // Save PDF
+      setTimeout(() => {
+        pdf.save(filename);
+        
+        // Hide progress bar
+        setTimeout(() => {
+          progressBar.style.opacity = '0';
+          progressBar.style.width = '0%';
+        }, 500);
+      }, 500);
+      
+      // Show success toast
+      showToast('PDF downloaded successfully!');
+      
+      // Log download event
+      console.log(`PDF downloaded: ${filename}`);
+      
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      
+      // Hide progress bar
+      const progressBar = document.getElementById('pdfProgressBar');
+      progressBar.style.opacity = '0';
+      progressBar.style.width = '0%';
+      
+      // Restore buttons
+      const downloadBtn = document.querySelector('.download-btn');
+      const floatingBtn = document.querySelector('.floating-btn');
+      
+      if (downloadBtn) {
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i> DOWNLOAD AS PDF';
+        downloadBtn.disabled = false;
+      }
+      if (floatingBtn) {
+        floatingBtn.innerHTML = '<i class="fas fa-download"></i>';
+        floatingBtn.disabled = false;
+      }
+      
+      // Show error toast
+      showToast('Failed to generate PDF. Please try again.', 'error');
+    }
+  }
+
+  // Scroll to top function
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  // Hide floating actions when scrolling
+  let scrollTimeout;
+  window.addEventListener('scroll', function() {
+    hideFloatingActions();
+    
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+      if (document.getElementById('successMessage').style.display === 'block') {
+        showFloatingActions();
+      }
+    }, 500);
+  });
+
+  // ===========================================
+  // FORM SUBMISSION FUNCTIONALITY
+  // ===========================================
+
+  // Form elements
+  const admissionForm = document.getElementById('admissionForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const buttonText = document.getElementById('buttonText');
+  const loadingSpinner = document.getElementById('loadingSpinner');
+  const successMessage = document.getElementById('successMessage');
+  const resetBtn = document.getElementById('resetBtn');
+
+  // Initialize toast
+  const toastEl = document.getElementById('toastNotification');
+  const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+
+  // Generate unique reference ID
+  function generateReferenceId() {
+    const timestamp = Date.now().toString();
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    return 'NSM-' + timestamp.slice(-6) + '-' + randomNum;
+  }
+
+  // Validate email
+  function validateEmail(email) {
+    const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+
+  // Validate phone number
+  function validatePhone(phone) {
+    const re = /^[0-9]{10}$/;
+    return re.test(phone);
+  }
+
+  // Validate Aadhar number
+  function validateAadhar(aadhar) {
+    if (!aadhar) return true; // Optional field
+    const re = /^[0-9]{12}$/;
+    return re.test(aadhar);
   }
 
   // Form submission
@@ -2981,74 +3925,6 @@
       alert('Form submitted locally. Reference ID: ' + reference + '\n\nPlease note this ID and contact the madrasa office for confirmation.');
     }
   });
-  
-  // Download PDF function
-  async function downloadReceiptPDF() {
-    try {
-      const receiptElement = document.querySelector('.receipt-container');
-      
-      // Show loading state on button
-      const downloadBtn = document.querySelector('.download-btn');
-      const originalText = downloadBtn.innerHTML;
-      downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GENERATING PDF...';
-      downloadBtn.disabled = true;
-      
-      // Use html2canvas to capture the receipt
-      const canvas = await html2canvas(receiptElement, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        allowTaint: true
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-      
-      // Initialize jsPDF
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      // Calculate dimensions
-      const imgWidth = 210; // A4 width in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Add image to PDF
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      
-      // Generate filename
-      const refId = document.getElementById('referenceIdDisplay').textContent.replace('REF: ', '');
-      const filename = `NSM-Admission-Receipt-${refId}.pdf`;
-      
-      // Save the PDF
-      pdf.save(filename);
-      
-      // Restore button
-      downloadBtn.innerHTML = originalText;
-      downloadBtn.disabled = false;
-      
-      // Show success toast
-      document.getElementById('toastMessage').textContent = 'PDF downloaded successfully!';
-      toast.show();
-      
-      // Log download event
-      console.log(`PDF downloaded: ${filename}`);
-      
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      
-      // Restore button
-      const downloadBtn = document.querySelector('.download-btn');
-      downloadBtn.innerHTML = '<i class="fas fa-download"></i> DOWNLOAD AS PDF';
-      downloadBtn.disabled = false;
-      
-      // Show error toast
-      document.getElementById('toastMessage').textContent = 'Failed to generate PDF. Please try again.';
-      toast.show();
-    }
-  }
   
   // Send email notification (simulated)
   function sendEmailNotification(data, reference) {
