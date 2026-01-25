@@ -795,6 +795,94 @@
       }
     }
 
+    /* ===== FORM TABS NAVIGATION ===== */
+    .forms-tabs-container {
+      max-width: 800px;
+      margin: 0 auto 40px;
+    }
+
+    .form-tabs-nav {
+      display: flex;
+      background: white;
+      border-radius: 15px;
+      padding: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      border: 1px solid rgba(58, 141, 243, 0.1);
+    }
+
+    .form-tab-btn {
+      flex: 1;
+      padding: 20px 15px;
+      border: none;
+      background: transparent;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .form-tab-btn i {
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-tab-btn:hover {
+      background: rgba(58, 141, 243, 0.1);
+      transform: translateY(-3px);
+    }
+
+    .form-tab-btn.active {
+      background: linear-gradient(135deg, var(--accent), var(--light-blue));
+      color: white;
+      box-shadow: 0 10px 25px rgba(58, 141, 243, 0.3);
+    }
+
+    .form-tab-btn.active i {
+      transform: scale(1.2);
+    }
+
+    .form-tab-btn.active::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 2px;
+    }
+
+    .form-tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .form-tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     /* Main Container */
     .forms-container {
       position: relative;
@@ -1568,7 +1656,8 @@
         
         .navbar, .forms-hero, .sidebar-card, .modern-footer,
         .whatsapp-float, .receipt-close-btn, .receipt-actions,
-        .copy-reference-btn, .timeline-progress::before {
+        .copy-reference-btn, .timeline-progress::before,
+        .form-tabs-nav {
             display: none !important;
         }
         
@@ -1794,11 +1883,6 @@
     .applications-list.active {
       display: block;
       animation: fadeIn 0.5s ease;
-    }
-    
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     
     .applications-title {
@@ -2235,6 +2319,15 @@
       .submit-btn, .reset-btn {
         width: 100%;
       }
+      
+      .form-tabs-nav {
+        flex-direction: column;
+      }
+      
+      .form-tab-btn {
+        padding: 15px;
+        margin-bottom: 5px;
+      }
     }
 
     @media (max-width: 768px) {
@@ -2258,6 +2351,15 @@
         position: static;
         margin-top: 30px;
       }
+      
+      .access-title {
+        font-size: 1.5rem;
+      }
+      
+      .form-tab-btn {
+        font-size: 1rem;
+        padding: 12px;
+      }
     }
 
     @media (max-width: 576px) {
@@ -2276,6 +2378,17 @@
       
       .form-control, .form-select {
         padding: 12px 14px;
+      }
+      
+      .form-tab-btn {
+        font-size: 0.9rem;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+      }
+      
+      .form-tab-btn i {
+        font-size: 1.1rem;
       }
     }
   </style>
@@ -2526,602 +2639,621 @@
   <!-- Main Content -->
   <main class="forms-container">
     <div class="container">
+      <!-- Form Tabs Navigation -->
+      <div class="forms-tabs-container">
+        <div class="form-tabs-nav">
+          <button class="form-tab-btn active" id="admissionTabBtn" data-tab="admissionTab">
+            <i class="fas fa-user-graduate"></i>
+            <span>Admission Application</span>
+          </button>
+          <button class="form-tab-btn" id="phoneAccessTabBtn" data-tab="phoneAccessTab">
+            <i class="fas fa-mobile-alt"></i>
+            <span>Access Your Application by Phone</span>
+          </button>
+        </div>
+      </div>
+      
       <div class="row">
         <!-- Main Form Column -->
         <div class="col-lg-8">
           
-          <!-- =========================================== -->
-          <!-- PHONE NUMBER ACCESS FEATURE - NO OTP REQUIRED -->
-          <!-- =========================================== -->
-          <div class="access-feature" id="phoneAccessFeature">
-            <div class="access-header">
-              <h2 class="access-title">
-                <i class="fas fa-mobile-alt" style="color: var(--accent);"></i>
-                Access Your Application by Phone Number
-              </h2>
-              <p class="access-description">
-                Enter your phone number to view, track, and manage your submitted applications.
-                No verification code required - direct access for your convenience.
-              </p>
-            </div>
+          <!-- Admission Application Tab -->
+          <div class="form-tab-content active" id="admissionTab">
+            <div class="form-card" id="admission">
+              <div class="form-header">
+                <h2 class="form-title">
+                  <i class="fas fa-user-graduate" style="color: var(--accent);"></i>
+                  Admission Application
+                </h2>
+                <p class="form-description">
+                  Apply for admission for year 2026-27. 
+                  Please fill all required fields accurately. You'll receive a confirmation 
+                  and reference number upon successful submission.
+                </p>
+              </div>
 
-            <!-- Quick Stats -->
-            <div class="quick-stats" id="appStats">
-              <div class="stat-card">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Total Applications</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Under Review</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Approved</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Pending</div>
-              </div>
-            </div>
-
-            <!-- Phone Access Form -->
-            <div class="phone-access-form">
-              <div class="form-group">
-                <label class="form-label required bilingual-label">
-                  <i class="fas fa-phone me-1"></i>
-                  <span class="english-text">Phone Number</span>
-                  <span class="malayalam-text">ഫോൺ നമ്പർ</span>
-                </label>
-                <div class="phone-input-group">
-                  <div class="country-code">
-                    <img src="https://flagcdn.com/w20/in.png" alt="India Flag">
-                    <span>+91</span>
+              <!-- Success Message with A4 Sized Receipt -->
+              <div class="receipt-container" id="successMessage" style="display: none;">
+                <div class="receipt-watermark">NOORUSSALAM MADRASA</div>
+                
+                <!-- Close Button -->
+                <button class="receipt-close-btn" onclick="closeReceipt()">
+                  <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="receipt-content">
+                  <!-- Receipt Header -->
+                  <div class="receipt-header">
+                    <div class="receipt-logo">
+                      <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo">
+                    </div>
+                    <h1 class="receipt-title">ADMISSION APPLICATION RECEIPT</h1>
+                    <p class="receipt-subtitle">Official Confirmation • Academic Year 2026-27</p>
+                    <div class="receipt-badge">
+                      <i class="fas fa-check-circle"></i>
+                      SUBMITTED SUCCESSFULLY
+                    </div>
                   </div>
-                  <input type="tel" 
-                         class="form-control" 
-                         id="accessPhone"
-                         placeholder="Enter 10-digit mobile number / 10 അക്ക മൊബൈൽ നമ്പർ" 
-                         required
-                         pattern="[0-9]{10}"
-                         maxlength="10">
-                </div>
-                <div class="phone-hint">
-                  <i class="fas fa-info-circle"></i>
-                  Enter the phone number used in your application
+                  
+                  <!-- Reference Section -->
+                  <div class="reference-section">
+                    <div class="reference-id" id="referenceIdDisplay">REF: NSM-2024-001234</div>
+                    <div class="reference-date">
+                      <i class="far fa-calendar-alt"></i>
+                      <span id="receiptDate">25 January 2024</span>
+                      <i class="far fa-clock"></i>
+                      <span id="receiptTime">14:30:45 IST</span>
+                    </div>
+                    <button class="copy-reference-btn" onclick="copyReferenceId()">
+                      <i class="far fa-copy"></i>
+                      Copy Reference ID
+                    </button>
+                  </div>
+                  
+                  <!-- Timeline Progress -->
+                  <div class="timeline-progress">
+                    <div class="timeline-step completed">
+                      <div class="step-circle">
+                        <i class="fas fa-check"></i>
+                      </div>
+                      <div class="step-label">Submitted</div>
+                    </div>
+                    <div class="timeline-step active">
+                      <div class="step-circle">2</div>
+                      <div class="step-label">Under Review</div>
+                    </div>
+                    <div class="timeline-step">
+                      <div class="step-circle">3</div>
+                      <div class="step-label">Approval</div>
+                    </div>
+                    <div class="timeline-step">
+                      <div class="step-circle">4</div>
+                      <div class="step-label">Completed</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Student Information -->
+                  <div class="receipt-grid">
+                    <div class="receipt-card">
+                      <h3 class="receipt-card-title">
+                        <i class="fas fa-user-graduate"></i>
+                        STUDENT INFORMATION
+                      </h3>
+                      <div class="info-row">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value" id="receiptStudentName">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Date of Birth</div>
+                        <div class="info-value" id="receiptDOB">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Gender</div>
+                        <div class="info-value" id="receiptGender">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Applying Class</div>
+                        <div class="info-value" id="receiptClass">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">House Name</div>
+                        <div class="info-value" id="receiptHouseName">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Aadhar Number</div>
+                        <div class="info-value" id="receiptAadhar">-</div>
+                      </div>
+                    </div>
+                    
+                    <div class="receipt-card">
+                      <h3 class="receipt-card-title">
+                        <i class="fas fa-users"></i>
+                        GUARDIAN INFORMATION
+                      </h3>
+                      <div class="info-row">
+                        <div class="info-label">Guardian Name</div>
+                        <div class="info-value" id="receiptGuardian">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Contact Number</div>
+                        <div class="info-value" id="receiptPhone">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Email Address</div>
+                        <div class="info-value" id="receiptEmail">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Address</div>
+                        <div class="info-value" id="receiptAddress">-</div>
+                      </div>
+                      <div class="info-row">
+                        <div class="info-label">Previous Madrasa</div>
+                        <div class="info-value" id="receiptPreviousMadrasa">-</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Application Details -->
+                  <div class="application-details">
+                    <h3 class="receipt-card-title">
+                      <i class="fas fa-file-contract"></i>
+                      APPLICATION DETAILS
+                    </h3>
+                    <div class="detail-row">
+                      <div class="info-label">Application Type</div>
+                      <div class="info-value">New Admission</div>
+                    </div>
+                    <div class="detail-row">
+                      <div class="info-label">Academic Year</div>
+                      <div class="info-value">2026-27</div>
+                    </div>
+                    <div class="detail-row">
+                      <div class="info-label">Submission Date</div>
+                      <div class="info-value" id="receiptSubmissionDate">-</div>
+                    </div>
+                    <div class="detail-row">
+                      <div class="info-label">Status</div>
+                      <div class="info-value">
+                        <span class="badge bg-success">Submitted for Review</span>
+                      </div>
+                    </div>
+                    <div class="detail-row">
+                      <div class="info-label">Expected Processing</div>
+                      <div class="info-value">2-3 working days</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Important Instructions -->
+                  <div class="instructions-box">
+                    <h3 class="receipt-card-title" style="border-color: #f59e0b;">
+                      <i class="fas fa-info-circle"></i>
+                      IMPORTANT INSTRUCTIONS
+                    </h3>
+                    <div class="instruction-item">
+                      <div class="instruction-icon">
+                        <i class="fas fa-calendar-check"></i>
+                      </div>
+                      <div>
+                        <h6 style="margin: 0 0 5px 0;">Save Your Reference ID</h6>
+                        <p style="margin: 0;">Please save the reference ID <strong id="referenceIdText">NSM-2024-001234</strong> for future correspondence and status tracking.</p>
+                      </div>
+                    </div>
+                    <div class="instruction-item">
+                      <div class="instruction-icon">
+                        <i class="fas fa-phone-alt"></i>
+                      </div>
+                      <div>
+                        <h6 style="margin: 0 0 5px 0;">Contact Information</h6>
+                        <p style="margin: 0;">For any queries, contact +91 70346 78818 or visit the madrasa office during working hours.</p>
+                      </div>
+                    </div>
+                    <div class="instruction-item">
+                      <div class="instruction-icon">
+                        <i class="fas fa-clock"></i>
+                      </div>
+                      <div>
+                        <h6 style="margin: 0 0 5px 0;">Processing Time</h6>
+                        <p style="margin: 0;">Your application will be processed within 2-3 working days. You'll be contacted for any additional information needed.</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Signature Section -->
+                  <div class="signature-section">
+                    <div class="signature-box">
+                      <div class="receipt-card-title">
+                        <i class="fas fa-user-check"></i>
+                        STUDENT/GUARDIAN
+                      </div>
+                      <div class="signature-line"></div>
+                      <div class="mt-2">
+                        <div id="receiptGuardianSignature">-</div>
+                        <small class="text-muted">Signature</small>
+                      </div>
+                    </div>
+                    
+                    <div class="signature-box">
+                      <div class="receipt-card-title">
+                        <i class="fas fa-user-tie"></i>
+                        ADMISSION IN-CHARGE
+                      </div>
+                      <div class="signature-line"></div>
+                      <div class="mt-2">
+                        <div>Muhammed Rafeeq</div>
+                        <small class="text-muted">Admission Officer</small>
+                      </div>
+                    </div>
+                    
+                    <div class="signature-box">
+                      <div class="receipt-card-title">
+                        <i class="fas fa-stamp"></i>
+                        MADRASA SEAL
+                      </div>
+                      <div class="signature-line"></div>
+                      <div class="mt-2">
+                        <div>Noorussalam Madrasa</div>
+                        <small class="text-muted">Official Stamp</small>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Download Actions -->
+                  <div class="receipt-actions">
+                    <button class="download-btn" onclick="downloadReceiptPDF()">
+                      <i class="fas fa-download"></i>
+                      DOWNLOAD AS PDF
+                    </button>
+                    <button class="print-btn" onclick="window.print()">
+                      <i class="fas fa-print"></i>
+                      PRINT RECEIPT
+                    </button>
+                  </div>
+                  
+                  <!-- Footer Note -->
+                  <div class="receipt-footer">
+                    <p class="mb-1">
+                      <i class="fas fa-info-circle me-1"></i>
+                      This is a computer generated receipt. No physical signature required.
+                    </p>
+                    <p class="mb-0">Noorussalam Madrasa, Kambippalam • SKIMVB Reg No: 6110</p>
+                  </div>
                 </div>
               </div>
-              
-              <div class="form-buttons">
-                <button type="button" class="submit-btn" id="accessBtn">
-                  <i class="fas fa-search me-2"></i>
-                  Access Applications
-                </button>
-                <button type="button" class="reset-btn" id="clearAccessBtn">
-                  <i class="fas fa-times me-2"></i>
-                  Clear
-                </button>
-              </div>
-            </div>
 
-            <!-- Applications List -->
-            <div class="applications-list" id="applicationsList">
-              <h3 class="applications-title">
-                <i class="fas fa-list-ul"></i>
-                Your Applications
-              </h3>
-              
-              <div class="applications-container" id="applicationsContainer">
-                <!-- Applications will be dynamically inserted here -->
-              </div>
+              <!-- Admission Form -->
+              <form id="admissionForm" novalidate>
+                <div class="row g-3">
+                  <!-- Student Information -->
+                  <div class="col-md-6 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-user me-1"></i>
+                      <span class="english-text">Full Name</span>
+                      <span class="malayalam-text">പൂർണ്ണമായ പേര്</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="full_name" 
+                           id="full_name"
+                           placeholder="Enter student's full name / വിദ്യാർത്ഥിയുടെ പൂർണ്ണമായ പേര് നൽകുക" 
+                           required>
+                    <div class="input-icon">
+                      <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="invalid-feedback">Please enter the student's full name.</div>
+                  </div>
+
+                  <div class="col-md-6 form-group">
+                    <label class="form-label bilingual-label">
+                      <i class="fas fa-home me-1"></i>
+                      <span class="english-text">House Name</span>
+                      <span class="malayalam-text">വീട്ടു പേര്</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="house_name" 
+                           id="house_name"
+                           placeholder="House name / വീട്ടുപേര്">
+                    <div class="input-icon">
+                      <i class="fas fa-house-user"></i>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-calendar-alt me-1"></i>
+                      <span class="english-text">Date of Birth</span>
+                      <span class="malayalam-text">ജനന തിയ്യതി</span>
+                    </label>
+                    <input type="date" 
+                           class="form-control" 
+                           name="dob" 
+                           id="dob"
+                           required>
+                    <div class="input-icon">
+                      <i class="fas fa-birthday-cake"></i>
+                    </div>
+                    <div class="invalid-feedback">Please select date of birth.</div>
+                  </div>
+
+                  <div class="col-md-4 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-venus-mars me-1"></i>
+                      <span class="english-text">Gender</span>
+                      <span class="malayalam-text">ലിംഗം</span>
+                    </label>
+                    <select class="form-select" name="gender" id="gender" required>
+                      <option value="" selected disabled>Choose gender... / ലിംഗം തിരഞ്ഞെടുക്കുക...</option>
+                      <option value="Male">Male / ആൺ</option>
+                      <option value="Female">Female / പെൺ</option>
+                    </select>
+                    <div class="input-icon">
+                      <i class="fas fa-user-tag"></i>
+                    </div>
+                    <div class="invalid-feedback">Please select gender.</div>
+                  </div>
+
+                  <div class="col-md-4 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-chalkboard-teacher me-1"></i>
+                      <span class="english-text">Applying Class</span>
+                      <span class="malayalam-text">അപേക്ഷിക്കുന്ന ക്ലാസ്</span>
+                    </label>
+                    <select class="form-select" name="class_level" id="class_level" required>
+                      <option value="" selected disabled>Select class / ക്ലാസ് തിരഞ്ഞെടുക്കുക...</option>
+                      <option value="1">Class 1</option>
+                      <option value="2">Class 2</option>
+                      <option value="3">Class 3</option>
+                      <option value="4">Class 4</option>
+                      <option value="5">Class 5</option>
+                      <option value="6">Class 6</option>
+                      <option value="7">Class 7</option>
+                      <option value="8">Class 8</option>
+                      <option value="9">Class 9</option>
+                      <option value="10">Class 10</option>
+                    </select>
+                    <div class="input-icon">
+                      <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="invalid-feedback">Please select the class you're applying for.</div>
+                  </div>
+
+                  <!-- Guardian Information -->
+                  <div class="col-md-6 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-users me-1"></i>
+                      <span class="english-text">Parent / Guardian Name</span>
+                      <span class="malayalam-text">രക്ഷിതാവിന്റെ പേര്</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="guardian_name" 
+                           id="guardian_name"
+                           placeholder="Full name of parent/guardian / രക്ഷിതാവിന്റെ പൂർണ്ണമായ പേര്" 
+                           required>
+                    <div class="input-icon">
+                      <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="invalid-feedback">Please enter guardian's name.</div>
+                  </div>
+
+                  <div class="col-md-6 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-phone me-1"></i>
+                      <span class="english-text">Contact Number</span>
+                      <span class="malayalam-text">ഫോൺ നമ്പർ</span>
+                    </label>
+                    <input type="tel" 
+                           class="form-control" 
+                           name="phone" 
+                           id="phone"
+                           placeholder="10-digit mobile number / 10 അക്ക മൊബൈൽ നമ്പർ" 
+                           required
+                           pattern="[0-9]{10}"
+                           maxlength="10">
+                    <div class="input-icon">
+                      <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="invalid-feedback">Please enter a valid 10-digit phone number.</div>
+                  </div>
+
+                  <div class="col-md-6 form-group">
+                    <label class="form-label bilingual-label">
+                      <i class="fas fa-envelope me-1"></i>
+                      <span class="english-text">Email Address</span>
+                      <span class="malayalam-text">ഇമെയിൽ വിലാസം</span>
+                    </label>
+                    <input type="email" 
+                           class="form-control" 
+                           name="email" 
+                           id="email"
+                           placeholder="Email address (optional) / ഇമെയിൽ വിലാസം (ഓപ്ഷണൽ)">
+                    <div class="input-icon">
+                      <i class="fas fa-at"></i>
+                    </div>
+                  </div>
+
+                  <div class="col-12 form-group">
+                    <label class="form-label required bilingual-label">
+                      <i class="fas fa-map-marker-alt me-1"></i>
+                      <span class="english-text">Complete Address</span>
+                      <span class="malayalam-text">മുഴുവൻ വിലാസം</span>
+                    </label>
+                    <textarea class="form-control" 
+                              name="address" 
+                              id="address"
+                              rows="3" 
+                              placeholder="Full postal address with PIN code / പിൻകോഡ് ഉൾപ്പെടെയുള്ള മുഴുവൻ തപാൽ വിലാസം" 
+                              required></textarea>
+                    <div class="input-icon">
+                      <i class="fas fa-map-pin"></i>
+                    </div>
+                    <div class="invalid-feedback">Please enter complete address.</div>
+                  </div>
+
+                  <!-- Aadhar Number -->
+                  <div class="col-md-6 form-group">
+                    <label class="form-label bilingual-label">
+                      <i class="fas fa-id-card me-1"></i>
+                      <span class="english-text">Aadhar Number</span>
+                      <span class="malayalam-text">ആധാർ നമ്പർ</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="aadhar_number" 
+                           id="aadhar_number"
+                           placeholder="12-digit Aadhar number / 12 അക്ക ആധാർ നമ്പർ"
+                           pattern="[0-9]{12}"
+                           maxlength="12">
+                    <div class="input-icon">
+                      <i class="fas fa-address-card"></i>
+                    </div>
+                    <div class="invalid-feedback">Please enter a valid 12-digit Aadhar number (optional).</div>
+                  </div>
+
+                  <div class="col-md-6 form-group">
+                    <label class="form-label bilingual-label">
+                      <i class="fas fa-school me-1"></i>
+                      <span class="english-text">Previous Madrasa</span>
+                      <span class="malayalam-text">മുമ്പ് പഠിച്ചിരുന്ന മദ്റസ (ഉണ്ടെങ്കിൽ)</span>
+                    </label>
+                    <input type="text" 
+                           class="form-control" 
+                           name="previous_madrasa" 
+                           id="previous_madrasa"
+                           placeholder="Name of previous madrasa (if any) / മുമ്പത്തെ മദ്രസയുടെ പേര് (ഉണ്ടെങ്കിൽ)">
+                    <div class="input-icon">
+                      <i class="fas fa-university"></i>
+                    </div>
+                  </div>
+
+                  <!-- Additional Information -->
+                  <div class="col-12 form-group">
+                    <label class="form-label bilingual-label">
+                      <i class="fas fa-sticky-note me-1"></i>
+                      <span class="english-text">Additional Information</span>
+                      <span class="malayalam-text">അധിക വിവരങ്ങൾ</span>
+                    </label>
+                    <textarea class="form-control" 
+                              name="additional_info" 
+                              id="additional_info"
+                              rows="2" 
+                              placeholder="Any other information / മറ്റേതെങ്കിലും വിവരങ്ങൾ"></textarea>
+                    <div class="input-icon">
+                      <i class="fas fa-info-circle"></i>
+                    </div>
+                  </div>
+
+                  <!-- Hidden Fields -->
+                  <input type="hidden" name="submission_date" id="submission_date">
+                  <input type="hidden" name="reference_id" id="reference_id">
+
+                  <!-- Submit Buttons -->
+                  <div class="col-12">
+                    <div class="form-buttons">
+                      <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        <span id="buttonText">Submit Application</span>
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                      </button>
+                      <button type="reset" class="reset-btn" id="resetBtn">
+                        <i class="fas fa-redo me-2"></i>
+                        Clear Form
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>
 
-          <!-- Admission Application Card -->
-          <div class="form-card" id="admission">
-            <div class="form-header">
-              <h2 class="form-title">
-                <i class="fas fa-user-graduate" style="color: var(--accent);"></i>
-                Admission Application
-              </h2>
-              <p class="form-description">
-                Apply for admission for year 2026-27. 
-                Please fill all required fields accurately. You'll receive a confirmation 
-                and reference number upon successful submission.
-              </p>
-            </div>
+          <!-- Phone Access Tab -->
+          <div class="form-tab-content" id="phoneAccessTab">
+            <!-- =========================================== -->
+            <!-- PHONE NUMBER ACCESS FEATURE - NO OTP REQUIRED -->
+            <!-- =========================================== -->
+            <div class="access-feature" id="phoneAccessFeature">
+              <div class="access-header">
+                <h2 class="access-title">
+                  <i class="fas fa-mobile-alt" style="color: var(--accent);"></i>
+                  Access Your Application by Phone Number
+                </h2>
+                <p class="access-description">
+                  Enter your phone number to view, track, and manage your submitted applications.
+                  No verification code required - direct access for your convenience.
+                </p>
+              </div>
 
-            <!-- Success Message with A4 Sized Receipt -->
-            <div class="receipt-container" id="successMessage" style="display: none;">
-              <div class="receipt-watermark">NOORUSSALAM MADRASA</div>
-              
-              <!-- Close Button -->
-              <button class="receipt-close-btn" onclick="closeReceipt()">
-                <i class="fas fa-times"></i>
-              </button>
-              
-              <div class="receipt-content">
-                <!-- Receipt Header -->
-                <div class="receipt-header">
-                  <div class="receipt-logo">
-                    <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo">
-                  </div>
-                  <h1 class="receipt-title">ADMISSION APPLICATION RECEIPT</h1>
-                  <p class="receipt-subtitle">Official Confirmation • Academic Year 2026-27</p>
-                  <div class="receipt-badge">
-                    <i class="fas fa-check-circle"></i>
-                    SUBMITTED SUCCESSFULLY
-                  </div>
+              <!-- Quick Stats -->
+              <div class="quick-stats" id="appStats">
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">Total Applications</div>
                 </div>
-                
-                <!-- Reference Section -->
-                <div class="reference-section">
-                  <div class="reference-id" id="referenceIdDisplay">REF: NSM-2024-001234</div>
-                  <div class="reference-date">
-                    <i class="far fa-calendar-alt"></i>
-                    <span id="receiptDate">25 January 2024</span>
-                    <i class="far fa-clock"></i>
-                    <span id="receiptTime">14:30:45 IST</span>
-                  </div>
-                  <button class="copy-reference-btn" onclick="copyReferenceId()">
-                    <i class="far fa-copy"></i>
-                    Copy Reference ID
-                  </button>
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">Under Review</div>
                 </div>
-                
-                <!-- Timeline Progress -->
-                <div class="timeline-progress">
-                  <div class="timeline-step completed">
-                    <div class="step-circle">
-                      <i class="fas fa-check"></i>
-                    </div>
-                    <div class="step-label">Submitted</div>
-                  </div>
-                  <div class="timeline-step active">
-                    <div class="step-circle">2</div>
-                    <div class="step-label">Under Review</div>
-                  </div>
-                  <div class="timeline-step">
-                    <div class="step-circle">3</div>
-                    <div class="step-label">Approval</div>
-                  </div>
-                  <div class="timeline-step">
-                    <div class="step-circle">4</div>
-                    <div class="step-label">Completed</div>
-                  </div>
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">Approved</div>
                 </div>
-                
-                <!-- Student Information -->
-                <div class="receipt-grid">
-                  <div class="receipt-card">
-                    <h3 class="receipt-card-title">
-                      <i class="fas fa-user-graduate"></i>
-                      STUDENT INFORMATION
-                    </h3>
-                    <div class="info-row">
-                      <div class="info-label">Full Name</div>
-                      <div class="info-value" id="receiptStudentName">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Date of Birth</div>
-                      <div class="info-value" id="receiptDOB">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Gender</div>
-                      <div class="info-value" id="receiptGender">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Applying Class</div>
-                      <div class="info-value" id="receiptClass">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">House Name</div>
-                      <div class="info-value" id="receiptHouseName">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Aadhar Number</div>
-                      <div class="info-value" id="receiptAadhar">-</div>
-                    </div>
-                  </div>
-                  
-                  <div class="receipt-card">
-                    <h3 class="receipt-card-title">
-                      <i class="fas fa-users"></i>
-                      GUARDIAN INFORMATION
-                    </h3>
-                    <div class="info-row">
-                      <div class="info-label">Guardian Name</div>
-                      <div class="info-value" id="receiptGuardian">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Contact Number</div>
-                      <div class="info-value" id="receiptPhone">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Email Address</div>
-                      <div class="info-value" id="receiptEmail">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Address</div>
-                      <div class="info-value" id="receiptAddress">-</div>
-                    </div>
-                    <div class="info-row">
-                      <div class="info-label">Previous Madrasa</div>
-                      <div class="info-value" id="receiptPreviousMadrasa">-</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Application Details -->
-                <div class="application-details">
-                  <h3 class="receipt-card-title">
-                    <i class="fas fa-file-contract"></i>
-                    APPLICATION DETAILS
-                  </h3>
-                  <div class="detail-row">
-                    <div class="info-label">Application Type</div>
-                    <div class="info-value">New Admission</div>
-                  </div>
-                  <div class="detail-row">
-                    <div class="info-label">Academic Year</div>
-                    <div class="info-value">2026-27</div>
-                  </div>
-                  <div class="detail-row">
-                    <div class="info-label">Submission Date</div>
-                    <div class="info-value" id="receiptSubmissionDate">-</div>
-                  </div>
-                  <div class="detail-row">
-                    <div class="info-label">Status</div>
-                    <div class="info-value">
-                      <span class="badge bg-success">Submitted for Review</span>
-                    </div>
-                  </div>
-                  <div class="detail-row">
-                    <div class="info-label">Expected Processing</div>
-                    <div class="info-value">2-3 working days</div>
-                  </div>
-                </div>
-                
-                <!-- Important Instructions -->
-                <div class="instructions-box">
-                  <h3 class="receipt-card-title" style="border-color: #f59e0b;">
-                    <i class="fas fa-info-circle"></i>
-                    IMPORTANT INSTRUCTIONS
-                  </h3>
-                  <div class="instruction-item">
-                    <div class="instruction-icon">
-                      <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div>
-                      <h6 style="margin: 0 0 5px 0;">Save Your Reference ID</h6>
-                      <p style="margin: 0;">Please save the reference ID <strong id="referenceIdText">NSM-2024-001234</strong> for future correspondence and status tracking.</p>
-                    </div>
-                  </div>
-                  <div class="instruction-item">
-                    <div class="instruction-icon">
-                      <i class="fas fa-phone-alt"></i>
-                    </div>
-                    <div>
-                      <h6 style="margin: 0 0 5px 0;">Contact Information</h6>
-                      <p style="margin: 0;">For any queries, contact +91 70346 78818 or visit the madrasa office during working hours.</p>
-                    </div>
-                  </div>
-                  <div class="instruction-item">
-                    <div class="instruction-icon">
-                      <i class="fas fa-clock"></i>
-                    </div>
-                    <div>
-                      <h6 style="margin: 0 0 5px 0;">Processing Time</h6>
-                      <p style="margin: 0;">Your application will be processed within 2-3 working days. You'll be contacted for any additional information needed.</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Signature Section -->
-                <div class="signature-section">
-                  <div class="signature-box">
-                    <div class="receipt-card-title">
-                      <i class="fas fa-user-check"></i>
-                      STUDENT/GUARDIAN
-                    </div>
-                    <div class="signature-line"></div>
-                    <div class="mt-2">
-                      <div id="receiptGuardianSignature">-</div>
-                      <small class="text-muted">Signature</small>
-                    </div>
-                  </div>
-                  
-                  <div class="signature-box">
-                    <div class="receipt-card-title">
-                      <i class="fas fa-user-tie"></i>
-                      ADMISSION IN-CHARGE
-                    </div>
-                    <div class="signature-line"></div>
-                    <div class="mt-2">
-                      <div>Muhammed Rafeeq</div>
-                      <small class="text-muted">Admission Officer</small>
-                    </div>
-                  </div>
-                  
-                  <div class="signature-box">
-                    <div class="receipt-card-title">
-                      <i class="fas fa-stamp"></i>
-                      MADRASA SEAL
-                    </div>
-                    <div class="signature-line"></div>
-                    <div class="mt-2">
-                      <div>Noorussalam Madrasa</div>
-                      <small class="text-muted">Official Stamp</small>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Download Actions -->
-                <div class="receipt-actions">
-                  <button class="download-btn" onclick="downloadReceiptPDF()">
-                    <i class="fas fa-download"></i>
-                    DOWNLOAD AS PDF
-                  </button>
-                  <button class="print-btn" onclick="window.print()">
-                    <i class="fas fa-print"></i>
-                    PRINT RECEIPT
-                  </button>
-                </div>
-                
-                <!-- Footer Note -->
-                <div class="receipt-footer">
-                  <p class="mb-1">
-                    <i class="fas fa-info-circle me-1"></i>
-                    This is a computer generated receipt. No physical signature required.
-                  </p>
-                  <p class="mb-0">Noorussalam Madrasa, Kambippalam • SKIMVB Reg No: 6110</p>
+                <div class="stat-card">
+                  <div class="stat-value">0</div>
+                  <div class="stat-label">Pending</div>
                 </div>
               </div>
-            </div>
 
-            <!-- Admission Form -->
-            <form id="admissionForm" novalidate>
-              <div class="row g-3">
-                <!-- Student Information -->
-                <div class="col-md-6 form-group">
-                  <label class="form-label required bilingual-label">
-                    <i class="fas fa-user me-1"></i>
-                    <span class="english-text">Full Name</span>
-                    <span class="malayalam-text">പൂർണ്ണമായ പേര്</span>
-                  </label>
-                  <input type="text" 
-                         class="form-control" 
-                         name="full_name" 
-                         id="full_name"
-                         placeholder="Enter student's full name / വിദ്യാർത്ഥിയുടെ പൂർണ്ണമായ പേര് നൽകുക" 
-                         required>
-                  <div class="input-icon">
-                    <i class="fas fa-user-check"></i>
-                  </div>
-                  <div class="invalid-feedback">Please enter the student's full name.</div>
-                </div>
-
-                <div class="col-md-6 form-group">
-                  <label class="form-label bilingual-label">
-                    <i class="fas fa-home me-1"></i>
-                    <span class="english-text">House Name</span>
-                    <span class="malayalam-text">വീട്ടു പേര്</span>
-                  </label>
-                  <input type="text" 
-                         class="form-control" 
-                         name="house_name" 
-                         id="house_name"
-                         placeholder="House name / വീട്ടുപേര്">
-                  <div class="input-icon">
-                    <i class="fas fa-house-user"></i>
-                  </div>
-                </div>
-
-                <div class="col-md-4 form-group">
-                  <label class="form-label required bilingual-label">
-                    <i class="fas fa-calendar-alt me-1"></i>
-                    <span class="english-text">Date of Birth</span>
-                    <span class="malayalam-text">ജനന തിയ്യതി</span>
-                  </label>
-                  <input type="date" 
-                         class="form-control" 
-                         name="dob" 
-                         id="dob"
-                         required>
-                  <div class="input-icon">
-                    <i class="fas fa-birthday-cake"></i>
-                  </div>
-                  <div class="invalid-feedback">Please select date of birth.</div>
-                </div>
-
-                <div class="col-md-4 form-group">
-                  <label class="form-label required bilingual-label">
-                    <i class="fas fa-venus-mars me-1"></i>
-                    <span class="english-text">Gender</span>
-                    <span class="malayalam-text">ലിംഗം</span>
-                  </label>
-                  <select class="form-select" name="gender" id="gender" required>
-                    <option value="" selected disabled>Choose gender... / ലിംഗം തിരഞ്ഞെടുക്കുക...</option>
-                    <option value="Male">Male / ആൺ</option>
-                    <option value="Female">Female / പെൺ</option>
-                  </select>
-                  <div class="input-icon">
-                    <i class="fas fa-user-tag"></i>
-                  </div>
-                  <div class="invalid-feedback">Please select gender.</div>
-                </div>
-
-                <div class="col-md-4 form-group">
-                  <label class="form-label required bilingual-label">
-                    <i class="fas fa-chalkboard-teacher me-1"></i>
-                    <span class="english-text">Applying Class</span>
-                    <span class="malayalam-text">അപേക്ഷിക്കുന്ന ക്ലാസ്</span>
-                  </label>
-                  <select class="form-select" name="class_level" id="class_level" required>
-                    <option value="" selected disabled>Select class / ക്ലാസ് തിരഞ്ഞെടുക്കുക...</option>
-                    <option value="1">Class 1</option>
-                    <option value="2">Class 2</option>
-                    <option value="3">Class 3</option>
-                    <option value="4">Class 4</option>
-                    <option value="5">Class 5</option>
-                    <option value="6">Class 6</option>
-                    <option value="7">Class 7</option>
-                    <option value="8">Class 8</option>
-                    <option value="9">Class 9</option>
-                    <option value="10">Class 10</option>
-                  </select>
-                  <div class="input-icon">
-                    <i class="fas fa-graduation-cap"></i>
-                  </div>
-                  <div class="invalid-feedback">Please select the class you're applying for.</div>
-                </div>
-
-                <!-- Guardian Information -->
-                <div class="col-md-6 form-group">
-                  <label class="form-label required bilingual-label">
-                    <i class="fas fa-users me-1"></i>
-                    <span class="english-text">Parent / Guardian Name</span>
-                    <span class="malayalam-text">രക്ഷിതാവിന്റെ പേര്</span>
-                  </label>
-                  <input type="text" 
-                         class="form-control" 
-                         name="guardian_name" 
-                         id="guardian_name"
-                         placeholder="Full name of parent/guardian / രക്ഷിതാവിന്റെ പൂർണ്ണമായ പേര്" 
-                         required>
-                  <div class="input-icon">
-                    <i class="fas fa-user-friends"></i>
-                  </div>
-                  <div class="invalid-feedback">Please enter guardian's name.</div>
-                </div>
-
-                <div class="col-md-6 form-group">
+              <!-- Phone Access Form -->
+              <div class="phone-access-form">
+                <div class="form-group">
                   <label class="form-label required bilingual-label">
                     <i class="fas fa-phone me-1"></i>
-                    <span class="english-text">Contact Number</span>
+                    <span class="english-text">Phone Number</span>
                     <span class="malayalam-text">ഫോൺ നമ്പർ</span>
                   </label>
-                  <input type="tel" 
-                         class="form-control" 
-                         name="phone" 
-                         id="phone"
-                         placeholder="10-digit mobile number / 10 അക്ക മൊബൈൽ നമ്പർ" 
-                         required
-                         pattern="[0-9]{10}"
-                         maxlength="10">
-                  <div class="input-icon">
-                    <i class="fas fa-mobile-alt"></i>
+                  <div class="phone-input-group">
+                    <div class="country-code">
+                      <img src="https://flagcdn.com/w20/in.png" alt="India Flag">
+                      <span>+91</span>
+                    </div>
+                    <input type="tel" 
+                           class="form-control" 
+                           id="accessPhone"
+                           placeholder="Enter 10-digit mobile number / 10 അക്ക മൊബൈൽ നമ്പർ" 
+                           required
+                           pattern="[0-9]{10}"
+                           maxlength="10">
                   </div>
-                  <div class="invalid-feedback">Please enter a valid 10-digit phone number.</div>
-                </div>
-
-                <div class="col-md-6 form-group">
-                  <label class="form-label bilingual-label">
-                    <i class="fas fa-envelope me-1"></i>
-                    <span class="english-text">Email Address</span>
-                    <span class="malayalam-text">ഇമെയിൽ വിലാസം</span>
-                  </label>
-                  <input type="email" 
-                         class="form-control" 
-                         name="email" 
-                         id="email"
-                         placeholder="Email address (optional) / ഇമെയിൽ വിലാസം (ഓപ്ഷണൽ)">
-                  <div class="input-icon">
-                    <i class="fas fa-at"></i>
-                  </div>
-                </div>
-
-                <div class="col-12 form-group">
-                  <label class="form-label required bilingual-label">
-                    <i class="fas fa-map-marker-alt me-1"></i>
-                    <span class="english-text">Complete Address</span>
-                    <span class="malayalam-text">മുഴുവൻ വിലാസം</span>
-                  </label>
-                  <textarea class="form-control" 
-                            name="address" 
-                            id="address"
-                            rows="3" 
-                            placeholder="Full postal address with PIN code / പിൻകോഡ് ഉൾപ്പെടെയുള്ള മുഴുവൻ തപാൽ വിലാസം" 
-                            required></textarea>
-                  <div class="input-icon">
-                    <i class="fas fa-map-pin"></i>
-                  </div>
-                  <div class="invalid-feedback">Please enter complete address.</div>
-                </div>
-
-                <!-- Aadhar Number -->
-                <div class="col-md-6 form-group">
-                  <label class="form-label bilingual-label">
-                    <i class="fas fa-id-card me-1"></i>
-                    <span class="english-text">Aadhar Number</span>
-                    <span class="malayalam-text">ആധാർ നമ്പർ</span>
-                  </label>
-                  <input type="text" 
-                         class="form-control" 
-                         name="aadhar_number" 
-                         id="aadhar_number"
-                         placeholder="12-digit Aadhar number / 12 അക്ക ആധാർ നമ്പർ"
-                         pattern="[0-9]{12}"
-                         maxlength="12">
-                  <div class="input-icon">
-                    <i class="fas fa-address-card"></i>
-                  </div>
-                  <div class="invalid-feedback">Please enter a valid 12-digit Aadhar number (optional).</div>
-                </div>
-
-                <div class="col-md-6 form-group">
-                  <label class="form-label bilingual-label">
-                    <i class="fas fa-school me-1"></i>
-                    <span class="english-text">Previous Madrasa</span>
-                    <span class="malayalam-text">മുമ്പ് പഠിച്ചിരുന്ന മദ്റസ (ഉണ്ടെങ്കിൽ)</span>
-                  </label>
-                  <input type="text" 
-                         class="form-control" 
-                         name="previous_madrasa" 
-                         id="previous_madrasa"
-                         placeholder="Name of previous madrasa (if any) / മുമ്പത്തെ മദ്രസയുടെ പേര് (ഉണ്ടെങ്കിൽ)">
-                  <div class="input-icon">
-                    <i class="fas fa-university"></i>
-                  </div>
-                </div>
-
-                <!-- Additional Information -->
-                <div class="col-12 form-group">
-                  <label class="form-label bilingual-label">
-                    <i class="fas fa-sticky-note me-1"></i>
-                    <span class="english-text">Additional Information</span>
-                    <span class="malayalam-text">അധിക വിവരങ്ങൾ</span>
-                  </label>
-                  <textarea class="form-control" 
-                            name="additional_info" 
-                            id="additional_info"
-                            rows="2" 
-                            placeholder="Any other information / മറ്റേതെങ്കിലും വിവരങ്ങൾ"></textarea>
-                  <div class="input-icon">
+                  <div class="phone-hint">
                     <i class="fas fa-info-circle"></i>
+                    Enter the phone number used in your application
                   </div>
                 </div>
-
-                <!-- Hidden Fields -->
-                <input type="hidden" name="submission_date" id="submission_date">
-                <input type="hidden" name="reference_id" id="reference_id">
-
-                <!-- Submit Buttons -->
-                <div class="col-12">
-                  <div class="form-buttons">
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                      <i class="fas fa-paper-plane me-2"></i>
-                      <span id="buttonText">Submit Application</span>
-                      <div class="loading-spinner" id="loadingSpinner"></div>
-                    </button>
-                    <button type="reset" class="reset-btn" id="resetBtn">
-                      <i class="fas fa-redo me-2"></i>
-                      Clear Form
-                    </button>
-                  </div>
+                
+                <div class="form-buttons">
+                  <button type="button" class="submit-btn" id="accessBtn">
+                    <i class="fas fa-search me-2"></i>
+                    Access Applications
+                  </button>
+                  <button type="button" class="reset-btn" id="clearAccessBtn">
+                    <i class="fas fa-times me-2"></i>
+                    Clear
+                  </button>
                 </div>
               </div>
-            </form>
+
+              <!-- Applications List -->
+              <div class="applications-list" id="applicationsList">
+                <h3 class="applications-title">
+                  <i class="fas fa-list-ul"></i>
+                  Your Applications
+                </h3>
+                
+                <div class="applications-container" id="applicationsContainer">
+                  <!-- Applications will be dynamically inserted here -->
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- More Forms (Placeholder for other form types) -->
@@ -3420,6 +3552,71 @@
   });
 
   // ===========================================
+  // TAB NAVIGATION FUNCTIONALITY
+  // ===========================================
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.form-tab-btn');
+    const tabContents = document.querySelectorAll('.form-tab-content');
+    
+    // Function to switch tabs
+    function switchTab(tabId) {
+      // Hide all tab contents
+      tabContents.forEach(content => {
+        content.classList.remove('active');
+      });
+      
+      // Remove active class from all buttons
+      tabButtons.forEach(button => {
+        button.classList.remove('active');
+      });
+      
+      // Show selected tab content
+      const selectedTab = document.getElementById(tabId);
+      if (selectedTab) {
+        selectedTab.classList.add('active');
+      }
+      
+      // Add active class to clicked button
+      const clickedButton = document.querySelector(`[data-tab="${tabId}"]`);
+      if (clickedButton) {
+        clickedButton.classList.add('active');
+      }
+      
+      // If switching to phone access tab, focus on phone input
+      if (tabId === 'phoneAccessTab') {
+        setTimeout(() => {
+          const phoneInput = document.getElementById('accessPhone');
+          if (phoneInput) {
+            phoneInput.focus();
+          }
+        }, 300);
+      }
+      
+      // Scroll to top of forms section
+      const formsContainer = document.querySelector('.forms-container');
+      if (formsContainer) {
+        formsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    
+    // Add click event listeners to tab buttons
+    tabButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const tabId = this.getAttribute('data-tab');
+        switchTab(tabId);
+      });
+    });
+    
+    // Check if URL has hash to open specific tab
+    if (window.location.hash === '#phone-access') {
+      setTimeout(() => {
+        switchTab('phoneAccessTab');
+      }, 500);
+    }
+  });
+
+  // ===========================================
   // PHONE NUMBER ACCESS FEATURE - NO OTP REQUIRED
   // ===========================================
 
@@ -3632,9 +3829,9 @@
 
   // Scroll to admission form
   function scrollToAdmissionForm() {
-    const admissionForm = document.getElementById('admission');
+    const admissionForm = document.getElementById('admissionTabBtn');
     if (admissionForm) {
-      admissionForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      admissionForm.click();
     }
   }
 
@@ -4000,6 +4197,11 @@
       if (data.phone) {
         accessPhoneInput.value = data.phone;
         currentPhoneNumber = data.phone;
+        
+        // Switch to phone access tab
+        setTimeout(() => {
+          document.getElementById('phoneAccessTabBtn').click();
+        }, 1000);
       }
       
     } catch (error) {
