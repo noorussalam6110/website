@@ -2933,7 +2933,7 @@
                            class="form-control" 
                            name="phone" 
                            id="phone"
-                           placeholder="10-digit mobile number" 
+                           placeholder="10-digit mobile number / 10 അക്ക മൊബൈൽ നമ്പർ" 
                            required
                            pattern="[0-9]{10}"
                            maxlength="10">
@@ -3725,8 +3725,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
-
-// ===========================================
+  // ===========================================
 // INITIALIZATION FUNCTIONS
 // ===========================================
 
@@ -3969,7 +3968,7 @@ function updateAdminStats() {
 }
 
 // ===========================================
-// ADMISSION FORM FUNCTIONALITY - WITHOUT EMAIL
+// ADMISSION FORM FUNCTIONALITY
 // ===========================================
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -3983,10 +3982,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Show loading state
   function showFormLoading() {
     if (buttonText) buttonText.style.display = 'none';
-    if (loadingSpinner) {
-      loadingSpinner.style.display = 'block';
-      loadingSpinner.className = 'loading-spinner';
-    }
+    if (loadingSpinner) loadingSpinner.style.display = 'block';
     if (submitBtn) submitBtn.disabled = true;
   }
   
@@ -4005,84 +4001,74 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Validate Aadhar number
   function validateAadhar(aadhar) {
-    if (!aadhar || aadhar.trim() === '') return true; // Optional field
+    if (!aadhar) return true; // Optional field
     const aadharRegex = /^[0-9]{12}$/;
     return aadharRegex.test(aadhar);
   }
   
-  // Form submission - WITHOUT EMAIL FIELD
+  // Validate email
+  function validateEmail(email) {
+    if (!email) return true; // Optional field
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+  
+  // Form submission
   admissionForm.addEventListener('submit', function(e) {
     e.preventDefault();
-    e.stopPropagation();
-    
-    console.log('Form submit triggered');
     
     // Reset validation
     this.classList.remove('was-validated');
     
-    // Check required fields
-    const requiredFields = ['full_name', 'dob', 'gender', 'class_level', 'guardian_name', 'phone', 'address'];
-    let isValid = true;
-    
-    requiredFields.forEach(fieldId => {
-      const field = document.getElementById(fieldId);
-      if (!field || !field.value.trim()) {
-        isValid = false;
-        field.classList.add('is-invalid');
-      } else {
-        field.classList.remove('is-invalid');
-      }
-    });
-    
-    // Validate phone format
-    const phoneField = document.getElementById('phone');
-    if (phoneField && phoneField.value.trim()) {
-      if (!validatePhone(phoneField.value.trim())) {
-        isValid = false;
-        phoneField.classList.add('is-invalid');
-        showToast('Please enter a valid 10-digit phone number.', 'error');
-      }
-    }
-    
-    // Validate Aadhar if provided
-    const aadharField = document.getElementById('aadhar_number');
-    if (aadharField && aadharField.value.trim()) {
-      if (!validateAadhar(aadharField.value.trim())) {
-        isValid = false;
-        aadharField.classList.add('is-invalid');
-        showToast('Please enter a valid 12-digit Aadhar number.', 'error');
-      }
-    }
-    
-    if (!isValid) {
+    // Validate form
+    if (!this.checkValidity()) {
+      e.stopPropagation();
       this.classList.add('was-validated');
-      showToast('Please fill all required fields correctly.', 'error');
+      return;
+    }
+    
+    // Get form values
+    const formData = {
+      full_name: document.getElementById('full_name').value.trim(),
+      house_name: document.getElementById('house_name').value.trim(),
+      dob: document.getElementById('dob').value,
+      gender: document.getElementById('gender').value,
+      class_level: document.getElementById('class_level').value,
+      guardian_name: document.getElementById('guardian_name').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      address: document.getElementById('address').value.trim(),
+      aadhar_number: document.getElementById('aadhar_number').value.trim(),
+      previous_madrasa: document.getElementById('previous_madrasa').value.trim(),
+      additional_info: document.getElementById('additional_info').value.trim()
+    };
+    
+    // Validate phone
+    if (!validatePhone(formData.phone)) {
+      showToast('Please enter a valid 10-digit phone number.', 'error');
+      document.getElementById('phone').focus();
+      return;
+    }
+    
+    // Validate Aadhar
+    if (!validateAadhar(formData.aadhar_number)) {
+      showToast('Please enter a valid 12-digit Aadhar number.', 'error');
+      document.getElementById('aadhar_number').focus();
+      return;
+    }
+    
+    // Validate email
+    if (formData.email && !validateEmail(formData.email)) {
+      showToast('Please enter a valid email address.', 'error');
+      document.getElementById('email').focus();
       return;
     }
     
     showFormLoading();
-    console.log('Starting form submission...');
     
     // Simulate API delay
     setTimeout(() => {
       try {
-        // Get form values - NO EMAIL FIELD
-        const formData = {
-          full_name: document.getElementById('full_name').value.trim(),
-          house_name: document.getElementById('house_name').value.trim(),
-          dob: document.getElementById('dob').value,
-          gender: document.getElementById('gender').value,
-          class_level: document.getElementById('class_level').value,
-          guardian_name: document.getElementById('guardian_name').value.trim(),
-          phone: document.getElementById('phone').value.trim(),
-          address: document.getElementById('address').value.trim(),
-          aadhar_number: document.getElementById('aadhar_number').value.trim(),
-          previous_madrasa: document.getElementById('previous_madrasa').value.trim(),
-          additional_info: document.getElementById('additional_info').value.trim()
-        };
-        
-        console.log('Form data collected:', formData);
-        
         // Generate reference ID
         const referenceId = generateReferenceId();
         const submissionDate = new Date().toISOString();
@@ -4095,8 +4081,6 @@ document.addEventListener('DOMContentLoaded', function() {
           status: 'pending'
         };
         
-        console.log('Application object created:', application);
-        
         // Save to localStorage
         const existingApplications = getApplications();
         existingApplications.push(application);
@@ -4105,8 +4089,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!saved) {
           throw new Error('Failed to save application');
         }
-        
-        console.log('Application saved to localStorage');
         
         // Populate and show receipt
         populateReceipt(formData, referenceId, 'pending');
@@ -4131,8 +4113,6 @@ document.addEventListener('DOMContentLoaded', function() {
         admissionForm.reset();
         admissionForm.classList.remove('was-validated');
         
-        console.log('Form submission completed successfully');
-        
       } catch (error) {
         console.error('Error submitting form:', error);
         showToast('Error submitting application. Please try again.', 'error');
@@ -4147,11 +4127,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (resetBtn) {
     resetBtn.addEventListener('click', function() {
       admissionForm.classList.remove('was-validated');
-      // Remove invalid classes from all fields
-      const formControls = admissionForm.querySelectorAll('.form-control, .form-select');
-      formControls.forEach(control => {
-        control.classList.remove('is-invalid');
-      });
     });
   }
 });
@@ -4394,57 +4369,6 @@ function deleteApplication(appId) {
           `;
         } else {
           // Re-render applications
-          const displayApplications = (apps) => {
-            applicationsContainer.innerHTML = '';
-            apps.forEach((app, index) => {
-              const appElement = document.createElement('div');
-              appElement.className = `application-item ${index === 0 ? 'active' : ''}`;
-              appElement.setAttribute('data-app-id', app.id);
-              
-              const statusClass = `status-${app.status.replace('_', '-')}`;
-              const statusText = app.status.replace('_', ' ').toUpperCase();
-              
-              appElement.innerHTML = `
-                <div class="app-ref-id">
-                  <i class="fas fa-hashtag"></i>
-                  ${app.id}
-                </div>
-                <div class="app-student-name">
-                  <i class="fas fa-user-graduate me-1"></i>
-                  ${app.data.full_name}
-                </div>
-                <div class="app-details">
-                  <div class="app-detail">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span>Submitted: ${formatDate(app.date)}</span>
-                  </div>
-                  <div class="app-detail">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Class: ${app.data.class_level}</span>
-                  </div>
-                  <div class="app-detail">
-                    <i class="fas fa-user-tie"></i>
-                    <span>Guardian: ${app.data.guardian_name}</span>
-                  </div>
-                </div>
-                <div class="app-status ${statusClass}">${statusText}</div>
-                <div class="app-actions">
-                  <button class="view-app-btn" onclick="viewApplication('${app.id}')">
-                    <i class="fas fa-eye"></i>
-                    View Details
-                  </button>
-                  <button class="delete-app-btn" onclick="deleteApplication('${app.id}')">
-                    <i class="fas fa-trash-alt"></i>
-                    Delete
-                  </button>
-                </div>
-              `;
-              
-              applicationsContainer.appendChild(appElement);
-            });
-            applicationsList.classList.add('active');
-          };
-          
           displayApplications(userApplications);
         }
       }
@@ -4470,7 +4394,7 @@ function deleteApplication(appId) {
 // RECEIPT FUNCTIONS
 // ===========================================
 
-// Populate receipt with data - WITHOUT EMAIL
+// Populate receipt with data
 function populateReceipt(formData, referenceId, status = 'pending') {
   // Set reference ID
   const referenceIdDisplay = document.getElementById('referenceIdDisplay');
@@ -4515,14 +4439,16 @@ function populateReceipt(formData, referenceId, status = 'pending') {
   if (receiptHouseName) receiptHouseName.textContent = formData.house_name || '-';
   if (receiptAadhar) receiptAadhar.textContent = formData.aadhar_number || 'Not Provided';
   
-  // Set guardian information - WITHOUT EMAIL
+  // Set guardian information
   const receiptGuardian = document.getElementById('receiptGuardian');
   const receiptPhone = document.getElementById('receiptPhone');
+  const receiptEmail = document.getElementById('receiptEmail');
   const receiptAddress = document.getElementById('receiptAddress');
   const receiptPreviousMadrasa = document.getElementById('receiptPreviousMadrasa');
   
   if (receiptGuardian) receiptGuardian.textContent = formData.guardian_name || '-';
   if (receiptPhone) receiptPhone.textContent = formData.phone || '-';
+  if (receiptEmail) receiptEmail.textContent = formData.email || 'Not Provided';
   if (receiptAddress) receiptAddress.textContent = formData.address || '-';
   if (receiptPreviousMadrasa) receiptPreviousMadrasa.textContent = formData.previous_madrasa || 'Not Applicable';
   
@@ -4900,7 +4826,7 @@ function adminDeleteApplication(appId) {
   deleteApplication(appId);
 }
 
-// Export applications as CSV - WITHOUT EMAIL
+// Export applications as CSV
 function exportApplicationsCSV() {
   const allApplications = getApplications();
   
@@ -4909,8 +4835,8 @@ function exportApplicationsCSV() {
     return;
   }
   
-  // Create CSV content - WITHOUT EMAIL FIELD
-  const headers = ['Reference ID', 'Student Name', 'Date of Birth', 'Gender', 'Class', 'Guardian Name', 'Phone', 'Address', 'Status', 'Submission Date'];
+  // Create CSV content
+  const headers = ['Reference ID', 'Student Name', 'Date of Birth', 'Gender', 'Class', 'Guardian Name', 'Phone', 'Email', 'Address', 'Status', 'Submission Date'];
   const csvRows = [headers.join(',')];
   
   allApplications.forEach(app => {
@@ -4922,6 +4848,7 @@ function exportApplicationsCSV() {
       `"${app.data.class_level}"`,
       `"${app.data.guardian_name}"`,
       `"${app.data.phone}"`,
+      `"${app.data.email || ''}"`,
       `"${app.data.address.replace(/"/g, '""')}"`,
       `"${app.status}"`,
       `"${app.date}"`
@@ -5051,6 +4978,7 @@ function initializeSampleData() {
           class_level: '5',
           guardian_name: 'Mohammed Ali',
           phone: '9876543210',
+          email: 'ahmed@example.com',
           address: 'Kambippalam, Kerala Estate',
           aadhar_number: '123456789012',
           previous_madrasa: 'Al-Azhar Madrasa',
@@ -5069,6 +4997,7 @@ function initializeSampleData() {
           class_level: '4',
           guardian_name: 'Abdul Khan',
           phone: '9876543211',
+          email: 'fatima@example.com',
           address: 'Near Mosque, Kambippalam',
           aadhar_number: '234567890123',
           previous_madrasa: '',
@@ -5087,6 +5016,7 @@ function initializeSampleData() {
           class_level: '6',
           guardian_name: 'Rashid Hussain',
           phone: '9876543212',
+          email: '',
           address: 'Kerala Estate, Kambippalam',
           aadhar_number: '',
           previous_madrasa: 'Noorul Islam Madrasa',
@@ -5104,42 +5034,6 @@ function initializeSampleData() {
 document.addEventListener('DOMContentLoaded', function() {
   initializeSampleData();
   updateStats();
-});
-
-// ===========================================
-// TEST FUNCTION FOR DEBUGGING
-// ===========================================
-
-// Test if the form is working
-function testFormSubmission() {
-  console.log('Testing form submission...');
-  
-  // Fill test data
-  document.getElementById('full_name').value = 'Test Student';
-  document.getElementById('dob').value = '2015-06-15';
-  document.getElementById('gender').value = 'Male';
-  document.getElementById('class_level').value = '5';
-  document.getElementById('guardian_name').value = 'Test Guardian';
-  document.getElementById('phone').value = '9876543210';
-  document.getElementById('address').value = 'Test Address';
-  
-  // Submit the form
-  document.getElementById('admissionForm').dispatchEvent(new Event('submit'));
-}
-
-// ===========================================
-// ENSURE ALL FUNCTIONS ARE EXPOSED GLOBALLY
-// ===========================================
-
-// Make sure all necessary functions are available globally
-window.switchTab = switchTab;
-window.viewApplication = viewApplication;
-window.deleteApplication = deleteApplication;
-window.closeReceipt = closeReceipt;
-window.copyReferenceId = copyReferenceId;
-window.downloadReceiptPDF = downloadReceiptPDF;
-window.scrollToAdmissionForm = scrollToAdmissionForm;
-window.testFormSubmission = testFormSubmission;
 });
 </script>
 </body>
