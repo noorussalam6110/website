@@ -3603,14 +3603,17 @@
                 </div>
               </div>
               
-              <!-- Download Actions -->
-              <div class="receipt-actions">
-                <button class="download-btn" onclick="downloadReceiptPDF()">
-                  <i class="fas fa-download"></i>
-                  DOWNLOAD AS PDF
-                </button>
-              </div>
-              
+             <!-- Update the receipt actions section to include print button -->
+<div class="receipt-actions">
+  <button class="download-btn" onclick="downloadReceiptPDF()">
+    <i class="fas fa-download"></i>
+    DOWNLOAD PDF
+  </button>
+  <button class="print-btn" onclick="printReceipt()">
+    <i class="fas fa-print"></i>
+    PRINT RECEIPT
+  </button>
+</div>              
               <!-- Footer Note -->
               <div class="receipt-footer">
                 <p class="mb-1">
@@ -4681,7 +4684,7 @@ function copyReferenceId() {
     });
 }
 
-// Download receipt as PDF
+// Enhanced PDF Download Function
 function downloadReceiptPDF() {
   const receiptElement = document.getElementById('successMessage');
   const loadingOverlay = document.getElementById('loadingOverlay');
@@ -4692,54 +4695,304 @@ function downloadReceiptPDF() {
   loadingText.textContent = 'Generating PDF...';
   loadingOverlay.classList.add('active');
   
-  // Use html2canvas and jsPDF
-  html2canvas(receiptElement, {
-    scale: 2,
-    useCORS: true,
-    logging: false
-  }).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
-    
-    // Check if jsPDF is available
-    if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
-      throw new Error('jsPDF not loaded');
+  // Create a clone of the receipt element to avoid affecting the original
+  const receiptClone = receiptElement.cloneNode(true);
+  receiptClone.id = 'receiptClone';
+  
+  // Hide elements that shouldn't be in PDF
+  receiptClone.querySelector('.receipt-close-btn').style.display = 'none';
+  receiptClone.querySelector('.receipt-actions').style.display = 'none';
+  receiptClone.querySelector('.copy-reference-btn').style.display = 'none';
+  
+  // Add print-specific styles to the clone
+  const style = document.createElement('style');
+  style.textContent = `
+    @media print {
+      body { margin: 0 !important; padding: 0 !important; }
+      #receiptClone {
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        padding: 15mm !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        font-size: 10pt !important;
+      }
+      #receiptClone * {
+        color: #000 !important;
+        background: white !important;
+      }
+      #receiptClone .receipt-watermark {
+        opacity: 0.05 !important;
+        font-size: 40pt !important;
+      }
+      #receiptClone .reference-section,
+      #receiptClone .application-details {
+        background: #f5f5f5 !important;
+        border: 1px solid #ccc !important;
+      }
+      #receiptClone .receipt-card {
+        background: white !important;
+        border: 1px solid #ddd !important;
+      }
     }
-    
-    const { jsPDF } = window.jspdf || jspdf;
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
+  `;
+  
+  // Temporarily add clone to document
+  document.body.appendChild(style);
+  document.body.appendChild(receiptClone);
+  receiptClone.style.position = 'absolute';
+  receiptClone.style.left = '-9999px';
+  receiptClone.style.top = '0';
+  receiptClone.style.width = '210mm';
+  receiptClone.style.height = 'auto';
+  receiptClone.style.background = 'white';
+  receiptClone.style.zIndex = '99999';
+  
+  // Wait for clone to render
+  setTimeout(() => {
+    html2canvas(receiptClone, {
+      scale: 3, // High quality
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      width: receiptClone.scrollWidth,
+      height: receiptClone.scrollHeight,
+      windowWidth: receiptClone.scrollWidth,
+      windowHeight: receiptClone.scrollHeight
+    }).then(canvas => {
+      // Clean up clone
+      document.body.removeChild(receiptClone);
+      document.body.removeChild(style);
+      
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Create PDF
+      if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+        throw new Error('jsPDF not loaded');
+      }
+      
+      const { jsPDF } = window.jspdf || jspdf;
+      const pdf = new jsPDF({
+        orientation: imgHeight > imgWidth ? 'portrait' : 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Calculate position to center the content
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      
+      // If content fits on one page
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      } else {
+        // Content spans multiple pages
+        let heightLeft = imgHeight;
+        let position = 0;
+        let pageCount = 0;
+        
+        while (heightLeft > 0) {
+          if (pageCount > 0) {
+            pdf.addPage();
+          }
+          
+          pdf.addImage(
+            imgData, 
+            'PNG', 
+            0, 
+            position, 
+            imgWidth, 
+            imgHeight
+          );
+          
+          heightLeft -= pageHeight;
+          position -= pageHeight;
+          pageCount++;
+          
+          // Break if too many pages (safety)
+          if (pageCount > 10) break;
+        }
+      }
+      
+      // Save PDF
+      const referenceId = document.getElementById('referenceIdDisplay')?.textContent.replace('REF: ', '') || 'receipt';
+      pdf.save(`Admission_Receipt_${referenceId}.pdf`);
+      
+      // Clean up
+      loadingOverlay.classList.remove('active');
+      showToast('PDF downloaded successfully!', 'success');
+      
+    }).catch(error => {
+      console.error('Error generating PDF:', error);
+      
+      // Clean up clone
+      if (document.body.contains(receiptClone)) {
+        document.body.removeChild(receiptClone);
+      }
+      if (document.body.contains(style)) {
+        document.body.removeChild(style);
+      }
+      
+      loadingOverlay.classList.remove('active');
+      showToast('Failed to generate PDF. Please try again.', 'error');
     });
-    
-    const imgWidth = 210;
-    const pageHeight = 297;
-    const imgHeight = canvas.height * imgWidth / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-    
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-    
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-    
-    const referenceId = document.getElementById('referenceIdDisplay')?.textContent.replace('REF: ', '') || 'receipt';
-    pdf.save(`Admission_Receipt_${referenceId}.pdf`);
-    
-    loadingOverlay.classList.remove('active');
-    showToast('PDF downloaded successfully!', 'success');
-  }).catch(error => {
-    console.error('Error generating PDF:', error);
-    loadingOverlay.classList.remove('active');
-    showToast('Failed to generate PDF. Please try again.', 'error');
-  });
+  }, 500);
 }
 
+// Alternative: Direct Print Function
+function printReceipt() {
+  const receiptElement = document.getElementById('successMessage');
+  if (!receiptElement) return;
+  
+  // Create a clone for printing
+  const printClone = receiptElement.cloneNode(true);
+  printClone.id = 'printClone';
+  
+  // Modify for printing
+  printClone.querySelector('.receipt-close-btn').style.display = 'none';
+  printClone.querySelector('.receipt-actions').style.display = 'none';
+  
+  // Add print styles
+  const printStyles = document.createElement('style');
+  printStyles.textContent = `
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printClone, #printClone * {
+        visibility: visible !important;
+      }
+      #printClone {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 210mm !important;
+        min-height: 297mm !important;
+        margin: 0 !important;
+        padding: 15mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: white !important;
+      }
+      .download-btn, .print-btn, .receipt-close-btn {
+        display: none !important;
+      }
+    }
+  `;
+  
+  // Create print window
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Admission Receipt - Noorussalam Madrasa</title>
+        <style>
+          ${printStyles.textContent}
+        </style>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      </head>
+      <body>
+        ${printClone.outerHTML}
+      </body>
+    </html>
+  `);
+  
+  printWindow.document.close();
+  
+  // Wait for content to load
+  printWindow.onload = function() {
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  };
+}
+
+// Enhanced Toast Notification
+function showToast(message, type = 'success') {
+  const toastElement = document.getElementById('toastNotification');
+  const toastMessage = document.getElementById('toastMessage');
+  const toastHeader = toastElement?.querySelector('.toast-header');
+  
+  if (!toastElement || !toastMessage || !toastHeader) return;
+  
+  // Set message
+  toastMessage.textContent = message;
+  
+  // Set color based on type
+  if (type === 'error') {
+    toastHeader.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    toastHeader.querySelector('strong').textContent = 'Error';
+    toastHeader.querySelector('i').className = 'fas fa-exclamation-circle me-2';
+  } else if (type === 'info') {
+    toastHeader.style.background = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    toastHeader.querySelector('strong').textContent = 'Info';
+    toastHeader.querySelector('i').className = 'fas fa-info-circle me-2';
+  } else {
+    toastHeader.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+    toastHeader.querySelector('strong').textContent = 'Success';
+    toastHeader.querySelector('i').className = 'fas fa-check-circle me-2';
+  }
+  
+  // Show toast
+  toastElement.style.display = 'block';
+  const toast = new bootstrap.Toast(toastElement, {
+    delay: 3000
+  });
+  toast.show();
+}
+
+// Add Print Button to Receipt Actions (if not already there)
+function addPrintButtonToReceipt() {
+  const receiptActions = document.querySelector('.receipt-actions');
+  if (receiptActions && !receiptActions.querySelector('.print-btn')) {
+    const printBtn = document.createElement('button');
+    printBtn.className = 'print-btn';
+    printBtn.innerHTML = '<i class="fas fa-print"></i> PRINT RECEIPT';
+    printBtn.onclick = printReceipt;
+    
+    receiptActions.appendChild(printBtn);
+  }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Add print button when receipt is shown
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+        const receiptElement = document.getElementById('successMessage');
+        if (receiptElement && receiptElement.style.display === 'block') {
+          setTimeout(addPrintButtonToReceipt, 100);
+        }
+      }
+    });
+  });
+  
+  const receiptElement = document.getElementById('successMessage');
+  if (receiptElement) {
+    observer.observe(receiptElement, { attributes: true });
+  }
+  
+  // Update existing download button text if needed
+  const downloadBtn = document.querySelector('.download-btn');
+  if (downloadBtn) {
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i> DOWNLOAD PDF';
+    downloadBtn.onclick = downloadReceiptPDF;
+  }
+});
+
+// Also update the existing downloadReceiptPDF function in your code with the enhanced version above
 // ===========================================
 // HELPER FUNCTIONS
 // ===========================================
