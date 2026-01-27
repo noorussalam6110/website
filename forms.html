@@ -3113,22 +3113,6 @@
                     <div class="invalid-feedback">Please enter a valid 10-digit phone number.</div>
                   </div>
 
-                  <div class="col-md-6 form-group">
-                    <label class="form-label bilingual-label">
-                      <i class="fas fa-envelope me-1"></i>
-                      <span class="english-text">Email Address</span>
-                      <span class="malayalam-text">ഇമെയിൽ വിലാസം</span>
-                    </label>
-                    <input type="email" 
-                           class="form-control" 
-                           name="email" 
-                           id="email"
-                           placeholder="Email address (optional)">
-                    <div class="input-icon">
-                      <i class="fas fa-at"></i>
-                    </div>
-                  </div>
-
                   <div class="col-12 form-group">
                     <label class="form-label required bilingual-label">
                       <i class="fas fa-map-marker-alt me-1"></i>
@@ -3563,11 +3547,7 @@
                     <div class="info-value" id="receiptPhone">-</div>
                   </div>
                   <div class="info-row">
-                    <div class="info-label">Email Address</div>
-                    <div class="info-value" id="receiptEmail">-</div>
-                  </div>
-                  <div class="info-row">
-                    <div class="info-label">Address</div>
+                    <div class="info-label">Complete Address</div>
                     <div class="info-value" id="receiptAddress">-</div>
                   </div>
                   <div class="info-row">
@@ -4185,13 +4165,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return aadharRegex.test(aadhar);
   }
   
-  // Validate email
-  function validateEmail(email) {
-    if (!email) return true; // Optional field
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  }
-  
   // Form submission
   admissionForm.addEventListener('submit', function(e) {
     e.preventDefault();
@@ -4215,7 +4188,6 @@ document.addEventListener('DOMContentLoaded', function() {
       class_level: document.getElementById('class_level').value,
       guardian_name: document.getElementById('guardian_name').value.trim(),
       phone: document.getElementById('phone').value.trim(),
-      email: document.getElementById('email').value.trim(),
       address: document.getElementById('address').value.trim(),
       aadhar_number: document.getElementById('aadhar_number').value.trim(),
       previous_madrasa: document.getElementById('previous_madrasa').value.trim(),
@@ -4233,13 +4205,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!validateAadhar(formData.aadhar_number)) {
       showToast('Please enter a valid 12-digit Aadhar number.', 'error');
       document.getElementById('aadhar_number').focus();
-      return;
-    }
-    
-    // Validate email
-    if (formData.email && !validateEmail(formData.email)) {
-      showToast('Please enter a valid email address.', 'error');
-      document.getElementById('email').focus();
       return;
     }
     
@@ -4621,13 +4586,11 @@ function populateReceipt(formData, referenceId, status = 'pending') {
   // Set guardian information
   const receiptGuardian = document.getElementById('receiptGuardian');
   const receiptPhone = document.getElementById('receiptPhone');
-  const receiptEmail = document.getElementById('receiptEmail');
   const receiptAddress = document.getElementById('receiptAddress');
   const receiptPreviousMadrasa = document.getElementById('receiptPreviousMadrasa');
   
   if (receiptGuardian) receiptGuardian.textContent = formData.guardian_name || '-';
   if (receiptPhone) receiptPhone.textContent = formData.phone || '-';
-  if (receiptEmail) receiptEmail.textContent = formData.email || 'Not Provided';
   if (receiptAddress) receiptAddress.textContent = formData.address || '-';
   if (receiptPreviousMadrasa) receiptPreviousMadrasa.textContent = formData.previous_madrasa || 'Not Applicable';
   
@@ -5015,7 +4978,7 @@ function exportApplicationsCSV() {
   }
   
   // Create CSV content
-  const headers = ['Reference ID', 'Student Name', 'Date of Birth', 'Gender', 'Class', 'Guardian Name', 'Phone', 'Email', 'Address', 'Status', 'Submission Date'];
+  const headers = ['Reference ID', 'Student Name', 'Date of Birth', 'Gender', 'Class', 'Guardian Name', 'Phone', 'Address', 'Status', 'Submission Date'];
   const csvRows = [headers.join(',')];
   
   allApplications.forEach(app => {
@@ -5027,7 +4990,6 @@ function exportApplicationsCSV() {
       `"${app.data.class_level}"`,
       `"${app.data.guardian_name}"`,
       `"${app.data.phone}"`,
-      `"${app.data.email || ''}"`,
       `"${app.data.address.replace(/"/g, '""')}"`,
       `"${app.status}"`,
       `"${app.date}"`
@@ -5157,7 +5119,6 @@ function initializeSampleData() {
           class_level: '5',
           guardian_name: 'Mohammed Ali',
           phone: '9876543210',
-          email: 'ahmed@example.com',
           address: 'Kambippalam, Kerala Estate',
           aadhar_number: '123456789012',
           previous_madrasa: 'Al-Azhar Madrasa',
@@ -5176,7 +5137,6 @@ function initializeSampleData() {
           class_level: '4',
           guardian_name: 'Abdul Khan',
           phone: '9876543211',
-          email: 'fatima@example.com',
           address: 'Near Mosque, Kambippalam',
           aadhar_number: '234567890123',
           previous_madrasa: '',
@@ -5195,7 +5155,6 @@ function initializeSampleData() {
           class_level: '6',
           guardian_name: 'Rashid Hussain',
           phone: '9876543212',
-          email: '',
           address: 'Kerala Estate, Kambippalam',
           aadhar_number: '',
           previous_madrasa: 'Noorul Islam Madrasa',
