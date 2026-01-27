@@ -3608,11 +3608,6 @@
                 <button class="download-btn" onclick="downloadReceiptPDF()">
                   <i class="fas fa-download"></i>
                   DOWNLOAD AS PDF
-<!-- Add this to your form-buttons div -->
-<button type="button" class="reset-btn" onclick="downloadFormPDF()">
-  <i class="fas fa-print me-2"></i>
-  Print Form
-</button>
                 </button>
               </div>
               
@@ -4686,197 +4681,63 @@ function copyReferenceId() {
     });
 }
 
-function downloadFormPDF() {
+// Download receipt as PDF
+function downloadReceiptPDF() {
+  const receiptElement = document.getElementById('successMessage');
   const loadingOverlay = document.getElementById('loadingOverlay');
   const loadingText = document.getElementById('loadingText');
   
-  if (!loadingOverlay || !loadingText) return;
+  if (!receiptElement || !loadingOverlay || !loadingText) return;
   
   loadingText.textContent = 'Generating PDF...';
   loadingOverlay.classList.add('active');
   
-  // Get form data
-  const formData = {
-    full_name: document.getElementById('full_name').value.trim(),
-    house_name: document.getElementById('house_name').value.trim(),
-    dob: document.getElementById('dob').value,
-    gender: document.getElementById('gender').value,
-    class_level: document.getElementById('class_level').value,
-    guardian_name: document.getElementById('guardian_name').value.trim(),
-    phone: document.getElementById('phone').value.trim(),
-    address: document.getElementById('address').value.trim(),
-    aadhar_number: document.getElementById('aadhar_number').value.trim(),
-    previous_madrasa: document.getElementById('previous_madrasa').value.trim(),
-    additional_info: document.getElementById('additional_info').value.trim()
-  };
-  
-  // Create a printable version of the form
-  const printWindow = window.open('', '_blank');
-  printWindow.document.write(`
-    <!DOCTYPE html>
-    <html lang="ml">
-    <head>
-      <meta charset="utf-8">
-      <title>Admission Application - Noorussalam Madrasa</title>
-      <style>
-        @media print {
-          @page {
-            size: A4;
-            margin: 20mm;
-          }
-          body {
-            font-family: 'Arial Unicode MS', 'Arial', sans-serif;
-            font-size: 12pt;
-            line-height: 1.5;
-            color: #000;
-          }
-          .header {
-            text-align: center;
-            border-bottom: 2px solid #000;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-          }
-          .header h1 {
-            font-size: 18pt;
-            margin: 0;
-          }
-          .header h2 {
-            font-size: 14pt;
-            margin: 5px 0;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-          }
-          td {
-            padding: 8px;
-            vertical-align: top;
-            border: 1px solid #000;
-          }
-          .label {
-            font-weight: bold;
-            width: 40%;
-            background-color: #f0f0f0;
-          }
-          .value {
-            width: 60%;
-          }
-          .signature-section {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
-          }
-          .signature-box {
-            width: 45%;
-            text-align: center;
-          }
-          .signature-line {
-            border-top: 1px solid #000;
-            width: 200px;
-            margin: 40px auto 10px;
-          }
-          .footer {
-            margin-top: 30px;
-            font-size: 10pt;
-            color: #666;
-            text-align: center;
-          }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h1>NOORUSSALAM MADRASA KAMBIPPALAM</h1>
-        <h2>Admission Application Form - Academic Year 2026-27</h2>
-        <p>SKIMVB Reg No: 6110</p>
-      </div>
-      
-      <table>
-        <tr>
-          <td class="label">Student Name with Initials</td>
-          <td class="value">${formData.full_name || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">House Name</td>
-          <td class="value">${formData.house_name || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Date of Birth</td>
-          <td class="value">${formData.dob || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Gender</td>
-          <td class="value">${formData.gender || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Applying Class</td>
-          <td class="value">${formData.class_level ? 'Class ' + formData.class_level : '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Guardian Name</td>
-          <td class="value">${formData.guardian_name || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Contact Number</td>
-          <td class="value">${formData.phone || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Complete Address</td>
-          <td class="value" style="white-space: pre-line;">${formData.address || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Aadhar Number</td>
-          <td class="value">${formData.aadhar_number || 'Not Provided'}</td>
-        </tr>
-        <tr>
-          <td class="label">Previous Madrasa</td>
-          <td class="value">${formData.previous_madrasa || 'Not Applicable'}</td>
-        </tr>
-        <tr>
-          <td class="label">Additional Information</td>
-          <td class="value" style="white-space: pre-line;">${formData.additional_info || '-'}</td>
-        </tr>
-        <tr>
-          <td class="label">Submission Date</td>
-          <td class="value">${new Date().toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-          })}</td>
-        </tr>
-      </table>
-      
-      <div class="signature-section">
-        <div class="signature-box">
-          <p>Applicant's Signature</p>
-          <div class="signature-line"></div>
-          <p>Guardian/Student</p>
-        </div>
-        <div class="signature-box">
-          <p>Admission Officer's Signature</p>
-          <div class="signature-line"></div>
-          <p>Noorussalam Madrasa, Kambippalam</p>
-        </div>
-      </div>
-      
-      <div class="footer">
-        <p>Noorussalam Madrasa, Kambippalam • Phone: +91 70346 78818</p>
-        <p>Email: noorussalam6110@gmail.com • Website: Coming Soon</p>
-      </div>
-    </body>
-    </html>
-  `);
-  
-  printWindow.document.close();
-  
-  // Give time for the content to load
-  setTimeout(() => {
-    printWindow.print();
-    printWindow.close();
+  // Use html2canvas and jsPDF
+  html2canvas(receiptElement, {
+    scale: 2,
+    useCORS: true,
+    logging: false
+  }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    
+    // Check if jsPDF is available
+    if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+      throw new Error('jsPDF not loaded');
+    }
+    
+    const { jsPDF } = window.jspdf || jspdf;
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    
+    const referenceId = document.getElementById('referenceIdDisplay')?.textContent.replace('REF: ', '') || 'receipt';
+    pdf.save(`Admission_Receipt_${referenceId}.pdf`);
+    
     loadingOverlay.classList.remove('active');
-    showToast('Form opened for printing!', 'success');
-  }, 500);
+    showToast('PDF downloaded successfully!', 'success');
+  }).catch(error => {
+    console.error('Error generating PDF:', error);
+    loadingOverlay.classList.remove('active');
+    showToast('Failed to generate PDF. Please try again.', 'error');
+  });
 }
 
 // ===========================================
