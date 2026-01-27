@@ -1210,6 +1210,7 @@
         min-height: auto;
         box-sizing: border-box;
         font-size: 12px;
+        transform-origin: top center;
     }
 
     @media (min-width: 768px) {
@@ -1708,6 +1709,128 @@
         transform: rotate(90deg);
     }
 
+    /* PDF Version Styles for Consistent A4 Generation */
+    .receipt-container.pdf-version {
+        width: 210mm !important;
+        height: 297mm !important;
+        max-width: 210mm !important;
+        min-height: 297mm !important;
+        padding: 15mm !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        position: fixed;
+        top: 0;
+        left: -9999px;
+        z-index: -1000;
+        opacity: 0;
+        transform: none !important;
+        background: white !important;
+        font-size: 10pt !important;
+        overflow: visible !important;
+    }
+
+    .receipt-container.pdf-version * {
+        color: #000000 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+        transform: none !important;
+    }
+
+    .receipt-container.pdf-version .receipt-watermark {
+        opacity: 0.05 !important;
+        font-size: 40pt !important;
+    }
+
+    .receipt-container.pdf-version .receipt-close-btn,
+    .receipt-container.pdf-version .copy-reference-btn,
+    .receipt-container.pdf-version .receipt-actions {
+        display: none !important;
+    }
+
+    .receipt-container.pdf-version .receipt-grid {
+        margin-bottom: 10mm !important;
+    }
+
+    .receipt-container.pdf-version .info-row {
+        padding: 2mm 0 !important;
+    }
+
+    .receipt-container.pdf-version .signature-section {
+        margin-top: 15mm !important;
+    }
+
+    /* Mobile Viewing Styles */
+    @media (max-width: 768px) {
+        .receipt-container:not(.pdf-version) {
+            width: 95% !important;
+            max-width: 95% !important;
+            padding: 15px !important;
+            margin: 20px auto !important;
+            min-height: auto !important;
+            font-size: 11px !important;
+            transform-origin: top center;
+        }
+        
+        .receipt-title {
+            font-size: 1.1rem !important;
+        }
+        
+        .reference-id {
+            font-size: 1rem !important;
+        }
+        
+        .receipt-grid {
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+        
+        .receipt-actions {
+            flex-direction: column;
+        }
+        
+        .download-btn, .print-btn {
+            width: 100% !important;
+            margin-bottom: 10px;
+        }
+        
+        .info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+        }
+        
+        .info-value {
+            text-align: left !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .receipt-container:not(.pdf-version) {
+            padding: 12px !important;
+            font-size: 10px !important;
+        }
+        
+        .receipt-title {
+            font-size: 1rem !important;
+        }
+        
+        .receipt-card {
+            padding: 12px !important;
+        }
+        
+        .signature-box {
+            padding: 10px !important;
+        }
+        
+        .signature-line {
+            width: 80px;
+            margin: 15px auto 5px;
+        }
+    }
+
     /* Print Styles */
     @media print {
         body {
@@ -1813,56 +1936,6 @@
         
         .step-label {
             margin-top: 0;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .receipt-container {
-            padding: 15px;
-        }
-        
-        .receipt-title {
-            font-size: 1.1rem;
-        }
-        
-        .reference-id {
-            font-size: 1rem;
-        }
-        
-        .info-row {
-            flex-direction: column;
-            gap: 2px;
-            align-items: flex-start;
-        }
-        
-        .info-value {
-            text-align: left;
-            width: 100%;
-        }
-        
-        .receipt-watermark {
-            font-size: 40px;
-        }
-        
-        .receipt-card {
-            padding: 12px;
-        }
-        
-        .download-btn, .print-btn {
-            min-width: 100%;
-        }
-        
-        .receipt-actions {
-            flex-direction: column;
-        }
-        
-        .signature-box {
-            padding: 10px;
-        }
-        
-        .signature-line {
-            width: 80px;
-            margin: 15px auto 5px;
         }
     }
 
@@ -4494,7 +4567,7 @@ function deleteApplication(appId) {
 }
 
 // ===========================================
-// RECEIPT FUNCTIONS
+// RECEIPT FUNCTIONS - FIXED FOR MOBILE/COMPUTER CONSISTENCY
 // ===========================================
 
 // Populate receipt with data
@@ -4681,7 +4754,7 @@ function copyReferenceId() {
     });
 }
 
-// Download receipt as PDF
+// FIXED: Download receipt as PDF - Same A4 size for mobile and computer
 function downloadReceiptPDF() {
   const receiptElement = document.getElementById('successMessage');
   const loadingOverlay = document.getElementById('loadingOverlay');
@@ -4692,52 +4765,93 @@ function downloadReceiptPDF() {
   loadingText.textContent = 'Generating PDF...';
   loadingOverlay.classList.add('active');
   
-  // Use html2canvas and jsPDF
-  html2canvas(receiptElement, {
-    scale: 2,
-    useCORS: true,
-    logging: false
-  }).then(canvas => {
-    const imgData = canvas.toDataURL('image/png');
+  // Create a clone of the receipt for PDF generation
+  const receiptClone = receiptElement.cloneNode(true);
+  
+  // Apply PDF version styles to the clone
+  receiptClone.classList.add('pdf-version');
+  
+  // Set fixed A4 dimensions on the clone (210mm x 297mm)
+  receiptClone.style.width = '210mm';
+  receiptClone.style.height = '297mm';
+  receiptClone.style.maxWidth = '210mm';
+  receiptClone.style.minHeight = '297mm';
+  receiptClone.style.position = 'fixed';
+  receiptClone.style.left = '-9999px'; // Move off-screen
+  receiptClone.style.top = '0';
+  receiptClone.style.zIndex = '-1000';
+  receiptClone.style.opacity = '0';
+  
+  // Append clone to body
+  document.body.appendChild(receiptClone);
+  
+  // Wait a moment for styles to apply
+  setTimeout(() => {
+    // Options for html2canvas - set to A4 dimensions in pixels
+    const options = {
+      scale: 3, // High resolution for better quality
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: 1240, // 210mm at ~150 DPI
+      height: 1754, // 297mm at ~150 DPI
+      windowWidth: 1240,
+      windowHeight: 1754
+    };
     
-    // Check if jsPDF is available
-    if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
-      throw new Error('jsPDF not loaded');
-    }
-    
-    const { jsPDF } = window.jspdf || jspdf;
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
+    // Generate PDF with proper A4 dimensions
+    html2canvas(receiptClone, options).then(canvas => {
+      // Remove the clone
+      document.body.removeChild(receiptClone);
+      
+      // Calculate dimensions for PDF
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      
+      // Check if jsPDF is available
+      if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') {
+        throw new Error('jsPDF not loaded');
+      }
+      
+      const { jsPDF } = window.jspdf || jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      // Add image to PDF - center it on the page
+      const xPos = (pdfWidth - imgWidth) / 2;
+      const yPos = 0;
+      
+      const imgData = canvas.toDataURL('image/png', 1.0);
+      pdf.addImage(imgData, 'PNG', xPos, yPos, imgWidth, imgHeight);
+      
+      // Generate filename with reference ID
+      const referenceId = document.getElementById('referenceIdDisplay')?.textContent.replace('REF: ', '') || 'receipt';
+      const filename = `Admission_Receipt_${referenceId}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Save the PDF
+      pdf.save(filename);
+      
+      loadingOverlay.classList.remove('active');
+      showToast('PDF downloaded successfully with A4 size!', 'success');
+      
+    }).catch(error => {
+      console.error('Error generating PDF:', error);
+      
+      // Clean up clone
+      if (receiptClone && receiptClone.parentNode) {
+        document.body.removeChild(receiptClone);
+      }
+      
+      loadingOverlay.classList.remove('active');
+      showToast('Failed to generate PDF. Please try again.', 'error');
     });
-    
-    const imgWidth = 210;
-    const pageHeight = 297;
-    const imgHeight = canvas.height * imgWidth / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-    
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-    
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-    
-    const referenceId = document.getElementById('referenceIdDisplay')?.textContent.replace('REF: ', '') || 'receipt';
-    pdf.save(`Admission_Receipt_${referenceId}.pdf`);
-    
-    loadingOverlay.classList.remove('active');
-    showToast('PDF downloaded successfully!', 'success');
-  }).catch(error => {
-    console.error('Error generating PDF:', error);
-    loadingOverlay.classList.remove('active');
-    showToast('Failed to generate PDF. Please try again.', 'error');
-  });
+  }, 100);
 }
 
 // ===========================================
