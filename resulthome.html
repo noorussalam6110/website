@@ -548,6 +548,62 @@
             font-weight: 500;
         }
 
+        /* Performance Summary Section */
+        .performance-summary {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.05), rgba(59, 130, 246, 0.05));
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin: 25px 0;
+            border: 2px solid rgba(30, 58, 138, 0.1);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(30, 58, 138, 0.1);
+        }
+
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 8px 0;
+        }
+
+        .summary-label {
+            font-size: 0.85rem;
+            color: #4B5563;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .performance-grade {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            color: white;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            margin-top: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .grade-display {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
         /* Mobile-specific improvements */
         @media (max-width: 768px) {
             body {
@@ -622,6 +678,19 @@
                 font-size: 1.2rem;
             }
             
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .summary-value {
+                font-size: 1.5rem;
+            }
+            
+            .grade-display {
+                font-size: 2rem;
+            }
+            
             /* Touch-friendly table scrolling */
             .table-responsive {
                 -webkit-overflow-scrolling: touch;
@@ -686,6 +755,11 @@
                 font-size: 0.95rem !important;
                 padding: 14px;
             }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
 
         @media (max-width: 360px) {
@@ -716,26 +790,72 @@
             }
         }
 
-        /* Print styles */
+        /* ============================== */
+        /* ENHANCED PRINT STYLES FOR A4 */
+        /* ============================== */
         @media print {
+            /* Set page size to A4 with proper margins */
+            @page {
+                size: A4;
+                margin: 15mm;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Enable color printing */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            
             body {
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                font-size: 12pt !important;
+                font-size: 11pt !important;
+                line-height: 1.4 !important;
+                width: 210mm !important;
+                min-height: 297mm !important;
+                overflow: visible !important;
             }
             
+            .container {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            
+            /* Result Sheet for Print */
             .mobile-result-sheet {
                 width: 100% !important;
                 max-width: 100% !important;
                 margin: 0 !important;
-                padding: 15px !important;
+                padding: 20px !important;
                 box-shadow: none !important;
                 border-radius: 0 !important;
                 page-break-after: always;
-                border: none !important;
+                border: 2px solid #000 !important;
+                background: white !important;
+                min-height: 277mm !important; /* 297mm - 20mm margins */
             }
             
+            /* Force colors to print */
+            .mobile-result-sheet * {
+                color: #000 !important;
+                background-color: inherit !important;
+            }
+            
+            /* Keep colored elements in print */
+            .gradient-bg, .performance-grade, .summary-item, 
+            .table-responsive, .final-result {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background-color: inherit !important;
+            }
+            
+            /* Hide unnecessary elements */
             .no-print,
             .action-buttons,
             footer,
@@ -746,9 +866,102 @@
             .loading-container,
             .error-message,
             .back-to-top,
-            .toppers-btn-container {
+            .toppers-btn-container,
+            .btn-primary,
+            .toppers-btn,
+            .exam-title {
                 display: none !important;
             }
+            
+            /* Improve table printing */
+            table {
+                page-break-inside: auto !important;
+                border-collapse: collapse !important;
+                width: 100% !important;
+            }
+            
+            tr {
+                page-break-inside: avoid !important;
+                page-break-after: auto !important;
+            }
+            
+            td, th {
+                padding: 8px !important;
+                border: 1px solid #ddd !important;
+                background-color: white !important;
+            }
+            
+            th {
+                background-color: #f8f9fa !important;
+                font-weight: bold !important;
+            }
+            
+            /* Performance Summary print styles */
+            .performance-summary {
+                background: #f8f9fa !important;
+                border: 2px solid #ddd !important;
+                page-break-inside: avoid !important;
+            }
+            
+            .summary-item {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                box-shadow: none !important;
+            }
+            
+            .performance-grade {
+                background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%) !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            /* Ensure proper spacing */
+            .result-content > * {
+                margin-bottom: 15px !important;
+            }
+            
+            /* Prevent page breaks in critical sections */
+            .student-info,
+            .performance-summary,
+            .final-result {
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+            }
+            
+            /* Add page break before subject-wise performance if needed */
+            .subject-performance {
+                page-break-before: auto !important;
+            }
+            
+            /* Print header for each page */
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #000;
+            }
+            
+            /* Watermark for official use */
+            .print-watermark {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 72px;
+                color: rgba(0, 0, 0, 0.1);
+                z-index: 1000;
+                pointer-events: none;
+            }
+        }
+
+        /* Print-specific classes */
+        .print-header {
+            display: none;
+        }
+        
+        .print-watermark {
+            display: none;
         }
 
         /* Prevent text selection */
@@ -1199,6 +1412,40 @@
             });
         }
 
+        // Enhanced print function
+        function enhancedPrint() {
+            // Add print header and watermark
+            const resultContent = document.querySelector('.result-content');
+            if (resultContent) {
+                // Create print header
+                const printHeader = document.createElement('div');
+                printHeader.className = 'print-header';
+                printHeader.innerHTML = `
+                    <h2 style="color: var(--primary); font-size: 18pt; font-weight: 700; margin-bottom: 5px;">NOORUSSALAM SECONDARY MADRASA</h2>
+                    <p style="color: #4B5563; font-size: 12pt; margin-bottom: 5px;">Kambippalam, Kerala Estate, Malappuram</p>
+                    <p style="color: var(--primary); font-size: 11pt; font-weight: 600; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 0; margin: 10px 0;">ACADEMIC PERFORMANCE STATEMENT - ANNUAL EXAMINATION 2025-26</p>
+                `;
+                resultContent.insertBefore(printHeader, resultContent.firstChild);
+                
+                // Create watermark
+                const watermark = document.createElement('div');
+                watermark.className = 'print-watermark';
+                watermark.innerHTML = 'OFFICIAL COPY';
+                document.body.appendChild(watermark);
+            }
+            
+            // Trigger print
+            window.print();
+            
+            // Clean up after printing
+            setTimeout(() => {
+                const printHeader = document.querySelector('.print-header');
+                const watermark = document.querySelector('.print-watermark');
+                if (printHeader) printHeader.remove();
+                if (watermark) watermark.remove();
+            }, 500);
+        }
+
         // Form submission
         resultForm.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -1238,12 +1485,39 @@
             }
         });
 
-        // Display Result
+        // Display Result with enhanced performance summary
         function displayResult(data) {
             const student = data.student;
             const subjects = data.subjects || [];
             const overallStatus = data.overallStatus;
             const percentage = parseFloat(student.percentage || '0');
+            
+            // Calculate grade based on percentage
+            let overallGrade = '';
+            let gradeColor = '#10B981';
+            
+            if (percentage >= 90) {
+                overallGrade = 'A+';
+                gradeColor = '#10B981';
+            } else if (percentage >= 80) {
+                overallGrade = 'A';
+                gradeColor = '#06B6D4';
+            } else if (percentage >= 70) {
+                overallGrade = 'B+';
+                gradeColor = '#3B82F6';
+            } else if (percentage >= 60) {
+                overallGrade = 'B';
+                gradeColor = '#8B5CF6';
+            } else if (percentage >= 50) {
+                overallGrade = 'C';
+                gradeColor = '#F59E0B';
+            } else if (percentage >= 40) {
+                overallGrade = 'D';
+                gradeColor = '#EF4444';
+            } else {
+                overallGrade = 'F';
+                gradeColor = '#DC2626';
+            }
             
             let subjectRows = '';
             subjects.forEach((subject, index) => {
@@ -1277,26 +1551,15 @@
             });
             
             const statusColor = overallStatus === 'PASSED' ? 'var(--success)' : 'var(--danger)';
-            const percentageColor = percentage >= 75 ? '#10B981' : 
-                                  percentage >= 60 ? '#06B6D4' : 
-                                  percentage >= 40 ? '#F59E0B' : '#EF4444';
+            const percentageColor = percentage >= 90 ? '#10B981' : 
+                                  percentage >= 80 ? '#06B6D4' : 
+                                  percentage >= 70 ? '#3B82F6' : 
+                                  percentage >= 60 ? '#8B5CF6' : 
+                                  percentage >= 50 ? '#F59E0B' : 
+                                  percentage >= 40 ? '#EF4444' : '#DC2626';
             
             const resultHTML = `
                 <div class="result-content">
-                    <!-- Header -->
-                    <div style="text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--primary-light);">
-                        <div style="color: var(--primary); font-size: 1.1rem; font-weight: 700; margin-bottom: 8px;">
-                            NOORUSSALAM SECONDARY MADRASA
-                        </div>
-                        <div style="font-weight: 600; font-size: 0.95rem; margin: 10px 0; position: relative; display: inline-block; padding: 0 15px;">
-                            ACADEMIC PERFORMANCE STATEMENT
-                            <div style="position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 80px; height: 3px; background: var(--gradient-1); border-radius: 2px;"></div>
-                        </div>
-                        <div style="color: #4B5563; font-size: 0.9rem; font-weight: 500; margin-top: 15px; padding: 8px 16px; background: rgba(96, 165, 250, 0.1); border-radius: 20px; display: inline-block; border: 1px solid rgba(96, 165, 250, 0.3);">
-                            <i class="fas fa-calendar-alt" style="margin-right: 8px; color: var(--primary);"></i> ANNUAL EXAMINATION 2025-26
-                        </div>
-                    </div>
-                    
                     <!-- Student Info -->
                     <div style="margin-bottom: 20px; padding: 16px; background: rgba(30, 58, 138, 0.05); border-radius: 12px; border: 1px solid rgba(30, 58, 138, 0.1);">
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px;">
@@ -1322,52 +1585,6 @@
                                 </div>
                                 <div style="font-size: 1rem; font-weight: 700; color: var(--primary); padding: 6px 0; border-bottom: 2px solid rgba(30, 58, 138, 0.2);">
                                     ${student.className || 'N/A'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Performance Summary -->
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--primary); font-weight: 700; font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-chart-line"></i> PERFORMANCE SUMMARY
-                        </h3>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 15px;">
-                            <div style="background: white; padding: 16px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-sm); border: 1px solid rgba(30, 58, 138, 0.1);">
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 6px;">${student.totalScore || '0'}</div>
-                                <div style="font-size: 0.8rem; color: #4B5563; font-weight: 600; text-transform: uppercase;">Total Marks</div>
-                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 6px; font-weight: 500;">Max: ${student.totalMaxScore || '0'}</div>
-                            </div>
-                            <div style="background: white; padding: 16px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-sm); border: 1px solid rgba(30, 58, 138, 0.1);">
-                                <div style="font-size: 1.5rem; font-weight: 800; color: ${percentageColor}; margin-bottom: 6px;">${student.percentage || '0'}%</div>
-                                <div style="font-size: 0.8rem; color: #4B5563; font-weight: 600; text-transform: uppercase;">Percentage</div>
-                                <div style="font-size: 0.75rem; color: ${percentageColor}; font-weight: 600; margin-top: 6px; padding: 4px 8px; background: ${percentageColor}15; border-radius: 15px; display: inline-block;">
-                                    ${percentage >= 75 ? 'Excellent' : 
-                                      percentage >= 60 ? 'Good' : 
-                                      percentage >= 40 ? 'Average' : 
-                                      'Needs Improvement'}
-                                </div>
-                            </div>
-                            <div style="background: white; padding: 16px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-sm); border: 1px solid rgba(30, 58, 138, 0.1);">
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 6px;">${student.rank || 'N/A'}</div>
-                                <div style="font-size: 0.8rem; color: #4B5563; font-weight: 600; text-transform: uppercase;">Class Rank</div>
-                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 4px;">
-                                    <i class="fas fa-trophy"></i> Position
-                                </div>
-                            </div>
-                            <div style="background: white; padding: 16px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-sm); border: 1px solid rgba(30, 58, 138, 0.1);">
-                                <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 6px;">${student.presents || '0'}</div>
-                                <div style="font-size: 0.8rem; color: #4B5563; font-weight: 600; text-transform: uppercase;">Attendance</div>
-                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 6px; font-weight: 500;">${student.presents || '0'}/${student.totalMaxPresents || '0'} Days</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: center; margin-top: 15px;">
-                            <div style="background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: var(--shadow-md); border: 2px solid var(--primary-light); width: 100%; max-width: 300px;">
-                                <div style="font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 8px;">${student.overallGrade || 'N/A'}</div>
-                                <div style="font-size: 0.9rem; color: var(--primary); font-weight: 700; text-transform: uppercase;">
-                                    <i class="fas fa-award" style="margin-right: 8px;"></i> Overall Grade
                                 </div>
                             </div>
                         </div>
@@ -1400,9 +1617,73 @@
                         ` : '<div style="text-align: center; color: #6B7280; padding: 25px; font-size: 0.95rem; background: #F0F9FF; border-radius: 12px; border: 1px dashed #BFDBFE;"><i class="fas fa-info-circle" style="margin-right: 8px;"></i> No subject data available.</div>'}
                     </div>
                     
+                    <!-- PERFORMANCE SUMMARY (Added below subject-wise performance) -->
+                    <div class="performance-summary">
+                        <h3 style="color: var(--primary); font-weight: 700; font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-chart-line"></i> PERFORMANCE SUMMARY
+                        </h3>
+                        
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-label">Total Marks</div>
+                                <div class="summary-value">${student.totalScore || '0'}</div>
+                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 4px; font-weight: 500;">
+                                    Max: ${student.totalMaxScore || '0'}
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Percentage</div>
+                                <div class="summary-value" style="color: ${percentageColor};">${student.percentage || '0'}%</div>
+                                <div style="font-size: 0.75rem; color: ${percentageColor}; font-weight: 600; margin-top: 4px; padding: 4px 8px; background: ${percentageColor}15; border-radius: 15px; display: inline-block;">
+                                    ${percentage >= 90 ? 'Excellent' : 
+                                      percentage >= 80 ? 'Very Good' : 
+                                      percentage >= 70 ? 'Good' : 
+                                      percentage >= 60 ? 'Above Average' : 
+                                      percentage >= 50 ? 'Average' : 
+                                      percentage >= 40 ? 'Pass' : 
+                                      'Needs Improvement'}
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Class Rank</div>
+                                <div class="summary-value">${student.rank || 'N/A'}</div>
+                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                                    <i class="fas fa-trophy"></i> Position
+                                </div>
+                            </div>
+                            
+                            <div class="summary-item">
+                                <div class="summary-label">Attendance</div>
+                                <div class="summary-value">${student.presents || '0'}</div>
+                                <div style="font-size: 0.75rem; color: var(--primary); margin-top: 4px; font-weight: 500;">
+                                    ${student.presents || '0'}/${student.totalMaxPresents || '0'} Days
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Overall Grade Display -->
+                        <div class="performance-grade">
+                            <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); font-weight: 600; text-transform: uppercase;">
+                                <i class="fas fa-award" style="margin-right: 8px;"></i> Overall Grade
+                            </div>
+                            <div class="grade-display">${overallGrade}</div>
+                            <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); margin-top: 8px; font-weight: 500;">
+                                ${percentage >= 90 ? 'Outstanding Performance' : 
+                                  percentage >= 80 ? 'Excellent Performance' : 
+                                  percentage >= 70 ? 'Good Performance' : 
+                                  percentage >= 60 ? 'Satisfactory Performance' : 
+                                  percentage >= 40 ? 'Passing Performance' : 
+                                  'Needs Improvement'}
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Final Result -->
                     <div style="background: ${overallStatus === 'PASSED' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; 
-                             padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid ${overallStatus === 'PASSED' ? 'var(--success)' : 'var(--danger)'};">
+                             padding: 20px; border-radius: 12px; text-align: center; margin-top: 20px; border: 2px solid ${overallStatus === 'PASSED' ? 'var(--success)' : 'var(--danger)'};"
+                         class="final-result">
                         <div style="font-size: 1.1rem; font-weight: 800; color: ${overallStatus === 'PASSED' ? 'var(--success)' : 'var(--danger)'}; margin-bottom: 10px;">
                             ${overallStatus === 'PASSED' ? 'CONGRATULATIONS!' : 'NEEDS IMPROVEMENT'}
                         </div>
@@ -1428,26 +1709,19 @@
                     </div>
                     
                     <!-- Action Buttons -->
-                    <div class="no-print" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(30, 58, 138, 0.2);">
+                    <div class="no-print action-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(30, 58, 138, 0.2);">
                         <button onclick="showForm()" style="padding: 14px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;">
                             <i class="fas fa-redo"></i> Check Another
                         </button>
-                        <button onclick="window.print()" style="padding: 14px; background: var(--gradient-1); border: 2px solid var(--primary); color: white; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;">
+                        <button onclick="enhancedPrint()" style="padding: 14px; background: var(--gradient-1); border: 2px solid var(--primary); color: white; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;">
                             <i class="fas fa-print"></i> Print Result
                         </button>
                     </div>
                     
-                    <!-- Class Toppers Link -->
-                    <div class="no-print" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255, 215, 0, 0.3); text-align: center;">
-                        <div style="font-size: 0.9rem; color: #6B7280; margin-bottom: 12px; font-weight: 500;">
-                            <i class="fas fa-star" style="color: #FFD700; margin-right: 8px;"></i>
-                            Check out the top performers in each class
-                        </div>
-                        <a href="certificate-generator.html" style="display: inline-flex; align-items: center; gap: 10px; background: var(--gradient-gold); color: #000; padding: 12px 24px; border-radius: 20px; font-weight: 700; font-size: 0.9rem; text-decoration: none; box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3); border: 2px solid white; transition: all 0.3s ease;">
-                            <i class="fas fa-crown"></i>
-                            View Class Toppers & Generate Certificates
-                            <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
-                        </a>
+                    <!-- Print Instructions -->
+                    <div class="no-print" style="margin-top: 15px; padding: 12px; background: rgba(30, 58, 138, 0.05); border-radius: 10px; border-left: 4px solid var(--primary); font-size: 0.85rem; color: #4B5563;">
+                        <strong><i class="fas fa-info-circle" style="margin-right: 6px; color: var(--primary);"></i> Print Instructions:</strong> 
+                        Click "Print Result" for optimized printing.
                     </div>
                 </div>
             `;
