@@ -24,6 +24,7 @@
             --gradient-1: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
             --gradient-2: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
             --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --gradient-success: linear-gradient(135deg, #10B981 0%, #34D399 100%);
             --shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.08);
             --shadow-md: 0 4px 16px rgba(30, 58, 138, 0.1);
             --shadow-lg: 0 8px 32px rgba(30, 58, 138, 0.12);
@@ -54,6 +55,40 @@
             -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
             touch-action: manipulation;
+            position: relative;
+        }
+
+        /* Particle Background Effect */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--primary-light);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) rotate(360deg);
+                opacity: 0.1;
+            }
         }
 
         .container {
@@ -61,9 +96,11 @@
             max-width: 100%;
             margin: 0 auto;
             padding: 0 12px;
+            position: relative;
+            z-index: 1;
         }
 
-        /* Header */
+        /* Header with Home Button */
         .header {
             text-align: center;
             margin-bottom: 16px;
@@ -74,6 +111,9 @@
             border-bottom: 4px solid var(--primary);
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .header::before {
@@ -86,6 +126,36 @@
             background: var(--gradient-1);
         }
 
+        .header-content {
+            width: 100%;
+            position: relative;
+        }
+
+        .header-home-btn {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .header-home-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
         .college-logo {
             width: 80px;
             height: 80px;
@@ -96,6 +166,11 @@
             background: white;
             box-shadow: var(--shadow-md);
             border: 3px solid white;
+            transition: transform 0.3s ease;
+        }
+
+        .college-logo:hover {
+            transform: scale(1.05);
         }
 
         .college-name {
@@ -127,6 +202,49 @@
             margin-top: 12px;
             border: 2px solid white;
             box-shadow: var(--shadow-sm);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(30, 58, 138, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(30, 58, 138, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(30, 58, 138, 0);
+            }
+        }
+
+        /* Floating Home Button */
+        .floating-home-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-1);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            border: 2px solid white;
+        }
+
+        .floating-home-btn:hover {
+            transform: scale(1.1);
+            background: var(--gradient-2);
+            box-shadow: 0 8px 25px rgba(30, 58, 138, 0.3);
+        }
+
+        .floating-home-btn i {
+            font-size: 1.5rem;
         }
 
         /* Class Toppers Button Container */
@@ -193,22 +311,6 @@
             animation: pulse 2s infinite;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-
-        .toppers-label {
-            background: rgba(0, 0, 0, 0.1);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-left: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
         /* Countdown Container */
         .countdown-container {
             background: white;
@@ -219,6 +321,12 @@
             text-align: center;
             display: none;
             border-bottom: 4px solid var(--primary-light);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .countdown-title {
@@ -256,6 +364,11 @@
             border-radius: 12px;
             min-width: 70px;
             box-shadow: var(--shadow-md);
+            transition: transform 0.3s ease;
+        }
+
+        .countdown-unit:hover {
+            transform: translateY(-5px);
         }
 
         .countdown-value {
@@ -264,6 +377,7 @@
             font-family: 'Roboto', sans-serif;
             line-height: 1;
             margin-bottom: 6px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .countdown-label {
@@ -422,6 +536,10 @@
             min-height: 52px;
         }
 
+        .form-control:hover {
+            border-color: var(--accent);
+        }
+
         .form-control:focus {
             outline: none;
             border-color: var(--accent);
@@ -456,6 +574,14 @@
             justify-content: center;
             gap: 10px;
             touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            background: var(--gradient-2);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .btn-primary:active {
@@ -484,6 +610,7 @@
             display: none;
             border-bottom: 4px solid var(--primary);
             overflow-x: hidden;
+            animation: slideIn 0.3s ease-out;
         }
 
         /* Loading */
@@ -497,6 +624,7 @@
             width: 60px;
             height: 60px;
             margin: 0 auto 16px;
+            position: relative;
         }
 
         .spinner {
@@ -504,6 +632,8 @@
             height: 100%;
             border: 4px solid rgba(30, 58, 138, 0.1);
             border-top: 4px solid var(--primary);
+            border-right: 4px solid var(--accent);
+            border-bottom: 4px solid var(--secondary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -522,6 +652,13 @@
             box-shadow: var(--shadow-lg);
             text-align: center;
             border-top: 4px solid var(--danger);
+            animation: shake 0.5s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
         }
 
         footer {
@@ -555,6 +692,7 @@
             padding: 20px;
             margin: 25px 0;
             border: 2px solid rgba(30, 58, 138, 0.1);
+            animation: fadeIn 0.5s ease-out;
         }
 
         .summary-grid {
@@ -571,6 +709,12 @@
             text-align: center;
             box-shadow: var(--shadow-sm);
             border: 1px solid rgba(30, 58, 138, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .summary-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
         }
 
         .summary-value {
@@ -595,6 +739,16 @@
             text-align: center;
             margin-top: 20px;
             box-shadow: var(--shadow-md);
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 20px rgba(30, 58, 138, 0.5);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(30, 58, 138, 0.8);
+            }
         }
 
         .grade-display {
@@ -602,6 +756,115 @@
             font-weight: 900;
             margin: 10px 0;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Enhanced Table Styling */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(30, 58, 138, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--gradient-1);
+            color: white;
+            padding: 14px 10px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        tr:hover td {
+            background-color: rgba(96, 165, 250, 0.05);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(30, 58, 138, 0.2);
+        }
+
+        .action-btn {
+            padding: 14px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 48px;
+            border: none;
+            outline: none;
+        }
+
+        .btn-home {
+            background: linear-gradient(135deg, #6B7280 0%, #9CA3AF 100%);
+            color: white;
+            border: 2px solid #9CA3AF;
+        }
+
+        .btn-check {
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-print {
+            background: var(--gradient-1);
+            border: 2px solid var(--primary);
+            color: white;
+        }
+
+        .btn-home:hover, .btn-check:hover, .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-home:active, .btn-check:active, .btn-print:active {
+            transform: scale(0.98);
+        }
+
+        /* Confetti Effect */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-light);
+            opacity: 0;
+            z-index: 9999;
+            animation: confetti-fall 5s linear forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
         }
 
         /* Mobile-specific improvements */
@@ -696,6 +959,18 @@
                 -webkit-overflow-scrolling: touch;
                 overflow-x: auto;
             }
+            
+            .floating-home-btn {
+                bottom: 15px;
+                right: 15px;
+                width: 48px;
+                height: 48px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -760,6 +1035,13 @@
                 grid-template-columns: 1fr;
                 gap: 10px;
             }
+            
+            .floating-home-btn {
+                bottom: 10px;
+                right: 10px;
+                width: 44px;
+                height: 44px;
+            }
         }
 
         @media (max-width: 360px) {
@@ -787,6 +1069,17 @@
             
             .btn-primary {
                 font-size: 0.9rem !important;
+            }
+            
+            .floating-home-btn {
+                bottom: 8px;
+                right: 8px;
+                width: 40px;
+                height: 40px;
+            }
+            
+            .floating-home-btn i {
+                font-size: 1.2rem;
             }
         }
 
@@ -818,6 +1111,7 @@
                 width: 210mm !important;
                 min-height: 297mm !important;
                 overflow: visible !important;
+                font-family: 'Roboto', sans-serif;
             }
             
             .container {
@@ -827,122 +1121,135 @@
                 margin: 0 !important;
             }
             
-            /* Result Sheet for Print */
-            .mobile-result-sheet {
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 20px !important;
-                box-shadow: none !important;
-                border-radius: 0 !important;
-                page-break-after: always;
-                border: 2px solid #000 !important;
-                background: white !important;
-                min-height: 277mm !important; /* 297mm - 20mm margins */
-            }
-            
-            /* Force colors to print */
-            .mobile-result-sheet * {
-                color: #000 !important;
-                background-color: inherit !important;
-            }
-            
-            /* Keep colored elements in print */
-            .gradient-bg, .performance-grade, .summary-item, 
-            .table-responsive, .final-result {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                background-color: inherit !important;
-            }
-            
-            /* Hide unnecessary elements */
+            /* Hide non-print elements */
             .no-print,
-            .action-buttons,
-            footer,
             .header,
             .countdown-container,
             .form-container,
             .success-message-container,
             .loading-container,
             .error-message,
-            .back-to-top,
+            footer,
             .toppers-btn-container,
-            .btn-primary,
-            .toppers-btn,
-            .exam-title {
+            .floating-home-btn,
+            .header-home-btn,
+            .action-buttons,
+            .exam-title,
+            .format-example {
                 display: none !important;
             }
             
-            /* Improve table printing */
-            table {
-                page-break-inside: auto !important;
-                border-collapse: collapse !important;
+            /* Result Sheet for Print */
+            .mobile-result-sheet {
                 width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 15px !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                page-break-after: avoid;
+                border: 2px solid #000 !important;
+                background: white !important;
+                min-height: 265mm !important;
             }
             
-            tr {
-                page-break-inside: avoid !important;
-                page-break-after: auto !important;
+            /* Print Header */
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #000;
             }
             
-            td, th {
-                padding: 8px !important;
-                border: 1px solid #ddd !important;
-                background-color: white !important;
+            .print-header h2 {
+                color: #000 !important;
+                font-size: 18pt !important;
+                font-weight: 700 !important;
+                margin-bottom: 5px !important;
             }
             
-            th {
-                background-color: #f8f9fa !important;
-                font-weight: bold !important;
+            .print-header p {
+                color: #000 !important;
+                font-size: 11pt !important;
+                margin-bottom: 5px !important;
             }
             
-            /* Performance Summary print styles */
+            /* Student Info for Print */
+            .student-info-print {
+                display: block !important;
+                margin-bottom: 25px;
+                padding: 15px;
+                border: 1px solid #000;
+                border-radius: 8px;
+                background: #f8f9fa !important;
+            }
+            
+            /* Performance Summary for Print */
             .performance-summary {
                 background: #f8f9fa !important;
-                border: 2px solid #ddd !important;
+                border: 1px solid #000 !important;
                 page-break-inside: avoid !important;
+                margin: 20px 0 !important;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 10px !important;
             }
             
             .summary-item {
                 background: white !important;
-                border: 1px solid #ddd !important;
+                border: 1px solid #000 !important;
                 box-shadow: none !important;
+                page-break-inside: avoid !important;
             }
             
             .performance-grade {
                 background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%) !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
+                color: white !important;
+                border: 1px solid #000 !important;
             }
             
-            /* Ensure proper spacing */
-            .result-content > * {
-                margin-bottom: 15px !important;
-            }
-            
-            /* Prevent page breaks in critical sections */
-            .student-info,
-            .performance-summary,
-            .final-result {
+            /* Tables for Print */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                font-size: 10pt !important;
                 page-break-inside: avoid !important;
-                page-break-after: avoid !important;
             }
             
-            /* Add page break before subject-wise performance if needed */
-            .subject-performance {
-                page-break-before: auto !important;
+            th {
+                background: #1E3A8A !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                padding: 8px !important;
+                border: 1px solid #000 !important;
             }
             
-            /* Print header for each page */
-            .print-header {
-                display: block !important;
-                text-align: center;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
-                border-bottom: 2px solid #000;
+            td {
+                padding: 8px !important;
+                border: 1px solid #000 !important;
+                background: white !important;
+                color: #000 !important;
             }
             
-            /* Watermark for official use */
+            tr {
+                page-break-inside: avoid !important;
+            }
+            
+            /* Final Result for Print */
+            .final-result {
+                border: 2px solid #000 !important;
+                background: #f8f9fa !important;
+                color: #000 !important;
+                page-break-inside: avoid !important;
+            }
+            
+            /* Watermark */
             .print-watermark {
                 position: fixed;
                 top: 50%;
@@ -952,18 +1259,41 @@
                 color: rgba(0, 0, 0, 0.1);
                 z-index: 1000;
                 pointer-events: none;
+                font-weight: bold;
+            }
+            
+            /* Print Footer */
+            .print-footer {
+                display: block !important;
+                margin-top: 30px;
+                padding-top: 15px;
+                border-top: 1px solid #000;
+                text-align: center;
+                font-size: 9pt;
+                color: #666;
+            }
+            
+            /* Prevent page breaks in critical sections */
+            .student-info,
+            .performance-summary,
+            .final-result {
+                page-break-inside: avoid !important;
+            }
+            
+            /* Ensure proper spacing */
+            .result-content > * {
+                margin-bottom: 15px !important;
             }
         }
 
         /* Print-specific classes */
-        .print-header {
+        .print-header,
+        .print-footer,
+        .print-watermark,
+        .student-info-print {
             display: none;
         }
         
-        .print-watermark {
-            display: none;
-        }
-
         /* Prevent text selection */
         button, .no-select {
             user-select: none;
@@ -995,74 +1325,49 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* Better table display on mobile */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-
-        th, td {
-            padding: 12px 8px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        /* Enhanced touch feedback */
-        .btn-primary, .toppers-btn {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary:after, .toppers-btn:after {
-            content: '';
+        /* Ripple effect for buttons */
+        .ripple {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
+            border-radius: 50%;
             background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
         }
 
-        .btn-primary:focus:not(:active)::after,
-        .toppers-btn:focus:not(:active)::after {
-            animation: ripple 1s ease-out;
-        }
-
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
                 opacity: 0;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+    
     <div class="container">
-        <!-- Header -->
+        <!-- Header with Home Button -->
         <div class="header">
-            <img src="https://i.ibb.co/hRD6Hsj9/nsm-logo-removebg-preview.png" alt="College Logo" class="college-logo">
-            <h1 class="college-name">NOORUSSALAM SECONDARY MADRASA</h1>
-            <p class="college-tagline">Kambippalam, Kerala Estate, Malappuram</p>
-            <div class="exam-title">
-                <i class="fas fa-graduation-cap"></i> ACADEMIC RESULTS PORTAL 2025-26
-            </div>
-            
-            <!-- Class Toppers Button Container -->
-            <div class="toppers-btn-container" id="toppersBtnContainer">
-                <a href="toppers.html" class="toppers-btn">
-                    <i class="fas fa-crown"></i>
-                    <span>View Class Toppers & Generate Certificates</span>
-                    <span class="toppers-label">NEW</span>
-                </a>
+            <div class="header-content">
+                <button class="header-home-btn no-print" id="headerHomeBtn" title="Go to Home">
+                    <i class="fas fa-home"></i>
+                </button>
+                <img src="https://i.ibb.co/hRD6Hsj9/nsm-logo-removebg-preview.png" alt="College Logo" class="college-logo">
+                <h1 class="college-name">NOORUSSALAM SECONDARY MADRASA</h1>
+                <p class="college-tagline">Kambippalam, Kerala Estate, Malappuram</p>
+                <div class="exam-title">
+                    <i class="fas fa-graduation-cap"></i> ACADEMIC RESULTS PORTAL 2025-26
+                </div>
+                
+                <!-- Class Toppers Button Container -->
+                <div class="toppers-btn-container" id="toppersBtnContainer">
+                    <a href="toppers.html" class="toppers-btn">
+                        <i class="fas fa-crown"></i>
+                        <span>View Class Toppers & Generate Certificates</span>
+                        <span class="toppers-label">NEW</span>
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -1198,6 +1503,11 @@
         </footer>
     </div>
 
+    <!-- Floating Home Button -->
+    <div class="floating-home-btn no-print" onclick="goToHome()" title="Go to Home">
+        <i class="fas fa-home"></i>
+    </div>
+
     <script>
         // Google Apps Script URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEyzob8hjEBduZJ7AUHO8GxQ2KoQAjZRLYzRSL0l-ZeEcZqQ35lGiQkgD75x3j2uY2wA/exec';
@@ -1213,6 +1523,9 @@
         const rollInput = document.getElementById('roll');
         const classSelect = document.getElementById('class');
         const toppersBtnContainer = document.getElementById('toppersBtnContainer');
+        const headerHomeBtn = document.getElementById('headerHomeBtn');
+        const floatingHomeBtn = document.querySelector('.floating-home-btn');
+        const particlesContainer = document.getElementById('particles');
         
         // Countdown elements
         const daysElement = document.getElementById('days');
@@ -1226,6 +1539,61 @@
         let countdownInterval = null;
         let serverPublishTime = null;
         let hasCountdownEnded = false;
+
+        // Initialize particles
+        function initParticles() {
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 8 + 2;
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const color = `rgba(${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, 255, ${Math.random() * 0.2 + 0.05})`;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+                particle.style.background = color;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Ripple effect for buttons
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement("span");
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+            
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+            circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+            circle.classList.add("ripple");
+            
+            const ripple = button.getElementsByClassName("ripple")[0];
+            
+            if (ripple) {
+                ripple.remove();
+            }
+            
+            button.appendChild(circle);
+        }
+
+        // Add ripple effect to buttons
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(button => {
+            button.addEventListener('click', createRipple);
+        });
 
         // Format registration number
         rollInput.addEventListener('input', function(e) {
@@ -1255,6 +1623,31 @@
             toppersBtnContainer.style.display = 'none';
         }
 
+        // Show/Hide Home Buttons
+        function showHomeButtons() {
+            headerHomeBtn.style.display = 'flex';
+            floatingHomeBtn.style.display = 'flex';
+        }
+
+        function hideHomeButtons() {
+            headerHomeBtn.style.display = 'none';
+            floatingHomeBtn.style.display = 'none';
+        }
+
+        // Home button functionality
+        function goToHome() {
+            if (hasCountdownEnded) {
+                showForm();
+            } else {
+                checkResultsStatus();
+            }
+            scrollToTop();
+        }
+
+        // Add click event to home buttons
+        headerHomeBtn.addEventListener('click', goToHome);
+        floatingHomeBtn.addEventListener('click', goToHome);
+
         // Show temporary success message then form
         function showTemporarySuccessThenForm() {
             if (hasCountdownEnded) return;
@@ -1268,6 +1661,7 @@
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'none';
             hideToppersButton();
+            hideHomeButtons();
             
             // Show temporary success message
             successMessageContainer.style.display = 'block';
@@ -1293,6 +1687,7 @@
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'none';
             showToppersButton();
+            hideHomeButtons();
             
             setTimeout(() => {
                 rollInput.focus();
@@ -1331,6 +1726,7 @@
             loadingContainer.style.display = 'none';
             countdownContainer.style.display = 'block';
             hideToppersButton();
+            hideHomeButtons();
             
             countdownMessage.textContent = data.message || "Annual Examination Results 2025-26 will be available in:";
             publishDateTime.textContent = data.publishTimeFormatted || "";
@@ -1388,6 +1784,7 @@
             errorContainer.style.display = 'none';
             loadingContainer.style.display = 'block';
             hideToppersButton();
+            hideHomeButtons();
         }
 
         // Show error with animation
@@ -1402,6 +1799,7 @@
             loadingContainer.style.display = 'none';
             errorContainer.style.display = 'block';
             hideToppersButton();
+            hideHomeButtons();
         }
 
         // Scroll to top function
@@ -1412,26 +1810,51 @@
             });
         }
 
-        // Enhanced print function
+        // Enhanced print function with A4 optimization
         function enhancedPrint() {
-            // Add print header and watermark
             const resultContent = document.querySelector('.result-content');
             if (resultContent) {
                 // Create print header
                 const printHeader = document.createElement('div');
                 printHeader.className = 'print-header';
                 printHeader.innerHTML = `
-                    <h2 style="color: var(--primary); font-size: 18pt; font-weight: 700; margin-bottom: 5px;">NOORUSSALAM SECONDARY MADRASA</h2>
-                    <p style="color: #4B5563; font-size: 12pt; margin-bottom: 5px;">Kambippalam, Kerala Estate, Malappuram</p>
-                    <p style="color: var(--primary); font-size: 11pt; font-weight: 600; border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 5px 0; margin: 10px 0;">ACADEMIC PERFORMANCE STATEMENT - ANNUAL EXAMINATION 2025-26</p>
+                    <h2>NOORUSSALAM SECONDARY MADRASA</h2>
+                    <p>Kambippalam, Kerala Estate, Malappuram</p>
+                    <p style="font-weight: bold; font-size: 12pt;">ACADEMIC PERFORMANCE STATEMENT - ANNUAL EXAMINATION 2025-26</p>
+                    <hr style="border: 1px solid #000; margin: 10px 0;">
                 `;
-                resultContent.insertBefore(printHeader, resultContent.firstChild);
                 
                 // Create watermark
                 const watermark = document.createElement('div');
                 watermark.className = 'print-watermark';
                 watermark.innerHTML = 'OFFICIAL COPY';
+                
+                // Create print footer
+                const printFooter = document.createElement('div');
+                printFooter.className = 'print-footer';
+                printFooter.innerHTML = `
+                    <hr style="border: 1px solid #000; margin: 20px 0 10px;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div style="text-align: left;">
+                            <strong>Swadar Muallim's Signature:</strong><br>
+                            <div style="height: 50px; border-bottom: 1px solid #000; margin-top: 5px;"></div>
+                        </div>
+                        <div style="text-align: right;">
+                            <strong>Date:</strong> ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}<br>
+                            <div style="height: 50px; border-bottom: 1px solid #000; margin-top: 5px;"></div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; font-size: 8pt; color: #999;">
+                        This is a computer-generated document. No physical signature required.<br>
+                        Generated by: Noorussalam Madrasa Result Portal
+                    </p>
+                `;
+                
+                // Insert elements
+                resultContent.insertBefore(printHeader, resultContent.firstChild);
+                resultContent.insertBefore(studentInfoPrint, resultContent.children[1]);
                 document.body.appendChild(watermark);
+                resultContent.appendChild(printFooter);
             }
             
             // Trigger print
@@ -1440,9 +1863,14 @@
             // Clean up after printing
             setTimeout(() => {
                 const printHeader = document.querySelector('.print-header');
+                const studentInfoPrint = document.querySelector('.student-info-print');
                 const watermark = document.querySelector('.print-watermark');
+                const printFooter = document.querySelector('.print-footer');
+                
                 if (printHeader) printHeader.remove();
+                if (studentInfoPrint) studentInfoPrint.remove();
                 if (watermark) watermark.remove();
+                if (printFooter) printFooter.remove();
             }, 500);
         }
 
@@ -1492,6 +1920,9 @@
             const overallStatus = data.overallStatus;
             const percentage = parseFloat(student.percentage || '0');
             
+            // Create confetti effect
+            createConfetti();
+            
             // Calculate grade based on percentage
             let overallGrade = '';
             let gradeColor = '#10B981';
@@ -1532,16 +1963,16 @@
                 
                 subjectRows += `
                     <tr>
-                        <td style="padding: 12px 8px; text-align: center; font-weight: 600; color: var(--primary);">${index + 1}</td>
-                        <td style="padding: 12px 8px; text-align: left; font-weight: 500;">${subject.name}</td>
-                        <td style="padding: 12px 8px; text-align: center; font-weight: 700; color: var(--primary);">${subject.maxScore}</td>
-                        <td style="padding: 12px 8px; text-align: center; font-weight: 700; color: ${subject.status === 'Pass' ? 'var(--success)' : 'var(--danger)'};">${subject.obtainedScore}</td>
-                        <td style="padding: 12px 8px; text-align: center;">
+                        <td style="text-align: center; font-weight: 600; color: var(--primary);">${index + 1}</td>
+                        <td style="text-align: left; font-weight: 500;">${subject.name}</td>
+                        <td style="text-align: center; font-weight: 700; color: var(--primary);">${subject.maxScore}</td>
+                        <td style="text-align: center; font-weight: 700; color: ${subject.status === 'Pass' ? 'var(--success)' : 'var(--danger)'};">${subject.obtainedScore}</td>
+                        <td style="text-align: center;">
                             <span style="display: inline-block; padding: 6px 12px; border-radius: 15px; font-weight: 700; font-size: 0.9rem; background: ${gradeColor}15; color: ${gradeColor}; border: 1px solid ${gradeColor}30;">
                                 ${subject.grade}
                             </span>
                         </td>
-                        <td style="padding: 12px 8px; text-align: center;">
+                        <td style="text-align: center;">
                             <span style="padding: 6px 12px; border-radius: 15px; font-weight: 600; font-size: 0.85rem; background: ${subject.status === 'Pass' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; color: ${subject.status === 'Pass' ? 'var(--success)' : 'var(--danger)'}; border: 1px solid ${subject.status === 'Pass' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}">
                                 ${subject.status}
                             </span>
@@ -1597,16 +2028,16 @@
                         </h3>
                         
                         ${subjects.length > 0 ? `
-                        <div class="table-responsive" style="overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid rgba(30, 58, 138, 0.1);">
-                            <table style="width: 100%; border-collapse: collapse; background: white; font-size: 0.9rem; min-width: 550px;">
+                        <div class="table-responsive">
+                            <table>
                                 <thead>
-                                    <tr style="background: var(--gradient-1); color: white;">
-                                        <th style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">#</th>
-                                        <th style="padding: 14px 10px; text-align: left; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Subject</th>
-                                        <th style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Max</th>
-                                        <th style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Obtained</th>
-                                        <th style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Grade</th>
-                                        <th style="padding: 14px 10px; text-align: center; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">Status</th>
+                                    <tr>
+                                        <th style="text-align: center;">#</th>
+                                        <th style="text-align: left;">Subject</th>
+                                        <th style="text-align: center;">Max</th>
+                                        <th style="text-align: center;">Obtained</th>
+                                        <th style="text-align: center;">Grade</th>
+                                        <th style="text-align: center;">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1617,7 +2048,7 @@
                         ` : '<div style="text-align: center; color: #6B7280; padding: 25px; font-size: 0.95rem; background: #F0F9FF; border-radius: 12px; border: 1px dashed #BFDBFE;"><i class="fas fa-info-circle" style="margin-right: 8px;"></i> No subject data available.</div>'}
                     </div>
                     
-                    <!-- PERFORMANCE SUMMARY (Added below subject-wise performance) -->
+                    <!-- PERFORMANCE SUMMARY -->
                     <div class="performance-summary">
                         <h3 style="color: var(--primary); font-weight: 700; font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-chart-line"></i> PERFORMANCE SUMMARY
@@ -1696,24 +2127,16 @@
                             </div>` : ''}
                     </div>
                     
-                    <!-- Footer Notes -->
-                    <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(30, 58, 138, 0.1); color: #6B7280; font-size: 0.85rem; text-align: center; background: rgba(30, 58, 138, 0.03); padding: 14px; border-radius: 10px; border: 1px solid rgba(30, 58, 138, 0.1);">
-                        <div style="margin-bottom: 6px; font-weight: 500;">
-                            <i class="fas fa-calendar" style="margin-right: 6px; color: var(--primary);"></i> 
-                            Generated on: ${data.generatedOn || new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--primary); margin-top: 8px; font-weight: 500;">
-                            <i class="fas fa-shield-alt" style="margin-right: 6px; color: var(--accent);"></i> 
-                            This is an electronically generated document
-                        </div>
-                    </div>
                     
                     <!-- Action Buttons -->
-                    <div class="no-print action-buttons" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 25px; padding-top: 20px; border-top: 2px solid rgba(30, 58, 138, 0.2);">
-                        <button onclick="showForm()" style="padding: 14px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;">
+                    <div class="no-print action-buttons">
+                        <button class="action-btn btn-home" onclick="goToHome()">
+                            <i class="fas fa-home"></i> Home
+                        </button>
+                        <button class="action-btn btn-check" onclick="showForm()">
                             <i class="fas fa-redo"></i> Check Another
                         </button>
-                        <button onclick="enhancedPrint()" style="padding: 14px; background: var(--gradient-1); border: 2px solid var(--primary); color: white; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px;">
+                        <button class="action-btn btn-print" onclick="enhancedPrint()">
                             <i class="fas fa-print"></i> Print Result
                         </button>
                     </div>
@@ -1721,7 +2144,7 @@
                     <!-- Print Instructions -->
                     <div class="no-print" style="margin-top: 15px; padding: 12px; background: rgba(30, 58, 138, 0.05); border-radius: 10px; border-left: 4px solid var(--primary); font-size: 0.85rem; color: #4B5563;">
                         <strong><i class="fas fa-info-circle" style="margin-right: 6px; color: var(--primary);"></i> Print Instructions:</strong> 
-                        Click "Print Result" for optimized printing.
+                        Click "Print Result" for A4 optimized printing. For best results, use landscape orientation and "Actual Size" in print settings.
                     </div>
                 </div>
             `;
@@ -1731,19 +2154,62 @@
             loadingContainer.style.display = 'none';
             resultContainer.style.display = 'block';
             showToppersButton();
+            showHomeButtons();
+            
+            // Add ripple effects to new buttons
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
             
             setTimeout(() => {
                 resultContainer.scrollIntoView({ behavior: 'smooth' });
             }, 300);
         }
 
+        // Create confetti effect
+        function createConfetti() {
+            const confettiCount = 50;
+            const colors = ['#1E3A8A', '#3B82F6', '#60A5FA', '#38BDF8', '#10B981', '#F59E0B'];
+            
+            for (let i = 0; i < confettiCount; i++) {
+                const confetti = document.createElement('div');
+                confetti.classList.add('confetti');
+                
+                // Random properties
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                const size = Math.random() * 10 + 5;
+                const left = Math.random() * 100;
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 2;
+                
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.left = `${left}%`;
+                confetti.style.background = color;
+                confetti.style.animationDuration = `${duration}s`;
+                confetti.style.animationDelay = `${delay}s`;
+                
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+
         // Initialize - Check status on page load
         window.addEventListener('DOMContentLoaded', function() {
+            // Initialize particles
+            initParticles();
+            
             // For demo purposes, set a short countdown (10 seconds)
             serverPublishTime = Date.now() + (10 * 1000);
             
             showLoading("Loading result portal...");
             hideToppersButton();
+            hideHomeButtons();
             
             // Check status after a short delay
             setTimeout(() => {
