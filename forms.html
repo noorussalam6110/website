@@ -1196,6 +1196,85 @@
       filter: brightness(0) invert(1);
     }
 
+    /* Search Modal Styles */
+    .search-modal .modal-content {
+      border-radius: 20px;
+      border: none;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-modal .modal-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      border-radius: 20px 20px 0 0;
+      padding: 20px 30px;
+    }
+
+    .search-modal .modal-body {
+      padding: 30px;
+    }
+
+    .search-modal .modal-footer {
+      border-top: 1px solid #e2e8f0;
+      padding: 20px 30px;
+    }
+
+    .application-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 15px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .application-card:hover {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      transform: translateY(-5px);
+    }
+
+    .application-card .card-header {
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-bottom: 1px solid #e2e8f0;
+      padding: 15px 20px;
+    }
+
+    .application-card .card-body {
+      padding: 20px;
+    }
+
+    .application-card .card-footer {
+      background: #f8f9fa;
+      border-top: 1px solid #e2e8f0;
+      padding: 15px 20px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .status-badge {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fbbf24;
+    }
+
+    .status-approved {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+
+    .status-rejected {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+    }
+
     /* Responsive Design */
     @media (max-width: 992px) {
       body {
@@ -1312,11 +1391,20 @@
     <div class="collapse navbar-collapse" id="navMenu">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
         
-        <!-- Home Button - Added -->
+        <!-- Home Button -->
         <li class="nav-item">
           <a class="nav-link nav-icon active" href="index.html">
             <i class="fas fa-home"></i>
             <span>Home</span>
+            <div class="nav-hover-effect"></div>
+          </a>
+        </li>
+
+        <!-- Search Application Button -->
+        <li class="nav-item">
+          <a class="nav-link nav-icon" href="#" onclick="openSearchModal()">
+            <i class="fas fa-search"></i>
+            <span>Search Application</span>
             <div class="nav-hover-effect"></div>
           </a>
         </li>
@@ -1508,6 +1596,7 @@
     </div>
   </div>
 </nav>
+
 <!-- Hero Section -->
 <section class="hero-section">
   <div class="container">
@@ -1769,6 +1858,118 @@
           <i class="fas fa-redo me-2"></i> 
           <span class="english">Submit Another Application</span>
         </button>
+        <button class="btn btn-info ms-2" onclick="openSearchModal()">
+          <i class="fas fa-search me-2"></i> 
+          <span class="english">Search Application</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Search Modal -->
+<div class="modal fade search-modal" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title english" id="searchModalLabel">
+          <i class="fas fa-search me-2"></i>Search Application
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Search Form -->
+        <div class="search-form mb-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="label-group">
+                <div class="label-main english">
+                  <i class="fas fa-phone me-1"></i>
+                  Search by Phone Number
+                </div>
+                <div class="label-sub malayalam">ഫോൺ നമ്പർ ഉപയോഗിച്ച് തിരയുക</div>
+                <input type="tel" 
+                       class="form-control" 
+                       id="searchPhone" 
+                       placeholder="Enter 10-digit phone number"
+                       maxlength="10"
+                       pattern="[0-9]{10}">
+                <div class="input-hint english">Enter the phone number used during registration</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="label-group">
+                <div class="label-main english">
+                  <i class="fas fa-id-card me-1"></i>
+                  Search by Reference ID
+                </div>
+                <div class="label-sub malayalam">റഫറൻസ് ഐഡി ഉപയോഗിച്ച് തിരയുക</div>
+                <input type="text" 
+                       class="form-control" 
+                       id="searchReferenceId" 
+                       placeholder="e.g., NSM-20260101-1234">
+                <div class="input-hint english">Enter your reference ID received after submission</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center mt-4">
+            <button class="btn btn-primary btn-lg" onclick="performSearch()" id="searchBtn">
+              <i class="fas fa-search me-2"></i>
+              <span class="english">Search Application</span>
+            </button>
+            <div class="malayalam mt-2" style="font-size: 0.9em;">അപേക്ഷ തിരയുക</div>
+          </div>
+          
+          <div class="text-center mt-3">
+            <small class="text-muted english">
+              <i class="fas fa-info-circle me-1"></i>
+              Use either phone number OR reference ID
+            </small>
+          </div>
+        </div>
+        
+        <!-- Loading Indicator -->
+        <div id="searchLoading" class="text-center" style="display: none;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 english">Searching applications...</p>
+        </div>
+        
+        <!-- Error Message -->
+        <div id="searchError" class="alert alert-danger mt-3" style="display: none;">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <span id="searchErrorMessage"></span>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="searchResults" style="display: none;">
+          <h5 class="english mb-3">
+            <i class="fas fa-list-alt me-2"></i>
+            Search Results
+            <span class="badge bg-primary ms-2" id="resultCount">0</span>
+          </h5>
+          
+          <div id="applicationsList">
+            <!-- Results will be dynamically inserted here -->
+          </div>
+        </div>
+        
+        <!-- No Results -->
+        <div id="noResults" class="text-center py-5" style="display: none;">
+          <i class="fas fa-search fa-3x text-muted mb-3"></i>
+          <h5 class="english text-muted">No applications found</h5>
+          <p class="english text-muted">Please check your search criteria and try again</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Close
+        </button>
+        <button type="button" class="btn btn-outline-primary" onclick="clearSearch()">
+          <i class="fas fa-redo me-2"></i>Clear Search
+        </button>
       </div>
     </div>
   </div>
@@ -1869,7 +2070,6 @@
   </div>
 </footer>
 
-
 <!-- WhatsApp Chat Button -->
 <a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" 
    class="whatsapp-float" 
@@ -1885,7 +2085,7 @@
   // ===========================================
   
   // ⚠️ IMPORTANT: REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzR0wRax3iFIjq9uN__kwngAVz3NtHdRLxgTqKCPgxCfrAXQM1TAow9dVIEg6ArOcnlw/exec';
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxsO9_GpcitbJg5exNq6cRY6AJAMKaFz-uvTG1Ecg31tU_WOZriKEbEksh_GAHPytymSQ/exec';
   
   // ===========================================
   // INITIALIZATION
@@ -2351,6 +2551,276 @@
     // Scroll to form
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+  
+  // ===========================================
+  // SEARCH FUNCTIONALITY
+  // ===========================================
+  
+  // Open search modal from anywhere
+  function openSearchModal() {
+    const modal = new bootstrap.Modal(document.getElementById('searchModal'));
+    modal.show();
+    clearSearch(); // Clear previous results
+  }
+  
+  // Clear search form and results
+  function clearSearch() {
+    document.getElementById('searchPhone').value = '';
+    document.getElementById('searchReferenceId').value = '';
+    document.getElementById('searchError').style.display = 'none';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('noResults').style.display = 'none';
+    document.getElementById('applicationsList').innerHTML = '';
+  }
+  
+  // Perform search
+  async function performSearch() {
+    const phone = document.getElementById('searchPhone').value.trim();
+    const referenceId = document.getElementById('searchReferenceId').value.trim();
+    const searchBtn = document.getElementById('searchBtn');
+    
+    // Hide previous results/errors
+    document.getElementById('searchError').style.display = 'none';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('noResults').style.display = 'none';
+    
+    // Validate input
+    if (!phone && !referenceId) {
+      showSearchError('Please enter either phone number or reference ID');
+      return;
+    }
+    
+    if (phone && !/^[0-9]{10}$/.test(phone)) {
+      showSearchError('Please enter a valid 10-digit phone number');
+      return;
+    }
+    
+    // Show loading
+    document.getElementById('searchLoading').style.display = 'block';
+    searchBtn.disabled = true;
+    searchBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Searching...';
+    
+    try {
+      // Build URL for search
+      let url = `${GOOGLE_SCRIPT_URL}?action=search`;
+      if (phone) {
+        url += `&phone=${encodeURIComponent(phone)}`;
+      } else {
+        url += `&referenceId=${encodeURIComponent(referenceId)}`;
+      }
+      
+      // Make search request
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      // Hide loading
+      document.getElementById('searchLoading').style.display = 'none';
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Application';
+      
+      if (data.success) {
+        displaySearchResults(data.results);
+      } else {
+        showSearchError(data.error || 'Search failed. Please try again.');
+      }
+      
+    } catch (error) {
+      console.error('Search error:', error);
+      document.getElementById('searchLoading').style.display = 'none';
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Application';
+      showSearchError('Network error. Please check your connection and try again.');
+    }
+  }
+  
+  // Display search results
+  function displaySearchResults(results) {
+    const resultsContainer = document.getElementById('applicationsList');
+    const resultsSection = document.getElementById('searchResults');
+    const noResultsSection = document.getElementById('noResults');
+    const resultCount = document.getElementById('resultCount');
+    
+    // Clear previous results
+    resultsContainer.innerHTML = '';
+    
+    if (!results || results.length === 0) {
+      resultsSection.style.display = 'none';
+      noResultsSection.style.display = 'block';
+      return;
+    }
+    
+    // Update result count
+    resultCount.textContent = results.length;
+    
+    // Display each result
+    results.forEach((application, index) => {
+      const applicationCard = createApplicationCard(application, index + 1);
+      resultsContainer.innerHTML += applicationCard;
+    });
+    
+    // Show results section
+    resultsSection.style.display = 'block';
+    noResultsSection.style.display = 'none';
+    
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  // Create application card HTML
+  function createApplicationCard(application, index) {
+    const statusClass = getStatusClass(application.status);
+    const formattedDate = formatApplicationDate(application.submissionDate);
+    
+    return `
+      <div class="card mb-3 border-start border-4 ${statusClass}">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge ${statusClass} me-2">${application.status || 'Pending'}</span>
+            <span class="badge bg-secondary">${application.academicYear || '2026-27'}</span>
+          </div>
+          <small class="text-muted">#${index}</small>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <h6 class="card-title english">
+                <i class="fas fa-user-graduate me-2"></i>
+                ${application.studentName || 'N/A'}
+              </h6>
+              <p class="card-text mb-1">
+                <small class="text-muted english">
+                  <i class="fas fa-user-friends me-1"></i>
+                  ${application.guardianName || 'N/A'}
+                </small>
+              </p>
+              <p class="card-text mb-1">
+                <small class="text-muted english">
+                  <i class="fas fa-phone me-1"></i>
+                  ${application.phone || 'N/A'}
+                </small>
+              </p>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex flex-column">
+                <div class="mb-2">
+                  <strong class="english">Reference ID:</strong>
+                  <code class="ms-2" style="font-size: 0.9em;">${application.referenceId || 'N/A'}</code>
+                </div>
+                <div class="mb-2">
+                  <strong class="english">DOB:</strong>
+                  <span class="ms-2">${application.dob || 'N/A'}</span>
+                </div>
+                <div>
+                  <strong class="english">Submitted:</strong>
+                  <span class="ms-2">${formattedDate} ${application.submissionTime || ''}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Additional Details (Collapsible) -->
+          <div class="mt-3">
+            <button class="btn btn-sm btn-outline-primary" type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#details-${application.referenceId || index}" 
+                    aria-expanded="false">
+              <i class="fas fa-chevron-down me-1"></i>
+              View Details
+            </button>
+            
+            <div class="collapse mt-2" id="details-${application.referenceId || index}">
+              <div class="card card-body bg-light">
+                <div class="row">
+                  <div class="col-md-6">
+                    <p class="mb-1"><strong>House Name:</strong> ${application.houseName || 'Not provided'}</p>
+                    <p class="mb-1"><strong>Gender:</strong> ${application.gender || 'N/A'}</p>
+                    <p class="mb-1"><strong>Aadhar:</strong> ${application.aadharNumber || 'Not provided'}</p>
+                  </div>
+                  <div class="col-md-6">
+                    <p class="mb-1"><strong>Source:</strong> ${application.source || 'Web Form'}</p>
+                    <p class="mb-1"><strong>Timestamp:</strong> ${new Date(application.timestamp).toLocaleString() || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer text-muted text-center">
+          <small class="english">Application submitted on ${application.submissionDate || 'N/A'}</small>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Helper function to get status color class
+  function getStatusClass(status) {
+    const statusMap = {
+      'Pending Review': 'border-warning',
+      'Approved': 'border-success',
+      'Rejected': 'border-danger',
+      'Follow-up Required': 'border-info',
+      'Completed': 'border-success',
+      'default': 'border-secondary'
+    };
+    
+    return statusMap[status] || statusMap.default;
+  }
+  
+  // Helper function to format date
+  function formatApplicationDate(dateString) {
+    if (!dateString) return 'N/A';
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  }
+  
+  // Show search error
+  function showSearchError(message) {
+    const errorDiv = document.getElementById('searchError');
+    const errorMessage = document.getElementById('searchErrorMessage');
+    
+    errorMessage.textContent = message;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  
+  // Auto-search when Enter is pressed in search fields
+  document.getElementById('searchPhone').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      performSearch();
+    }
+  });
+  
+  document.getElementById('searchReferenceId').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      performSearch();
+    }
+  });
+  
+  // Clear search modal when closed
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchModal = document.getElementById('searchModal');
+    if (searchModal) {
+      searchModal.addEventListener('hidden.bs.modal', function () {
+        document.getElementById('searchPhone').value = '';
+        document.getElementById('searchReferenceId').value = '';
+        document.getElementById('searchResults').innerHTML = '';
+        document.getElementById('searchError').style.display = 'none';
+      });
+    }
+  });
   
   // ===========================================
   // UTILITY FUNCTIONS
