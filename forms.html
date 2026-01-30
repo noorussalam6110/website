@@ -11,6 +11,10 @@
   <!-- Anek Malayalam Font -->
   <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@100;200;300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
   <style>
     :root {
       --primary: #0a194f;
@@ -749,6 +753,104 @@
       margin: 0 auto 20px;
     }
 
+    /* Search Application Section */
+    .search-section {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 40px 0;
+      margin-bottom: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(58, 141, 243, 0.1);
+    }
+
+    .search-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 5px;
+    }
+
+    .search-title-ml {
+      font-family: 'Anek Malayalam', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 20px;
+    }
+
+    .search-box {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .search-results {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+      margin-top: 20px;
+      display: none;
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .result-table th {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      padding: 12px 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .result-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .result-table tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .result-table .action-btns {
+      display: flex;
+      gap: 8px;
+    }
+
+    .result-table .action-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .result-table .action-btn.view {
+      background: #dbeafe;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+    }
+
+    .result-table .action-btn.print {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+
+    .result-table .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
     /* Form Container */
     .form-container {
       max-width: 800px;
@@ -1061,6 +1163,114 @@
       flex: 1;
     }
 
+    /* PDF Receipt Styles */
+    .pdf-receipt {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 20mm;
+      background: white;
+      font-family: 'Poppins', 'Arial', sans-serif;
+      box-sizing: border-box;
+    }
+
+    .pdf-header {
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 3px solid var(--primary);
+      padding-bottom: 15px;
+    }
+
+    .pdf-header h1 {
+      color: var(--primary);
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .pdf-header h2 {
+      color: var(--secondary);
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .pdf-logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 10px;
+      display: block;
+    }
+
+    .pdf-reference {
+      background: #f8f9fa;
+      border: 2px solid var(--accent);
+      padding: 15px;
+      text-align: center;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    .pdf-reference h3 {
+      color: var(--primary);
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .pdf-reference .ref-id {
+      font-family: 'Courier New', monospace;
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+
+    .pdf-details {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    .pdf-details th {
+      background: var(--primary);
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    .pdf-details td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pdf-details tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+
+    .pdf-footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid #e2e8f0;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .pdf-signature {
+      margin-top: 40px;
+      text-align: right;
+    }
+
+    .pdf-signature-line {
+      border-top: 1px solid #000;
+      width: 200px;
+      margin: 40px auto 5px;
+    }
+
+    .pdf-signature-text {
+      text-align: center;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
     /* Alert Messages */
     .alert {
       border-radius: 12px;
@@ -1222,6 +1432,20 @@
       .form-title-ml {
         font-size: 1.3rem;
       }
+      
+      .search-section {
+        padding: 30px 20px;
+        margin: 20px;
+      }
+      
+      .search-box, .search-results {
+        padding: 20px;
+      }
+      
+      .result-table {
+        display: block;
+        overflow-x: auto;
+      }
     }
 
     @media (max-width: 768px) {
@@ -1256,6 +1480,16 @@
         align-items: flex-start;
         gap: 5px;
       }
+      
+      .result-table .action-btns {
+        flex-direction: column;
+        gap: 5px;
+      }
+      
+      .result-table .action-btn {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     @media (max-width: 576px) {
@@ -1284,6 +1518,33 @@
       
       .form-control, .form-select {
         padding: 12px 14px;
+      }
+      
+      .search-title {
+        font-size: 1.5rem;
+      }
+      
+      .search-title-ml {
+        font-size: 1.3rem;
+      }
+    }
+    
+    /* Print Styles for PDF */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .pdf-receipt, .pdf-receipt * {
+        visibility: visible;
+      }
+      .pdf-receipt {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 20mm;
       }
     }
   </style>
@@ -1508,6 +1769,7 @@
     </div>
   </div>
 </nav>
+
 <!-- Hero Section -->
 <section class="hero-section">
   <div class="container">
@@ -1520,6 +1782,78 @@
       <div style="color: rgba(255, 255, 255, 0.8); font-size: 0.9rem;">
         <i class="fas fa-exclamation-circle me-1"></i>
         <span class="english">Fields marked with <span class="text-warning fw-bold">*</span> are required</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search Application Section -->
+<section class="search-section">
+  <div class="container">
+    <div class="text-center mb-4">
+      <h2 class="search-title english">
+        <i class="fas fa-search me-2" style="color: var(--accent);"></i>
+        Search Application
+      </h2>
+      <p class="search-title-ml malayalam">നിങ്ങളുടെ അപേക്ഷ തിരയുക</p>
+    </div>
+    
+    <div class="search-box">
+      <form id="searchForm">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="label-group">
+              <div class="label-main english">
+                <i class="fas fa-phone me-1"></i>
+                Search by Mobile Number
+              </div>
+              <div class="label-sub malayalam">മൊബൈൽ നമ്പർ നൽകി തിരയുക</div>
+              <input type="text" 
+                     class="form-control" 
+                     id="searchPhone" 
+                     placeholder="Enter 10-digit mobile number"
+                     pattern="[0-9]{10}"
+                     maxlength="10">
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <div class="label-group">
+              <div class="label-main english">
+                <i class="fas fa-id-badge me-1"></i>
+                Search by Reference Number
+              </div>
+              <div class="label-sub malayalam">റഫറൻസ് നമ്പർ നൽകി തിരയുക</div>
+              <input type="text" 
+                     class="form-control" 
+                     id="searchRefId" 
+                     placeholder="Enter reference number (e.g., NSM-20260101-1234)">
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary btn-lg px-5" id="searchBtn">
+            <i class="fas fa-search me-2"></i>
+            <span class="english">Search Application</span>
+          </button>
+          <div class="malayalam mt-2" style="color: #666; font-size: 0.9rem;">
+            അപേക്ഷ തിരയാൻ മുകളിലുള്ള ഫീൽഡുകളിൽ ഏതെങ്കിലും ഒന്ന് പൂരിപ്പിച്ച് തിരയുക ബട്ടൺ ക്ലിക്ക് ചെയ്യുക
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <div id="searchResults" class="search-results">
+      <h4 class="english mb-3">Search Results</h4>
+      <p class="malayalam mb-4" style="color: #666;">തിരയൽ ഫലങ്ങൾ</p>
+      
+      <div id="resultsTableContainer"></div>
+      
+      <div id="noResultsMessage" style="display: none; text-align: center; padding: 40px;">
+        <i class="fas fa-search" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
+        <h5 class="english">No applications found</h5>
+        <p class="malayalam" style="color: #666;">അപേക്ഷകൾ കണ്ടെത്താനായില്ല</p>
       </div>
     </div>
   </div>
@@ -1576,7 +1910,7 @@
           <div class="label-group">
             <div class="label-main english">
               <i class="fas fa-home me-1"></i>
-              House Name& Address
+              House Name & Address
             </div>
             <div class="label-sub malayalam">വീട്ടുപേര്,വിലാസം</div>
             <input type="text" 
@@ -1631,7 +1965,7 @@
                    class="form-control" 
                    name="guardian_name" 
                    id="guardian_name"
-                   placeholder="Full name of parent/guardian / രക്ഷിതാവിന്റെ പൂർണ്ണമായ പേര്" 
+                   placeholder="Full name of parent/guardian" 
                    required>
             <span class="input-hint english">Father/Mother/Legal Guardian</span>
             <span class="input-hint-ml malayalam">പിതാവ്/മാതാവ്/നിയമപരമായ രക്ഷിതാവ്</span>
@@ -1761,15 +2095,101 @@
       </div>
       
       <div class="text-center mt-4">
-        <button class="btn btn-outline-primary me-2" onclick="printReceipt()">
+        <button class="btn btn-primary me-2" onclick="downloadPDF()">
+          <i class="fas fa-file-pdf me-2"></i> 
+          <span class="english">Download PDF Receipt</span>
+        </button>
+        <button class="btn btn-outline-primary me-2" onclick="printPDF()">
           <i class="fas fa-print me-2"></i> 
           <span class="english">Print Receipt</span>
         </button>
-        <button class="btn btn-primary" onclick="submitAnother()">
+        <button class="btn btn-success" onclick="submitAnother()">
           <i class="fas fa-redo me-2"></i> 
           <span class="english">Submit Another Application</span>
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden PDF Receipt Template -->
+<div id="pdfReceiptTemplate" style="display: none;">
+  <div class="pdf-receipt" id="pdfReceiptContent">
+    <div class="pdf-header">
+      <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" class="pdf-logo">
+      <h1>Noorussalam Madrasa</h1>
+      <h2>Kambippalam, Kerala Estate</h2>
+      <p>Admission Receipt | Academic Year 2026-27</p>
+    </div>
+    
+    <div class="pdf-reference">
+      <h3>APPLICATION REFERENCE ID</h3>
+      <div class="ref-id" id="pdfRefId">NSM-20260101-0001</div>
+      <p style="margin-top: 10px; font-size: 14px;">Date: <span id="pdfDate">01-Jan-2026</span></p>
+    </div>
+    
+    <h3 style="color: var(--primary); margin-top: 30px;">Student Information</h3>
+    <table class="pdf-details">
+      <tr>
+        <th>Field</th>
+        <th>Details</th>
+      </tr>
+      <tr>
+        <td>Student Name</td>
+        <td id="pdfStudentName">-</td>
+      </tr>
+      <tr>
+        <td>House Name & Address</td>
+        <td id="pdfHouseName">-</td>
+      </tr>
+      <tr>
+        <td>Date of Birth</td>
+        <td id="pdfDOB">-</td>
+      </tr>
+      <tr>
+        <td>Gender</td>
+        <td id="pdfGender">-</td>
+      </tr>
+      <tr>
+        <td>Parent/Guardian Name</td>
+        <td id="pdfGuardian">-</td>
+      </tr>
+      <tr>
+        <td>Contact Number</td>
+        <td id="pdfPhone">-</td>
+      </tr>
+      <tr>
+        <td>Aadhar Number</td>
+        <td id="pdfAadhar">-</td>
+      </tr>
+      <tr>
+        <td>Application Date</td>
+        <td id="pdfApplicationDate">-</td>
+      </tr>
+      <tr>
+        <td>Application Time</td>
+        <td id="pdfApplicationTime">-</td>
+      </tr>
+    </table>
+    
+    <div style="margin-top: 30px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+      <h4 style="color: var(--primary); margin-bottom: 10px;">Important Notes:</h4>
+      <ul style="margin-bottom: 10px;">
+        <li>This is a computer-generated receipt. No signature required.</li>
+        <li>Please keep this receipt for future reference.</li>
+        <li>For any queries, contact: +91 70346 78818, 9497349254</li>
+        <li>Email: noorussalam6110@gmail.com</li>
+      </ul>
+      <p style="font-style: italic; margin-top: 10px;">
+        Note: This application will be verified during offline admission process. Please bring original documents for verification.
+      </p>
+    </div>
+    
+    <div class="pdf-footer">
+      <div class="pdf-signature-line"></div>
+      <div class="pdf-signature-text">Authorized Signatory</div>
+      <p style="margin-top: 20px;">Noorussalam Madrasa, Kambippalam | SKIMVB Reg No: 6110</p>
+      <p>© 2026 Noorussalam Madrasa. All rights reserved.</p>
     </div>
   </div>
 </div>
@@ -1869,7 +2289,6 @@
   </div>
 </footer>
 
-
 <!-- WhatsApp Chat Button -->
 <a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" 
    class="whatsapp-float" 
@@ -1885,7 +2304,7 @@
   // ===========================================
   
   // ⚠️ IMPORTANT: REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzR0wRax3iFIjq9uN__kwngAVz3NtHdRLxgTqKCPgxCfrAXQM1TAow9dVIEg6ArOcnlw/exec';
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9bfRgnGcLsRQjneKP0mZhN_cK1n4kBxxlCa9wwp6WKi3_Hpl6ATMLFOfaoT4yvIPuAA/exec';
   
   // ===========================================
   // INITIALIZATION
@@ -1990,6 +2409,165 @@
       this.classList.remove('is-valid');
     }
   });
+  
+  // ===========================================
+  // SEARCH FUNCTIONALITY
+  // ===========================================
+  
+  const searchForm = document.getElementById('searchForm');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchPhone = document.getElementById('searchPhone');
+  const searchRefId = document.getElementById('searchRefId');
+  const searchResults = document.getElementById('searchResults');
+  const resultsTableContainer = document.getElementById('resultsTableContainer');
+  const noResultsMessage = document.getElementById('noResultsMessage');
+  
+  // Search by phone number or reference ID
+  searchForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const phone = searchPhone.value.trim();
+    const refId = searchRefId.value.trim();
+    
+    if (!phone && !refId) {
+      showBilingualAlert('error', 
+        'Please enter either mobile number or reference number',
+        'ദയവായി മൊബൈൽ നമ്പർ അല്ലെങ്കിൽ റഫറൻസ് നമ്പർ നൽകുക'
+      );
+      return;
+    }
+    
+    if (phone && !/^[0-9]{10}$/.test(phone)) {
+      showBilingualAlert('error', 
+        'Please enter a valid 10-digit mobile number',
+        'ദയവായി ഒരു സാധുവായ 10 അക്ക മൊബൈൽ നമ്പർ നൽകുക'
+      );
+      return;
+    }
+    
+    // Show loading
+    searchBtn.disabled = true;
+    searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+    
+    try {
+      // Search in localStorage first
+      const submissions = JSON.parse(localStorage.getItem('nsm_admissions') || '[]');
+      let results = [];
+      
+      if (phone) {
+        results = submissions.filter(sub => sub.data.phone === phone);
+      } else if (refId) {
+        results = submissions.filter(sub => sub.id === refId);
+      }
+      
+      // Also check if there's a server-side search available
+      // This would require your Google Apps Script to have a search endpoint
+      
+      // Display results
+      displaySearchResults(results);
+      
+    } catch (error) {
+      console.error('Search error:', error);
+      showBilingualAlert('error', 
+        'Error searching applications',
+        'അപേക്ഷകൾ തിരയുന്നതിൽ പിശക്'
+      );
+    } finally {
+      // Reset button
+      searchBtn.disabled = false;
+      searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Application';
+    }
+  });
+  
+  // Display search results in table
+  function displaySearchResults(results) {
+    searchResults.style.display = 'block';
+    
+    if (results.length === 0) {
+      resultsTableContainer.innerHTML = '';
+      noResultsMessage.style.display = 'block';
+      return;
+    }
+    
+    noResultsMessage.style.display = 'none';
+    
+    let tableHTML = `
+      <div class="table-responsive">
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Ref ID</th>
+              <th>Student Name</th>
+              <th>Guardian</th>
+              <th>Phone</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+    
+    results.forEach((result, index) => {
+      const date = new Date(result.date);
+      const formattedDate = date.toLocaleDateString('en-IN');
+      const formattedTime = date.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+      
+      tableHTML += `
+        <tr>
+          <td><strong>${result.id}</strong></td>
+          <td>${result.data.full_name || '-'}</td>
+          <td>${result.data.guardian_name || '-'}</td>
+          <td>${result.data.phone || '-'}</td>
+          <td>${formattedDate}<br><small>${formattedTime}</small></td>
+          <td><span class="badge bg-success">Submitted</span></td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn view" onclick="viewApplication('${result.id}')">
+                <i class="fas fa-eye"></i> View
+              </button>
+              <button class="action-btn print" onclick="printApplicationPDF('${result.id}')">
+                <i class="fas fa-print"></i> Print
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    });
+    
+    tableHTML += `
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3" style="color: #666; font-size: 0.9rem;">
+        <i class="fas fa-info-circle me-1"></i>
+        Found ${results.length} application(s)
+      </div>
+    `;
+    
+    resultsTableContainer.innerHTML = tableHTML;
+    
+    // Scroll to results
+    searchResults.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  
+  // View application details
+  function viewApplication(refId) {
+    const submissions = JSON.parse(localStorage.getItem('nsm_admissions') || '[]');
+    const application = submissions.find(sub => sub.id === refId);
+    
+    if (application) {
+      // Show application details in a modal or alert
+      alert(`Application Details:\n\n` +
+            `Reference ID: ${application.id}\n` +
+            `Student Name: ${application.data.full_name}\n` +
+            `Date of Birth: ${application.data.dob}\n` +
+            `Guardian: ${application.data.guardian_name}\n` +
+            `Phone: ${application.data.phone}\n` +
+            `Submitted: ${new Date(application.date).toLocaleString()}\n\n` +
+            `You can print the receipt using the Print button.`);
+    }
+  }
   
   // ===========================================
   // FORM SUBMISSION HANDLER
@@ -2229,6 +2807,13 @@
       studentName: data.full_name,
       timestamp: new Date().toISOString()
     });
+    
+    // Auto-search for this application
+    searchPhone.value = data.phone;
+    searchRefId.value = response.referenceId;
+    setTimeout(() => {
+      searchForm.dispatchEvent(new Event('submit'));
+    }, 1000);
   }
   
   // Format date for display
@@ -2270,8 +2855,148 @@
   }
   
   // ===========================================
-  // SUCCESS RECEIPT FUNCTIONS
+  // PDF RECEIPT FUNCTIONS
   // ===========================================
+  
+  // Prepare PDF receipt data
+  function preparePDFReceipt(data, response) {
+    const submissionDate = new Date();
+    
+    // Update PDF template
+    document.getElementById('pdfRefId').textContent = response.referenceId;
+    document.getElementById('pdfDate').textContent = submissionDate.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+    document.getElementById('pdfStudentName').textContent = data.full_name || '-';
+    document.getElementById('pdfHouseName').textContent = data.house_name || '-';
+    document.getElementById('pdfDOB').textContent = formatDate(data.dob);
+    document.getElementById('pdfGender').textContent = data.gender || '-';
+    document.getElementById('pdfGuardian').textContent = data.guardian_name || '-';
+    document.getElementById('pdfPhone').textContent = data.phone || '-';
+    document.getElementById('pdfAadhar').textContent = data.aadhar_number || 'Not Provided';
+    document.getElementById('pdfApplicationDate').textContent = submissionDate.toLocaleDateString('en-IN');
+    document.getElementById('pdfApplicationTime').textContent = submissionDate.toLocaleTimeString('en-IN');
+    
+    return {
+      refId: response.referenceId,
+      studentName: data.full_name,
+      date: submissionDate
+    };
+  }
+  
+  // Download PDF receipt
+  async function downloadPDF() {
+    try {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Get the receipt content
+      const receiptContent = document.getElementById('pdfReceiptContent');
+      
+      // Use html2canvas to capture the content
+      const canvas = await html2canvas(receiptContent, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      // Add image to PDF
+      doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      // Save the PDF
+      const fileName = `Admission_Receipt_${document.getElementById('pdfRefId').textContent}.pdf`;
+      doc.save(fileName);
+      
+      // Show success message
+      showBilingualAlert('success',
+        'PDF receipt downloaded successfully!',
+        'PDF രസീത് വിജയകരമായി ഡൗൺലോഡ് ചെയ്തു!'
+      );
+      
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      showBilingualAlert('error',
+        'Error generating PDF. Please try again.',
+        'PDF സൃഷ്ടിക്കുന്നതിൽ പിശക്. ദയവായി വീണ്ടും ശ്രമിക്കുക.'
+      );
+    }
+  }
+  
+  // Print PDF receipt
+  function printPDF() {
+    const printWindow = window.open('', '_blank');
+    const receiptContent = document.getElementById('pdfReceiptContent').outerHTML;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Admission Receipt - Noorussalam Madrasa</title>
+          <style>
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: 'Poppins', Arial, sans-serif;
+            }
+            ${document.querySelector('style').innerHTML}
+          </style>
+        </head>
+        <body>
+          ${receiptContent}
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() {
+                window.close();
+              }, 1000);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+  }
+  
+  // Print application PDF by reference ID
+  function printApplicationPDF(refId) {
+    const submissions = JSON.parse(localStorage.getItem('nsm_admissions') || '[]');
+    const application = submissions.find(sub => sub.id === refId);
+    
+    if (application) {
+      const response = {
+        referenceId: application.id,
+        submissionDate: new Date(application.date).toLocaleDateString('en-IN'),
+        submissionTime: new Date(application.date).toLocaleTimeString('en-IN')
+      };
+      
+      // Prepare PDF with application data
+      preparePDFReceipt(application.data, response);
+      
+      // Print the PDF
+      printPDF();
+    } else {
+      showBilingualAlert('error',
+        'Application not found!',
+        'അപേക്ഷ കണ്ടെത്താനായില്ല!'
+      );
+    }
+  }
   
   // Copy reference ID
   function copyReferenceId() {
@@ -2295,39 +3020,6 @@
     });
   }
   
-  // Print receipt
-  function printReceipt() {
-    const printContent = successReceipt.innerHTML;
-    const originalContent = document.body.innerHTML;
-    
-    document.body.innerHTML = `
-      <html>
-        <head>
-          <title>Admission Receipt - Noorussalam Madrasa</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            .success-message { border: 2px solid #0a194f; padding: 20px; border-radius: 10px; }
-            .reference-id-box { background: #0a194f; color: white; padding: 15px; text-align: center; margin: 20px 0; }
-            .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; }
-            @media print { body { padding: 0; } .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          ${printContent}
-          <div class="text-center mt-4 no-print">
-            <button onclick="window.close()" style="padding: 10px 20px; background: #0a194f; color: white; border: none; border-radius: 5px; cursor: pointer;">
-              Close
-            </button>
-          </div>
-        </body>
-      </html>
-    `;
-    
-    window.print();
-    document.body.innerHTML = originalContent;
-    location.reload();
-  }
-  
   // Submit another application
   function submitAnother() {
     // Reset form
@@ -2347,6 +3039,11 @@
     // Hide alerts
     hideAlert('error');
     hideAlert('success');
+    
+    // Clear search fields
+    searchPhone.value = '';
+    searchRefId.value = '';
+    searchResults.style.display = 'none';
     
     // Scroll to form
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
