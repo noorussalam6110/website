@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Results | Noorussalam</title>
   
+  <!-- Cache control headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
@@ -537,6 +542,14 @@
     html {
       scroll-behavior: smooth;
     }
+    
+    /* Ripple effect animation */
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
   </style>
 </head>
 <body>
@@ -661,6 +674,11 @@
     // Animate success rate
     function animateSuccessRate() {
       const element = document.getElementById('successRate');
+      // Don't animate if already at full value
+      if (element.textContent === SUCCESS_RATE.toFixed(1) + '%') {
+        return;
+      }
+      
       let current = 0;
       const increment = SUCCESS_RATE / 40;
       
@@ -709,18 +727,6 @@
       
       setTimeout(() => ripple.remove(), 600);
     }
-    
-    // Add ripple animation CSS
-    const rippleStyle = document.createElement('style');
-    rippleStyle.textContent = `
-      @keyframes ripple {
-        to {
-          transform: scale(4);
-          opacity: 0;
-        }
-      }
-    `;
-    document.head.appendChild(rippleStyle);
     
     // Show loading state
     function showLoading(card) {
@@ -784,10 +790,79 @@
     }
     
     // ============================================
+    // BFCACHE (BACK/FORWARD CACHE) HANDLING
+    // ============================================
+    
+    // Reset all loading states
+    function resetLoadingStates() {
+      const loaders = document.querySelectorAll('.loader');
+      const arrows = document.querySelectorAll('.action-btn i.fa-arrow-right');
+      const buttonTexts = document.querySelectorAll('.action-btn span');
+      const cards = document.querySelectorAll('.exam-card');
+      
+      // Reset loaders
+      loaders.forEach(loader => {
+        loader.style.display = 'none';
+      });
+      
+      // Reset arrows
+      arrows.forEach(arrow => {
+        arrow.style.display = 'inline-block';
+      });
+      
+      // Reset button texts
+      buttonTexts.forEach(buttonText => {
+        if (buttonText.textContent === 'Loading...') {
+          buttonText.textContent = 'ഫലങ്ങൾ കാണുക';
+        }
+      });
+      
+      // Enable cards
+      cards.forEach(card => {
+        card.style.pointerEvents = 'auto';
+      });
+    }
+    
+    // Reattach event listeners
+    function reattachEventListeners() {
+      // Get references
+      const annualCard = document.getElementById('annualCard');
+      const samasthaCard = document.getElementById('samasthaCard');
+      const backBtn = document.getElementById('backBtn');
+      
+      // Remove existing event listeners by cloning
+      const annualClone = annualCard.cloneNode(true);
+      const samasthaClone = samasthaCard.cloneNode(true);
+      const backBtnClone = backBtn.cloneNode(true);
+      
+      annualCard.parentNode.replaceChild(annualClone, annualCard);
+      samasthaCard.parentNode.replaceChild(samasthaClone, samasthaCard);
+      backBtn.parentNode.replaceChild(backBtnClone, backBtn);
+      
+      // Update references
+      const newAnnualCard = document.getElementById('annualCard');
+      const newSamasthaCard = document.getElementById('samasthaCard');
+      const newBackBtn = document.getElementById('backBtn');
+      
+      // Reattach event listeners
+      newAnnualCard.addEventListener('click', openAnnualResults);
+      newSamasthaCard.addEventListener('click', openSamasthaResults);
+      newBackBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = 'index.html';
+      });
+    }
+    
+    // ============================================
     // INITIALIZATION
     // ============================================
     
-    document.addEventListener('DOMContentLoaded', function() {
+    // Store initialization state
+    let isInitialized = false;
+    
+    function initializePage() {
+      if (isInitialized) return;
+      
       // Animate success rate
       setTimeout(animateSuccessRate, 300);
       
@@ -840,13 +915,58 @@
         });
       }
       
-      // Handle orientation change
-      window.addEventListener('orientationchange', function() {
-        // Delay to allow orientation to complete
+      isInitialized = true;
+    }
+    
+    // Initialize on DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', initializePage);
+    
+    // Handle bfcache restoration
+    window.addEventListener('pageshow', function(event) {
+      console.log('Page loaded, persisted:', event.persisted);
+      
+      // If page is loaded from bfcache
+      if (event.persisted) {
+        console.log('Page restored from bfcache - reinitializing...');
+        
+        // Reset loading states
+        resetLoadingStates();
+        
+        // Reattach event listeners
+        reattachEventListeners();
+        
+        // Re-run animations
         setTimeout(() => {
-          window.scrollTo(0, 0);
+          const successElement = document.getElementById('successRate');
+          if (successElement.textContent !== SUCCESS_RATE.toFixed(1) + '%') {
+            successElement.textContent = SUCCESS_RATE.toFixed(1) + '%';
+          }
         }, 100);
-      });
+        
+        // Scroll to top
+        window.scrollTo(0, 0);
+        
+        // Force a minor style recalc to ensure rendering
+        document.body.style.opacity = '0.99';
+        setTimeout(() => {
+          document.body.style.opacity = '1';
+        }, 50);
+      }
+    });
+    
+    // Also initialize on pageshow in case DOMContentLoaded already fired
+    window.addEventListener('pageshow', function(event) {
+      if (!isInitialized) {
+        initializePage();
+      }
+    });
+    
+    // Handle orientation change
+    window.addEventListener('orientationchange', function() {
+      // Delay to allow orientation to complete
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
     });
     
     // Prevent zoom on double-tap (mobile)
@@ -875,6 +995,12 @@
           successRate.style.transform = 'scale(1)';
         }, 300);
       }
+    });
+    
+    // Page unload handler
+    window.addEventListener('beforeunload', function() {
+      // Clean up loading states before leaving
+      resetLoadingStates();
     });
   </script>
 </body>
