@@ -352,6 +352,48 @@ body {
   text-align: center;
 }
 
+/* Admin Tabs */
+.admin-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 25px;
+  background: rgba(26, 35, 126, 0.05);
+  padding: 5px;
+  border-radius: var(--radius);
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: var(--gray);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.admin-tab.active {
+  background: var(--white);
+  color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Excel Upload Tab */
 .upload-controls {
   display: flex;
   gap: 15px;
@@ -407,6 +449,112 @@ body {
 
 .sample-link a:hover {
   text-decoration: underline;
+}
+
+/* Google Sheets Tab */
+.sheet-config {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+.config-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.config-group label {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 14px;
+}
+
+.config-group input {
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dark);
+  background: var(--white);
+  transition: var(--transition);
+}
+
+.config-group input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 35, 126, 0.1);
+}
+
+.help-text {
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 4px;
+}
+
+.sheet-controls {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.sheet-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+}
+
+.sheet-btn.primary {
+  background: var(--gradient-primary);
+  color: var(--white);
+}
+
+.sheet-btn.secondary {
+  background: var(--gradient-accent);
+  color: var(--white);
+}
+
+.sheet-btn.warning {
+  background: var(--gradient-secondary);
+  color: var(--dark);
+}
+
+.sheet-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.sheet-status {
+  text-align: center;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  display: none;
+}
+
+.sheet-status.success {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.05) 100%);
+  color: #2e7d32;
+  border: 2px solid rgba(76, 175, 80, 0.2);
+}
+
+.sheet-status.error {
+  background: linear-gradient(135deg, rgba(229, 57, 53, 0.1) 0%, rgba(198, 40, 40, 0.05) 100%);
+  color: #c62828;
+  border: 2px solid rgba(229, 57, 53, 0.2);
 }
 
 /* Search Section */
@@ -934,6 +1082,17 @@ body {
     text-align: center;
     margin-bottom: 20px;
   }
+  
+  .upload-controls,
+  .sheet-controls {
+    flex-direction: column;
+  }
+  
+  .file-input-wrapper,
+  .upload-excel-btn,
+  .sheet-btn {
+    width: 100%;
+  }
 }
 
 .hidden {
@@ -1023,25 +1182,82 @@ body {
   <div class="admin-panel" id="adminPanel">
     <h3>Admin Panel - Manage Student Data</h3>
     
-    <div class="upload-controls">
-      <div class="file-input-wrapper">
-        <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" class="file-input">
+    <!-- Admin Tabs -->
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab('excel')">
+        <i class="fas fa-file-excel"></i> Excel Upload
+      </button>
+      <button class="admin-tab" onclick="switchTab('google')">
+        <i class="fab fa-google"></i> Google Sheets
+      </button>
+    </div>
+    
+    <!-- Excel Upload Tab -->
+    <div id="excel-tab" class="tab-content active">
+      <div class="upload-controls">
+        <div class="file-input-wrapper">
+          <input type="file" id="excelFile" accept=".xlsx,.xls,.csv" class="file-input">
+        </div>
+        <button class="upload-excel-btn" onclick="uploadExcel()">
+          <i class="fas fa-upload"></i> Upload Excel File
+        </button>
       </div>
-      <button class="upload-excel-btn" onclick="uploadExcel()">
-        <i class="fas fa-upload"></i> Upload Excel File
-      </button>
+      
+      <div class="sample-link">
+        <a href="#" onclick="downloadSampleTemplate()">
+          <i class="fas fa-download"></i> Download Sample Template
+        </a>
+      </div>
     </div>
     
-    <div class="sample-link">
-      <a href="#" onclick="downloadSampleTemplate()">
-        <i class="fas fa-download"></i> Download Sample Template
-      </a>
-    </div>
-    
-    <div style="margin-top: 30px; text-align: center;">
-      <button onclick="logoutAdmin()" style="padding: 10px 20px; background: var(--gradient-danger); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600;">
-        <i class="fas fa-sign-out-alt"></i> Logout
-      </button>
+    <!-- Google Sheets Tab -->
+    <div id="google-tab" class="tab-content">
+      <div class="sheet-config">
+        <div class="config-group">
+          <label for="sheetId">Google Sheet ID:</label>
+          <input type="text" id="sheetId" placeholder="Enter Google Sheet ID">
+          <div class="help-text">
+            Example: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms
+            <br>
+            <a href="https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit" target="_blank">View Sample Sheet</a>
+          </div>
+        </div>
+        
+        <div class="config-group">
+          <label for="sheetName">Sheet Name:</label>
+          <input type="text" id="sheetName" value="Students" placeholder="Enter sheet name">
+          <div class="help-text">Name of the sheet/tab in your Google Sheet (default: Students)</div>
+        </div>
+        
+        <div class="config-group">
+          <label for="apiKey">API Key (Optional):</label>
+          <input type="password" id="apiKey" placeholder="Enter your Google API Key">
+          <div class="help-text">
+            Get API key from <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a>
+            <br>Using default key for demo. For production, use your own key.
+          </div>
+        </div>
+      </div>
+      
+      <div class="sheet-controls">
+        <button class="sheet-btn primary" onclick="loadFromGoogleSheets()">
+          <i class="fas fa-sync-alt"></i> Load from Google Sheets
+        </button>
+        <button class="sheet-btn secondary" onclick="saveToGoogleSheets()">
+          <i class="fas fa-save"></i> Save to Google Sheets
+        </button>
+        <button class="sheet-btn warning" onclick="showSheetInstructions()">
+          <i class="fas fa-info-circle"></i> How to Setup
+        </button>
+      </div>
+      
+      <div class="sheet-status" id="sheetStatus"></div>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <button onclick="logoutAdmin()" style="padding: 10px 20px; background: var(--gradient-danger); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600;">
+          <i class="fas fa-sign-out-alt"></i> Logout Admin
+        </button>
+      </div>
     </div>
   </div>
   
@@ -1106,12 +1322,15 @@ body {
 
 <script>
 // Configuration
-const CERT_BG = "https://i.postimg.cc/tTMcqCHw/NSM-TOPPER-copy.jpg";
+const CERT_BG = "NSM TOPPER copy (1).webp";
 
-// Admin credentials (in production, this should be stored securely on a server)
+// Default Google API Key (for demo purposes)
+const DEFAULT_API_KEY = 'AIzaSyC_bXq3OSCvzwlE2-kjqwEaPG1Wf4wT0MY';
+
+// Admin credentials
 const ADMIN_CREDENTIALS = {
   username: "admin",
-  password: "noorussalam@2025" // Change this to your preferred password
+  password: "noorussalam@2025" // Change this in production
 };
 
 // Global variables
@@ -1130,14 +1349,17 @@ window.addEventListener('load', function() {
     showAdminPanel();
   }
   
-  // Load data
+  // Load saved Google Sheet configuration
+  loadSheetConfig();
+  
+  // Load data from localStorage first
   loadFromLocalStorage();
   
   // Add event listener for Excel file upload
   document.getElementById('excelFile').addEventListener('change', handleFileSelect);
 });
 
-// Login Modal Functions
+// Admin Functions
 function openLoginModal() {
   document.getElementById('loginModal').style.display = 'flex';
   document.getElementById('adminUsername').focus();
@@ -1191,23 +1413,287 @@ function logoutAdmin() {
   showNotification('Logged out successfully', 'success');
 }
 
-// Load from localStorage
-function loadFromLocalStorage() {
-  const savedData = localStorage.getItem('classesData');
-  if (savedData) {
-    classesData = JSON.parse(savedData);
-    initializeUploadedPhotos();
-    updateStats();
-    loadClassCards();
-    createClassFilterButtons();
-  } else {
-    // Load default data if nothing saved
-    loadDefaultData();
+// Tab Switching
+function switchTab(tabName) {
+  // Remove active class from all tabs
+  document.querySelectorAll('.admin-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  
+  // Hide all tab contents
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  // Activate selected tab
+  document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+  document.getElementById(`${tabName}-tab`).classList.add('active');
+}
+
+// Google Sheets Configuration
+function loadSheetConfig() {
+  const savedSheetId = localStorage.getItem('googleSheetId');
+  const savedSheetName = localStorage.getItem('googleSheetName');
+  const savedApiKey = localStorage.getItem('googleApiKey');
+  
+  if (savedSheetId) document.getElementById('sheetId').value = savedSheetId;
+  if (savedSheetName) document.getElementById('sheetName').value = savedSheetName || 'Students';
+  if (savedApiKey) document.getElementById('apiKey').value = savedApiKey;
+}
+
+function saveSheetConfig() {
+  const sheetId = document.getElementById('sheetId').value.trim();
+  const sheetName = document.getElementById('sheetName').value.trim() || 'Students';
+  const apiKey = document.getElementById('apiKey').value.trim();
+  
+  if (sheetId) {
+    localStorage.setItem('googleSheetId', sheetId);
+    localStorage.setItem('googleSheetName', sheetName);
+    if (apiKey) {
+      localStorage.setItem('googleApiKey', apiKey);
+    }
+    showNotification('Google Sheets configuration saved', 'success');
   }
 }
 
-// Load default data
-function loadDefaultData() {
+// Load from Google Sheets
+async function loadFromGoogleSheets() {
+  if (!isAdminLoggedIn) {
+    showNotification('Please login as admin first', 'warning');
+    openLoginModal();
+    return;
+  }
+  
+  const sheetId = document.getElementById('sheetId').value.trim();
+  const sheetName = document.getElementById('sheetName').value.trim() || 'Students';
+  const apiKey = document.getElementById('apiKey').value.trim() || DEFAULT_API_KEY;
+  
+  if (!sheetId) {
+    showNotification('Please enter Google Sheet ID', 'error');
+    return;
+  }
+  
+  saveSheetConfig();
+  showLoading('Loading data from Google Sheets...');
+  
+  try {
+    // Using Google Sheets API v4
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?key=${apiKey}`;
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (!data.values || data.values.length === 0) {
+      throw new Error('No data found in the sheet. Please check sheet name.');
+    }
+    
+    processGoogleSheetsData(data.values);
+    showStatus('Data loaded from Google Sheets successfully!', 'success');
+    showNotification('Data loaded from Google Sheets', 'success');
+    
+  } catch (error) {
+    console.error('Error loading from Google Sheets:', error);
+    showStatus(`Error: ${error.message}. Check Sheet ID and API Key.`, 'error');
+    showNotification('Failed to load from Google Sheets', 'error');
+    
+  } finally {
+    hideLoading();
+  }
+}
+
+// Save to Google Sheets
+async function saveToGoogleSheets() {
+  if (!isAdminLoggedIn) {
+    showNotification('Please login as admin first', 'warning');
+    openLoginModal();
+    return;
+  }
+  
+  const sheetId = document.getElementById('sheetId').value.trim();
+  const sheetName = document.getElementById('sheetName').value.trim() || 'Students';
+  const apiKey = document.getElementById('apiKey').value.trim() || DEFAULT_API_KEY;
+  
+  if (!sheetId) {
+    showNotification('Please enter Google Sheet ID', 'error');
+    return;
+  }
+  
+  if (classesData.length === 0) {
+    showNotification('No student data to save', 'warning');
+    return;
+  }
+  
+  saveSheetConfig();
+  showLoading('Saving data to Google Sheets...');
+  
+  try {
+    // Convert classesData to Google Sheets format
+    const headers = ['Class', 'Name', 'Marks', 'Rank'];
+    const values = [];
+    
+    classesData.forEach(cls => {
+      cls.toppers.forEach(topper => {
+        values.push([
+          cls.class,
+          topper.name,
+          topper.mark,
+          topper.rank
+        ]);
+      });
+    });
+    
+    // Add headers
+    const data = [headers, ...values];
+    
+    // Using Google Sheets API v4 to update
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?valueInputOption=RAW&key=${apiKey}`;
+    
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        values: data
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `HTTP error! status: ${response.status}`);
+    }
+    
+    showStatus('Data saved to Google Sheets successfully!', 'success');
+    showNotification('Data saved to Google Sheets', 'success');
+    
+  } catch (error) {
+    console.error('Error saving to Google Sheets:', error);
+    showStatus(`Error: ${error.message}`, 'error');
+    showNotification('Failed to save to Google Sheets', 'error');
+    
+  } finally {
+    hideLoading();
+  }
+}
+
+// Process Google Sheets data
+function processGoogleSheetsData(rows) {
+  if (!rows || rows.length < 2) return;
+  
+  const headers = rows[0];
+  const data = rows.slice(1);
+  
+  // Find column indices (case-insensitive)
+  const classIndex = headers.findIndex(h => 
+    h && h.toString().toLowerCase().includes('class')
+  );
+  const nameIndex = headers.findIndex(h => 
+    h && h.toString().toLowerCase().includes('name')
+  );
+  const marksIndex = headers.findIndex(h => 
+    h && h.toString().toLowerCase().includes('mark')
+  );
+  const rankIndex = headers.findIndex(h => 
+    h && h.toString().toLowerCase().includes('rank')
+  );
+  
+  const classesMap = {};
+  
+  data.forEach(row => {
+    const className = classIndex >= 0 ? (row[classIndex] || '').toString().trim() : '';
+    const studentName = nameIndex >= 0 ? (row[nameIndex] || '').toString().trim() : '';
+    const marks = marksIndex >= 0 ? (row[marksIndex] || 'N/A').toString().trim() : 'N/A';
+    const rank = rankIndex >= 0 ? (row[rankIndex] || 'First').toString().trim() : 'First';
+    
+    if (!className || !studentName) return;
+    
+    if (!classesMap[className]) {
+      classesMap[className] = [];
+    }
+    
+    classesMap[className].push({
+      name: studentName,
+      mark: marks,
+      rank: rank
+    });
+  });
+  
+  // Convert to classesData format
+  classesData = Object.keys(classesMap).map(className => ({
+    class: className,
+    toppers: classesMap[className].sort((a, b) => {
+      const rankOrder = { 'First': 1, 'Second': 2, 'Third': 3 };
+      return (rankOrder[a.rank] || 4) - (rankOrder[b.rank] || 4);
+    })
+  })).sort((a, b) => {
+    // Sort by class number
+    const aNum = parseInt(a.class);
+    const bNum = parseInt(b.class);
+    return (isNaN(aNum) || isNaN(bNum)) ? a.class.localeCompare(b.class) : aNum - bNum;
+  });
+  
+  // Save to local storage as backup
+  localStorage.setItem('classesData', JSON.stringify(classesData));
+  
+  initializeUploadedPhotos();
+  updateStats();
+  loadClassCards();
+  createClassFilterButtons();
+}
+
+// Show sheet instructions
+function showSheetInstructions() {
+  const instructions = `
+    <h4>📝 How to Setup Google Sheets:</h4>
+    <div style="text-align: left; margin: 15px 0; font-size: 13px; line-height: 1.6;">
+      <p><strong>Step 1:</strong> Create a Google Sheet with these columns:</p>
+      <ul>
+        <li><strong>A1:</strong> Class (e.g., 1, 2, 3)</li>
+        <li><strong>B1:</strong> Name (e.g., Suhail P)</li>
+        <li><strong>C1:</strong> Marks (e.g., 498/500)</li>
+        <li><strong>D1:</strong> Rank (e.g., First, Second)</li>
+      </ul>
+      
+      <p><strong>Step 2:</strong> Share your sheet:</p>
+      <ul>
+        <li>Click <strong>Share</strong> button</li>
+        <li>Set to <strong>"Anyone with the link can view"</strong></li>
+        <li>Copy the <strong>Share link</strong></li>
+      </ul>
+      
+      <p><strong>Step 3:</strong> Get Sheet ID from URL:</p>
+      <ul>
+        <li>URL format: <code>https://docs.google.com/spreadsheets/d/<strong>YOUR_SHEET_ID</strong>/edit</code></li>
+        <li>Copy the part between <strong>/d/</strong> and <strong>/edit</strong></li>
+      </ul>
+      
+      <p><strong>Step 4:</strong> Enter Sheet ID above and click <strong>"Load from Google Sheets"</strong></p>
+      
+      <hr style="margin: 15px 0;">
+      
+      <p><strong>📌 Tips:</strong></p>
+      <ul>
+        <li>Use <strong>"Save to Google Sheets"</strong> to update data</li>
+        <li>Use <strong>"Load from Google Sheets"</strong> to get latest data</li>
+        <li>Student photos are stored locally on each computer</li>
+      </ul>
+    </div>
+    
+    <button onclick="createSampleSheet()" style="margin-top: 10px; padding: 10px 20px; background: var(--gradient-primary); color: white; border: none; border-radius: var(--radius); cursor: pointer; font-weight: 600;">
+      <i class="fas fa-magic"></i> Create Sample Sheet
+    </button>
+  `;
+  
+  showStatus(instructions, 'success');
+}
+
+// Create sample sheet function
+function createSampleSheet() {
   classesData = [
     { 
       class: "1", 
@@ -1237,14 +1723,131 @@ function loadDefaultData() {
   updateStats();
   loadClassCards();
   createClassFilterButtons();
+  
+  showNotification('Sample data created. Click "Save to Google Sheets" to upload.', 'success');
 }
 
-// Save to localStorage
+// Show status message
+function showStatus(message, type) {
+  const status = document.getElementById('sheetStatus');
+  status.innerHTML = message;
+  status.className = `sheet-status ${type}`;
+  status.style.display = 'block';
+  
+  // Auto-hide after 10 seconds for success messages
+  if (type === 'success') {
+    setTimeout(() => {
+      status.style.display = 'none';
+    }, 10000);
+  }
+}
+
+// Excel Upload Functions
+function handleFileSelect(event) {
+  if (!isAdminLoggedIn) {
+    showNotification('Please login as admin first', 'warning');
+    openLoginModal();
+    return;
+  }
+  
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (!file.name.match(/\.(xlsx|xls|csv)$/)) {
+    showNotification('Please upload Excel or CSV file only', 'error');
+    return;
+  }
+  
+  readExcelFile(file);
+}
+
+function readExcelFile(file) {
+  showLoading('Processing Excel file...');
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+      
+      processSheetData(jsonData);
+      showNotification('Student data uploaded successfully!', 'success');
+      
+    } catch (error) {
+      console.error('Error reading Excel file:', error);
+      showNotification('Error reading Excel file. Please check the format.', 'error');
+    } finally {
+      hideLoading();
+      // Clear file input
+      document.getElementById('excelFile').value = '';
+    }
+  };
+  
+  reader.onerror = function() {
+    hideLoading();
+    showNotification('Error reading file', 'error');
+    document.getElementById('excelFile').value = '';
+  };
+  
+  reader.readAsArrayBuffer(file);
+}
+
+function uploadExcel() {
+  if (!isAdminLoggedIn) {
+    showNotification('Please login as admin first', 'warning');
+    openLoginModal();
+    return;
+  }
+  
+  const fileInput = document.getElementById('excelFile');
+  if (!fileInput.files[0]) {
+    showNotification('Please select an Excel file first', 'warning');
+    return;
+  }
+  
+  handleFileSelect({ target: { files: fileInput.files } });
+}
+
+function downloadSampleTemplate() {
+  const sampleData = [
+    ['Class', 'Name', 'Marks', 'Rank'],
+    ['1', 'Suhail P', '498/500', 'First'],
+    ['1', 'Minhaj P', '495/500', 'Second'],
+    ['2', 'Muhammed Shahid', '493/500', 'First'],
+    ['2', 'Ashmil T', '490/500', 'Second'],
+    ['3', 'Muhammed Hadi K', '487/500', 'First'],
+    ['3', 'Danish T', '485/500', 'Second']
+  ];
+  
+  const ws = XLSX.utils.aoa_to_sheet(sampleData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Students');
+  
+  XLSX.writeFile(wb, 'Noorussalam_Student_Template.xlsx');
+  showNotification('Sample template downloaded', 'success');
+}
+
+// Data Management Functions
+function loadFromLocalStorage() {
+  const savedData = localStorage.getItem('classesData');
+  if (savedData) {
+    classesData = JSON.parse(savedData);
+    initializeUploadedPhotos();
+    updateStats();
+    loadClassCards();
+    createClassFilterButtons();
+  } else {
+    // Load sample data if nothing saved
+    createSampleSheet();
+  }
+}
+
 function saveToLocalStorage() {
   localStorage.setItem('classesData', JSON.stringify(classesData));
 }
 
-// Initialize uploaded photos
 function initializeUploadedPhotos() {
   uploadedPhotos = {};
   classesData.forEach((cls, classIndex) => {
@@ -1256,7 +1859,6 @@ function initializeUploadedPhotos() {
   });
 }
 
-// Update stats
 function updateStats() {
   const classCount = classesData.length;
   const studentCount = classesData.reduce((total, cls) => total + cls.toppers.length, 0);
@@ -1265,24 +1867,21 @@ function updateStats() {
   document.getElementById('studentCount').textContent = studentCount;
 }
 
-// Update certificate count
 function updateCertCount() {
   document.getElementById('certCount').textContent = certCount;
   document.getElementById('certCountFooter').textContent = certCount;
 }
 
-// Show loading
+// Helper Functions
 function showLoading(text = 'Loading...') {
   document.getElementById('loadingText').textContent = text;
   document.getElementById('loading').style.display = 'flex';
 }
 
-// Hide loading
 function hideLoading() {
   document.getElementById('loading').style.display = 'none';
 }
 
-// Show notification
 function showNotification(message, type = 'info') {
   const icon = {
     success: 'check-circle',
@@ -1334,139 +1933,6 @@ function showNotification(message, type = 'info') {
   }, 3000);
 }
 
-// Handle Excel file upload
-function handleFileSelect(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  if (!file.name.match(/\.(xlsx|xls|csv)$/)) {
-    showNotification('Please upload Excel or CSV file only', 'error');
-    return;
-  }
-  
-  readExcelFile(file);
-}
-
-// Read Excel file
-function readExcelFile(file) {
-  showLoading('Processing Excel file...');
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
-      
-      processSheetData(jsonData);
-      showNotification('Student data uploaded successfully!', 'success');
-      
-    } catch (error) {
-      console.error('Error reading Excel file:', error);
-      showNotification('Error reading Excel file. Please check the format.', 'error');
-    } finally {
-      hideLoading();
-      // Clear file input
-      document.getElementById('excelFile').value = '';
-    }
-  };
-  
-  reader.onerror = function() {
-    hideLoading();
-    showNotification('Error reading file', 'error');
-    document.getElementById('excelFile').value = '';
-  };
-  
-  reader.readAsArrayBuffer(file);
-}
-
-// Upload Excel file
-function uploadExcel() {
-  if (!isAdminLoggedIn) {
-    showNotification('Please login as admin first', 'warning');
-    openLoginModal();
-    return;
-  }
-  
-  const fileInput = document.getElementById('excelFile');
-  if (!fileInput.files[0]) {
-    showNotification('Please select an Excel file first', 'warning');
-    return;
-  }
-  
-  handleFileSelect({ target: { files: fileInput.files } });
-}
-
-// Process sheet data
-function processSheetData(rows) {
-  if (!rows || rows.length < 2) return;
-  
-  const headers = rows[0].map(h => h ? h.toString().trim() : '');
-  const data = rows.slice(1);
-  
-  const classesMap = {};
-  
-  data.forEach(row => {
-    const classIndex = headers.findIndex(h => h.toLowerCase().includes('class'));
-    const nameIndex = headers.findIndex(h => h.toLowerCase().includes('name'));
-    const marksIndex = headers.findIndex(h => h.toLowerCase().includes('mark'));
-    const rankIndex = headers.findIndex(h => h.toLowerCase().includes('rank'));
-    
-    const className = classIndex >= 0 && row[classIndex] ? row[classIndex].toString().trim() : '';
-    const studentName = nameIndex >= 0 && row[nameIndex] ? row[nameIndex].toString().trim() : '';
-    const marks = marksIndex >= 0 && row[marksIndex] ? row[marksIndex].toString().trim() : 'N/A';
-    const rank = rankIndex >= 0 && row[rankIndex] ? row[rankIndex].toString().trim() : 'First';
-    
-    if (!className || !studentName) return;
-    
-    if (!classesMap[className]) {
-      classesMap[className] = [];
-    }
-    
-    classesMap[className].push({
-      name: studentName,
-      mark: marks,
-      rank: rank
-    });
-  });
-  
-  // Convert to classesData format
-  classesData = Object.keys(classesMap).map(className => ({
-    class: className,
-    toppers: classesMap[className].sort((a, b) => {
-      const rankOrder = { 'First': 1, 'Second': 2, 'Third': 3 };
-      return (rankOrder[a.rank] || 4) - (rankOrder[b.rank] || 4);
-    })
-  })).sort((a, b) => parseInt(a.class) - parseInt(b.class));
-  
-  saveToLocalStorage();
-  initializeUploadedPhotos();
-  updateStats();
-  loadClassCards();
-  createClassFilterButtons();
-}
-
-// Download sample template
-function downloadSampleTemplate() {
-  const sampleData = [
-    ['Class', 'Name', 'Marks', 'Rank'],
-    ['1', 'Suhail P', '498/500', 'First'],
-    ['1', 'Minhaj P', '495/500', 'Second'],
-    ['2', 'Muhammed Shahid', '493/500', 'First'],
-    ['2', 'Ashmil T', '490/500', 'Second'],
-    ['3', 'Muhammed Hadi K', '487/500', 'First'],
-    ['3', 'Danish T', '485/500', 'Second']
-  ];
-  
-  const ws = XLSX.utils.aoa_to_sheet(sampleData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Students');
-  
-  XLSX.writeFile(wb, 'Noorussalam_Student_Template.xlsx');
-  showNotification('Sample template downloaded', 'success');
-}
-
 // Load class cards
 const grid = document.getElementById('grid');
 function loadClassCards() {
@@ -1477,7 +1943,7 @@ function loadClassCards() {
       <div style="text-align: center; padding: 40px; grid-column: 1/-1;">
         <i class="fas fa-database" style="font-size: 48px; color: #64748b; margin-bottom: 20px;"></i>
         <h3 style="color: #64748b; margin-bottom: 10px;">No Student Data Available</h3>
-        <p style="color: #94a3b8;">Please login as admin and upload an Excel file with student data</p>
+        <p style="color: #94a3b8;">Login as admin to upload Excel or configure Google Sheets</p>
       </div>
     `;
     return;
@@ -1526,7 +1992,6 @@ function loadClassCards() {
   });
 }
 
-// Helper functions
 function escapeHtml(s){ 
   return String(s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); 
 }
