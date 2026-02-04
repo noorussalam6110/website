@@ -1390,15 +1390,15 @@ body::before {
       <!-- Stats Section -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-number">10</div>
+          <div class="stat-number" id="statClasses">10</div>
           <div class="stat-label">Classes</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">20</div>
+          <div class="stat-number" id="statStudents">20</div>
           <div class="stat-label">Top Students</div>
         </div>
         <div class="stat-card">
-          <div class="stat-number">100%</div>
+          <div class="stat-number" id="statSuccess">100%</div>
           <div class="stat-label">Success Rate</div>
         </div>
         <div class="stat-card">
@@ -1495,99 +1495,213 @@ body::before {
 <audio id="certSound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" preload="auto"></audio>
 
 <script>
-// Certificate background image URL
+// Configuration
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxfy34uxFsoWVWGOXn3eDRS7kiKwBLNStfq-xTAzaKNgawrTrpgzXXNkTBzzedjB0Cc/exec'; // Replace with your Apps Script URL
 const CERT_BG = "https://i.postimg.cc/tTMcqCHw/NSM-TOPPER-copy.jpg";
 
-// Class data with two toppers per class (First and Second)
-const classesData = [
-  { 
-    class: "1", 
-    toppers: [
-      { name: "Suhail P", mark: "498 / 500", rank: "First" },
-      { name: "Minhaj P", mark: "495 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "2", 
-    toppers: [
-      { name: "Muhammed Shahid", mark: "493 / 500", rank: "First" },
-      { name: "Ashmil T", mark: "490 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "3", 
-    toppers: [
-      { name: "Muhammed Hadi K", mark: "487 / 500", rank: "First" },
-      { name: "Danish T", mark: "485 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "4", 
-    toppers: [
-      { name: "Faris P", mark: "489 / 500", rank: "First" },
-      { name: "Rifaee P", mark: "486 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "5", 
-    toppers: [
-      { name: "Shamil N", mark: "491 / 500", rank: "First" },
-      { name: "Nida Mol", mark: "488 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "6", 
-    toppers: [
-      { name: "Hana M", mark: "480 / 500", rank: "First" },
-      { name: "Riya T", mark: "478 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "7", 
-    toppers: [
-      { name: "Riyas M", mark: "485 / 500", rank: "First" },
-      { name: "Riya Mol", mark: "482 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "8", 
-    toppers: [
-      { name: "Zainab K", mark: "492 / 500", rank: "First" },
-      { name: "Muhsin P", mark: "489 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "9", 
-    toppers: [
-      { name: "Thaj T", mark: "488 / 500", rank: "First" },
-      { name: "Sinan P", mark: "485 / 500", rank: "Second" }
-    ]
-  },
-  { 
-    class: "10", 
-    toppers: [
-      { name: "Saniya F", mark: "495 / 500", rank: "First" },
-      { name: "Asna K", mark: "492 / 500", rank: "Second" }
-    ]
-  }
-];
+// Global variables
+let classesData = []; // Will be populated from Google Sheets
+let uploadedPhotos = {}; // Store uploaded photos
+let certCount = 0; // Certificate count
+let activeSearch = ''; // Active search term
 
-// Initialize uploaded photos array from localStorage
-const uploadedPhotos = {};
-classesData.forEach((cls, classIndex) => {
-  uploadedPhotos[classIndex] = [];
-  cls.toppers.forEach((topper, topperIndex) => {
-    const saved = localStorage.getItem(`topperPhoto_${classIndex}_${topperIndex}`);
-    uploadedPhotos[classIndex][topperIndex] = saved || null;
-  });
-});
+// Initialize uploaded photos from localStorage
+function initializePhotosStorage() {
+  // This will be populated after we load the data
+}
 
 // Track certificate generation count
-let certCount = parseInt(localStorage.getItem('certCount') || '0');
-updateCertCount();
+function updateCertCount() {
+  certCount = parseInt(localStorage.getItem('certCount') || '0');
+  const countElement = document.getElementById('certCount');
+  const footerCountElement = document.getElementById('certCountFooter');
+  if (countElement) countElement.textContent = certCount;
+  if (footerCountElement) footerCountElement.textContent = certCount;
+}
 
-// Track active search
-let activeSearch = '';
+// Update stats display
+function updateStatsDisplay(stats) {
+  if (stats) {
+    const statClasses = document.getElementById('statClasses');
+    const statStudents = document.getElementById('statStudents');
+    const statSuccess = document.getElementById('statSuccess');
+    
+    if (statClasses) statClasses.textContent = stats.totalClasses || '10';
+    if (statStudents) statStudents.textContent = stats.totalStudents || '20';
+    if (statSuccess) statSuccess.textContent = stats.successRate || '100%';
+  }
+}
+
+// Fetch data from Google Sheets
+async function fetchDataFromSheets() {
+  try {
+    showLoading('Fetching data from Google Sheets...');
+    
+    const response = await fetch(`${APPS_SCRIPT_URL}?action=getToppersData`);
+    const result = await response.json();
+    
+    if (result.success) {
+      return result.data;
+    } else {
+      throw new Error(result.message || 'Failed to fetch data');
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    showNotification('Could not fetch data. Using default data.', 'warning');
+    return null; // Return null to use default data
+  } finally {
+    hideLoading();
+  }
+}
+
+// Fetch statistics
+async function fetchStats() {
+  try {
+    const response = await fetch(`${APPS_SCRIPT_URL}?action=updateStats`);
+    const result = await response.json();
+    
+    if (result.success) {
+      return result.stats;
+    }
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+  }
+  return null;
+}
+
+// Save photo URL to Google Sheets
+async function savePhotoToSheet(className, studentName, photoURL) {
+  try {
+    const response = await fetch(`${APPS_SCRIPT_URL}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `action=updatePhotoURL&className=${encodeURIComponent(className)}&studentName=${encodeURIComponent(studentName)}&photoURL=${encodeURIComponent(photoURL)}`
+    });
+    
+    const result = await response.json();
+    return result.success;
+  } catch (error) {
+    console.error('Error saving photo to sheet:', error);
+    return false;
+  }
+}
+
+// Initialize the app
+async function initializeApp() {
+  // Initialize certificate count
+  updateCertCount();
+  
+  // Try to fetch data from Google Sheets
+  let fetchedData = await fetchDataFromSheets();
+  
+  // Use fetched data or fall back to default
+  classesData = fetchedData || [
+    { 
+      class: "1", 
+      toppers: [
+        { name: "Suhail P", mark: "498 / 500", rank: "First" },
+        { name: "Minhaj P", mark: "495 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "2", 
+      toppers: [
+        { name: "Muhammed Shahid", mark: "493 / 500", rank: "First" },
+        { name: "Ashmil T", mark: "490 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "3", 
+      toppers: [
+        { name: "Muhammed Hadi K", mark: "487 / 500", rank: "First" },
+        { name: "Danish T", mark: "485 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "4", 
+      toppers: [
+        { name: "Faris P", mark: "489 / 500", rank: "First" },
+        { name: "Rifaee P", mark: "486 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "5", 
+      toppers: [
+        { name: "Shamil N", mark: "491 / 500", rank: "First" },
+        { name: "Nida Mol", mark: "488 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "6", 
+      toppers: [
+        { name: "Hana M", mark: "480 / 500", rank: "First" },
+        { name: "Riya T", mark: "478 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "7", 
+      toppers: [
+        { name: "Riyas M", mark: "485 / 500", rank: "First" },
+        { name: "Riya Mol", mark: "482 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "8", 
+      toppers: [
+        { name: "Zainab K", mark: "492 / 500", rank: "First" },
+        { name: "Muhsin P", mark: "489 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "9", 
+      toppers: [
+        { name: "Thaj T", mark: "488 / 500", rank: "First" },
+        { name: "Sinan P", mark: "485 / 500", rank: "Second" }
+      ]
+    },
+    { 
+      class: "10", 
+      toppers: [
+        { name: "Saniya F", mark: "495 / 500", rank: "First" },
+        { name: "Asna K", mark: "492 / 500", rank: "Second" }
+      ]
+    }
+  ];
+  
+  // Initialize uploaded photos array from localStorage
+  classesData.forEach((cls, classIndex) => {
+    uploadedPhotos[classIndex] = [];
+    cls.toppers.forEach((topper, topperIndex) => {
+      const saved = localStorage.getItem(`topperPhoto_${classIndex}_${topperIndex}`);
+      uploadedPhotos[classIndex][topperIndex] = saved || null;
+    });
+  });
+  
+  // Fetch and update stats
+  const stats = await fetchStats();
+  updateStatsDisplay(stats);
+  
+  // Load class cards
+  loadClassCards();
+  
+  // Create class filter buttons
+  createClassFilterButtons();
+  
+  // Add subtle entrance animation to cards
+  setTimeout(() => {
+    document.querySelectorAll('.class-card').forEach((card, index) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(20px)';
+      setTimeout(() => {
+        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, index * 100);
+    });
+  }, 300);
+}
 
 // Helper functions
 function escapeHtml(s){ 
@@ -1617,13 +1731,6 @@ function placeholderDataURL(){
     </g>
   </svg>`;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-}
-
-function updateCertCount() {
-  const countElement = document.getElementById('certCount');
-  const footerCountElement = document.getElementById('certCountFooter');
-  if (countElement) countElement.textContent = certCount;
-  if (footerCountElement) footerCountElement.textContent = certCount;
 }
 
 // Show notification with beautiful style
@@ -1854,7 +1961,10 @@ function loadClassCards() {
     
     let toppersHTML = '';
     cls.toppers.forEach((topper, topperIndex) => {
-      const photoURL = uploadedPhotos[classIndex][topperIndex] || placeholderDataURL();
+      // Use photo from Google Sheets if available, otherwise from localStorage
+      const photoURL = topper.photoURL || 
+                       uploadedPhotos[classIndex][topperIndex] || 
+                       placeholderDataURL();
       const isFirst = topper.rank === 'First';
       
       toppersHTML += `
@@ -1863,7 +1973,6 @@ function loadClassCards() {
             ${isFirst ? '1st' : '2nd'}
           </div>
           <div class="photo-display">
-            <!-- Upload button only - photo display is hidden -->
             <button class="upload-btn" onclick="document.getElementById('file-${classIndex}-${topperIndex}').click()">
               <i class="fas fa-cloud-upload-alt"></i> Upload Photo
             </button>
@@ -1874,7 +1983,7 @@ function loadClassCards() {
           <div class="rank-label ${isFirst ? 'first' : 'second'}">${topper.rank} Place in Class</div>
           <div class="student-meta">Marks: ${escapeHtml(topper.mark)}</div>
           <div class="action-buttons">
-            <button class="preview-btn" onclick="previewCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}')">
+            <button class="preview-btn" onclick="previewCertificate('${escapeHtml(topper.name)}','${escapeHtml(cls.class)}','${escapeHtml(topper.mark)}', '${escapeHtml(topper.rank)}', '${escapeHtml(photoURL)}')">
               <i class="fas fa-certificate"></i> Preview Certificate
             </button>
           </div>
@@ -1921,8 +2030,26 @@ async function handlePhotoUpload(input, classIndex, topperIndex) {
   const reader = new FileReader();
   reader.onload = async function(e) {
     try {
-      uploadedPhotos[classIndex][topperIndex] = e.target.result;
-      localStorage.setItem(`topperPhoto_${classIndex}_${topperIndex}`, e.target.result);
+      const photoDataURL = e.target.result;
+      const classData = classesData[classIndex];
+      const topper = classData.toppers[topperIndex];
+      
+      // Save locally
+      uploadedPhotos[classIndex][topperIndex] = photoDataURL;
+      localStorage.setItem(`topperPhoto_${classIndex}_${topperIndex}`, photoDataURL);
+      
+      // Try to save to Google Sheets (if photoURL field exists)
+      if (topper.photoURL !== undefined) {
+        const success = await savePhotoToSheet(
+          classData.class,
+          topper.name,
+          photoDataURL
+        );
+        
+        if (success) {
+          console.log('Photo saved to Google Sheets');
+        }
+      }
       
       // Update button to show success
       const uploadBtn = input.previousElementSibling;
@@ -2276,22 +2403,9 @@ document.addEventListener('keydown', function(e) {
 });
 
 // Initialize when page loads
-window.addEventListener('load', function() {
-  // Test background image
-  const testImg = new Image();
-  testImg.onload = function() {
-    console.log('Certificate background loaded successfully');
-  };
-  testImg.onerror = function() {
-    showNotification('Note: Using enhanced certificate design', 'info');
-  };
-  testImg.src = CERT_BG;
-  
-  // Load class cards
-  loadClassCards();
-  
-  // Create class filter buttons
-  createClassFilterButtons();
+window.addEventListener('load', async function() {
+  // Initialize the app
+  await initializeApp();
   
   // Focus on search input
   setTimeout(() => {
@@ -2317,19 +2431,6 @@ window.addEventListener('load', function() {
     `;
     floatingContainer.appendChild(element);
   }
-  
-  // Add subtle entrance animation to cards
-  setTimeout(() => {
-    document.querySelectorAll('.class-card').forEach((card, index) => {
-      card.style.opacity = '0';
-      card.style.transform = 'translateY(20px)';
-      setTimeout(() => {
-        card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-      }, index * 100);
-    });
-  }, 300);
 });
 </script>
 </body>
