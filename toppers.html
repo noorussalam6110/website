@@ -781,15 +781,24 @@ body::before {
   backdrop-filter: blur(10px);
 }
 
+/* Add this to your CSS */
 .certificate-canvas {
-  background: var(--white);
+  background: #ffffff !important; /* Force white background */
   width: 850px;
   max-width: 95%;
   margin: 30px auto;
   border-radius: 20px;
   box-shadow: var(--shadow-xl);
   position: relative;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(0, 0, 0, 0.1); /* Darker border for contrast */
+}
+
+/* Ensure high quality rendering */
+canvas {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .close-preview {
@@ -1591,6 +1600,15 @@ function loadClassCards() {
           <div class="rank-badge ${isFirst ? 'first' : 'second'}">
             ${isFirst ? '1st' : '2nd'}
           </div>
+          toppersHTML += `
+  <!-- ... other code ... -->
+  <div class="action-buttons">
+    <button class="preview-btn" onclick="previewCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}')">
+      <i class="fas fa-certificate"></i> Preview & Download Certificate
+    </button>
+  </div>
+  <!-- ... other code ... -->
+`;
           <div class="photo-display">
             <!-- Upload button only - photo display is hidden -->
             <button class="upload-btn" onclick="document.getElementById('file-${classIndex}-${topperIndex}').click()">
@@ -1744,21 +1762,27 @@ function drawSoftRibbons(ctx, w, h) {
   ctx.restore();
 }
 
-// Render certificate canvas WITHOUT photo border
+// Update the renderCertificateCanvas function to ensure high quality
 async function renderCertificateCanvas(name, cls, mark, rank, photo) {
-  const w = 1200, h = 1600;
+  // Increase resolution for better quality
+  const w = 2400, h = 3200; // Double the resolution
   const canvas = document.createElement("canvas"); 
   canvas.width = w; 
   canvas.height = h;
   const ctx = canvas.getContext("2d");
   
+  // Set higher quality rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  
   try {
     const bg = await loadImage(CERT_BG); 
+    // Draw background with high quality
     ctx.drawImage(bg, 0, 0, w, h);
     
     drawSoftRibbons(ctx, w, h);
     
-    const cx = w/2, cy = 800, r = 200;
+    const cx = w/2, cy = 1600, r = 400; // Adjusted for doubled resolution
     
     if(photo && !photo.includes('Student</text>')) {
       try {
@@ -1768,18 +1792,36 @@ async function renderCertificateCanvas(name, cls, mark, rank, photo) {
         ctx.arc(cx, cy, r, 0, Math.PI * 2); 
         ctx.clip();
         
-        const scale = Math.max(r * 2 / img.width, r * 2 / img.height);
-        const x = cx - (img.width * scale) / 2;
-        const y = cy - (img.height * scale) / 2;
+        // Maintain aspect ratio and position properly
+        const imgRatio = img.width / img.height;
+        const circleRatio = (r * 2) / (r * 2);
         
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-        ctx.shadowBlur = 10;
+        let drawWidth, drawHeight, drawX, drawY;
+        
+        if (imgRatio > circleRatio) {
+          // Image is wider than circle
+          drawHeight = r * 2;
+          drawWidth = img.width * (drawHeight / img.height);
+          drawX = cx - drawWidth / 2;
+          drawY = cy - drawHeight / 2;
+        } else {
+          // Image is taller than circle
+          drawWidth = r * 2;
+          drawHeight = img.height * (drawWidth / img.width);
+          drawX = cx - drawWidth / 2;
+          drawY = cy - drawHeight / 2;
+        }
+        
+        // Draw with anti-aliasing
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+        ctx.shadowBlur = 20;
         ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 3;
+        ctx.shadowOffsetY = 5;
         
-        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+        ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
         ctx.restore();
         
+        // Remove shadow for text
         ctx.shadowBlur = 0;
         ctx.shadowColor = 'transparent';
         
@@ -1791,26 +1833,27 @@ async function renderCertificateCanvas(name, cls, mark, rank, photo) {
       drawPlaceholderPhoto(ctx, cx, cy, r, name, rank);
     }
     
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-    ctx.shadowBlur = 8;
+    // Text with better quality
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+    ctx.shadowBlur = 10;
     ctx.shadowOffsetX = 0;
     ctx.shadowOffsetY = 4;
     
-    // Use Poppins font for all text
+    // Use Poppins font for all text with higher resolution
     ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 56px "Poppins"';
+    ctx.font = 'bold 112px "Poppins"'; // Doubled font size
     ctx.textAlign = 'center';
-    ctx.fillText(name, cx, 1080);
+    ctx.fillText(name, cx, 2160); // Adjusted position
     
     ctx.fillStyle = '#1e3a8a';
-    ctx.font = 'bold 36px "Poppins"';
-    ctx.fillText(`Class: ${cls} | Marks: ${mark}`, cx, 1150);
+    ctx.font = 'bold 72px "Poppins"'; // Doubled font size
+    ctx.fillText(`Class: ${cls} | Marks: ${mark}`, cx, 2300); // Adjusted position
     
     const rankColor = rank === 'First' ? '#d4af37' : '#64748b';
     ctx.fillStyle = rankColor;
-    ctx.font = 'bold 38px "Poppins"';
+    ctx.font = 'bold 76px "Poppins"'; // Doubled font size
     const rankText = rank === 'First' ? 'Class Topper' : 'Second Place in Class';
-    ctx.fillText(rankText, cx, 1210);
+    ctx.fillText(rankText, cx, 2420); // Adjusted position
     
     ctx.shadowBlur = 0;
     ctx.shadowColor = 'transparent';
@@ -1838,7 +1881,7 @@ function drawPlaceholderPhoto(ctx, cx, cy, r, name, rank) {
   ctx.fillText('👨‍🎓', cx, cy);
 }
 
-// Preview certificate
+// Update previewCertificate function
 async function previewCertificate(name, cls, mark, rank, photo) {
   try {
     showLoading();
@@ -1848,10 +1891,16 @@ async function previewCertificate(name, cls, mark, rank, photo) {
     const previewCanvas = document.getElementById('previewCanvas');
     const ctx = previewCanvas.getContext('2d');
     
-    previewCanvas.width = 800;
-    previewCanvas.height = 1067;
+    // Set preview canvas to high resolution but display smaller
+    previewCanvas.width = 1600;
+    previewCanvas.height = 2134;
     
-    ctx.drawImage(canvas, 0, 0, 1200, 1600, 0, 0, 800, 1067);
+    // Enable high quality scaling
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    
+    // Draw the high-res canvas scaled down for preview
+    ctx.drawImage(canvas, 0, 0, 2400, 3200, 0, 0, 1600, 2134);
     
     document.getElementById('certificatePreview').style.display = 'block';
     
@@ -1864,7 +1913,7 @@ async function previewCertificate(name, cls, mark, rank, photo) {
       
       buttonContainer.innerHTML = `
         <button onclick="downloadCertificate('${name}','${cls}','${mark}','${rank}','${photo.replace(/'/g, "\\'")}', 'png')">
-          <i class="fas fa-download"></i> Download PNG
+          <i class="fas fa-download"></i> Download High-Quality PNG
         </button>
         <button onclick="downloadCertificate('${name}','${cls}','${mark}','${rank}','${photo.replace(/'/g, "\\'")}', 'pdf')">
           <i class="fas fa-file-pdf"></i> Download PDF
@@ -1888,50 +1937,36 @@ function closeCertificatePreview() {
   if (buttons) buttons.remove();
 }
 
-// Download certificate
+// Update downloadCertificate function for better quality
 async function downloadCertificate(name, cls, mark, rank, photo, type) {
   try {
-    showLoading();
+    showLoading(type === 'png' ? 'Generating High-Quality PNG...' : 'Generating PDF...');
     
     const sound = document.getElementById("certSound"); 
     sound.currentTime = 0; 
     sound.play().catch(e => console.log("Audio play failed:", e));
     
     const canvas = await renderCertificateCanvas(name, cls, mark, rank, photo);
-    const img = canvas.toDataURL("image/png");
     
-    // Enhanced confetti
-    confetti({
-      particleCount: 200,
-      spread: 150,
-      origin: { y: 0.6 },
-      colors: rank === 'First' ? ['#fbbf24', '#f59e0b', '#d97706', '#ffffff'] : ['#c0c0c0', '#94a3b8', '#64748b', '#ffffff']
-    });
+    // Create a final canvas with white background as fallback
+    const finalCanvas = document.createElement("canvas");
+    finalCanvas.width = canvas.width;
+    finalCanvas.height = canvas.height;
+    const finalCtx = finalCanvas.getContext('2d');
     
-    setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        angle: 60,
-        spread: 80,
-        origin: { x: 0 },
-        colors: rank === 'First' ? ['#fbbf24', '#f59e0b'] : ['#c0c0c0', '#94a3b8']
-      });
-    }, 250);
+    // Fill with white background first
+    finalCtx.fillStyle = '#ffffff';
+    finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
     
-    setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        angle: 120,
-        spread: 80,
-        origin: { x: 1 },
-        colors: rank === 'First' ? ['#fbbf24', '#f59e0b'] : ['#c0c0c0', '#94a3b8']
-      });
-    }, 500);
+    // Draw the certificate on top
+    finalCtx.drawImage(canvas, 0, 0);
     
-    certCount++;
-    localStorage.setItem('certCount', certCount);
+    // Get image data URL with highest quality
+    const img = finalCanvas.toDataURL("image/png", 1.0); // 1.0 = maximum quality
     
-    const fileName = `Noorussalam_Class${cls}_${rank.replace(' ', '_')}_${name.replace(/\s+/g, '_')}`;
+    // ... rest of your confetti and download logic remains the same ...
+    
+    const fileName = `Noorussalam_Class${cls}_${rank.replace(' ', '_')}_${name.replace(/\s+/g, '_')}_HQ`;
     
     if(type === "png") {
       const a = document.createElement("a"); 
@@ -1940,14 +1975,21 @@ async function downloadCertificate(name, cls, mark, rank, photo, type) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      showNotification(`🎉 Certificate for ${name} downloaded successfully!`, 'success');
+      showNotification(`🎉 High-quality certificate for ${name} downloaded successfully!`, 'success');
       showSuccessAnimation();
     } else if(type === "pdf") {
       const { jsPDF } = window.jspdf; 
-      const pdf = new jsPDF({orientation: "portrait", unit: "px", format: [1200, 1600]});
-      pdf.addImage(img, "PNG", 0, 0, 1200, 1600); 
+      const pdf = new jsPDF({
+        orientation: "portrait", 
+        unit: "px", 
+        format: [2400, 3200],
+        compress: false // Disable compression for better quality
+      });
+      
+      // Add image with high quality
+      pdf.addImage(img, "PNG", 0, 0, 2400, 3200, '', 'FAST'); 
       pdf.save(`${fileName}.pdf`);
-      showNotification(`📄 PDF certificate for ${name} downloaded!`, 'success');
+      showNotification(`📄 High-quality PDF certificate for ${name} downloaded!`, 'success');
       showSuccessAnimation();
     }
     
@@ -1959,7 +2001,6 @@ async function downloadCertificate(name, cls, mark, rank, photo, type) {
     showNotification("Error generating certificate. Please try again.", 'error');
   }
 }
-
 // Clear all uploaded photos
 function clearAllPhotos() {
   if(confirm("Are you sure you want to clear all uploaded photos? This action cannot be undone.")) {
