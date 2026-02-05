@@ -1351,7 +1351,7 @@
                 <div class="toppers-btn-container" id="toppersBtnContainer">
                     <a href="coming-soon.html" class="toppers-btn">
                         <i class="fas fa-crown"></i>
-                        <span>View Class Toppers & Generate Certificates</span>
+                        <span>View Class Toppers & Poster</span>
                         <span class="toppers-label">NEW</span>
                     </a>
                 </div>
@@ -1497,7 +1497,7 @@
 
     <script>
 // Google Apps Script URL
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEyzob8hjEBduZJ7AUHO8GxQ2KoQAjZRLYzRSL0l-ZeEcZqQ35lGiQkgD75x3j2uY2wA/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQXUahb4ba9RMnd1qZykatoyluS38IYB5oZdtxzSP9LpPK_M85R9UojyUVdcD1AEx6/exec';
 
 // DOM Elements
 const countdownContainer = document.getElementById('countdownContainer');
@@ -1845,7 +1845,6 @@ function enhancedPrint() {
     resultContent.insertBefore(printHeader, resultContent.firstChild);
     resultContent.appendChild(printFooter);
     
-    
     // Trigger print after a short delay
     setTimeout(() => {
         window.print();
@@ -1914,7 +1913,6 @@ function displayResult(data) {
     // Calculate totals from subjects
     let totalMaxScore = 0;
     let totalObtainedScore = 0;
-    let passedSubjects = 0;
     
     subjects.forEach(subject => {
         const max = parseInt(subject.maxScore) || 0;
@@ -1922,11 +1920,11 @@ function displayResult(data) {
         
         totalMaxScore += max;
         totalObtainedScore += obtained;
-        
-        if (subject.status === 'Pass') {
-            passedSubjects++;
-        }
     });
+    
+    // Get subjects passed from Google Sheets data (column F)
+    const subjectsPassed = student.subjectsPassed || 0;
+    const totalSubjects = subjects.length;
     
     // Calculate percentage
     const percentage = totalMaxScore > 0 ? ((totalObtainedScore / totalMaxScore) * 100).toFixed(2) : '0';
@@ -2074,28 +2072,43 @@ function displayResult(data) {
                         </div>
                     </div>
                     
+                    <!-- ATTENDANCE -->
                     <div class="summary-item">
-                        <div class="summary-label">Subjects Passed</div>
-                        <div class="summary-value">${passedSubjects}/${subjects.length}</div>
+                        <div class="summary-label">Attendance</div>
+                        <div class="summary-value">${student.presents || 0}</div>
                         <div style="font-size: 0.75rem; color: var(--primary); margin-top: 4px; font-weight: 500;">
-                            ${passedSubjects === subjects.length ? 'All Passed' : `${subjects.length - passedSubjects} Failed`}
+                            Total: ${student.totalMaxPresents || 0}
                         </div>
                     </div>
                 </div>
                 
-                <!-- Overall Grade Display -->
-                <div class="performance-grade">
-                    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); font-weight: 600; text-transform: uppercase;">
-                        <i class="fas fa-award" style="margin-right: 8px;"></i> Overall Grade
+                <!-- SUBJECTS PASSED -->
+                <div class="summary-grid" style="margin-top: 15px;">
+                    <div class="summary-item" style="grid-column: span 2;">
+                        <div class="summary-label">Subjects Passed</div>
+                        <div class="summary-value" style="color: ${subjectsPassed === totalSubjects ? 'var(--success)' : 'var(--danger)'};">
+                            ${subjectsPassed}/${totalSubjects}
+                        </div>
+                        <div style="font-size: 0.75rem; color: ${subjectsPassed === totalSubjects ? 'var(--success)' : 'var(--danger)'}; margin-top: 4px; font-weight: 500;">
+                            ${subjectsPassed === totalSubjects ? 'All Subjects Passed' : 
+                              totalSubjects - subjectsPassed === 1 ? '1 Subject Failed' : 
+                              `${totalSubjects - subjectsPassed} Subjects Failed`}
+                        </div>
                     </div>
-                    <div class="grade-display">${overallGrade}</div>
-                    <div style="font-size: 0.9rem; color: rgba(255, 255, 255, 0.9); margin-top: 8px; font-weight: 500;">
-                        ${numericPercentage >= 90 ? 'Outstanding Performance' : 
-                          numericPercentage >= 80 ? 'Excellent Performance' : 
-                          numericPercentage >= 70 ? 'Good Performance' : 
-                          numericPercentage >= 60 ? 'Satisfactory Performance' : 
-                          numericPercentage >= 40 ? 'Passing Performance' : 
-                          'Needs Improvement'}
+                    
+                    <!-- Overall Grade Display -->
+                    <div class="summary-item" style="grid-column: span 2;">
+                        <div class="summary-label">Overall Grade</div>
+                        <div class="summary-value" style="color: ${gradeColor}; font-size: 2.2rem;">${overallGrade}</div>
+                        <div style="font-size: 0.75rem; color: ${gradeColor}; font-weight: 600; margin-top: 4px;">
+                            ${numericPercentage >= 90 ? 'Outstanding' : 
+                              numericPercentage >= 80 ? 'Excellent' : 
+                              numericPercentage >= 70 ? 'Good' : 
+                              numericPercentage >= 60 ? 'Above Average' : 
+                              numericPercentage >= 50 ? 'Average' : 
+                              numericPercentage >= 40 ? 'Pass' : 
+                              'Needs Improvement'}
+                        </div>
                     </div>
                 </div>
             </div>
