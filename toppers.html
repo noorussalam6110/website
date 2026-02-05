@@ -422,7 +422,6 @@ body::before {
   gap: 10px;
 }
 
-
 /* Topper Cards - Beautiful Compact Design */
 .topper-card {
   background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.9) 100%);
@@ -781,7 +780,6 @@ body::before {
   backdrop-filter: blur(10px);
 }
 
-/* Add this to your CSS */
 .certificate-canvas {
   background: #ffffff !important; /* Force white background */
   width: 850px;
@@ -1215,7 +1213,7 @@ canvas {
 <!-- Loading Overlay -->
 <div class="loading" id="loading">
   <div class="loading-spinner"></div>
-  <p id="loadingText">Generating Beautiful Poster...</p>
+  <p id="loadingText">Generating High-Quality Certificate...</p>
 </div>
 
 <!-- Certificate Preview Modal -->
@@ -1600,15 +1598,6 @@ function loadClassCards() {
           <div class="rank-badge ${isFirst ? 'first' : 'second'}">
             ${isFirst ? '1st' : '2nd'}
           </div>
-          toppersHTML += `
-  <!-- ... other code ... -->
-  <div class="action-buttons">
-    <button class="preview-btn" onclick="previewCertificate('${topper.name}','${cls.class}','${topper.mark}', '${topper.rank}', uploadedPhotos[${classIndex}][${topperIndex}] || '${photoURL}')">
-      <i class="fas fa-certificate"></i> Preview & Download Certificate
-    </button>
-  </div>
-  <!-- ... other code ... -->
-`;
           <div class="photo-display">
             <!-- Upload button only - photo display is hidden -->
             <button class="upload-btn" onclick="document.getElementById('file-${classIndex}-${topperIndex}').click()">
@@ -1718,7 +1707,7 @@ function closePreview() {
 }
 
 // Show loading
-function showLoading(text = 'Generating Beautiful Certificate...') {
+function showLoading(text = 'Generating High-Quality Certificate...') {
   document.getElementById('loadingText').textContent = text;
   document.getElementById('loading').style.display = 'flex';
 }
@@ -1762,16 +1751,16 @@ function drawSoftRibbons(ctx, w, h) {
   ctx.restore();
 }
 
-// Update the renderCertificateCanvas function to ensure high quality
+// Render certificate canvas WITHOUT photo border - HIGH QUALITY VERSION
 async function renderCertificateCanvas(name, cls, mark, rank, photo) {
-  // Increase resolution for better quality
-  const w = 2400, h = 3200; // Double the resolution
+  // Double the resolution for high quality
+  const w = 2400, h = 3200;
   const canvas = document.createElement("canvas"); 
   canvas.width = w; 
   canvas.height = h;
   const ctx = canvas.getContext("2d");
   
-  // Set higher quality rendering
+  // Set high quality rendering
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   
@@ -1881,7 +1870,7 @@ function drawPlaceholderPhoto(ctx, cx, cy, r, name, rank) {
   ctx.fillText('👨‍🎓', cx, cy);
 }
 
-// Update previewCertificate function
+// Preview certificate
 async function previewCertificate(name, cls, mark, rank, photo) {
   try {
     showLoading();
@@ -1916,7 +1905,7 @@ async function previewCertificate(name, cls, mark, rank, photo) {
           <i class="fas fa-download"></i> Download High-Quality PNG
         </button>
         <button onclick="downloadCertificate('${name}','${cls}','${mark}','${rank}','${photo.replace(/'/g, "\\'")}', 'pdf')">
-          <i class="fas fa-file-pdf"></i> Download PDF
+          <i class="fas fa-file-pdf"></i> Download High-Quality PDF
         </button>
       `;
       
@@ -1937,10 +1926,10 @@ function closeCertificatePreview() {
   if (buttons) buttons.remove();
 }
 
-// Update downloadCertificate function for better quality
+// Download certificate - HIGH QUALITY VERSION
 async function downloadCertificate(name, cls, mark, rank, photo, type) {
   try {
-    showLoading(type === 'png' ? 'Generating High-Quality PNG...' : 'Generating PDF...');
+    showLoading(type === 'png' ? 'Generating High-Quality PNG...' : 'Generating High-Quality PDF...');
     
     const sound = document.getElementById("certSound"); 
     sound.currentTime = 0; 
@@ -1954,7 +1943,11 @@ async function downloadCertificate(name, cls, mark, rank, photo, type) {
     finalCanvas.height = canvas.height;
     const finalCtx = finalCanvas.getContext('2d');
     
-    // Fill with white background first
+    // Set high quality rendering
+    finalCtx.imageSmoothingEnabled = true;
+    finalCtx.imageSmoothingQuality = 'high';
+    
+    // Fill with white background first to ensure white background
     finalCtx.fillStyle = '#ffffff';
     finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
     
@@ -1964,7 +1957,36 @@ async function downloadCertificate(name, cls, mark, rank, photo, type) {
     // Get image data URL with highest quality
     const img = finalCanvas.toDataURL("image/png", 1.0); // 1.0 = maximum quality
     
-    // ... rest of your confetti and download logic remains the same ...
+    // Enhanced confetti
+    confetti({
+      particleCount: 200,
+      spread: 150,
+      origin: { y: 0.6 },
+      colors: rank === 'First' ? ['#fbbf24', '#f59e0b', '#d97706', '#ffffff'] : ['#c0c0c0', '#94a3b8', '#64748b', '#ffffff']
+    });
+    
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        angle: 60,
+        spread: 80,
+        origin: { x: 0 },
+        colors: rank === 'First' ? ['#fbbf24', '#f59e0b'] : ['#c0c0c0', '#94a3b8']
+      });
+    }, 250);
+    
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        angle: 120,
+        spread: 80,
+        origin: { x: 1 },
+        colors: rank === 'First' ? ['#fbbf24', '#f59e0b'] : ['#c0c0c0', '#94a3b8']
+      });
+    }, 500);
+    
+    certCount++;
+    localStorage.setItem('certCount', certCount);
     
     const fileName = `Noorussalam_Class${cls}_${rank.replace(' ', '_')}_${name.replace(/\s+/g, '_')}_HQ`;
     
@@ -2001,6 +2023,7 @@ async function downloadCertificate(name, cls, mark, rank, photo, type) {
     showNotification("Error generating certificate. Please try again.", 'error');
   }
 }
+
 // Clear all uploaded photos
 function clearAllPhotos() {
   if(confirm("Are you sure you want to clear all uploaded photos? This action cannot be undone.")) {
