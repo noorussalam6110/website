@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Class Wise Results - Noorussalam Madrasa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --secondary: #60A5FA;
+            --accent: #38BDF8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --light: #F0F9FF;
+            --dark: #1E293B;
+            --gradient-1: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            --shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.08);
+            --shadow-md: 0 4px 16px rgba(30, 58, 138, 0.1);
+            --shadow-lg: 0 8px 32px rgba(30, 58, 138, 0.12);
+            --border-radius: 16px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            min-height: 100vh;
+            color: #374151;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 20px 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-lg);
+            border-bottom: 4px solid var(--primary);
+            position: relative;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-weight: 700;
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .header p {
+            color: #4B5563;
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Class Selector */
+        .class-selector {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .class-badge {
+            background: var(--light);
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+            font-size: 0.9rem;
+        }
+
+        .class-badge:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
+        }
+
+        .class-badge.active {
+            background: var(--gradient-1);
+            color: white;
+            border-color: white;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px 10px;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            transition: transform 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .summary-card .icon {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .summary-card .value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            line-height: 1.2;
+        }
+
+        .summary-card .label {
+            color: #6B7280;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Grade Distribution */
+        .grade-distribution {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .grade-distribution h3 {
+            color: var(--primary);
+            font-weight: 600;
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grade-bars {
+            display: grid;
+            gap: 8px;
+        }
+
+        .grade-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grade-label {
+            width: 45px;
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        .grade-bar-container {
+            flex: 1;
+            height: 24px;
+            background: #E5E7EB;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .grade-bar {
+            height: 100%;
+            background: var(--gradient-1);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: width 0.5s ease;
+            white-space: nowrap;
+        }
+
+        .grade-count {
+            width: 40px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .filter-select {
+            padding: 12px 15px;
+            border: 2px solid #E5E7EB;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+            font-size: 0.95rem;
+            min-width: 150px;
+        }
+
+        /* Export Buttons */
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            background: var(--gradient-1);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .export-btn.secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        /* Student Table */
+        .student-table-container {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            box-shadow: var(--shadow-lg);
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 800px;
+        }
+
+        .student-table th {
+            background: var(--gradient-1);
+            color: white;
+            padding: 12px 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .student-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #E5E7EB;
+            text-align: center;
+        }
+
+        .student-table tr:hover td {
+            background: #F0F9FF;
+        }
+
+        .student-table td:first-child,
+        .student-table th:first-child {
+            padding-left: 12px;
+        }
+
+        .student-table td:last-child,
+        .student-table th:last-child {
+            padding-right: 12px;
+        }
+
+        /* Status Badges */
+        .status-pass {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-block;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-fail {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            display: inline-block;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Grade Colors */
+        .grade-A-plus { color: #10B981; font-weight: 700; }
+        .grade-A { color: #06B6D4; font-weight: 700; }
+        .grade-B-plus { color: #3B82F6; font-weight: 700; }
+        .grade-B { color: #8B5CF6; font-weight: 700; }
+        .grade-C { color: #F59E0B; font-weight: 700; }
+        .grade-D { color: #EF4444; font-weight: 700; }
+        .grade-F { color: #DC2626; font-weight: 700; }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(30, 58, 138, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 15px;
+            color: #6B7280;
+            font-size: 0.8rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* No Data */
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-md);
+        }
+
+        .no-data i {
+            font-size: 3rem;
+            color: var(--primary-light);
+            margin-bottom: 15px;
+        }
+
+        /* Print Styles */
+        @media print {
+            .no-print, .back-btn, .class-selector, .filter-section, 
+            .export-buttons, .footer {
+                display: none !important;
+            }
+            
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .header {
+                box-shadow: none;
+                border: 1px solid #000;
+            }
+            
+            .student-table th {
+                background: #1E3A8A !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 640px) {
+            .summary-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .back-btn {
+                position: static;
+                transform: none;
+                margin: 0 auto 10px;
+            }
+            
+            .header {
+                padding-top: 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.2rem;
+            }
+            
+            .class-badge {
+                padding: 8px 15px;
+                font-size: 0.8rem;
+            }
+            
+            .filter-section {
+                flex-direction: column;
+            }
+            
+            .filter-input, .filter-select {
+                width: 100%;
+            }
+            
+            .export-buttons {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .summary-card .value {
+                font-size: 1.4rem;
+            }
+            
+            .summary-card .icon {
+                font-size: 1.5rem;
+            }
+            
+            .grade-label {
+                width: 35px;
+                font-size: 0.8rem;
+            }
+            
+            .grade-count {
+                width: 30px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header no-print">
+            <a href="index.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <h1><i class="fas fa-chart-bar" style="margin-right: 8px;"></i> Class Wise Results</h1>
+            <p>NOORUSSALAM SECONDARY MADRASA | Annual Examination 2025-26</p>
+        </div>
+
+        <!-- Class Selector -->
+        <div class="class-selector no-print" id="classSelector">
+            <div class="class-badge" data-class="1">Class 1</div>
+            <div class="class-badge" data-class="2">Class 2</div>
+            <div class="class-badge" data-class="3">Class 3</div>
+            <div class="class-badge" data-class="4">Class 4</div>
+            <div class="class-badge" data-class="6">Class 6</div>
+            <div class="class-badge" data-class="8">Class 8</div>
+            <div class="class-badge" data-class="9">Class 9</div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <h4 style="color: var(--primary); margin: 10px 0;">Loading Class Results...</h4>
+            <p style="color: #6B7280;">Please wait while we fetch the data</p>
+        </div>
+
+        <!-- Content Area -->
+        <div id="contentArea"></div>
+
+        <!-- Footer -->
+        <div class="footer no-print">
+            <p>© 2025 Noorussalam Madrasa | All Rights Reserved</p>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxn1Hx1K4tvKVMsosAHl5xZxQby7aaH-_JunxFYdO-K-dpBWI9TYb_V4EB9OLKo5hw7/exec';
+        let currentClassData = null;
+        let currentClass = '1';
+
+        // Class selector click handlers
+        document.querySelectorAll('.class-badge').forEach(badge => {
+            badge.addEventListener('click', function() {
+                document.querySelectorAll('.class-badge').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const className = this.dataset.class;
+                currentClass = className;
+                loadClassResults(className);
+            });
+        });
+
+        // Load class results
+        async function loadClassResults(className) {
+            const loading = document.getElementById('loading');
+            const contentArea = document.getElementById('contentArea');
+            
+            loading.style.display = 'block';
+            contentArea.innerHTML = '';
+
+            try {
+                const url = `${SCRIPT_URL}?classWise=true&class=${className}&t=${Date.now()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                loading.style.display = 'none';
+
+                if (data.result === 'success') {
+                    currentClassData = data;
+                    displayClassResults(data);
+                } else if (data.result === 'countdown') {
+                    contentArea.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-clock"></i>
+                            <h3 style="color: var(--primary);">Results Not Published Yet</h3>
+                            <p style="color: #6B7280;">${data.message || 'Please check back later.'}</p>
+                            <p style="color: var(--primary); margin-top: 15px; font-weight: 500;">
+                                <i class="fas fa-calendar-alt"></i> ${data.publishTimeFormatted || ''}
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    contentArea.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                            <h3 style="color: var(--danger);">Error</h3>
+                            <p style="color: #6B7280;">${data.message || 'Failed to load class results'}</p>
+                            <button onclick="loadClassResults('${className}')" class="export-btn" style="margin-top: 15px;">
+                                <i class="fas fa-redo"></i> Try Again
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                contentArea.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                        <h3 style="color: var(--danger);">Connection Error</h3>
+                        <p style="color: #6B7280;">Failed to connect to server. Please check your internet connection.</p>
+                        <button onclick="loadClassResults('${className}')" class="export-btn" style="margin-top: 15px;">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Display class results
+        function displayClassResults(data) {
+            const contentArea = document.getElementById('contentArea');
+            
+            // Create grade distribution HTML
+            let gradeBars = '';
+            const grades = [
+                { key: 'A+', label: 'A+', color: '#10B981' },
+                { key: 'A', label: 'A', color: '#06B6D4' },
+                { key: 'B+', label: 'B+', color: '#3B82F6' },
+                { key: 'B', label: 'B', color: '#8B5CF6' },
+                { key: 'C+', label: 'C+', color: '#F59E0B' },
+                { key: 'C', label: 'C', color: '#F59E0B' },
+                { key: 'D+', label: 'D+', color: '#EF4444' },
+                { key: 'D', label: 'D', color: '#EF4444' },
+                { key: 'N/A', label: 'N/A', color: '#6B7280' }
+            ];
+            
+            grades.forEach(grade => {
+                const count = data.gradeDistribution[grade.key] || 0;
+                const percentage = data.totalStudents > 0 ? ((count / data.totalStudents) * 100).toFixed(1) : 0;
+                
+                gradeBars += `
+                    <div class="grade-bar-item">
+                        <span class="grade-label">${grade.label}</span>
+                        <div class="grade-bar-container">
+                            <div class="grade-bar" style="width: ${percentage}%; background: ${grade.color};">${percentage}%</div>
+                        </div>
+                        <span class="grade-count">${count}</span>
+                    </div>
+                `;
+            });
+
+            // Create student table rows
+            let studentRows = '';
+            data.students.forEach((student, index) => {
+                const statusClass = student.status === 'PASSED' ? 'status-pass' : 'status-fail';
+                const gradeClass = student.overallGrade === 'A+' ? 'grade-A-plus' : 
+                                  student.overallGrade === 'A' ? 'grade-A' :
+                                  student.overallGrade === 'B+' ? 'grade-B-plus' :
+                                  student.overallGrade === 'B' ? 'grade-B' :
+                                  student.overallGrade === 'C' ? 'grade-C' :
+                                  student.overallGrade === 'D' ? 'grade-D' : 'grade-F';
+                
+                studentRows += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${student.rollNumber}</strong></td>
+                        <td style="text-align: left;">${student.name}</td>
+                        <td>${student.totalScore}</td>
+                        <td>${student.percentage.toFixed(2)}%</td>
+                        <td>${student.rank}</td>
+                        <td><span class="${statusClass}">${student.status}</span></td>
+                        <td class="${gradeClass}">${student.overallGrade}</td>
+                    </tr>
+                `;
+            });
+
+            contentArea.innerHTML = `
+                <!-- Header with Class Name -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="color: var(--primary); margin: 0; font-size: 1.3rem;">
+                        Class ${data.class} Results
+                        <span style="font-size: 0.9rem; color: #6B7280; margin-left: 10px; font-weight: normal;">
+                            Total: ${data.totalStudents} Students
+                        </span>
+                    </h2>
+                    
+                    <!-- Export Buttons -->
+                    <div class="export-buttons no-print">
+                        <button class="export-btn" onclick="exportToCSV()">
+                            <i class="fas fa-file-csv"></i> CSV
+                        </button>
+                        <button class="export-btn secondary" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="icon"><i class="fas fa-users"></i></div>
+                        <div class="value">${data.totalStudents}</div>
+                        <div class="label">Total Students</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon"><i class="fas fa-check-circle" style="color: var(--success);"></i></div>
+                        <div class="value">${data.passedCount}</div>
+                        <div class="label">Passed</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon"><i class="fas fa-times-circle" style="color: var(--danger);"></i></div>
+                        <div class="value">${data.failedCount}</div>
+                        <div class="label">Failed</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="value">${data.passPercentage}%</div>
+                        <div class="label">Pass %</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon"><i class="fas fa-trophy"></i></div>
+                        <div class="value">${data.highestScore.toFixed(2)}%</div>
+                        <div class="label">Highest</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="icon"><i class="fas fa-calculator"></i></div>
+                        <div class="value">${data.averagePercentage}%</div>
+                        <div class="label">Average</div>
+                    </div>
+                </div>
+
+                <!-- Grade Distribution -->
+                <div class="grade-distribution">
+                    <h3><i class="fas fa-chart-pie"></i> Grade Distribution</h3>
+                    <div class="grade-bars">
+                        ${gradeBars}
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section no-print">
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Search by name or roll number..." onkeyup="filterTable()">
+                    <select class="filter-select" id="statusFilter" onchange="filterTable()">
+                        <option value="all">All Students</option>
+                        <option value="passed">Passed Only</option>
+                        <option value="failed">Failed Only</option>
+                    </select>
+                </div>
+
+                <!-- Student Table -->
+                <div class="student-table-container">
+                    <table class="student-table" id="studentTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Roll No</th>
+                                <th>Student Name</th>
+                                <th>Total</th>
+                                <th>Percentage</th>
+                                <th>Rank</th>
+                                <th>Status</th>
+                                <th>Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            ${studentRows}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 15px; color: #6B7280; font-size: 0.8rem; text-align: center;">
+                    <i class="fas fa-clock"></i> Generated on: ${data.generatedOn}
+                </div>
+            `;
+        }
+
+        // Filter table function
+        function filterTable() {
+            if (!currentClassData) return;
+            
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            const filteredStudents = currentClassData.students.filter(student => {
+                const matchesSearch = student.name.toLowerCase().includes(searchTerm) || 
+                                     student.rollNumber.toLowerCase().includes(searchTerm);
+                const matchesStatus = statusFilter === 'all' || 
+                                     (statusFilter === 'passed' && student.status === 'PASSED') ||
+                                     (statusFilter === 'failed' && student.status === 'FAILED');
+                return matchesSearch && matchesStatus;
+            });
+            
+            let filteredRows = '';
+            filteredStudents.forEach((student, index) => {
+                const statusClass = student.status === 'PASSED' ? 'status-pass' : 'status-fail';
+                const gradeClass = student.overallGrade === 'A+' ? 'grade-A-plus' : 
+                                  student.overallGrade === 'A' ? 'grade-A' :
+                                  student.overallGrade === 'B+' ? 'grade-B-plus' :
+                                  student.overallGrade === 'B' ? 'grade-B' :
+                                  student.overallGrade === 'C' ? 'grade-C' :
+                                  student.overallGrade === 'D' ? 'grade-D' : 'grade-F';
+                
+                filteredRows += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${student.rollNumber}</strong></td>
+                        <td style="text-align: left;">${student.name}</td>
+                        <td>${student.totalScore}</td>
+                        <td>${student.percentage.toFixed(2)}%</td>
+                        <td>${student.rank}</td>
+                        <td><span class="${statusClass}">${student.status}</span></td>
+                        <td class="${gradeClass}">${student.overallGrade}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('tableBody').innerHTML = filteredRows;
+        }
+
+        // Export to CSV function
+        function exportToCSV() {
+            if (!currentClassData) return;
+            
+            let csv = 'Sl No,Roll No,Student Name,Total Marks,Percentage,Rank,Status,Overall Grade\n';
+            
+            currentClassData.students.forEach((student, index) => {
+                csv += `${index + 1},${student.rollNumber},${student.name},${student.totalScore},${student.percentage.toFixed(2)}%,${student.rank},${student.status},${student.overallGrade}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `class_${currentClassData.class}_results.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Load default class on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Set first class as active
+            document.querySelector('.class-badge[data-class="1"]').classList.add('active');
+            loadClassResults('1');
+        });
+
+        // Handle orientation change
+        let orientationTimeout;
+        window.addEventListener('orientationchange', function() {
+            clearTimeout(orientationTimeout);
+            orientationTimeout = setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 200);
+        });
+    </script>
+</body>
+</html>
