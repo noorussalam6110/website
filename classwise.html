@@ -130,6 +130,39 @@
             box-shadow: var(--shadow-lg);
         }
 
+        /* Debug Info */
+        .debug-info {
+            background: #1E293B;
+            color: #E5E7EB;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            display: none;
+        }
+
+        .debug-info.visible {
+            display: block;
+        }
+
+        .debug-toggle {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+
+        .debug-toggle button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
         /* Summary Cards */
         .summary-cards {
             display: grid;
@@ -441,10 +474,27 @@
             margin-bottom: 15px;
         }
 
+        /* Retry Button */
+        .retry-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .retry-btn:hover {
+            background: var(--primary-light);
+        }
+
         /* Print Styles */
         @media print {
             .no-print, .back-btn, .class-selector, .filter-section, 
-            .export-buttons, .footer {
+            .export-buttons, .footer, .debug-toggle {
                 display: none !important;
             }
             
@@ -536,6 +586,19 @@
             <p>NOORUSSALAM SECONDARY MADRASA | Annual Examination 2025-26</p>
         </div>
 
+        <!-- Debug Toggle -->
+        <div class="debug-toggle no-print">
+            <button onclick="toggleDebug()" id="debugBtn">
+                <i class="fas fa-bug"></i> Show Debug Info
+            </button>
+        </div>
+
+        <!-- Debug Info -->
+        <div class="debug-info" id="debugInfo">
+            <strong>Debug Information:</strong>
+            <div id="debugContent"></div>
+        </div>
+
         <!-- Class Selector -->
         <div class="class-selector no-print" id="classSelector">
             <div class="class-badge" data-class="1">Class 1</div>
@@ -564,9 +627,51 @@
     </div>
 
     <script>
+        // IMPORTANT: Replace this with your actual deployed web app URL
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxn1Hx1K4tvKVMsosAHl5xZxQby7aaH-_JunxFYdO-K-dpBWI9TYb_V4EB9OLKo5hw7/exec';
+        
         let currentClassData = null;
         let currentClass = '1';
+        let debugMode = false;
+
+        // Toggle debug info
+        function toggleDebug() {
+            debugMode = !debugMode;
+            const debugInfo = document.getElementById('debugInfo');
+            const debugBtn = document.getElementById('debugBtn');
+            
+            if (debugMode) {
+                debugInfo.classList.add('visible');
+                debugBtn.innerHTML = '<i class="fas fa-bug"></i> Hide Debug Info';
+            } else {
+                debugInfo.classList.remove('visible');
+                debugBtn.innerHTML = '<i class="fas fa-bug"></i> Show Debug Info';
+            }
+        }
+
+        // Add debug message
+        function addDebug(message, data = null) {
+            if (!debugMode) return;
+            
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            let debugHtml = debugContent.innerHTML;
+            
+            debugHtml += `<div style="margin-top: 10px; padding: 5px; border-top: 1px solid #444;">`;
+            debugHtml += `<small style="color: #9CA3AF;">[${timestamp}]</small> ${message}`;
+            
+            if (data) {
+                debugHtml += `<pre style="background: #111827; padding: 10px; border-radius: 5px; margin-top: 5px; font-size: 0.8rem;">${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            debugHtml += `</div>`;
+            debugContent.innerHTML = debugHtml;
+        }
+
+        // Clear debug
+        function clearDebug() {
+            document.getElementById('debugContent').innerHTML = '';
+        }
 
         // Class selector click handlers
         document.querySelectorAll('.class-badge').forEach(badge => {
@@ -575,6 +680,8 @@
                 this.classList.add('active');
                 const className = this.dataset.class;
                 currentClass = className;
+                clearDebug();
+                addDebug(`Loading class ${className}...`);
                 loadClassResults(className);
             });
         });
@@ -586,18 +693,31 @@
             
             loading.style.display = 'block';
             contentArea.innerHTML = '';
+            addDebug(`Making API request to: ${SCRIPT_URL}?classWise=true&class=${className}`);
 
             try {
+                // Add cache buster
                 const url = `${SCRIPT_URL}?classWise=true&class=${className}&t=${Date.now()}`;
+                addDebug(`Fetch URL: ${url}`);
+                
                 const response = await fetch(url);
+                addDebug(`Response status: ${response.status} ${response.statusText}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const data = await response.json();
+                addDebug('Response data received:', data);
 
                 loading.style.display = 'none';
 
                 if (data.result === 'success') {
+                    addDebug(`Success! Found ${data.students ? data.students.length : 0} students`);
                     currentClassData = data;
                     displayClassResults(data);
                 } else if (data.result === 'countdown') {
+                    addDebug('Results not published yet (countdown mode)');
                     contentArea.innerHTML = `
                         <div class="no-data">
                             <i class="fas fa-clock"></i>
@@ -606,15 +726,23 @@
                             <p style="color: var(--primary); margin-top: 15px; font-weight: 500;">
                                 <i class="fas fa-calendar-alt"></i> ${data.publishTimeFormatted || ''}
                             </p>
+                            <button onclick="loadClassResults('${className}')" class="retry-btn">
+                                <i class="fas fa-redo"></i> Check Again
+                            </button>
                         </div>
                     `;
                 } else {
+                    addDebug('Error response:', data);
                     contentArea.innerHTML = `
                         <div class="no-data">
                             <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
-                            <h3 style="color: var(--danger);">Error</h3>
+                            <h3 style="color: var(--danger);">Error Loading Results</h3>
                             <p style="color: #6B7280;">${data.message || 'Failed to load class results'}</p>
-                            <button onclick="loadClassResults('${className}')" class="export-btn" style="margin-top: 15px;">
+                            <p style="color: #9CA3AF; font-size: 0.9rem; margin-top: 10px;">
+                                Class: ${className}<br>
+                                Time: ${new Date().toLocaleString()}
+                            </p>
+                            <button onclick="loadClassResults('${className}')" class="retry-btn">
                                 <i class="fas fa-redo"></i> Try Again
                             </button>
                         </div>
@@ -622,12 +750,22 @@
                 }
             } catch (error) {
                 loading.style.display = 'none';
+                addDebug(`Error: ${error.message}`, error);
+                
                 contentArea.innerHTML = `
                     <div class="no-data">
                         <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
                         <h3 style="color: var(--danger);">Connection Error</h3>
-                        <p style="color: #6B7280;">Failed to connect to server. Please check your internet connection.</p>
-                        <button onclick="loadClassResults('${className}')" class="export-btn" style="margin-top: 15px;">
+                        <p style="color: #6B7280;">Failed to connect to server. Please check:</p>
+                        <ul style="text-align: left; display: inline-block; color: #6B7280; margin-top: 15px;">
+                            <li>✓ Internet connection</li>
+                            <li>✓ Script URL is correct</li>
+                            <li>✓ Web app is deployed</li>
+                        </ul>
+                        <p style="color: #9CA3AF; font-size: 0.9rem; margin-top: 15px;">
+                            Error: ${error.message}
+                        </p>
+                        <button onclick="loadClassResults('${className}')" class="retry-btn">
                             <i class="fas fa-redo"></i> Try Again
                         </button>
                     </div>
@@ -638,6 +776,22 @@
         // Display class results
         function displayClassResults(data) {
             const contentArea = document.getElementById('contentArea');
+            
+            // Validate data
+            if (!data.students || !Array.isArray(data.students)) {
+                addDebug('Invalid data structure: students array missing');
+                contentArea.innerHTML = `
+                    <div class="no-data">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                        <h3 style="color: var(--danger);">Data Error</h3>
+                        <p style="color: #6B7280;">Invalid data format received from server.</p>
+                        <button onclick="loadClassResults('${data.class || '1'}')" class="retry-btn">
+                            <i class="fas fa-redo"></i> Try Again
+                        </button>
+                    </div>
+                `;
+                return;
+            }
             
             // Create grade distribution HTML
             let gradeBars = '';
@@ -653,8 +807,10 @@
                 { key: 'N/A', label: 'N/A', color: '#6B7280' }
             ];
             
+            const gradeDistribution = data.gradeDistribution || {};
+            
             grades.forEach(grade => {
-                const count = data.gradeDistribution[grade.key] || 0;
+                const count = gradeDistribution[grade.key] || 0;
                 const percentage = data.totalStudents > 0 ? ((count / data.totalStudents) * 100).toFixed(1) : 0;
                 
                 gradeBars += `
@@ -682,13 +838,13 @@
                 studentRows += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><strong>${student.rollNumber}</strong></td>
-                        <td style="text-align: left;">${student.name}</td>
-                        <td>${student.totalScore}</td>
-                        <td>${student.percentage.toFixed(2)}%</td>
-                        <td>${student.rank}</td>
-                        <td><span class="${statusClass}">${student.status}</span></td>
-                        <td class="${gradeClass}">${student.overallGrade}</td>
+                        <td><strong>${student.rollNumber || 'N/A'}</strong></td>
+                        <td style="text-align: left;">${student.name || 'N/A'}</td>
+                        <td>${student.totalScore || 0}</td>
+                        <td>${(student.percentage || 0).toFixed(2)}%</td>
+                        <td>${student.rank || 'N/A'}</td>
+                        <td><span class="${statusClass}">${student.status || 'N/A'}</span></td>
+                        <td class="${gradeClass}">${student.overallGrade || 'N/A'}</td>
                     </tr>
                 `;
             });
@@ -697,9 +853,9 @@
                 <!-- Header with Class Name -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
                     <h2 style="color: var(--primary); margin: 0; font-size: 1.3rem;">
-                        Class ${data.class} Results
+                        Class ${data.class || '?'} Results
                         <span style="font-size: 0.9rem; color: #6B7280; margin-left: 10px; font-weight: normal;">
-                            Total: ${data.totalStudents} Students
+                            Total: ${data.totalStudents || 0} Students
                         </span>
                     </h2>
                     
@@ -718,32 +874,32 @@
                 <div class="summary-cards">
                     <div class="summary-card">
                         <div class="icon"><i class="fas fa-users"></i></div>
-                        <div class="value">${data.totalStudents}</div>
+                        <div class="value">${data.totalStudents || 0}</div>
                         <div class="label">Total Students</div>
                     </div>
                     <div class="summary-card">
                         <div class="icon"><i class="fas fa-check-circle" style="color: var(--success);"></i></div>
-                        <div class="value">${data.passedCount}</div>
+                        <div class="value">${data.passedCount || 0}</div>
                         <div class="label">Passed</div>
                     </div>
                     <div class="summary-card">
                         <div class="icon"><i class="fas fa-times-circle" style="color: var(--danger);"></i></div>
-                        <div class="value">${data.failedCount}</div>
+                        <div class="value">${data.failedCount || 0}</div>
                         <div class="label">Failed</div>
                     </div>
                     <div class="summary-card">
                         <div class="icon"><i class="fas fa-chart-line"></i></div>
-                        <div class="value">${data.passPercentage}%</div>
+                        <div class="value">${data.passPercentage || 0}%</div>
                         <div class="label">Pass %</div>
                     </div>
                     <div class="summary-card">
                         <div class="icon"><i class="fas fa-trophy"></i></div>
-                        <div class="value">${data.highestScore.toFixed(2)}%</div>
+                        <div class="value">${(data.highestScore || 0).toFixed(2)}%</div>
                         <div class="label">Highest</div>
                     </div>
                     <div class="summary-card">
                         <div class="icon"><i class="fas fa-calculator"></i></div>
-                        <div class="value">${data.averagePercentage}%</div>
+                        <div class="value">${data.averagePercentage || 0}%</div>
                         <div class="label">Average</div>
                     </div>
                 </div>
@@ -788,21 +944,23 @@
                 </div>
 
                 <div style="margin-top: 15px; color: #6B7280; font-size: 0.8rem; text-align: center;">
-                    <i class="fas fa-clock"></i> Generated on: ${data.generatedOn}
+                    <i class="fas fa-clock"></i> Generated on: ${data.generatedOn || new Date().toLocaleString()}
                 </div>
             `;
+            
+            addDebug('Display rendered successfully');
         }
 
         // Filter table function
         function filterTable() {
-            if (!currentClassData) return;
+            if (!currentClassData || !currentClassData.students) return;
             
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusFilter = document.getElementById('statusFilter').value;
             
             const filteredStudents = currentClassData.students.filter(student => {
-                const matchesSearch = student.name.toLowerCase().includes(searchTerm) || 
-                                     student.rollNumber.toLowerCase().includes(searchTerm);
+                const matchesSearch = (student.name || '').toLowerCase().includes(searchTerm) || 
+                                     (student.rollNumber || '').toLowerCase().includes(searchTerm);
                 const matchesStatus = statusFilter === 'all' || 
                                      (statusFilter === 'passed' && student.status === 'PASSED') ||
                                      (statusFilter === 'failed' && student.status === 'FAILED');
@@ -822,44 +980,82 @@
                 filteredRows += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><strong>${student.rollNumber}</strong></td>
-                        <td style="text-align: left;">${student.name}</td>
-                        <td>${student.totalScore}</td>
-                        <td>${student.percentage.toFixed(2)}%</td>
-                        <td>${student.rank}</td>
-                        <td><span class="${statusClass}">${student.status}</span></td>
-                        <td class="${gradeClass}">${student.overallGrade}</td>
+                        <td><strong>${student.rollNumber || 'N/A'}</strong></td>
+                        <td style="text-align: left;">${student.name || 'N/A'}</td>
+                        <td>${student.totalScore || 0}</td>
+                        <td>${(student.percentage || 0).toFixed(2)}%</td>
+                        <td>${student.rank || 'N/A'}</td>
+                        <td><span class="${statusClass}">${student.status || 'N/A'}</span></td>
+                        <td class="${gradeClass}">${student.overallGrade || 'N/A'}</td>
                     </tr>
                 `;
             });
             
             document.getElementById('tableBody').innerHTML = filteredRows;
+            addDebug(`Filtered: ${filteredStudents.length} students shown`);
         }
 
         // Export to CSV function
         function exportToCSV() {
-            if (!currentClassData) return;
+            if (!currentClassData || !currentClassData.students) {
+                alert('No data to export');
+                return;
+            }
             
             let csv = 'Sl No,Roll No,Student Name,Total Marks,Percentage,Rank,Status,Overall Grade\n';
             
             currentClassData.students.forEach((student, index) => {
-                csv += `${index + 1},${student.rollNumber},${student.name},${student.totalScore},${student.percentage.toFixed(2)}%,${student.rank},${student.status},${student.overallGrade}\n`;
+                csv += `${index + 1},${student.rollNumber || ''},${student.name || ''},${student.totalScore || 0},${(student.percentage || 0).toFixed(2)}%,${student.rank || ''},${student.status || ''},${student.overallGrade || ''}\n`;
             });
             
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `class_${currentClassData.class}_results.csv`;
+            a.download = `class_${currentClassData.class || 'unknown'}_results.csv`;
             a.click();
             window.URL.revokeObjectURL(url);
+            
+            addDebug(`CSV exported: class_${currentClassData.class || 'unknown'}_results.csv`);
+        }
+
+        // Test API connection
+        async function testAPIConnection() {
+            clearDebug();
+            addDebug('Testing API connection...');
+            
+            try {
+                const testUrl = `${SCRIPT_URL}?check=status&t=${Date.now()}`;
+                addDebug(`Test URL: ${testUrl}`);
+                
+                const response = await fetch(testUrl);
+                addDebug(`Test response status: ${response.status}`);
+                
+                const data = await response.json();
+                addDebug('Test response data:', data);
+                
+                if (data.result === 'success' || data.result === 'countdown') {
+                    addDebug('✅ API connection successful!');
+                } else {
+                    addDebug('⚠️ API returned unexpected response');
+                }
+            } catch (error) {
+                addDebug(`❌ API test failed: ${error.message}`);
+            }
         }
 
         // Load default class on page load
         window.addEventListener('DOMContentLoaded', function() {
             // Set first class as active
             document.querySelector('.class-badge[data-class="1"]').classList.add('active');
-            loadClassResults('1');
+            
+            // Test API connection first
+            testAPIConnection().then(() => {
+                // Then load class results
+                setTimeout(() => {
+                    loadClassResults('1');
+                }, 500);
+            });
         });
 
         // Handle orientation change
