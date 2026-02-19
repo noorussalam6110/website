@@ -2,134 +2,319 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class Wise Results – PDF Download | Noorussalam Madrasa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <title>Class Wise Results – Noorussalam Madrasa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- jsPDF + autoTable for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
+        /* ===== UNIFIED DESIGN SYSTEM (from first HTML) ===== */
+        :root {
+            --primary: #1E3A8A;
+            --primary-light: #3B82F6;
+            --secondary: #60A5FA;
+            --accent: #38BDF8;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --light: #F0F9FF;
+            --dark: #1E293B;
+            --gradient-1: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            --gradient-2: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+            --gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            --gradient-success: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+            --shadow-sm: 0 2px 8px rgba(30, 58, 138, 0.08);
+            --shadow-md: 0 4px 16px rgba(30, 58, 138, 0.1);
+            --shadow-lg: 0 8px 32px rgba(30, 58, 138, 0.12);
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            font-size: 100%;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            text-align: center;
+            color: #374151;
+            padding: 10px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden;
+            touch-action: manipulation;
             position: relative;
         }
 
-        .header h1 {
-            color: #1E3A8A;
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
+        /* Particle Background Effect (optional, copied from first) */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .header p {
-            color: #666;
-            margin: 10px 0 0;
-            font-size: 16px;
+        .particle {
+            position: absolute;
+            background: var(--primary-light);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite linear;
         }
 
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+                opacity: 0.1;
+            }
+            50% {
+                opacity: 0.15;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) rotate(360deg);
+                opacity: 0.1;
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header with Back Button (styled like first's header) */
+        .header {
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 20px 16px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            border-bottom: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-1);
+        }
+
+        .header-content {
+            width: 100%;
+            position: relative;
+        }
+
+        /* Back button styled exactly like first's header-home-btn */
         .back-btn {
             position: absolute;
-            left: 20px;
-            top: 30px;
-            background: #1E3A8A;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--gradient-1);
             color: white;
-            width: 45px;
-            height: 45px;
+            border: none;
             border-radius: 50%;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            z-index: 10;
             text-decoration: none;
-            transition: transform 0.3s;
         }
 
         .back-btn:hover {
-            transform: scale(1.1);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: var(--shadow-lg);
+            color: white;
         }
 
+        .college-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 12px;
+            border-radius: 50%;
+            padding: 8px;
+            background: white;
+            box-shadow: var(--shadow-md);
+            border: 3px solid white;
+            transition: transform 0.3s ease;
+        }
+
+        .college-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .college-name {
+            color: var(--primary);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .college-tagline {
+            color: #4B5563;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .exam-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gradient-1);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-top: 12px;
+            border: 2px solid white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Class selector row - restyled to match first's elegance */
         .class-selector {
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
+            border-radius: var(--border-radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
             display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-lg);
+            border-bottom: 4px solid var(--accent);
+        }
+
+        .selector-left {
+            display: flex;
+            align-items: center;
             gap: 15px;
             flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         .placeholder-label {
-            background: #e9ecf5;
-            color: #1E3A8A;
+            background: rgba(30, 58, 138, 0.08);
+            color: var(--primary);
             padding: 8px 20px;
             border-radius: 30px;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            border: 1px solid rgba(30, 58, 138, 0.2);
         }
 
         .placeholder-label i {
-            font-size: 1rem;
+            color: var(--primary);
         }
 
         #classSelect {
             width: 200px;
-            padding: 12px;
-            border-radius: 10px;
-            border: 2px solid #1E3A8A;
-            font-weight: 600;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 2px solid rgba(30, 58, 138, 0.2);
+            font-weight: 500;
             background-color: white;
             cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            color: var(--dark);
+            transition: all 0.2s ease;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%231E3A8A' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 14px;
+            padding-right: 45px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        #classSelect:hover {
+            border-color: var(--accent);
+        }
+
+        #classSelect:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
         }
 
         #studentCount {
-            margin-left: 5px;
-            color: #1E3A8A;
-            font-weight: 500;
-            background: #f0f3ff;
-            padding: 8px 18px;
+            background: var(--gradient-1);
+            color: white;
+            padding: 8px 20px;
             border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid white;
         }
 
+        /* Loading spinner (matching first) */
         .loading {
-            text-align: center;
-            padding: 60px;
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            border-bottom: 4px solid var(--primary-light);
         }
 
         .spinner {
             width: 60px;
             height: 60px;
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #1E3A8A;
+            margin: 0 auto 20px;
+            border: 4px solid rgba(30, 58, 138, 0.1);
+            border-top: 4px solid var(--primary);
+            border-right: 4px solid var(--accent);
+            border-bottom: 4px solid var(--secondary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
         }
 
         @keyframes spin {
@@ -137,91 +322,119 @@
             100% { transform: rotate(360deg); }
         }
 
+        .loading h3 {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .loading p {
+            color: #6B7280;
+        }
+
+        /* Summary Cards - restyled to match first's card aesthetic */
         .summary-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .card {
             background: white;
-            border-radius: 15px;
-            padding: 25px 20px;
+            border-radius: var(--border-radius);
+            padding: 24px 16px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: var(--shadow-md);
+            border-bottom: 4px solid var(--primary-light);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
         .card .icon {
-            font-size: 32px;
-            color: #1E3A8A;
-            margin-bottom: 15px;
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 12px;
         }
 
         .card .value {
-            font-size: 36px;
-            font-weight: 700;
-            color: #1E3A8A;
-            margin-bottom: 5px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1.2;
+            margin-bottom: 4px;
         }
 
         .card .label {
-            color: #666;
-            font-size: 14px;
+            color: #4B5563;
+            font-size: 0.9rem;
             font-weight: 500;
         }
 
+        /* Table Container */
         .table-container {
             background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-lg);
+            border-bottom: 4px solid var(--primary);
             overflow-x: auto;
             margin-bottom: 20px;
         }
 
         .class-title {
-            color: #1E3A8A;
-            font-size: 24px;
+            color: var(--primary);
             font-weight: 700;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #1E3A8A;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Table styling (copied from first) */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(30, 58, 138, 0.1);
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 14px;
+            font-size: 0.9rem;
         }
 
         th {
-            background: #1E3A8A;
+            background: var(--gradient-1);
             color: white;
-            padding: 15px 10px;
-            font-weight: 600;
-            text-align: center;
+            padding: 14px 10px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             white-space: nowrap;
         }
 
         td {
-            padding: 12px 10px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 12px 8px;
+            border-bottom: 1px solid rgba(30, 58, 138, 0.1);
+            transition: background-color 0.3s ease;
             text-align: center;
         }
 
         tr:hover td {
-            background: #f8f9fa;
+            background-color: rgba(96, 165, 250, 0.05);
         }
 
         .rank-column {
             font-weight: 700;
-            color: #1E3A8A;
+            color: var(--primary);
         }
 
         .roll-column {
@@ -235,10 +448,10 @@
 
         .grade-badge {
             display: inline-block;
-            padding: 5px 12px;
+            padding: 6px 12px;
             border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
+            font-weight: 700;
+            font-size: 0.8rem;
         }
 
         .grade-A-plus { background: #10b981; color: white; }
@@ -250,97 +463,176 @@
         .grade-F { background: #dc2626; color: white; }
 
         .status-pass {
-            color: #10b981;
+            color: var(--success);
             font-weight: 700;
         }
 
         .status-fail {
-            color: #ef4444;
+            color: var(--danger);
             font-weight: 700;
         }
 
+        /* PDF Button (styled like first's buttons) */
         .pdf-btn {
-            background: #1E3A8A;
-            color: white;
+            background: var(--gradient-1);
             border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
+            padding: 14px 24px;
+            border-radius: 12px;
             font-weight: 600;
+            color: white;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            font-family: 'Poppins', sans-serif;
+            box-shadow: var(--shadow-md);
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 20px;
+            min-height: 52px;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            border: 2px solid transparent;
+            justify-content: center;
+            gap: 10px;
+            border: 2px solid white;
+            margin-bottom: 16px;
         }
 
         .pdf-btn:hover {
-            background: #2d4bad;
+            background: var(--gradient-2);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(30, 58, 138, 0.3);
+            box-shadow: var(--shadow-lg);
         }
 
+        .pdf-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Error box */
         .error-box {
             background: white;
-            border-radius: 20px;
-            padding: 50px;
+            border-radius: var(--border-radius);
+            padding: 50px 30px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-lg);
+            border-top: 4px solid var(--danger);
         }
 
         .error-box i {
-            font-size: 60px;
-            color: #ef4444;
-            margin-bottom: 20px;
+            font-size: 3.5rem;
+            color: var(--danger);
+            margin-bottom: 16px;
         }
 
-        .footer {
+        /* Footer */
+        footer {
             text-align: center;
+            padding: 20px 16px;
+            color: #4B5563;
+            font-size: 0.85rem;
             margin-top: 30px;
-            color: white;
-            font-size: 14px;
+            border-top: 1px solid rgba(96, 165, 250, 0.2);
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Mobile optimizations (same as first) */
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            .container { padding: 0 8px; }
+            .header { padding: 18px 14px; }
+            .college-logo { width: 70px; height: 70px; }
+            .college-name { font-size: 1rem; }
+            .exam-title { font-size: 0.75rem; padding: 8px 14px; }
+            .class-selector { flex-direction: column; align-items: stretch; }
+            .selector-left { justify-content: center; }
+            #classSelect { width: 100%; }
+            .summary-cards { grid-template-columns: repeat(2,1fr); gap: 10px; }
+            .card .value { font-size: 1.8rem; }
+            th { font-size: 0.7rem; padding: 10px 6px; }
+            td { font-size: 0.8rem; padding: 8px 4px; }
+            .table-container { padding: 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .summary-cards { grid-template-columns: 1fr; }
+            .back-btn { width: 38px; height: 38px; }
+        }
+
+        /* Print styles (optional, simplified) */
+        @media print {
+            .no-print, .back-btn, .pdf-btn, footer, .class-selector { display: none !important; }
+            body { background: white; }
+            .table-container { box-shadow: none; border: 1px solid #000; }
         }
     </style>
 </head>
 <body>
+    <!-- Particle Background (same as first) -->
+    <div class="particles" id="particles"></div>
+
     <div class="container">
-        <!-- Header -->
+        <!-- Header with Back Button (matching first's header exactly) -->
         <div class="header">
-            <a href="result.html" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-            <h1><i class="fa-solid fa-angles-right" style="margin-right: 10px;"></i>Class Wise Results</h1>
-            <p>Noorussalam Secondary Madrasa | Annual Examination 2025-26</p>
+            <div class="header-content">
+                <a href="result.html" class="back-btn" title="Back to Result Check">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <img src="https://i.ibb.co/hRD6Hsj9/nsm-logo-removebg-preview.png" alt="College Logo" class="college-logo">
+                <h1 class="college-name">NOORUSSALAM SECONDARY MADRASA</h1>
+                <p class="college-tagline">Kambippalam, Kerala Estate, Malappuram</p>
+                <div class="exam-title">
+                    <i class="fas fa-users"></i> CLASS-WISE RESULTS 2025-26
+                </div>
+            </div>
         </div>
 
-        <!-- Class Selector with placeholder "select class" label -->
+        <!-- Class Selector (redesigned) -->
         <div class="class-selector">
-            <span class="placeholder-label"><i class="fa-regular fa-hand-pointer"></i> select class</span>
-            <select id="classSelect" class="form-select" onchange="changeClass(this.value)">
-                <option value="1">Class 1</option>
-                <option value="2">Class 2</option>
-                <option value="3">Class 3</option>
-                <option value="4">Class 4</option>
-                <option value="6">Class 6</option>
-                <option value="8">Class 8</option>
-                <option value="9">Class 9</option>
-            </select>
+            <div class="selector-left">
+                <span class="placeholder-label"><i class="fa-regular fa-hand-pointer"></i> select class</span>
+                <select id="classSelect" onchange="changeClass(this.value)">
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="6">Class 6</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                </select>
+            </div>
             <span id="studentCount"><i class="fa-regular fa-user"></i> waiting</span>
         </div>
 
-        <!-- Loading -->
+        <!-- Loading Indicator -->
         <div id="loading" class="loading" style="display: none;">
             <div class="spinner"></div>
-            <h3 style="color: #1E3A8A;">Loading Class Results...</h3>
-            <p style="color: #666;">Please wait while we fetch the data</p>
+            <h3>Loading Class Results...</h3>
+            <p>Please wait while we fetch the data</p>
         </div>
 
-        <!-- Content Area -->
+        <!-- Main Content Area (summary cards + table) -->
         <div id="content"></div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <p>© 2025 Noorussalam Madrasa. All rights reserved.</p>
-        </div>
+        <!-- Footer (matching first's footer) -->
+        <footer class="no-print">
+            <div style="margin-bottom: 12px;">
+                <p style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">© 2025 Noorussalam Madrasa | All Rights Reserved</p>
+                <p style="font-size: 0.8rem; color: #6B7280; margin-top: 8px;">
+                    <small>Designed with <i class="fas fa-heart" style="color: #EF4444;"></i> by Suhail Kerala</small>
+                </p>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 16px;">
+                    <span style="color: var(--primary); font-size: 0.8rem; font-weight: 500;">
+                        <i class="fas fa-shield-alt"></i> Secure
+                    </span>
+                    <span style="color: var(--success); font-size: 0.8rem; font-weight: 500;">
+                        <i class="fas fa-check-circle"></i> Verified
+                    </span>
+                    <span style="color: var(--accent); font-size: 0.8rem; font-weight: 500;">
+                        <i class="fas fa-bolt"></i> Fast
+                    </span>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <script>
@@ -348,16 +640,42 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQtoY4A8Bs0l0OMapAl8C4vARLN8y5ZPs8bssHZoxIwJzIonBUMXqV4qcMRrQAaLF6Tw/exec';
         
         let currentData = null;
+        let currentClass = '1';
 
-        // Change class function
-        function changeClass(className) {
-            loadClassResults(className);
+        // Initialize particles (same as first page)
+        function initParticles() {
+            const particlesContainer = document.getElementById('particles');
+            if (!particlesContainer) return;
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 8 + 2;
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const color = `rgba(${Math.random() * 100 + 155}, ${Math.random() * 100 + 155}, 255, ${Math.random() * 0.2 + 0.05})`;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${x}%`;
+                particle.style.top = `${y}%`;
+                particle.style.background = color;
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                particlesContainer.appendChild(particle);
+            }
         }
 
-        // Load first class by default
         window.addEventListener('DOMContentLoaded', () => {
-            loadClassResults('1');
+            initParticles();
+            loadClassResults('1'); // Load default class
         });
+
+        function changeClass(className) {
+            currentClass = className;
+            loadClassResults(className);
+        }
 
         async function loadClassResults(className) {
             const loading = document.getElementById('loading');
@@ -484,7 +802,7 @@
                 </div>
             `;
 
-            // Build table rows - EXACTLY as in Google Sheet
+            // Build table rows
             let tableRows = '';
             if (data.students && data.students.length > 0) {
                 data.students.forEach((student, index) => {
@@ -520,17 +838,17 @@
                 });
             }
 
-            // Complete table with PDF button (instead of CSV)
+            // Complete table with PDF button
             const table = `
                 <div class="table-container">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2 class="class-title">Class ${data.class} - Detailed Results</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                        <h2 class="class-title"><i class="fas fa-book-open"></i> Class ${data.class} - Detailed Results</h2>
                         <button class="pdf-btn" onclick="downloadPDF()">
                             <i class="fas fa-file-pdf"></i> Download PDF
                         </button>
                     </div>
                     
-                    <div style="overflow-x: auto;">
+                    <div class="table-responsive">
                         <table id="results-table">
                             <thead>
                                 <tr>
@@ -541,7 +859,7 @@
                                     <th>Percentage</th>
                                     <th>Rank</th>
                                     <th>Presents</th>
-                                    <th>Overall Grade</th>
+                                    <th>Subj Passed</th>
                                     <th>Grade</th>
                                     <th>Status</th>
                                 </tr>
@@ -552,7 +870,7 @@
                         </table>
                     </div>
                     
-                    <p style="text-align: right; margin-top: 20px; color: #666; font-size: 13px;">
+                    <p style="text-align: right; margin-top: 20px; color: #6B7280; font-size: 0.85rem;">
                         <i class="fas fa-clock"></i> Generated: ${data.generatedOn || new Date().toLocaleString()}
                     </p>
                 </div>
@@ -561,7 +879,7 @@
             content.innerHTML = summaryCards + table;
         }
 
-        // PDF download function using jspdf + autoTable
+        // PDF download function (unchanged, uses jspdf)
         function downloadPDF() {
             if (!currentData || !currentData.students) {
                 alert('No data to export');
@@ -571,7 +889,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
 
-            // Title
             doc.setFontSize(18);
             doc.setTextColor(30, 58, 138); // #1E3A8A
             doc.text(`Class ${currentData.class} Results – Noorussalam Madrasa`, 14, 15);
@@ -579,7 +896,6 @@
             doc.setTextColor(80, 80, 80);
             doc.text(`Generated: ${currentData.generatedOn || new Date().toLocaleString()}`, 14, 22);
 
-            // Table headers & body (exactly as in Google Sheet)
             const headers = [['Sl No', 'Roll No', 'Student Name', 'Total', 'Percentage', 'Rank', 'Presents', 'Subj Passed', 'Grade', 'Status']];
             const body = currentData.students.map((s, idx) => [
                 idx + 1,
@@ -602,12 +918,11 @@
                 headStyles: { fillColor: [30, 58, 138], textColor: 255, fontStyle: 'bold', halign: 'center' },
                 styles: { fontSize: 9, cellPadding: 3, halign: 'center' },
                 columnStyles: {
-                    2: { halign: 'left' },   // student name left aligned
+                    2: { halign: 'left' },
                     8: { halign: 'center' },
                     9: { halign: 'center' }
                 },
                 didDrawPage: (data) => {
-                    // Footer
                     doc.setFontSize(9);
                     doc.setTextColor(100);
                     doc.text('Noorussalam Secondary Madrasa – Annual Examination 2025-26', 14, doc.internal.pageSize.height - 8);
@@ -617,7 +932,7 @@
             doc.save(`Class_${currentData.class}_Results.pdf`);
         }
 
-        // Keep changeClass globally accessible
+        // Make functions globally accessible
         window.changeClass = changeClass;
         window.downloadPDF = downloadPDF;
     </script>
