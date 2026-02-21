@@ -176,7 +176,7 @@
       border-radius: 2px;
     }
     
-    /* Dropdown container - replaces cards grid */
+    /* Dropdown container */
     .dropdown-container {
       background: var(--green-light);
       border-radius: 18px;
@@ -474,9 +474,9 @@
     
     <!-- Content Section -->
     <div class="content-section">
-      <h2 class="section-title ml-text">മദ്രസ വാർഷിക പരീക്ഷ 2025-26</h2>
+      <h2 class="section-title ml-text">മദ്രസ വാർഷിക പരീക്ഷ ഫലം 2025-26</h2>
       
-      <!-- Dropdown replaces the two cards -->
+      <!-- Dropdown with "Please select" placeholder -->
       <div class="dropdown-container">
         <div class="dropdown-label">
           <i class="fas fa-graduation-cap"></i>
@@ -484,7 +484,8 @@
         </div>
         
         <select class="form-select ml-text" id="examSelect" aria-label="Select examination">
-          <option value="annual" selected>കുട്ടികളുടെ ഫല വിവരം (Student Results)</option>
+          <option value="" selected disabled>-- ദയവായി തിരഞ്ഞെടുക്കുക --</option>
+          <option value="annual">കുട്ടികളുടെ ഫല വിവരം (Student Results)</option>
           <option value="samastha">ക്ലാസ് അടിസ്ഥാനത്തില്‍ (Class Wise Results)</option>
         </select>
         
@@ -610,9 +611,18 @@
       button.style.pointerEvents = 'auto';
     }
     
-    // Handle view results click
+    // Handle view results click with validation
     function handleViewResults(e) {
       e.preventDefault();
+      
+      const select = document.getElementById('examSelect');
+      const selectedValue = select.value;
+      
+      // Validation: if no valid option selected (empty string), show alert
+      if (!selectedValue) {
+        alert("ദയവായി ഒരു പരീക്ഷ തിരഞ്ഞെടുക്കുക / Please select an examination.");
+        return;
+      }
       
       const button = document.getElementById('viewResultsBtn');
       createRipple(button, e);
@@ -620,8 +630,6 @@
       const originalText = 'ഫലങ്ങൾ കാണുക';
       const { arrow, loader, buttonText } = showLoading(button);
       
-      const select = document.getElementById('examSelect');
-      const selectedValue = select.value;
       const targetUrl = RESULTS_URLS[selectedValue];
       
       if (!targetUrl) {
@@ -658,18 +666,15 @@
     }
     
     function reattachEventListeners() {
-      // Re-clone and attach to avoid duplicates (though simple page, we can just re-add)
       const button = document.getElementById('viewResultsBtn');
       const backBtn = document.getElementById('backBtn');
       
-      // Remove old listeners by replacing with clone
       const newButton = button.cloneNode(true);
       const newBackBtn = backBtn.cloneNode(true);
       
       button.parentNode.replaceChild(newButton, button);
       backBtn.parentNode.replaceChild(newBackBtn, backBtn);
       
-      // Attach fresh listeners
       document.getElementById('viewResultsBtn').addEventListener('click', handleViewResults);
       document.getElementById('backBtn').addEventListener('click', function(e) {
         e.preventDefault();
@@ -682,19 +687,16 @@
     function initializePage() {
       if (isInitialized) return;
       
-      // Animate success rate
       setTimeout(animateSuccessRate, 300);
       
-      // Add click handler for view button
       document.getElementById('viewResultsBtn').addEventListener('click', handleViewResults);
       
-      // Back button handler
       document.getElementById('backBtn').addEventListener('click', function(e) {
         e.preventDefault();
         window.location.href = 'index.html';
       });
       
-      // Optional: Allow enter key on select to trigger button (accessibility)
+      // Accessibility: Enter key on select triggers button (only if a valid option is selected)
       document.getElementById('examSelect').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -706,11 +708,9 @@
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       
       if (isMobile) {
-        // Touch feedback for button
         const btn = document.getElementById('viewResultsBtn');
         btn.addEventListener('touchstart', () => btn.style.opacity = '0.9');
         btn.addEventListener('touchend', () => btn.style.opacity = '1');
-        
         document.documentElement.style.fontSize = '16px';
       }
       
@@ -728,16 +728,13 @@
       isInitialized = true;
     }
     
-    // Initialize on DOMContentLoaded
     document.addEventListener('DOMContentLoaded', initializePage);
     
-    // Handle bfcache restoration
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
         resetLoadingStates();
         reattachEventListeners();
         
-        // Re-run animation if needed
         const successElement = document.getElementById('successRate');
         if (successElement.textContent !== SUCCESS_RATE.toFixed(1) + '%') {
           successElement.textContent = SUCCESS_RATE.toFixed(1) + '%';
@@ -749,15 +746,12 @@
       }
     });
     
-    // Also initialize on pageshow if DOMContentLoaded already fired
     window.addEventListener('pageshow', function() {
       if (!isInitialized) initializePage();
     });
     
-    // Orientation change
     window.addEventListener('orientationchange', () => setTimeout(() => window.scrollTo(0, 0), 100));
     
-    // Prevent zoom on double-tap
     let lastTouchEnd = 0;
     document.addEventListener('touchend', (e) => {
       const now = Date.now();
@@ -765,10 +759,8 @@
       lastTouchEnd = now;
     }, false);
     
-    // Prevent pull-to-refresh
     document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
     
-    // Visibility change subtle animation
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         const rate = document.getElementById('successRate');
@@ -777,7 +769,6 @@
       }
     });
     
-    // Before unload cleanup
     window.addEventListener('beforeunload', resetLoadingStates);
   </script>
 </body>
