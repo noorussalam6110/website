@@ -95,43 +95,32 @@
       position: relative;
     }
 
-    /* ========== HORIZONTAL SCROLLABLE TOPPER GRID (AUTOMATIC MOVE) ========== */
-    .topper-scroll-container {
+    /* ========== HORIZONTAL MARQUEE TOPPER GRID (AUTOMATIC, PURE CSS) ========== */
+    .topper-marquee-container {
       width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden;
       margin-bottom: 20px;
       padding: 5px 0 15px 0;
-      scrollbar-width: thin;
-      scrollbar-color: var(--primary) #dbeafe;
-      will-change: scroll-position; /* hint for performance */
-      cursor: grab;
-      scroll-behavior: smooth; /* for manual scroll, but auto will override */
+      mask-image: linear-gradient(90deg, transparent, black 5%, black 95%, transparent);
+      -webkit-mask-image: linear-gradient(90deg, transparent, black 5%, black 95%, transparent);
     }
 
-    .topper-scroll-container:active {
-      cursor: grabbing;
-    }
-
-    .topper-scroll-container::-webkit-scrollbar {
-      height: 6px;
-    }
-    .topper-scroll-container::-webkit-scrollbar-track {
-      background: #dbeafe;
-      border-radius: 10px;
-    }
-    .topper-scroll-container::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 10px;
-    }
-
-    .topper-horizontal {
+    .topper-marquee {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 15px;
       width: max-content;
-      padding: 0 5px;
+      animation: scrollTopper 40s linear infinite;
+      gap: 15px;
+    }
+
+    /* pause on hover/touch */
+    .topper-marquee-container:hover .topper-marquee,
+    .topper-marquee-container:active .topper-marquee {
+      animation-play-state: paused;
+    }
+
+    @keyframes scrollTopper {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); } /* because we duplicate content */
     }
 
     .topper-box {
@@ -699,9 +688,9 @@
   <div class="floating-shapes"><div></div><div></div><div></div></div>
 
   <div class="wrap">
-    <!-- ========== HORIZONTAL SCROLLABLE TOPPER GRID (AUTOMATIC) ========== -->
-    <div class="topper-scroll-container" id="topperScrollContainer">
-      <div class="topper-horizontal" id="topperHorizontal"></div>
+    <!-- ========== MARQUEE TOPPER GRID (AUTOMATIC, PURE CSS) ========== -->
+    <div class="topper-marquee-container">
+      <div class="topper-marquee" id="topperMarquee"></div>
     </div>
 
     <!-- header -->
@@ -837,12 +826,26 @@
     let selectedStudent = null;
     let uploadedPhoto = null;
 
-    // ---------- POPULATE HORIZONTAL TOPPER GRID ----------
-    function buildTopperHorizontal() {
-      const container = document.getElementById('topperHorizontal');
+    // ---------- POPULATE MARQUEE TOPPER GRID (WITH DUPLICATE FOR SEAMLESS LOOP) ----------
+    function buildTopperMarquee() {
+      const container = document.getElementById('topperMarquee');
       if (!container) return;
       let html = '';
       const sortedClasses = Object.keys(classesData).sort((a,b) => a - b);
+      // First set
+      for (let cls of sortedClasses) {
+        const students = classesData[cls];
+        const first = students.find(s => s.rank === 'First') || students[0];
+        const second = students.find(s => s.rank === 'Second') || students[1];
+        html += `
+          <div class="topper-box">
+            <div class="topper-class">Class ${cls}</div>
+            <div class="topper-first"><i class="fas fa-crown gold-star"></i> <span>${first.name}</span></div>
+            <div class="topper-second"><i class="fas fa-star silver-star"></i> <span>${second.name}</span></div>
+          </div>
+        `;
+      }
+      // Duplicate set for seamless loop
       for (let cls of sortedClasses) {
         const students = classesData[cls];
         const first = students.find(s => s.rank === 'First') || students[0];
@@ -858,47 +861,7 @@
       container.innerHTML = html;
     }
 
-    // ---------- AUTO SCROLL LOGIC ----------
-    let autoScrollInterval = null;
-    let isPaused = false;
-    const scrollContainer = document.getElementById('topperScrollContainer');
-    const scrollSpeed = 1; // pixels per frame
-
-    function startAutoScroll() {
-      if (autoScrollInterval) cancelAnimationFrame(autoScrollInterval);
-      function step() {
-        if (!isPaused && scrollContainer) {
-          // scroll right by 1px
-          scrollContainer.scrollLeft += scrollSpeed;
-          // if reached end (or near end), reset to beginning smoothly
-          const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-          if (scrollContainer.scrollLeft >= maxScroll - 2) {
-            scrollContainer.scrollLeft = 0;
-          }
-        }
-        autoScrollInterval = requestAnimationFrame(step);
-      }
-      autoScrollInterval = requestAnimationFrame(step);
-    }
-
-    function stopAutoScroll() {
-      if (autoScrollInterval) {
-        cancelAnimationFrame(autoScrollInterval);
-        autoScrollInterval = null;
-      }
-    }
-
-    // Pause on hover / touch
-    if (scrollContainer) {
-      scrollContainer.addEventListener('mouseenter', () => { isPaused = true; });
-      scrollContainer.addEventListener('mouseleave', () => { isPaused = false; });
-      // For touch devices: pause while touching
-      scrollContainer.addEventListener('touchstart', () => { isPaused = true; });
-      scrollContainer.addEventListener('touchend', () => { isPaused = false; });
-      scrollContainer.addEventListener('touchcancel', () => { isPaused = false; });
-    }
-
-    // ---------- UI HELPERS ----------
+    // ---------- UI HELPERS (unchanged) ----------
     function updateStudentList() {
       const classSelect = document.getElementById('classSelect');
       const studentSelect = document.getElementById('studentSelect');
@@ -1142,11 +1105,9 @@
     document.addEventListener('keydown', e => { if(e.key === 'Escape') closeCertificatePreview(); });
 
     window.addEventListener('load', ()=>{
-      buildTopperHorizontal();
-      // start auto scroll after grid is built
-      setTimeout(() => startAutoScroll(), 500);
+      buildTopperMarquee();
       setTimeout(()=> document.getElementById('classSelect').focus(), 500);
-      showNotification('👋 Topper boxes auto-scroll — hover to pause', 'info');
+      showNotification('👋 Topper boxes auto-scroll smoothly on all devices!', 'info');
     });
   </script>
 </body>
