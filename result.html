@@ -1,171 +1,776 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Result | Noorussalam Madrasa</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <title>Results | Noorussalam</title>
+  
+  <!-- Cache control headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Google Fonts - Anek Malayalam for Malayalam text -->
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+  
   <style>
-    body {
-      background: #0b5ed7; /* Solid color – simple background */
-      height: 100vh;
+    :root {
+      --green-primary: #0a7c5a;
+      --green-dark: #066045;
+      --green-light: #e6f4f1;
+      --gold: #d4af37;
+      --navy: #1a365d;
+      --cream: #fef9f3;
+    }
+    
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
       font-family: 'Poppins', sans-serif;
-      color: #fff;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      min-height: 100vh;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      overflow-x: hidden;
+    }
+    
+    /* Malayalam font class */
+    .ml-text {
+      font-family: 'Anek Malayalam', sans-serif;
+      font-weight: 600;
+      line-height: 1.4;
+      text-align: center;
+    }
+    
+    .ml-title {
+      font-family: 'Anek Malayalam', sans-serif;
+      font-weight: 700;
+    }
+    
+    /* Main Container */
+    .main-container {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      border-radius: 25px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+      margin: auto;
+    }
+    
+    /* Header Section */
+    .header-section {
+      background: linear-gradient(135deg, var(--green-primary) 0%, var(--green-dark) 100%);
+      padding: 30px 25px;
+      text-align: center;
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0,0 L100,0 L100,100 Z" fill="rgba(255,255,255,0.05)"/></svg>');
+      background-size: cover;
+    }
+    
+    .institution-name {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: white;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: 0.5px;
+    }
+    
+    .malayalam-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+      color: var(--cream);
+      line-height: 1.3;
+    }
+    
+    .location-text {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1rem;
+      margin-bottom: 0;
+      font-weight: 500;
+    }
+    
+    .success-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px auto 0;
+      max-width: 200px;
+    }
+    
+    .success-badge {
+      background: white;
+      padding: 15px 20px;
+      border-radius: 18px;
+      text-align: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      flex: 1;
+    }
+    
+    .success-rate {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green-primary);
+      line-height: 1;
+      margin-bottom: 5px;
+      font-family: 'Montserrat', sans-serif;
+    }
+    
+    .success-label {
+      font-size: 0.85rem;
+      color: #666;
+      font-weight: 600;
+    }
+    
+    /* Main Content */
+    .content-section {
+      padding: 30px 25px;
+    }
+    
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 25px;
+      text-align: center;
+      position: relative;
+      padding-bottom: 15px;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+    
+    /* Dropdown container */
+    .dropdown-container {
+      background: var(--green-light);
+      border-radius: 18px;
+      padding: 30px 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .dropdown-container:hover {
+      border-color: var(--green-primary);
+      box-shadow: 0 15px 30px rgba(10, 124, 90, 0.12);
+    }
+    
+    .dropdown-label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .dropdown-label i {
+      color: var(--green-primary);
+      font-size: 1.3rem;
+    }
+    
+    .form-select {
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 2px solid rgba(10, 124, 90, 0.2);
+      font-family: 'Anek Malayalam', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+      background-color: white;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    
+    .form-select:focus {
+      border-color: var(--green-primary);
+      box-shadow: 0 0 0 0.25rem rgba(10, 124, 90, 0.25);
+      outline: none;
+    }
+    
+    .action-btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-direction: column;
-      text-align: center;
-      overflow: hidden;
-    }
-
-    .coming-box {
-      background: rgba(255, 255, 255, 0.15); /* Slightly more opaque for contrast */
-      padding: 40px 50px;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Softer shadow */
-      /* backdrop-filter removed – simpler */
-      animation: fadeIn 1.5s ease forwards;
-      max-width: 500px;
-    }
-
-    .coming-box i {
-      font-size: 60px;
-      color: #ffd700;
-      margin-bottom: 20px;
-      animation: bounce 2s infinite ease-in-out;
-    }
-
-    .coming-box h2 {
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
-
-    .coming-box p {
-      font-size: 15px;
-      color: #e8f0ff;
-      margin-bottom: 30px;
-    }
-
-    #countdown {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-
-    .time-box {
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
-      padding: 10px 15px;
-      min-width: 60px;
-      animation: fadeInUp 1s ease forwards;
-    }
-
-    .time-box h3 {
-      margin: 0;
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .time-box span {
-      font-size: 13px;
-      color: #f1f1f1;
-    }
-
-    .back-btn {
-      background: #fff;
-      color: #0b5ed7;
+      gap: 10px;
+      background: var(--green-primary);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
       font-weight: 600;
-      padding: 10px 25px;
-      border-radius: 25px;
       text-decoration: none;
       transition: all 0.3s ease;
+      border: 2px solid transparent;
+      width: 100%;
+      font-size: 1.1rem;
+      border: none;
+      cursor: pointer;
     }
+    
+    .action-btn:hover {
+      background: var(--green-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(10, 124, 90, 0.2);
+      color: white;
+    }
+    
+    .action-btn i {
+      font-size: 1.1rem;
+    }
+    
+    .loader {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Footer */
+    .footer-section {
+      background: var(--navy);
+      padding: 25px;
+      color: white;
+      text-align: center;
+      border-top: 3px solid var(--gold);
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      min-width: 180px;
+    }
+    
     .back-btn:hover {
-      background: #ffd700;
-      color: #0b5ed7;
-      transform: scale(1.05);
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateX(-3px);
+      color: white;
     }
-
-    footer {
-      position: absolute;
-      bottom: 15px;
-      font-size: 14px;
-      color: rgba(255,255,255,0.8);
+    
+    .footer-text {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.85rem;
+      line-height: 1.5;
     }
-
-    /* Animations */
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    
+    /* Enhanced Mobile Responsiveness */
+    @media (max-width: 767px) {
+      body {
+        padding: 10px;
+        align-items: flex-start;
+      }
+      
+      .main-container {
+        border-radius: 20px;
+        margin: 10px auto;
+      }
+      
+      .header-section {
+        padding: 25px 20px;
+      }
+      
+      .institution-name {
+        font-size: 1.8rem;
+      }
+      
+      .malayalam-title {
+        font-size: 1.3rem;
+      }
+      
+      .location-text {
+        font-size: 0.95rem;
+      }
+      
+      .content-section {
+        padding: 25px 20px;
+      }
+      
+      .section-title {
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+      }
+      
+      .dropdown-container {
+        padding: 25px 20px;
+      }
+      
+      .dropdown-label {
+        font-size: 1rem;
+      }
+      
+      .form-select {
+        padding: 14px 18px;
+        font-size: 0.95rem;
+      }
+      
+      .action-btn {
+        padding: 14px;
+        font-size: 1rem;
+      }
+      
+      .footer-section {
+        padding: 20px;
+      }
+      
+      .back-btn {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+      }
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    
+    @media (max-width: 480px) {
+      .institution-name {
+        font-size: 1.6rem;
+      }
+      
+      .malayalam-title {
+        font-size: 1.2rem;
+      }
+      
+      .success-rate {
+        font-size: 1.8rem;
+      }
+      
+      .dropdown-container {
+        padding: 20px 15px;
+      }
+      
+      .form-select {
+        padding: 12px 15px;
+      }
     }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
+    
+    @media (max-width: 360px) {
+      .header-section {
+        padding: 20px 15px;
+      }
+      
+      .institution-name {
+        font-size: 1.4rem;
+      }
+      
+      .malayalam-title {
+        font-size: 1.1rem;
+      }
+      
+      .content-section {
+        padding: 20px 15px;
+      }
+    }
+    
+    /* Safe Area for Notches */
+    @supports (padding: max(0px)) {
+      body {
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+        padding-top: max(15px, env(safe-area-inset-top));
+        padding-bottom: max(15px, env(safe-area-inset-bottom));
+      }
+    }
+    
+    /* Touch-friendly enhancements */
+    @media (hover: none) {
+      .dropdown-container:hover {
+        border-color: transparent;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+      }
+      
+      .action-btn:hover {
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .back-btn:hover {
+        transform: none;
+      }
+    }
+    
+    /* Improve tap targets */
+    button, 
+    .action-btn, 
+    .back-btn, 
+    .form-select {
+      touch-action: manipulation;
+    }
+    
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
     }
   </style>
 </head>
 <body>
-
-  <div class="coming-box">
-    <i class="fa-solid fa-clock"></i>
-    <h2>Coming Soon</h2>
-    <p>We’re preparing results as something special for Noorussalam Madrasa.<br>
-       Stay tuned Result Will appear 04:30 PM 04-03-2025!</p>
-
-    <div id="countdown">
-      <div class="time-box"><h3 id="days">00</h3><span>Days</span></div>
-      <div class="time-box"><h3 id="hours">00</h3><span>Hours</span></div>
-      <div class="time-box"><h3 id="minutes">00</h3><span>Minutes</span></div>
-      <div class="time-box"><h3 id="seconds">00</h3><span>Seconds</span></div>
+  <div class="main-container">
+    <!-- Header Section -->
+    <div class="header-section">
+      <h3 class="institution-name">NOORUSSALAM MADRASA</h3>
+      <div class="malayalam-title ml-title">SKIMVB Reg No : 6110</div>
+      <div class="location-text">Kambippalam - Kerala Estate</div>
+      
+      <div class="success-container">
+        <div class="success-badge">
+          <div class="success-rate" id="successRate">0%</div>
+          <div class="success-label ml-text">വിജയശതമാനം</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Content Section -->
+    <div class="content-section">
+      <h2 class="section-title ml-text">മദ്രസ വാർഷിക പരീക്ഷ ഫലം 2025-26</h2>
+      
+      <!-- Dropdown with "Please select" placeholder -->
+      <div class="dropdown-container">
+        <div class="dropdown-label">
+          <i class="fas fa-graduation-cap"></i>
+          <span class="ml-text">തിരഞ്ഞെടുക്കുക</span>
+        </div>
+        
+        <select class="form-select ml-text" id="examSelect" aria-label="Select examination">
+          <option value="" selected disabled>-- ദയവായി തിരഞ്ഞെടുക്കുക --</option>
+          <option value="annual">കുട്ടികളുടെ ഫല വിവരം (Student Results)</option>
+          <option value="samastha">ക്ലാസ് അടിസ്ഥാനത്തില്‍ (Class Wise Results)</option>
+        </select>
+        
+        <button class="action-btn" id="viewResultsBtn">
+          <span class="ml-text">ഫലങ്ങൾ കാണുക</span>
+          <i class="fas fa-arrow-right" id="btnArrow"></i>
+          <div class="loader" id="btnLoader"></div>
+        </button>
+      </div>
     </div>
 
-    <a href="index.html" class="back-btn"><i class="fa fa-home"></i> Back to Home</a>
+    <!-- Footer Section -->
+    <div class="footer-section">
+      <a href="index.html" class="back-btn" id="backBtn">
+        <i class="fas fa-arrow-left"></i>
+        <span class="ml-text">Back To Home</span>
+      </a>
+      
+      <div class="footer-text">
+        © 2025 Noorussalam Madrasa | All Rights Reserved <br>
+        <small style="color: rgba(255, 255, 255, 0.5);">Designed By Suhail Kerala</small>
+      </div>
+    </div>
   </div>
 
-  <footer>
-    © 2025 Noorussalam Madrasa • All Rights Reserved
-  </footer>
-
   <script>
-    // Set your launch date here
-    const launchDate = new Date("Mar 4, 2026 16:00:00").getTime();
-
-    const timer = setInterval(function() {
-      const now = new Date().getTime();
-      const distance = launchDate - now;
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      document.getElementById("days").innerText = days.toString().padStart(2, '0');
-      document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
-      document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
-      document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
-
-      if (distance < 0) {
-        clearInterval(timer);
-        document.querySelector(".coming-box").innerHTML = `
-          <i class='fa-solid fa-circle-check text-success'></i>
-          <h2>We’re Live!</h2>
-          <p>The new section of Noorussalam Madrasa website is now available.</p>
-          <a href='resulthome.html' class='back-btn'><i class='fa fa-home'></i> Visit Home</a>
-        `;
+    // ============================================
+    // CONFIGURATION SECTION
+    // ============================================
+    
+    const RESULTS_URLS = {
+      annual: "resulthome.html",
+      samastha: "classwise.html"
+    };
+    const SUCCESS_RATE = 100.0;
+    
+    // ============================================
+    // FUNCTIONS
+    // ============================================
+    
+    // Animate success rate
+    function animateSuccessRate() {
+      const element = document.getElementById('successRate');
+      if (element.textContent === SUCCESS_RATE.toFixed(1) + '%') return;
+      
+      let current = 0;
+      const increment = SUCCESS_RATE / 40;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= SUCCESS_RATE) {
+          element.textContent = SUCCESS_RATE.toFixed(1) + '%';
+          clearInterval(timer);
+          element.style.transform = 'scale(1.1)';
+          setTimeout(() => element.style.transform = 'scale(1)', 300);
+        } else {
+          element.textContent = current.toFixed(1) + '%';
+        }
+      }, 30);
+    }
+    
+    // Create ripple effect
+    function createRipple(element, event) {
+      const ripple = document.createElement('div');
+      const rect = element.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = event.clientX - rect.left - size / 2;
+      const y = event.clientY - rect.top - size / 2;
+      
+      ripple.style.cssText = `
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+        transform: scale(0);
+        animation: ripple 0.6s linear;
+        width: ${size}px;
+        height: ${size}px;
+        left: ${x}px;
+        top: ${y}px;
+        pointer-events: none;
+        z-index: 1;
+      `;
+      
+      element.style.position = 'relative';
+      element.style.overflow = 'hidden';
+      element.appendChild(ripple);
+      
+      setTimeout(() => ripple.remove(), 600);
+    }
+    
+    // Add ripple animation keyframes if not present
+    if (!document.querySelector('#rippleKeyframes')) {
+      const style = document.createElement('style');
+      style.id = 'rippleKeyframes';
+      style.textContent = `
+        @keyframes ripple {
+          to { transform: scale(4); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Show loading state on button
+    function showLoading(button) {
+      const arrow = button.querySelector('#btnArrow');
+      const loader = button.querySelector('#btnLoader');
+      const buttonText = button.querySelector('span');
+      
+      if (arrow) arrow.style.display = 'none';
+      if (loader) loader.style.display = 'block';
+      if (buttonText) buttonText.textContent = 'Loading...';
+      
+      button.style.pointerEvents = 'none';
+      
+      return { arrow, loader, buttonText };
+    }
+    
+    // Hide loading state
+    function hideLoading(button, arrow, loader, buttonText, originalText) {
+      if (arrow) arrow.style.display = 'inline-block';
+      if (loader) loader.style.display = 'none';
+      if (buttonText) buttonText.textContent = originalText;
+      button.style.pointerEvents = 'auto';
+    }
+    
+    // Handle view results click with validation
+    function handleViewResults(e) {
+      e.preventDefault();
+      
+      const select = document.getElementById('examSelect');
+      const selectedValue = select.value;
+      
+      // Validation: if no valid option selected (empty string), show alert
+      if (!selectedValue) {
+        alert("ദയവായി ഒരു പരീക്ഷ തിരഞ്ഞെടുക്കുക / Please select an examination.");
+        return;
       }
-    }, 1000);
+      
+      const button = document.getElementById('viewResultsBtn');
+      createRipple(button, e);
+      
+      const originalText = 'ഫലങ്ങൾ കാണുക';
+      const { arrow, loader, buttonText } = showLoading(button);
+      
+      const targetUrl = RESULTS_URLS[selectedValue];
+      
+      if (!targetUrl) {
+        setTimeout(() => {
+          alert("Configuration error: No URL for selected option.");
+          hideLoading(button, arrow, loader, buttonText, originalText);
+        }, 500);
+        return;
+      }
+      
+      // Simulate slight delay for loading effect
+      setTimeout(() => {
+        window.location.href = targetUrl;
+      }, 800);
+    }
+    
+    // ============================================
+    // BFCACHE HANDLING & INIT
+    // ============================================
+    
+    function resetLoadingStates() {
+      const button = document.getElementById('viewResultsBtn');
+      if (button) {
+        const arrow = button.querySelector('#btnArrow');
+        const loader = button.querySelector('#btnLoader');
+        const span = button.querySelector('span');
+        if (arrow) arrow.style.display = 'inline-block';
+        if (loader) loader.style.display = 'none';
+        if (span && span.textContent === 'Loading...') {
+          span.textContent = 'ഫലങ്ങൾ കാണുക';
+        }
+        button.style.pointerEvents = 'auto';
+      }
+    }
+    
+    function reattachEventListeners() {
+      const button = document.getElementById('viewResultsBtn');
+      const backBtn = document.getElementById('backBtn');
+      
+      const newButton = button.cloneNode(true);
+      const newBackBtn = backBtn.cloneNode(true);
+      
+      button.parentNode.replaceChild(newButton, button);
+      backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+      
+      document.getElementById('viewResultsBtn').addEventListener('click', handleViewResults);
+      document.getElementById('backBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = 'index.html';
+      });
+    }
+    
+    let isInitialized = false;
+    
+    function initializePage() {
+      if (isInitialized) return;
+      
+      setTimeout(animateSuccessRate, 300);
+      
+      document.getElementById('viewResultsBtn').addEventListener('click', handleViewResults);
+      
+      document.getElementById('backBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = 'index.html';
+      });
+      
+      // Accessibility: Enter key on select triggers button (only if a valid option is selected)
+      document.getElementById('examSelect').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('viewResultsBtn').click();
+        }
+      });
+      
+      // Mobile optimizations
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        const btn = document.getElementById('viewResultsBtn');
+        btn.addEventListener('touchstart', () => btn.style.opacity = '0.9');
+        btn.addEventListener('touchend', () => btn.style.opacity = '1');
+        document.documentElement.style.fontSize = '16px';
+      }
+      
+      // Keyboard shortcut (Alt+R) to trigger results
+      document.addEventListener('keydown', function(e) {
+        if (e.altKey && e.key.toLowerCase() === 'r') {
+          e.preventDefault();
+          document.getElementById('viewResultsBtn').click();
+        }
+        if (e.key === 'Escape') {
+          window.location.href = 'index.html';
+        }
+      });
+      
+      isInitialized = true;
+    }
+    
+    document.addEventListener('DOMContentLoaded', initializePage);
+    
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        resetLoadingStates();
+        reattachEventListeners();
+        
+        const successElement = document.getElementById('successRate');
+        if (successElement.textContent !== SUCCESS_RATE.toFixed(1) + '%') {
+          successElement.textContent = SUCCESS_RATE.toFixed(1) + '%';
+        }
+        
+        window.scrollTo(0, 0);
+        document.body.style.opacity = '0.99';
+        setTimeout(() => document.body.style.opacity = '1', 50);
+      }
+    });
+    
+    window.addEventListener('pageshow', function() {
+      if (!isInitialized) initializePage();
+    });
+    
+    window.addEventListener('orientationchange', () => setTimeout(() => window.scrollTo(0, 0), 100));
+    
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) e.preventDefault();
+      lastTouchEnd = now;
+    }, false);
+    
+    document.addEventListener('touchmove', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
+    
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        const rate = document.getElementById('successRate');
+        rate.style.transform = 'scale(1.05)';
+        setTimeout(() => rate.style.transform = 'scale(1)', 300);
+      }
+    });
+    
+    window.addEventListener('beforeunload', resetLoadingStates);
   </script>
-
 </body>
 </html>
-
