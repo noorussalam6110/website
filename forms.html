@@ -2107,7 +2107,7 @@
   document.getElementById('dob').min = minDate.toISOString().split('T')[0];
   
   // ===========================================
-  // FORM VALIDATION FUNCTIONS
+  // FORM VALIDATION FUNCTIONS (unchanged)
   // ===========================================
   
   // Phone number validation
@@ -2188,7 +2188,7 @@
   });
   
   // ===========================================
-  // FORM SUBMISSION HANDLER
+  // FORM SUBMISSION HANDLER (unchanged)
   // ===========================================
   
   const form = document.getElementById('admissionForm');
@@ -2574,7 +2574,7 @@ Apply online now!`;
   }
   
   // ===========================================
-  // SEARCH FUNCTIONALITY
+  // IMPROVED SEARCH FUNCTIONALITY - NOW WORKS BOTH ONLINE AND OFFLINE
   // ===========================================
   
   // Open search modal from anywhere
@@ -2594,34 +2594,46 @@ Apply online now!`;
     document.getElementById('applicationsList').innerHTML = '';
   }
   
-  // Perform search
+  // Perform search (now with localStorage fallback)
   async function performSearch() {
     const phone = document.getElementById('searchPhone').value.trim();
     const referenceId = document.getElementById('searchReferenceId').value.trim();
     const searchBtn = document.getElementById('searchBtn');
-    
+
     // Hide previous results/errors
     document.getElementById('searchError').style.display = 'none';
     document.getElementById('searchResults').style.display = 'none';
     document.getElementById('noResults').style.display = 'none';
-    
+
     // Validate input
     if (!phone && !referenceId) {
       showSearchError('Please enter either phone number or reference ID');
       return;
     }
-    
     if (phone && !/^[0-9]{10}$/.test(phone)) {
       showSearchError('Please enter a valid 10-digit phone number');
       return;
     }
-    
+
     // Show loading
     document.getElementById('searchLoading').style.display = 'block';
     searchBtn.disabled = true;
     searchBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Searching...';
-    
+
     try {
+      // STEP 1: Search in localStorage first (offline submissions)
+      const localResults = searchLocalApplications(phone, referenceId);
+      
+      if (localResults.length > 0) {
+        // Display local results immediately
+        displaySearchResults(localResults);
+        document.getElementById('searchLoading').style.display = 'none';
+        searchBtn.disabled = false;
+        searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Application';
+        return;
+      }
+
+      // STEP 2: If no local results, try server
       // Build URL for search
       let url = `${GOOGLE_SCRIPT_URL}?action=search`;
       if (phone) {
@@ -2629,29 +2641,53 @@ Apply online now!`;
       } else {
         url += `&referenceId=${encodeURIComponent(referenceId)}`;
       }
-      
-      // Make search request
+
       const response = await fetch(url);
       const data = await response.json();
-      
-      // Hide loading
-      document.getElementById('searchLoading').style.display = 'none';
-      searchBtn.disabled = false;
-      searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Application';
-      
+
       if (data.success) {
         displaySearchResults(data.results);
       } else {
-        showSearchError(data.error || 'Search failed. Please try again.');
+        showSearchError(data.error || 'No applications found on server.');
       }
-      
     } catch (error) {
       console.error('Search error:', error);
+      // If server fails but we already tried local and found nothing, show no results
+      showSearchError('Network error. Could not reach server and no offline applications found.');
+    } finally {
       document.getElementById('searchLoading').style.display = 'none';
       searchBtn.disabled = false;
       searchBtn.innerHTML = '<i class="fas fa-search me-2"></i>Search Application';
-      showSearchError('Network error. Please check your connection and try again.');
     }
+  }
+
+  // Helper: search in localStorage
+  function searchLocalApplications(phone, referenceId) {
+    const submissions = JSON.parse(localStorage.getItem('nsm_admissions') || '[]');
+    
+    return submissions.filter(sub => {
+      if (phone) {
+        return sub.data.phone === phone;
+      }
+      if (referenceId) {
+        return sub.id === referenceId;
+      }
+      return false;
+    }).map(sub => ({
+      referenceId: sub.id,
+      studentName: sub.data.full_name,
+      guardianName: sub.data.guardian_name,
+      phone: sub.data.phone,
+      dob: sub.data.dob,
+      houseName: sub.data.house_name,
+      gender: sub.data.gender,
+      aadharNumber: sub.data.aadhar_number,
+      submissionDate: new Date(sub.date).toLocaleDateString('en-IN'),
+      submissionTime: new Date(sub.date).toLocaleTimeString('en-IN'),
+      status: sub.status || 'Pending (Offline)',
+      academicYear: sub.data.academic_year || '2026-27',
+      source: sub.data.source || 'local'
+    }));
   }
   
   // Display search results
@@ -2781,6 +2817,7 @@ Apply online now!`;
       'Rejected': 'border-danger',
       'Follow-up Required': 'border-info',
       'Completed': 'border-success',
+      'Pending (Offline)': 'border-secondary',
       'default': 'border-secondary'
     };
     
