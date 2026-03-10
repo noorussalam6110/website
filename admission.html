@@ -9,7 +9,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Anek Malayalam for all Malayalam text (modal, class options, etc.) -->
+  <!-- Anek Malayalam for all Malayalam text -->
   <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet">
   
@@ -36,7 +36,8 @@
     }
 
     a { text-decoration: none; }
-    /* Malayalam font class – applied to any element containing Malayalam text */
+    
+    /* Malayalam font class – applied to all Malayalam text */
     .malayalam, 
     [class*="malayalam"],
     option[value*="ക്ലാസ്"],
@@ -45,10 +46,12 @@
     #instructionsModalLabel,
     .instructions-box p,
     .form-step select option[value*="ക്ലാസ്"],
-    select option[value*="ക്ലാസ്"] {
+    select option[value*="ക്ലാസ്"],
+    .declaration-malayalam {
       font-family: 'Anek Malayalam', sans-serif;
     }
-    /* also force on any element with malayalam inline */
+
+    /* Force modal content to use Anek */
     .modal-content .modal-body *,
     .modal-content .modal-header * {
       font-family: 'Anek Malayalam', sans-serif;
@@ -1703,23 +1706,16 @@
 
 <!-- Main Content Area -->
 <div id="mainContentArea">
-  <!-- Dashboard Cards -->
+  <!-- Dashboard Cards - Now with 2 cards: Apply Now only -->
   <section class="content-section" style="background: white; padding: 40px 0;">
     <div class="container">
       <div class="row g-4 justify-content-center">
-        <div class="col-lg-3 col-md-6" data-aos="fade-up">
+        <!-- Apply Now Card -->
+        <div class="col-lg-4 col-md-6" data-aos="fade-up">
           <div class="portal-card text-center">
             <div class="portal-icon"><i class="fas fa-file-alt"></i></div>
             <button class="btn-gold w-100 mt-4" onclick="showInstructionsModal()">
               <i class="fas fa-pen me-2"></i> Apply Now
-            </button>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-          <div class="portal-card text-center">
-            <div class="portal-icon"><i class="fas fa-file-download"></i></div>
-            <button class="btn-gold w-100" onclick="showForm('applicationForm')">
-              <i class="fas fa-download me-2"></i> Download Application
             </button>
           </div>
         </div>
@@ -1800,7 +1796,7 @@
           </div>
 
           <div class="form-step">
-            <div class="form-step-title"><i class="fas fa-camera me-2"></i>Student Photograph(നിര്‍ബന്ധമില്ല)</div>
+            <div class="form-step-title"><i class="fas fa-camera me-2"></i>Student Photograph</div>
             <div class="mb-3">
               <div class="file-upload-container" onclick="document.getElementById('photoInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" id="fileUploadContainer">
                 <i class="fas fa-cloud-upload-alt fa-3x" style="color: var(--accent); margin-bottom: 1rem;"></i>
@@ -1813,12 +1809,14 @@
             </div>
           </div>
 
+          <!-- Declaration with Malayalam text using Anek font -->
           <div class="instructions-box mt-4">
-            <h4 class="instructions-title"><i class="fas fa-file-contract"></i> Declaration</h4>
-            <p class="mb-3">I hereby declare that all information provided is true and correct. I agree to abide by all rules and regulations of Noorussalam Madrasa.</p>
+            <h4 class="instructions-title"><i class="fas fa-file-contract"></i> Declaration / സത്യവാങ്മൂലം</h4>
+            <p class="mb-3 english">I hereby declare that all information provided is true and correct. I agree to abide by all rules and regulations of Noorussalam Madrasa.</p>
+            <p class="mb-3 malayalam declaration-malayalam">ഞാൻ നൽകിയ എല്ലാ വിവരങ്ങളും ശരിയാണെന്നും ശരിയാണെന്നും ഞാൻ പ്രഖ്യാപിക്കുന്നു. നൂറുസ്സലാം മദ്രസയുടെ എല്ലാ നിയമങ്ങളും ചട്ടങ്ങളും അനുസരിക്കാൻ ഞാൻ സമ്മതിക്കുന്നു.</p>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" id="declarationCheckbox" required onchange="toggleSubmitButton(this.checked)">
-              <label class="form-check-label" for="declarationCheckbox">I accept the declaration</label>
+              <label class="form-check-label malayalam" for="declarationCheckbox">ഞാൻ സത്യവാങ്മൂലം അംഗീകരിക്കുന്നു / I accept the declaration</label>
             </div>
           </div>
 
@@ -1835,7 +1833,7 @@
     </div>
   </section>
 
-  <!-- Download Application Form -->
+  <!-- Download Application Form (now as a standalone section below the application form) -->
   <section class="content-section" id="applicationFormSection" style="display: none;">
     <div class="container">
       <div class="form-container">
@@ -1920,16 +1918,33 @@
 <!-- Document Display Area -->
 <div id="documentDisplayArea" style="display: none;"></div>
 
-<!-- DOWNLOAD POSTER SECTION (added here, before footer) -->
-<div class="container my-5 text-center">
-  <div class="bg-light p-4 rounded-3 shadow-sm" style="border: 2px dashed var(--accent);">
-    <h4 class="english" style="color: var(--primary);">
-      <i class="fas fa-download me-2"></i>Get Your Admission Poster
-    </h4>
-    <p class="malayalam">പ്രവേശന പോസ്റ്റർ ഡൗൺലോഡ് ചെയ്യുക</p>
-    <button class="btn btn-warning btn-lg" onclick="downloadPoster()">
-      <i class="fas fa-download me-2"></i>Download Poster
-    </button>
+<!-- DOWNLOAD POSTER AND APPLICATION SECTION - Both buttons in same location below the form -->
+<div class="container my-5">
+  <div class="row g-4 justify-content-center">
+   <!-- Download Application Button (same style) -->
+    <div class="col-md-6">
+      <div class="bg-light p-4 rounded-3 shadow-sm text-center" style="border: 2px dashed var(--accent); height: 100%;">
+        <h4 class="english" style="color: var(--primary);">
+          <i class="fas fa-file-download me-2"></i>Download Your Application
+        </h4>
+        <p class="malayalam">നിങ്ങളുടെ അപേക്ഷ ഡൗൺലോഡ് ചെയ്യുക</p>
+        <button class="btn btn-warning btn-lg w-100" onclick="showForm('applicationForm')">
+          <i class="fas fa-download me-2"></i>Download Application
+        </button>
+      </div>
+      
+    <!-- Download Poster Button -->
+    <div class="col-md-6">
+      <div class="bg-light p-4 rounded-3 shadow-sm text-center" style="border: 2px dashed var(--accent); height: 100%;">
+        <h4 class="english" style="color: var(--primary);">
+          <i class="fas fa-download me-2"></i>Get Your Admission Poster
+        </h4>
+        <p class="malayalam">പ്രവേശന പോസ്റ്റർ ഡൗൺലോഡ് ചെയ്യുക</p>
+        <button class="btn btn-warning btn-lg w-100" onclick="downloadPoster()">
+          <i class="fas fa-download me-2"></i>Download Poster
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2337,7 +2352,7 @@
   }
 
   // ============================================
-  // DOWNLOAD POSTER 
+  // DOWNLOAD POSTER FUNCTION
   // ============================================
   function downloadPoster() {
     window.location.href = 'https://socialwaves.in/zyDIA';
@@ -2665,4 +2680,3 @@
 </script>
 </body>
 </html>
-
