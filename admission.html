@@ -34,7 +34,7 @@
     .bilingual-text { font-family: 'Poppins', sans-serif; }
     .bilingual-text-ml { font-family: 'Anek Malayalam', sans-serif; font-size: 0.95em; }
 
-    /* ===== NAVBAR STYLES (unchanged, copy from original) ===== */
+    /* ===== NAVBAR STYLES (unchanged) ===== */
     .navbar { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); transition: all 0.4s ease; padding: 12px 0; backdrop-filter: blur(10px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
     .navbar.scrolled { background: rgba(10,25,79,0.98); box-shadow: 0 5px 20px rgba(0,0,0,0.4); padding: 8px 0; }
     .logo-container { position: relative; display: inline-block; }
@@ -178,7 +178,7 @@
     .loading-spinner { display:inline-block; width:20px; height:20px; border:3px solid #f3f3f3; border-top:3px solid var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
     @keyframes spin { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
 
-    /* Success Message (unchanged, but we added a new row for class) */
+    /* Success Message (unchanged) */
     .success-message { display:none; padding:40px; background:linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%); border-radius:20px; margin-top:30px; border:2px solid var(--accent); position:relative; overflow:hidden; }
     .success-message::before { content:''; position:absolute; top:0; left:0; width:100%; height:5px; background:linear-gradient(90deg, var(--success), var(--accent)); }
     .success-icon { width:80px; height:80px; background:linear-gradient(135deg, var(--success), #16a34a); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; color:white; font-size:2rem; box-shadow:0 10px 20px rgba(34,197,94,0.3); animation:bounce 1s ease infinite alternate; }
@@ -193,13 +193,34 @@
     .detail-label { font-weight:600; color:var(--primary); min-width:150px; }
     .detail-value { color:#333; text-align:right; flex:1; }
 
-    /* Alert Messages (unchanged) */
-    .alert { border-radius:12px; padding:15px 20px; margin-bottom:20px; border:none; position:relative; overflow:hidden; }
-    .alert::before { content:''; position:absolute; left:0; top:0; height:100%; width:4px; }
-    .alert-danger { background:linear-gradient(135deg, #fee, #fdd); color:#b91c1c; }
-    .alert-danger::before { background:var(--danger); }
-    .alert-success { background:linear-gradient(135deg, #f0fdf4, #dcfce7); color:#166534; }
-    .alert-success::before { background:var(--success); }
+    /* ===== SLIDING ALERT STYLES ===== */
+    .alert-slide {
+      max-height: 0;
+      padding: 0 20px;
+      margin: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.4s ease-in-out, opacity 0.3s ease, padding 0.3s ease;
+      border-width: 0;
+      pointer-events: none;
+      display: block !important; /* always block, controlled by max-height */
+    }
+    .alert-slide.show {
+      max-height: 200px;      /* enough for alert content */
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      opacity: 1;
+      border-width: 1px;
+      pointer-events: auto;
+    }
+    /* Keep original color styles */
+    .alert-slide.alert-danger { background: linear-gradient(135deg, #fee, #fdd); color: #b91c1c; }
+    .alert-slide.alert-success { background: linear-gradient(135deg, #f0fdf4, #dcfce7); color: #166534; }
+    /* New info alert style */
+    .alert-slide.alert-info { background: linear-gradient(135deg, #cfe2ff, #b6d4fe); color: #084298; }
+    .alert-slide.alert-info::before { background: #0d6efd; }
+    .alert-slide .btn-close { filter: brightness(0.6); }
+    /* ===== END SLIDING ALERT ===== */
 
     /* Footer Styles (unchanged) */
     .modern-footer { background:linear-gradient(135deg, var(--primary), var(--secondary)); color:white; padding:60px 0 20px; margin-top:80px; }
@@ -259,6 +280,7 @@
       .submit-btn { padding:14px 20px; font-size:1rem; }
       .reference-id-box { font-size:1.1rem; padding:15px; }
       .form-control, .form-select { padding:12px 14px; }
+      .alert-slide.show { max-height: 250px; } /* more space for mobile */
     }
   </style>
 </head>
@@ -401,18 +423,27 @@
 
 <!-- Main Container -->
 <div class="container">
-  <!-- Error Alert -->
-  <div id="errorAlert" class="alert alert-danger" style="display: none;">
+  <!-- FLASH MESSAGES (now with slide animation) -->
+  <div id="errorAlert" class="alert alert-slide alert-danger alert-dismissible fade" role="alert">
     <i class="fas fa-exclamation-triangle me-2"></i>
     <span id="errorMessage" class="english"></span>
     <span id="errorMessageML" class="malayalam" style="display: none;"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="hideAlert('error')"></button>
   </div>
 
-  <!-- Success Alert -->
-  <div id="successAlert" class="alert alert-success" style="display: none;">
+  <div id="successAlert" class="alert alert-slide alert-success alert-dismissible fade" role="alert">
     <i class="fas fa-check-circle me-2"></i>
     <span id="successMessageText" class="english"></span>
     <span id="successMessageTextML" class="malayalam" style="display: none;"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="hideAlert('success')"></button>
+  </div>
+
+  <!-- NEW INFO ALERT: Admission last date & contact -->
+  <div id="infoAlert" class="alert alert-slide alert-info alert-dismissible fade" role="alert">
+    <i class="fas fa-info-circle me-2"></i>
+    <span id="infoMessage" class="english">Admission last date: 26/03/2026 | Contact: 7034678818</span>
+    <span id="infoMessageML" class="malayalam" style="display: none;">അവസാന തീയതി: 26/03/2026 | ബന്ധപ്പെടുക: 7034678818</span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="hideAlert('info')"></button>
   </div>
 
   <!-- Form Container -->
@@ -579,7 +610,7 @@
   </div>
 </form>
 
-    <!-- Success Receipt (UPDATED: added row for Admission Class) -->
+    <!-- Success Receipt (unchanged) -->
     <div id="successReceipt" class="success-message" style="display: none;">
       <div class="success-icon">
         <i class="fas fa-check"></i>
@@ -812,6 +843,11 @@
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyG_tlL66NMJgZJcmP6oT6JB_vBS-9OIgODNxCn_ofPqDd2KJATe-epjmjj7aFxmyMkyw/exec'; // Replace with your actual URL
 
   // ===========================================
+  // FLASH MESSAGE TIMEOUTS
+  // ===========================================
+  let errorTimeout, successTimeout, infoTimeout;
+
+  // ===========================================
   // INITIALIZATION
   // ===========================================
   const currentYear = new Date().getFullYear();
@@ -827,8 +863,13 @@
   document.getElementById('dob').max = maxDate.toISOString().split('T')[0];
   document.getElementById('dob').min = minDate.toISOString().split('T')[0];
 
+  // Show info alert on page load (admission last date)
+  window.addEventListener('load', function() {
+    showInfoAlert();
+  });
+
   // ===========================================
-  // VALIDATION (unchanged, but added admission_class)
+  // VALIDATION (unchanged)
   // ===========================================
   document.getElementById('phone').addEventListener('input', function(e) {
     this.value = this.value.replace(/\D/g, '').slice(0, 10);
@@ -880,6 +921,9 @@
   const successAlert = document.getElementById('successAlert');
   const successMessageText = document.getElementById('successMessageText');
   const successMessageTextML = document.getElementById('successMessageTextML');
+  const infoAlert = document.getElementById('infoAlert');
+  const infoMessage = document.getElementById('infoMessage');
+  const infoMessageML = document.getElementById('infoMessageML');
 
   const errorMessages = {
     required: { en: 'Please fill all required fields correctly.', ml: 'എല്ലാ ആവശ്യമായ ഫീൽഡുകളും ശരിയായി പൂരിപ്പിക്കുക.' },
@@ -1037,21 +1081,54 @@
     return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
+  // Show info alert (admission last date)
+  function showInfoAlert() {
+    if (infoTimeout) clearTimeout(infoTimeout);
+    infoMessage.style.display = 'inline';
+    infoMessageML.style.display = 'inline';
+    infoAlert.classList.add('show');
+    infoAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Auto-dismiss after 8 seconds
+    infoTimeout = setTimeout(() => {
+      hideAlert('info');
+    }, 8000);
+  }
+
+  // Updated showBilingualAlert with slide effect (add/remove 'show' class)
   function showBilingualAlert(type, en, ml) {
     if (type === 'error') {
+      if (errorTimeout) clearTimeout(errorTimeout);
       errorMessage.textContent = en; errorMessageML.textContent = ml;
       errorMessage.style.display = 'inline'; errorMessageML.style.display = 'inline';
-      errorAlert.style.display = 'block'; errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorAlert.classList.add('show');
+      errorAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Auto-dismiss after 5 seconds
+      errorTimeout = setTimeout(() => {
+        hideAlert('error');
+      }, 5000);
     } else if (type === 'success') {
+      if (successTimeout) clearTimeout(successTimeout);
       successMessageText.textContent = en; successMessageTextML.textContent = ml;
       successMessageText.style.display = 'inline'; successMessageTextML.style.display = 'inline';
-      successAlert.style.display = 'block'; successAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      successAlert.classList.add('show');
+      successAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      successTimeout = setTimeout(() => {
+        hideAlert('success');
+      }, 5000);
     }
   }
 
   function hideAlert(type) {
-    if (type === 'error') errorAlert.style.display = 'none';
-    else if (type === 'success') successAlert.style.display = 'none';
+    if (type === 'error') {
+      errorAlert.classList.remove('show');
+      if (errorTimeout) clearTimeout(errorTimeout);
+    } else if (type === 'success') {
+      successAlert.classList.remove('show');
+      if (successTimeout) clearTimeout(successTimeout);
+    } else if (type === 'info') {
+      infoAlert.classList.remove('show');
+      if (infoTimeout) clearTimeout(infoTimeout);
+    }
   }
 
   // ===========================================
@@ -1086,6 +1163,7 @@
     document.getElementById('declaration').classList.remove('is-invalid');
     hideAlert('error');
     hideAlert('success');
+    // Optionally show info again?
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
