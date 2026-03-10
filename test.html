@@ -1298,7 +1298,7 @@
   // CONFIGURATION (Update with your Google Apps Script URL)
   // ============================================
   const CONFIG = {
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyANBnRSE1Ura-jh7cvRAIK3yohscPbnHJLM9mAQz6pWJAEa-WzGBTUgj3G6SoDW7Q0/exec', // Replace with your deployed URL
+    SCRIPT_URL: 'https://script.google.com/macros/s/YOUR_NEW_DEPLOYMENT_ID/exec', // ← REPLACE THIS
     EXAM_DATE_ISO: '2026-04-30',
     EXAM_DATE_DDMMYYYY: '30-04-2026',
     EXAM_DAY_MALAYALAM: 'വ്യാഴം',
@@ -1509,7 +1509,7 @@
   }
 
   // ============================================
-  // Network error banner
+  // Network error banner (enhanced to show actual error)
   // ============================================
   function showNetworkError(enMessage, mlMessage) {
     const alertDiv = document.getElementById('networkErrorAlert');
@@ -1527,7 +1527,7 @@
 
     networkTimeout = setTimeout(() => {
       hideNetworkError();
-    }, 5000);
+    }, 8000); // Increased to 8 seconds for longer messages
   }
 
   function hideNetworkError() {
@@ -1536,7 +1536,7 @@
   }
 
   // ============================================
-  // Document generation functions
+  // Document generation functions (unchanged)
   // ============================================
   function escapeHtml(text) {
     if (!text) return '';
@@ -1714,7 +1714,7 @@
   }
 
   // ============================================
-  // API Handlers
+  // API Handlers (with improved error display)
   // ============================================
   async function handleNewApplicationSubmit(e) {
     e.preventDefault();
@@ -1758,6 +1758,7 @@
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       });
       const result = await response.json();
+      console.log('Submit response:', result);
 
       setTimeout(() => {
         hideLoading();
@@ -1792,12 +1793,14 @@
     try {
       const response = await fetch(`${CONFIG.SCRIPT_URL}?type=application&mobile=${encodeURIComponent(mobile)}&dob=${encodeURIComponent(dob)}`);
       const data = await response.json();
+      console.log('Application response:', data);
       setTimeout(() => {
         hideLoading();
         if (data.status === 'success') {
           displayDocument(generateApplicationHtml(data));
         } else {
-          showNetworkError('Application not found.', 'അപേക്ഷ കണ്ടെത്താനായില്ല.');
+          // Show the actual error message from backend
+          showNetworkError(data.message || 'Application not found.', 'അപേക്ഷ കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
     } catch (err) {
@@ -1815,12 +1818,13 @@
     try {
       const response = await fetch(`${CONFIG.SCRIPT_URL}?type=hallticket&mobile=${encodeURIComponent(mobile)}&dob=${encodeURIComponent(dob)}`);
       const data = await response.json();
+      console.log('Hall ticket response:', data);
       setTimeout(() => {
         hideLoading();
         if (data.status === 'success') {
           displayDocument(generateHallticketHtml(data));
         } else {
-          showNetworkError('Hall ticket not found.', 'ഹാൾ ടിക്കറ്റ് കണ്ടെത്താനായില്ല.');
+          showNetworkError(data.message || 'Hall ticket not found.', 'ഹാൾ ടിക്കറ്റ് കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
     } catch (err) {
@@ -1838,12 +1842,13 @@
     try {
       const response = await fetch(`${CONFIG.SCRIPT_URL}?type=result&mobile=${encodeURIComponent(mobile)}&dob=${encodeURIComponent(dob)}`);
       const data = await response.json();
+      console.log('Result response:', data);
       setTimeout(() => {
         hideLoading();
         if (data.status === 'success') {
           displayDocument(generateResultHtml(data));
         } else {
-          showNetworkError('Result not found.', 'റിസൾട്ട് കണ്ടെത്താനായില്ല.');
+          showNetworkError(data.message || 'Result not found.', 'റിസൾട്ട് കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
     } catch (err) {
@@ -1854,7 +1859,3 @@
 </script>
 </body>
 </html>
-
-
-
-
