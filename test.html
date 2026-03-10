@@ -1295,10 +1295,10 @@
 <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
 <script>
   // ============================================
-  // CONFIGURATION (Update with your Google Apps Script URL)
+  // CONFIGURATION
   // ============================================
   const CONFIG = {
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxaZ3NaFRr99EyaDBU-DJmCulofqWs81_w7GS99EuMlNUqDol1FS4JrZMPnLNA8-Y3J/exec', // ← REPLACE THIS
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxaZ3NaFRr99EyaDBU-DJmCulofqWs81_w7GS99EuMlNUqDol1FS4JrZMPnLNA8-Y3J/exec',
     EXAM_DATE_ISO: '2026-04-30',
     EXAM_DATE_DDMMYYYY: '30-04-2026',
     EXAM_DAY_MALAYALAM: 'വ്യാഴം',
@@ -1322,8 +1322,7 @@
   // ============================================
   // Global variables
   // ============================================
-  let lastScrollTop = 0;
-  let errorTimeout, successTimeout, infoTimeout, networkTimeout;
+  let networkTimeout;
 
   // ============================================
   // Initialization
@@ -1332,7 +1331,6 @@
     AOS.init({ duration: 800, once: true, offset: 50 });
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // Set max date for DOB inputs
     const today = new Date().toISOString().split('T')[0];
     document.querySelectorAll('input[type="date"]').forEach(input => {
       input.setAttribute('max', today);
@@ -1435,11 +1433,13 @@
     e.stopPropagation();
     document.getElementById('fileUploadContainer').classList.add('dragover');
   }
+  
   function handleDragLeave(e) {
     e.preventDefault();
     e.stopPropagation();
     document.getElementById('fileUploadContainer').classList.remove('dragover');
   }
+  
   function handleDrop(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -1447,10 +1447,12 @@
     const files = e.dataTransfer.files;
     if (files.length > 0) handleFile(files[0]);
   }
+  
   function handlePhotoUpload(e) {
     const file = e.target.files[0];
     if (file) handleFile(file);
   }
+  
   function handleFile(file) {
     if (!file.type.startsWith('image/')) {
       showNetworkError('Please upload an image file', 'ദയവായി ഒരു ചിത്രം അപ്‌ലോഡ് ചെയ്യുക');
@@ -1469,12 +1471,14 @@
     };
     reader.readAsDataURL(file);
   }
+  
   function removePhoto() {
     document.getElementById('photoInput').value = '';
     document.getElementById('photoPreview').src = '';
     document.getElementById('photoPreview').style.display = 'none';
     document.getElementById('removePhotoBtn').style.display = 'none';
   }
+  
   function readFileAsBase64(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -1491,25 +1495,14 @@
     document.getElementById('loadingText').textContent = message;
     document.getElementById('loadingSubtext').textContent = subMessage;
     document.getElementById('loadingOverlay').style.display = 'flex';
-
-    document.querySelectorAll('button:focus, button:active').forEach(btn => {
-      btn.classList.add('btn-loading');
-      btn.setAttribute('data-original-html', btn.innerHTML);
-      btn.innerHTML = '<span class="btn-spinner"></span><span class="btn-text">Loading...</span>';
-    });
   }
+  
   function hideLoading() {
     document.getElementById('loadingOverlay').style.display = 'none';
-    document.querySelectorAll('.btn-loading').forEach(btn => {
-      const originalHtml = btn.getAttribute('data-original-html');
-      if (originalHtml) btn.innerHTML = originalHtml;
-      btn.classList.remove('btn-loading');
-      btn.removeAttribute('data-original-html');
-    });
   }
 
   // ============================================
-  // Network error banner (enhanced to show actual error)
+  // Network error banner
   // ============================================
   function showNetworkError(enMessage, mlMessage) {
     const alertDiv = document.getElementById('networkErrorAlert');
@@ -1527,7 +1520,7 @@
 
     networkTimeout = setTimeout(() => {
       hideNetworkError();
-    }, 8000); // Increased to 8 seconds for longer messages
+    }, 8000);
   }
 
   function hideNetworkError() {
@@ -1536,7 +1529,7 @@
   }
 
   // ============================================
-  // Document generation functions (unchanged)
+  // Document generation functions
   // ============================================
   function escapeHtml(text) {
     if (!text) return '';
@@ -1544,8 +1537,7 @@
     return String(text).replace(/[&<>"']/g, m => map[m]);
   }
 
-  function generateApplicationHtml(data) {
-    const { studentData } = data;
+  function generateApplicationHtml(studentData) {
     const formattedDob = formatDateToDDMMYYYY(studentData.dob);
     const hasValidPhoto = studentData.photoUrl && (studentData.photoUrl.startsWith('data:') || studentData.photoUrl.startsWith('http'));
 
@@ -1572,7 +1564,7 @@
           <div class="document-section-title">Student Details</div>
           <div class="info-grid" style="margin-right: ${hasValidPhoto ? '140px' : '0'};">
             <div class="info-item"><span class="info-label">Application ID:</span><span class="info-value">${escapeHtml(studentData.applicationId || 'N/A')}</span></div>
-            <div class="info-item"><span class="info-label">Student Name:</span><span class="info-value">${escapeHtml(studentData.full_name || studentData.studentName || 'N/A')}</span></div>
+            <div class="info-item"><span class="info-label">Student Name:</span><span class="info-value">${escapeHtml(studentData.full_name || 'N/A')}</span></div>
             <div class="info-item"><span class="info-label">Admission Class:</span><span class="info-value">${escapeHtml(studentData.admission_class || 'N/A')}</span></div>
             <div class="info-item"><span class="info-label">House Name:</span><span class="info-value">${escapeHtml(studentData.house_name || 'N/A')}</span></div>
             <div class="info-item"><span class="info-label">Date of Birth:</span><span class="info-value">${escapeHtml(formattedDob)}</span></div>
@@ -1600,8 +1592,7 @@
     `;
   }
 
-  function generateHallticketHtml(data) {
-    const { studentData } = data;
+  function generateHallticketHtml(studentData) {
     const formattedDob = formatDateToDDMMYYYY(studentData.dob);
     const qrText = `Name:${studentData.full_name || ''}, AppNo:${studentData.applicationId || ''}, DOB:${formattedDob}`;
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrText)}`;
@@ -1623,7 +1614,7 @@
           </div>
           <div class="info-grid" style="margin-right:140px;">
             <div class="info-item"><span class="info-label">Application ID:</span><span class="info-value">${escapeHtml(studentData.applicationId || 'N/A')}</span></div>
-            <div class="info-item"><span class="info-label">Student Name:</span><span class="info-value">${escapeHtml(studentData.full_name || studentData.studentName || 'N/A')}</span></div>
+            <div class="info-item"><span class="info-label">Student Name:</span><span class="info-value">${escapeHtml(studentData.full_name || 'N/A')}</span></div>
             <div class="info-item"><span class="info-label">Class Applied:</span><span class="info-value">${escapeHtml(studentData.admission_class || 'N/A')}</span></div>
             <div class="info-item"><span class="info-label">Date of Birth:</span><span class="info-value">${escapeHtml(formattedDob)}</span></div>
             <div class="info-item"><span class="info-label">Guardian:</span><span class="info-value">${escapeHtml(studentData.guardian_name || 'N/A')}</span></div>
@@ -1657,8 +1648,7 @@
     `;
   }
 
-  function generateResultHtml(data) {
-    const { studentData } = data;
+  function generateResultHtml(studentData) {
     const status = studentData.result || 'NOT QUALIFIED';
     const statusColor = status === 'QUALIFIED' ? '#28a745' : (status === 'WAITING LIST' ? '#007bff' : '#dc3545');
     const malayalamNote = status === 'QUALIFIED' ? 'പ്രിയ വിദ്യാർത്ഥി, താങ്കൾ പ്രവേശന പരീക്ഷയിൽ വിജയിച്ചു. അഭിനന്ദനങ്ങൾ...' : 'യോഗ്യത ലഭിച്ചില്ല. അടുത്ത തവണ ശ്രമിക്കുക.';
@@ -1676,8 +1666,8 @@
         </div>
         <div class="document-content">
           <div class="info-grid">
-            <div class="info-item"><span class="info-label">Name:</span><span class="info-value">${escapeHtml(studentData.name || studentData.full_name || 'N/A')}</span></div>
-            <div class="info-item"><span class="info-label">Mobile:</span><span class="info-value">${escapeHtml(studentData.mobile || studentData.phone || 'N/A')}</span></div>
+            <div class="info-item"><span class="info-label">Name:</span><span class="info-value">${escapeHtml(studentData.full_name || 'N/A')}</span></div>
+            <div class="info-item"><span class="info-label">Mobile:</span><span class="info-value">${escapeHtml(studentData.phone || 'N/A')}</span></div>
             <div class="info-item"><span class="info-label">DOB:</span><span class="info-value">${escapeHtml(formatDateToDDMMYYYY(studentData.dob))}</span></div>
           </div>
           <div class="result-section-box" style="border-color:${statusColor};">
@@ -1714,7 +1704,7 @@
   }
 
   // ============================================
-  // API Handlers (with improved error display)
+  // API Handlers
   // ============================================
   async function handleNewApplicationSubmit(e) {
     e.preventDefault();
@@ -1766,14 +1756,13 @@
           form.reset();
           removePhoto();
           toggleSubmitButton(false);
-          const mockData = {
-            studentData: {
-              ...data,
-              applicationId: result.data.applicationId,
-              photoUrl: photoFile ? URL.createObjectURL(photoFile) : null
-            }
+          
+          const studentData = {
+            ...data,
+            applicationId: result.data.applicationId,
+            photoUrl: photoFile ? URL.createObjectURL(photoFile) : null
           };
-          displayDocument(generateApplicationHtml(mockData));
+          displayDocument(generateApplicationHtml(studentData));
         } else {
           showNetworkError('Submission failed: ' + result.message, 'സമർപ്പണം പരാജയപ്പെട്ടു');
         }
@@ -1794,12 +1783,12 @@
       const response = await fetch(`${CONFIG.SCRIPT_URL}?type=application&mobile=${encodeURIComponent(mobile)}&dob=${encodeURIComponent(dob)}`);
       const data = await response.json();
       console.log('Application response:', data);
+      
       setTimeout(() => {
         hideLoading();
-        if (data.status === 'success') {
-          displayDocument(generateApplicationHtml(data));
+        if (data.status === 'success' && data.studentData) {
+          displayDocument(generateApplicationHtml(data.studentData));
         } else {
-          // Show the actual error message from backend
           showNetworkError(data.message || 'Application not found.', 'അപേക്ഷ കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
@@ -1819,10 +1808,11 @@
       const response = await fetch(`${CONFIG.SCRIPT_URL}?type=hallticket&mobile=${encodeURIComponent(mobile)}&dob=${encodeURIComponent(dob)}`);
       const data = await response.json();
       console.log('Hall ticket response:', data);
+      
       setTimeout(() => {
         hideLoading();
-        if (data.status === 'success') {
-          displayDocument(generateHallticketHtml(data));
+        if (data.status === 'success' && data.studentData) {
+          displayDocument(generateHallticketHtml(data.studentData));
         } else {
           showNetworkError(data.message || 'Hall ticket not found.', 'ഹാൾ ടിക്കറ്റ് കണ്ടെത്താനായില്ല.');
         }
@@ -1843,10 +1833,11 @@
       const response = await fetch(`${CONFIG.SCRIPT_URL}?type=result&mobile=${encodeURIComponent(mobile)}&dob=${encodeURIComponent(dob)}`);
       const data = await response.json();
       console.log('Result response:', data);
+      
       setTimeout(() => {
         hideLoading();
-        if (data.status === 'success') {
-          displayDocument(generateResultHtml(data));
+        if (data.status === 'success' && data.studentData) {
+          displayDocument(generateResultHtml(data.studentData));
         } else {
           showNetworkError(data.message || 'Result not found.', 'റിസൾട്ട് കണ്ടെത്താനായില്ല.');
         }
@@ -1859,4 +1850,5 @@
 </script>
 </body>
 </html>
+
 
