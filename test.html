@@ -484,6 +484,44 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    /* Slide Alert for Network Errors */
+    .alert-slide {
+      max-height: 0;
+      padding: 0 20px;
+      margin: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.4s ease-in-out, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+      border-width: 0;
+      pointer-events: none;
+      display: block !important;
+      position: relative;
+      z-index: 1050;
+    }
+    .alert-slide.show {
+      max-height: 200px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      opacity: 1;
+      border-width: 1px;
+      pointer-events: auto;
+    }
+    .alert-slide.alert-danger {
+      background: linear-gradient(135deg, #fee, #fdd);
+      color: #b91c1c;
+      border-left: 4px solid var(--danger);
+    }
+    .alert-slide .btn-close {
+      filter: brightness(0.6);
+    }
+    /* Network error banner placement */
+    #networkErrorContainer {
+      position: sticky;
+      top: 130px;
+      z-index: 1040;
+      width: 100%;
+    }
+
     /* WhatsApp Float */
     .whatsapp-float {
       position: fixed;
@@ -513,7 +551,7 @@
       50% { transform: translateY(-8px); }
     }
 
-    /* Document display (A4 style) */
+    /* Document display (A4 style) – unchanged, keep as before */
     .document-container {
       width: 21cm;
       min-height: 29.7cm;
@@ -646,8 +684,6 @@
       border-bottom: 1px solid #212529;
       margin-bottom: 3px;
     }
-
-    /* Hall Ticket specific */
     .exam-details-box {
       background: white;
       border: 2px solid var(--primary);
@@ -710,8 +746,6 @@
       height: 60px;
       font-size: 11px;
     }
-
-    /* Result specific */
     .result-section-box {
       background: white;
       border: 2px solid var(--primary);
@@ -826,6 +860,7 @@
       .page-title { font-size: 2rem; }
       .form-container { padding: 1.5rem; }
       .document-container { width: 100%; }
+      #networkErrorContainer { top: 110px; }
     }
     @media print {
       body * { visibility: hidden; }
@@ -900,6 +935,16 @@
     <div class="ticker-item"><span class="ticker-badge">📞 CONTACT</span> +91 70346 78818, 9497349254</div>
     <div class="ticker-item"><span class="ticker-badge">✍️ ENTRANCE</span> 30/04/2026 (for secondary)</div>
     <div class="ticker-item"><span class="ticker-badge">📅 RESULT</span> 02/05/2026</div>
+  </div>
+</div>
+
+<!-- Network Error Banner (slide) -->
+<div id="networkErrorContainer" class="container">
+  <div id="networkErrorAlert" class="alert alert-slide alert-danger alert-dismissible fade" role="alert">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <span id="networkErrorMessage" class="english"></span>
+    <span id="networkErrorMessageML" class="malayalam" style="display: none;"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="hideNetworkError()"></button>
   </div>
 </div>
 
@@ -1278,7 +1323,7 @@
   // Global variables
   // ============================================
   let lastScrollTop = 0;
-  let errorTimeout, successTimeout, infoTimeout;
+  let errorTimeout, successTimeout, infoTimeout, networkTimeout;
 
   // ============================================
   // Initialization
@@ -1408,11 +1453,11 @@
   }
   function handleFile(file) {
     if (!file.type.startsWith('image/')) {
-      alert('Please upload an image file');
+      showNetworkError('Please upload an image file', 'ദയവായി ഒരു ചിത്രം അപ്‌ലോഡ് ചെയ്യുക');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB');
+      showNetworkError('File size must be less than 5MB', 'ഫയൽ വലുപ്പം 5MB ൽ കുറവായിരിക്കണം');
       return;
     }
     const reader = new FileReader();
@@ -1461,6 +1506,33 @@
       btn.classList.remove('btn-loading');
       btn.removeAttribute('data-original-html');
     });
+  }
+
+  // ============================================
+  // Network error banner
+  // ============================================
+  function showNetworkError(enMessage, mlMessage) {
+    const alertDiv = document.getElementById('networkErrorAlert');
+    const enSpan = document.getElementById('networkErrorMessage');
+    const mlSpan = document.getElementById('networkErrorMessageML');
+
+    if (networkTimeout) clearTimeout(networkTimeout);
+
+    enSpan.textContent = enMessage;
+    mlSpan.textContent = mlMessage;
+    enSpan.style.display = 'inline';
+    mlSpan.style.display = 'inline';
+
+    alertDiv.classList.add('show');
+
+    networkTimeout = setTimeout(() => {
+      hideNetworkError();
+    }, 5000);
+  }
+
+  function hideNetworkError() {
+    document.getElementById('networkErrorAlert').classList.remove('show');
+    if (networkTimeout) clearTimeout(networkTimeout);
   }
 
   // ============================================
@@ -1648,7 +1720,7 @@
     e.preventDefault();
     const dob = document.getElementById('dobInput').value;
     if (!validateAndCalculateAge(dob)) {
-      alert('Please check age requirements.');
+      showNetworkError('Please check age requirements.', 'പ്രായ പരിധി പരിശോധിക്കുക.');
       return;
     }
 
@@ -1669,7 +1741,7 @@
         });
       } catch (err) {
         hideLoading();
-        alert('Error processing photo');
+        showNetworkError('Error processing photo', 'ഫോട്ടോ പ്രോസസ്സ് ചെയ്യുന്നതിൽ പിശക്');
         return;
       }
     }
@@ -1702,12 +1774,12 @@
           };
           displayDocument(generateApplicationHtml(mockData));
         } else {
-          alert('Submission failed. ' + result.message);
+          showNetworkError('Submission failed: ' + result.message, 'സമർപ്പണം പരാജയപ്പെട്ടു');
         }
       }, 1500);
     } catch (err) {
       hideLoading();
-      alert('Network error. Please try again.');
+      showNetworkError('Network error. Please try again.', 'നെറ്റ്‌വർക്ക് പിശക്. വീണ്ടും ശ്രമിക്കുക.');
     }
   }
 
@@ -1725,12 +1797,12 @@
         if (data.status === 'success') {
           displayDocument(generateApplicationHtml(data));
         } else {
-          alert('Application not found.');
+          showNetworkError('Application not found.', 'അപേക്ഷ കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
     } catch (err) {
       hideLoading();
-      alert('Error fetching application.');
+      showNetworkError('Network error. Please try again.', 'നെറ്റ്‌വർക്ക് പിശക്. വീണ്ടും ശ്രമിക്കുക.');
     }
   }
 
@@ -1748,12 +1820,12 @@
         if (data.status === 'success') {
           displayDocument(generateHallticketHtml(data));
         } else {
-          alert('Hall ticket not found.');
+          showNetworkError('Hall ticket not found.', 'ഹാൾ ടിക്കറ്റ് കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
     } catch (err) {
       hideLoading();
-      alert('Error fetching hall ticket.');
+      showNetworkError('Network error. Please try again.', 'നെറ്റ്‌വർക്ക് പിശക്. വീണ്ടും ശ്രമിക്കുക.');
     }
   }
 
@@ -1771,15 +1843,14 @@
         if (data.status === 'success') {
           displayDocument(generateResultHtml(data));
         } else {
-          alert('Result not found.');
+          showNetworkError('Result not found.', 'റിസൾട്ട് കണ്ടെത്താനായില്ല.');
         }
       }, 1500);
     } catch (err) {
       hideLoading();
-      alert('Error fetching result.');
+      showNetworkError('Network error. Please try again.', 'നെറ്റ്‌വർക്ക് പിശക്. വീണ്ടും ശ്രമിക്കുക.');
     }
   }
 </script>
 </body>
 </html>
-
