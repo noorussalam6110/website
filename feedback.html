@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback | Noorussalam Madrasa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+  <style>
+    :root {
+      --primary: #0a194f;
+      --secondary: #122f7a;
+      --accent: #3a8df3;
+    }
+    /* Base font: Anek Malayalam for all text */
+    body {
+      font-family: 'Anek Malayalam', 'Poppins', sans-serif;
+      background-color: var(--primary);
+      color: #fff;
+      padding-top: 80px;
+    }
+    /* English-only elements revert to Poppins */
+    .navbar, .nav-icon, .modern-footer, .feedback-header h1, 
+    .refresh-btn, .btn-submit, .entries-header h2, .setup-section h3,
+    .sheet-structure strong, .setup-section p, .setup-section li,
+    .modern-footer h4, .modern-footer h5, .modern-footer p, .modern-footer a,
+    .whatsapp-float, .comment-badge, .comment-date {
+      font-family: 'Poppins', 'Anek Malayalam', sans-serif;
+    }
+    /* Keep Malayalam headings and content in Anek Malayalam */
+    .feedback-header .lead, h2, .form-card label, .role-selector label,
+    .input-group input, .input-group textarea, .status-msg,
+    .comment-name, .comment-text, .empty-feedback {
+      font-family: 'Anek Malayalam', 'Poppins', sans-serif;
+    }
+    /* Additional overrides for consistency */
+    .comment-badge, .comment-date {
+      font-family: 'Poppins', sans-serif;
+    }
+    .navbar {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      transition: 0.3s;
+      padding: 12px 0;
+    }
+    .navbar.scrolled { background: rgba(10,25,79,0.98); padding: 8px 0; }
+    .logo-img { width: 50px; border-radius: 10px; border: 2px solid var(--accent); }
+    .nav-icon {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px !important;
+      border-radius: 8px;
+      color: white !important;
+    }
+    .nav-icon i { margin-right: 10px; }
+    .nav-icon:hover { background: rgba(255,255,255,0.05); transform: translateY(-2px); }
+    .nav-icon.active { background: rgba(58,141,243,0.15); color: var(--accent) !important; }
+    .feedback-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 80px 0 50px;
+      text-align: center;
+    }
+    .feedback-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 30px 60px;
+    }
+    .grid-2col {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    .glass-card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 2rem;
+      border: 1px solid rgba(58,141,243,0.3);
+      transition: 0.3s;
+    }
+    .glass-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+    .form-card { flex: 1.2; min-width: 300px; }
+    .entries-card { flex: 1.8; min-width: 350px; }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--accent);
+      border-left: 4px solid var(--accent);
+      padding-left: 1rem;
+      margin-bottom: 1.8rem;
+    }
+    .input-group { margin-bottom: 1.5rem; }
+    .input-group label { display: block; margin-bottom: 0.6rem; color: #e0e7ff; }
+    .input-group input, .input-group textarea {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 16px;
+      color: white;
+    }
+    .role-selector {
+      display: flex;
+      gap: 1.5rem;
+      background: rgba(255,255,255,0.05);
+      padding: 0.7rem 1.2rem;
+      border-radius: 50px;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, var(--accent), #2a4bbf);
+      border: none;
+      padding: 0.9rem;
+      width: 100%;
+      border-radius: 40px;
+      font-weight: 600;
+      color: white;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(58,141,243,0.4); }
+    .status-msg {
+      margin-top: 1rem;
+      text-align: center;
+      padding: 0.6rem;
+      border-radius: 40px;
+      background: rgba(58,141,243,0.15);
+    }
+    .entries-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px dashed rgba(58,141,243,0.5);
+      padding-bottom: 0.8rem;
+    }
+    .refresh-btn {
+      background: rgba(58,141,243,0.2);
+      border: 1px solid rgba(58,141,243,0.5);
+      padding: 0.5rem 1.2rem;
+      border-radius: 40px;
+      color: var(--accent);
+    }
+    .refresh-btn:hover { background: var(--accent); color: var(--primary); }
+    .comments-list { max-height: 550px; overflow-y: auto; padding-right: 6px; }
+    .comment-item {
+      background: rgba(255,255,255,0.08);
+      border-left: 4px solid var(--accent);
+      border-radius: 20px;
+      padding: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    .comment-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.7rem;
+    }
+    .comment-name { font-weight: 700; color: var(--accent); }
+    .comment-badge { background: rgba(58,141,243,0.2); padding: 0.2rem 0.9rem; border-radius: 30px; font-size: 0.7rem; }
+    .comment-text { margin: 0.7rem 0; line-height: 1.5; }
+    .comment-date { font-size: 0.7rem; color: #9aaec9; text-align: right; }
+    .setup-section {
+      background: rgba(0,0,0,0.3);
+      border-radius: 24px;
+      padding: 1.8rem;
+      margin-top: 1rem;
+    }
+    .setup-section h3 { color: var(--accent); margin-bottom: 1.2rem; }
+    .sheet-structure {
+      background: rgba(58,141,243,0.1);
+      padding: 1rem;
+      border-radius: 12px;
+      font-family: monospace;
+      margin: 1rem 0;
+    }
+    pre {
+      background: #0a194f;
+      padding: 1rem;
+      border-radius: 12px;
+      color: #a5d8ff;
+      overflow-x: auto;
+    }
+    .modern-footer {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 60px 0 20px;
+    }
+    .modern-footer a { color: #d1d5db; text-decoration: none; }
+    .modern-footer a:hover { color: var(--accent); }
+    .social-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+    .whatsapp-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #25d366;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    @media (max-width: 768px) {
+      body { padding-top: 70px; }
+      .feedback-container { padding: 0 20px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+      <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="Logo" class="logo-img">
+      <div><span class="fw-bold">NSM</span><small class="d-block">Kambippalam</small></div>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link nav-icon" href="#"><i class="fas fa-home"></i><span>Home</span></a></li>
+        <li class="nav-item"><a class="nav-link nav-icon active" href="#"><i class="fas fa-comment-dots"></i><span>Feedback</span></a></li>
+        <li class="nav-item"><a class="nav-link nav-icon" href="#"><i class="fas fa-envelope"></i><span>Contact</span></a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="feedback-header">
+  <div class="container">
+    <h1 class="display-5 fw-bold"><i class="fas fa-comments me-3"></i>Parents & Students Voice</h1>
+    <p class="lead">നിങ്ങളുടെ വിലപ്പെട്ട അഭിപ്രായങ്ങളും നിർദ്ദേശങ്ങളും പങ്കിടുക</p>
+  </div>
+</header>
+
+<div class="feedback-container">
+  <div class="grid-2col">
+    <!-- Form -->
+    <div class="glass-card form-card" data-aos="fade-right">
+      <h2><i class="fas fa-pen-alt"></i> അഭിപ്രായം രേഖപ്പെടുത്തുക</h2>
+      <form id="feedbackForm">
+        <div class="input-group">
+          <label><i class="fas fa-user me-2"></i>താങ്കളുടെ പേര്‌ *</label>
+          <input type="text" id="fullName" placeholder="Eg. Muhammed Hadi or Fathima Riya" required>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-users me-2"></i>തരം *</label>
+          <div class="role-selector">
+            <label><input type="radio" name="roleRadio" value="Parent" checked> രക്ഷിതാവ്</label>
+            <label><input type="radio" name="roleRadio" value="Student">  വിദ്യാർത്ഥി</label>
+            <label><input type="radio" name="roleRadio" value="Student">  പൂര്‍വ്വ വിദ്യാർത്ഥി</label>
+          </div>
+        </div>
+        <div class="input-group">
+          <label><i class="fas fa-comment me-2"></i>നിങ്ങളുടെ അഭിപ്രായം / നിർദ്ദേശം *</label>
+          <textarea id="commentMsg" rows="4" placeholder="നിങ്ങളുടെ ആശയങ്ങൾ, മെച്ചപ്പെടുത്തലിനുള്ള നിർദ്ദേശങ്ങൾ..."></textarea>
+        </div>
+        <button type="submit" class="btn-submit" id="submitBtn"><i class="fas fa-paper-plane me-2"></i>ഫീഡ്ബാക്ക് സമർപ്പിക്കുക</button>
+        <div id="formStatus" class="status-msg"></div>
+      </form>
+    </div>
+
+    <!-- Feedback List -->
+    <div class="glass-card entries-card" data-aos="fade-left">
+      <div class="entries-header">
+        <h2><i class="fas fa-list-ul"></i> പുതിയ അഭിപ്രായങ്ങൾ</h2>
+        <button id="loadEntriesBtn" class="refresh-btn"><i class="fas fa-sync-alt me-1"></i> Refresh</button>
+      </div>
+      <div id="commentsContainer" class="comments-list">
+        <div class="text-center p-4"><i class="fas fa-spinner fa-pulse"></i> ഫീഡ്ബാക്ക് ലോഡ് ചെയ്യുന്നു...</div>
+      </div>
+    </div>
+  </div>
+
+
+
+<footer class="modern-footer">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center mb-3">
+          <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="Logo" width="60" class="me-3 rounded">
+          <div><h4 class="mb-0">Noorussalam Madrasa</h4><small>Kambippalam, Kerala Estate</small></div>
+        </div>
+        <p>Providing quality Islamic education since 1989.</p>
+        <div><a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-icon"><i class="fab fa-twitter"></i></a><a href="#" class="social-icon"><i class="fab fa-instagram"></i></a></div>
+      </div>
+      <div class="col-lg-2"><h5>Quick Links</h5><ul class="list-unstyled"><li><a href="#">Home</a></li><li><a href="#">About</a></li><li><a href="#">Gallery</a></li></ul></div>
+      <div class="col-lg-2"><h5>Resources</h5><ul class="list-unstyled"><li><a href="#">Results</a></li><li><a href="#">Library</a></li><li><a href="#">Downloads</a></li></ul></div>
+      <div class="col-lg-4"><h5>Contact</h5><ul class="list-unstyled"><li><i class="fas fa-map-marker-alt me-2"></i> Kambippalam, Kerala Estate</li><li><i class="fas fa-phone me-2"></i> +91 70346 78818</li><li><i class="fas fa-envelope me-2"></i> noorussalam6110@gmail.com</li></ul></div>
+    </div>
+    <div class="text-center mt-4 pt-3 border-top border-secondary"><p class="mb-0">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div>
+  </div>
+</footer>
+
+<a href="https://wa.me/917034678818?text=Hello" class="whatsapp-float" target="_blank">
+  <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" width="26" alt="WhatsApp">
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+  AOS.init({ duration: 800, once: true });
+  document.getElementById('year').textContent = new Date().getFullYear();
+  window.addEventListener('scroll', () => document.querySelector('.navbar').classList.toggle('scrolled', window.scrollY > 20));
+
+  // ========== GOOGLE SHEETS CONFIGURATION ==========
+  // Replace these URLs with your actual Google Apps Script Web App URL after deployment.
+  // If not replaced, the form will show an error and will not save data.
+  const GOOGLE_WRITE_URL = "https://script.google.com/macros/s/AKfycbxJMI6Xw0RFpfE6zgpc8HkXUW-cCHxLgNiQ_kYxYiwHGqqboniK2aPifBuJ56jBtsYB/exec";
+  const GOOGLE_READ_URL = "https://script.google.com/macros/s/AKfycbxJMI6Xw0RFpfE6zgpc8HkXUW-cCHxLgNiQ_kYxYiwHGqqboniK2aPifBuJ56jBtsYB/exec";
+
+  const statusDiv = document.getElementById('formStatus');
+  const commentsDiv = document.getElementById('commentsContainer');
+
+  function setStatus(msg, isError = false) {
+    statusDiv.innerText = msg;
+    statusDiv.style.background = isError ? 'rgba(255,80,80,0.2)' : 'rgba(58,141,243,0.2)';
+    setTimeout(() => { if (statusDiv.innerText === msg) statusDiv.innerText = ''; }, 5000);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+  }
+
+  function renderComments(data) {
+    if (!data || data.length === 0) {
+      commentsDiv.innerHTML = '<div class="text-center p-4"><i class="fas fa-comment-slash"></i> ഇതുവരെ അഭിപ്രായങ്ങളൊന്നുമില്ല.</div>';
+      return;
+    }
+    const sorted = [...data].sort((a,b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+    let html = '';
+    for (let item of sorted) {
+      const name = escapeHtml(item.fullName || 'അജ്ഞാതൻ');
+      const role = escapeHtml(item.role || 'അതിഥി');
+      const roleDisplay = role === 'Parent' ? '👪 രക്ഷിതാവ്' : (role === 'Student' ? '🎓 വിദ്യാർത്ഥി' : role);
+      const comment = escapeHtml(item.comment || '');
+      let dateStr = '';
+      try { dateStr = new Date(item.timestamp).toLocaleString('ml-IN', { dateStyle: 'medium', timeStyle: 'short' }); } catch(e) { dateStr = item.timestamp?.substring(0,16) || ''; }
+      html += `
+        <div class="comment-item">
+          <div class="comment-meta">
+            <span class="comment-name"><i class="fas fa-user-circle"></i> ${name}</span>
+            <span class="comment-badge">${roleDisplay}</span>
+          </div>
+          <div class="comment-text">💬 ${comment}</div>
+          <div class="comment-date"><i class="far fa-clock"></i> ${dateStr}</div>
+        </div>
+      `;
+    }
+    commentsDiv.innerHTML = html;
+  }
+
+  async function fetchFeedback() {
+    if (GOOGLE_READ_URL.includes("YOUR_DEPLOYMENT_ID")) {
+      throw new Error("Google Sheets URL not configured. Please replace the URL with your deployed Apps Script URL.");
+    }
+    const res = await fetch(GOOGLE_READ_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error("Invalid response");
+    return data;
+  }
+
+  async function saveFeedback(fullName, role, comment) {
+    if (GOOGLE_WRITE_URL.includes("YOUR_DEPLOYMENT_ID")) {
+      throw new Error("Google Sheets URL not configured. Please replace the URL with your deployed Apps Script URL.");
+    }
+    const entry = { timestamp: new Date().toISOString(), fullName, role, comment };
+    const res = await fetch(GOOGLE_WRITE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(entry).toString()
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+  }
+
+  async function loadAllComments() {
+    commentsDiv.innerHTML = '<div class="text-center p-4"><i class="fas fa-spinner fa-pulse"></i> ലോഡ് ചെയ്യുന്നു...</div>';
+    try {
+      const data = await fetchFeedback();
+      renderComments(data);
+    } catch (err) {
+      console.error(err);
+      commentsDiv.innerHTML = `<div class="text-center p-4 text-danger"><i class="fas fa-exclamation-triangle"></i> ${err.message}</div>`;
+      setStatus("Error loading feedback: " + err.message, true);
+    }
+  }
+
+  const form = document.getElementById('feedbackForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fullName = document.getElementById('fullName').value.trim();
+    const comment = document.getElementById('commentMsg').value.trim();
+    const role = document.querySelector('input[name="roleRadio"]:checked').value;
+    if (!fullName) return setStatus("❌ പേര് നൽകുക", true);
+    if (!comment) return setStatus("❌ അഭിപ്രായം എഴുതുക", true);
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> സമർപ്പിക്കുന്നു...';
+    try {
+      await saveFeedback(fullName, role, comment);
+      setStatus("✓ ഫീഡ്ബാക്ക് ഗൂഗിൾ ഷീറ്റിൽ സംരക്ഷിച്ചു!");
+      form.reset();
+      document.querySelector('input[value="Parent"]').checked = true;
+      await loadAllComments();
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ പിശക്: " + err.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>ഫീഡ്ബാക്ക് സമർപ്പിക്കുക';
+    }
+  });
+
+  document.getElementById('loadEntriesBtn').addEventListener('click', () => {
+    loadAllComments();
+    setStatus("പുതിയ ഫീഡ്ബാക്ക് ലോഡ് ചെയ്തു");
+  });
+
+  loadAllComments();
+</script>
+</body>
+</html>
