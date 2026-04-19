@@ -144,7 +144,7 @@
     }
     
     function callAppsScript(action, params, callback) {
-        if (currentCallback) delete window[currentCallback];
+        if (currentCallback && window[currentCallback]) delete window[currentCallback];
         const callbackName = "jsonpCallback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
         currentCallback = callbackName;
         
@@ -156,7 +156,9 @@
         let url = `${API_URL}?action=${action}&callback=${callbackName}`;
         if (params) {
             for (let key in params) {
-                url += `&${key}=${encodeURIComponent(params[key])}`;
+                if (params[key] !== undefined && params[key] !== null) {
+                    url += `&${key}=${encodeURIComponent(params[key])}`;
+                }
             }
         }
         
@@ -164,38 +166,53 @@
         script.src = url;
         script.onerror = function() {
             delete window[callbackName];
-            callback({ error: "Network error" });
+            callback({ success: false, error: "Network error - Please check Apps Script deployment" });
         };
         document.head.appendChild(script);
+        setTimeout(() => {
+            if (window[callbackName]) {
+                delete window[callbackName];
+                callback({ success: false, error: "Request timeout" });
+            }
+        }, 15000);
     }
     
     function login() {
         var password = document.getElementById("password").value;
+        if (!password) {
+            alert("Please enter password");
+            return;
+        }
         callAppsScript("verifyAdmin", { password: password }, function(result) {
-            if (result === true || result === "true") {
+            if (result === true || result === "true" || (result && result.success === true)) {
                 document.getElementById("loginBox").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
                 loadDashboard();
             } else {
-                alert("wrong password");
+                alert("Wrong password! Please try again.");
             }
         });
     }
     
     function loadDashboard() {
         callAppsScript("getDashboardData", null, function(data) {
-            dashboardData = data;
-            allRecords = data.records || [];
-            displayStats(data);
-            displayRecords(allRecords);
-            drawChart(data);
+            if (data && data.records) {
+                dashboardData = data;
+                allRecords = data.records || [];
+                displayStats(data);
+                displayRecords(allRecords);
+                drawChart(data);
+            } else {
+                console.error("Failed to load data", data);
+                document.getElementById("statsGrid").innerHTML = '<div class="error">Error loading data. Check console.</div>';
+            }
         });
     }
     
     function displayStats(data) {
         document.getElementById("statsGrid").innerHTML = `
-            <div class="stat-card"><h3>👪 ആകെ രക്ഷിതാക്കൾ</h3><div class="number">${data.totalParents}</div></div>
-            <div class="stat-card"><h3>💰 ആകെ ബാക്കി തുക</h3><div class="number">₹${(data.totalPendingAmount || 0).toLocaleString()}</div></div>
+            <div class="stat-card"><h3>👪 ആകെ രക്ഷിതാക്കൾ</h3><div class="number">${data.totalParents || 0}</div></div>
+            <div class="stat-card"><h3>💰 ആകെ ബാക്കി തുക</h3><div class="number">₹${((data.totalPendingAmount || 0)).toLocaleString()}</div></div>
             <div class="stat-card"><h3>✅ ഫീസ് പൂർത്തിയായവർ</h3><div class="number">${data.parentsFullyPaid || 0}</div></div>
             <div class="stat-card"><h3>⏳ ബാക്കിയുള്ളവർ</h3><div class="number">${data.parentsWithBalance || 0}</div></div>
         `;
@@ -238,12 +255,15 @@
     
     function openEditModal(mobile) {
         var record = allRecords.find(function(r) { return r.mobile === mobile; });
-        if (!record) return;
+        if (!record) {
+            alert("Record not found!");
+            return;
+        }
         
         document.getElementById("editMobile").value = record.mobile;
         document.getElementById("editParentName").value = record.parentName;
-        document.getElementById("editLastPaidMonth").value = record.lastPaidMonth;
-        document.getElementById("editPaidMonths").value = record.paidMonths;
+        document.getElementById("editLastPaidMonth").value = record.lastPaidMonth || "";
+        document.getElementById("editPaidMonths").value = record.paidMonths || 0;
         document.getElementById("editPreviousBalance").value = record.previousBalance || 0;
         document.getElementById("editLastPaidDate").value = record.lastPaidDate || "";
         
@@ -256,13 +276,15 @@
         var parentName = document.getElementById("editParentName").value;
         var lastPaidMonth = document.getElementById("editLastPaidMonth").value;
         var paidMonths = parseInt(document.getElementById("editPaidMonths").value);
-        var previousBalance = parseInt(document.getElementById("editPreviousBalance").value);
+        var previousBalance = parseInt(document.getElementById("editPreviousBalance").value) || 0;
         var lastPaidDate = document.getElementById("editLastPaidDate").value;
         
-        if (!parentName || !lastPaidMonth || !paidMonths) {
+        if (!parentName || !lastPaidMonth || isNaN(paidMonths)) {
             document.getElementById("editResult").innerHTML = '<div class="error">❌ എല്ലാ ഫീൽഡുകളും പൂരിപ്പിക്കുക</div>';
             return;
         }
+        
+        document.getElementById("editResult").innerHTML = '<div class="success">⏳ സേവ് ചെയ്യുന്നു...</div>';
         
         callAppsScript("updateParent", {
             mobile: mobile,
@@ -272,14 +294,15 @@
             previousBalance: previousBalance,
             lastPaidDate: lastPaidDate
         }, function(result) {
-            if (result.success) {
-                document.getElementById("editResult").innerHTML = '<div class="success">✅ ' + result.message + '</div>';
+            if (result && result.success) {
+                document.getElementById("editResult").innerHTML = '<div class="success">✅ ' + (result.message || "വിവരങ്ങൾ അപ്ഡേറ്റ് ചെയ്തു") + '</div>';
                 setTimeout(function() {
                     closeModal();
                     loadDashboard();
-                }, 1000);
+                }, 1500);
             } else {
-                document.getElementById("editResult").innerHTML = '<div class="error">❌ ' + result.message + '</div>';
+                var errorMsg = (result && result.message) ? result.message : "Update failed. Check Apps Script console.";
+                document.getElementById("editResult").innerHTML = '<div class="error">❌ ' + errorMsg + '</div>';
             }
         });
     }
@@ -287,11 +310,11 @@
     function deleteRecord(mobile, parentName) {
         if (confirm(parentName + " ന്റെ വിവരങ്ങൾ ഡിലീറ്റ് ചെയ്യണോ? ഈ പ്രവൃത്തി തിരിച്ചെടുക്കാൻ സാധിക്കില്ല.")) {
             callAppsScript("deleteParent", { mobile: mobile }, function(result) {
-                if (result.success) {
-                    alert("✅ " + result.message);
+                if (result && result.success) {
+                    alert("✅ " + (result.message || "Deleted successfully"));
                     loadDashboard();
                 } else {
-                    alert("❌ " + result.message);
+                    alert("❌ " + (result && result.message ? result.message : "Delete failed"));
                 }
             });
         }
@@ -306,13 +329,15 @@
         var mobile = document.getElementById("newMobile").value;
         var lastPaidMonth = document.getElementById("newLastPaidMonth").value;
         var paidMonths = parseInt(document.getElementById("newPaidMonths").value);
-        var previousBalance = parseInt(document.getElementById("newPreviousBalance").value);
+        var previousBalance = parseInt(document.getElementById("newPreviousBalance").value) || 0;
         var lastPaidDate = document.getElementById("newLastPaidDate").value;
         
-        if (!parentName || mobile.length !== 10 || !lastPaidMonth || !paidMonths) {
+        if (!parentName || mobile.length !== 10 || !lastPaidMonth || isNaN(paidMonths)) {
             document.getElementById("addResult").innerHTML = '<div class="error">❌ എല്ലാ ഫീൽഡുകളും ശരിയായി പൂരിപ്പിക്കുക</div>';
             return;
         }
+        
+        document.getElementById("addResult").innerHTML = '<div class="success">⏳ ചേർക്കുന്നു...</div>';
         
         callAppsScript("addNewParent", {
             parentName: parentName,
@@ -322,8 +347,8 @@
             previousBalance: previousBalance,
             lastPaidDate: lastPaidDate
         }, function(result) {
-            if (result.success) {
-                document.getElementById("addResult").innerHTML = '<div class="success">✅ ' + result.message + '</div>';
+            if (result && result.success) {
+                document.getElementById("addResult").innerHTML = '<div class="success">✅ ' + (result.message || "രക്ഷിതാവിനെ ചേർത്തു") + '</div>';
                 loadDashboard();
                 document.getElementById("newParentName").value = "";
                 document.getElementById("newMobile").value = "";
@@ -331,8 +356,12 @@
                 document.getElementById("newPaidMonths").value = "";
                 document.getElementById("newPreviousBalance").value = "0";
                 document.getElementById("newLastPaidDate").value = "";
+                setTimeout(() => {
+                    document.getElementById("addResult").innerHTML = "";
+                }, 3000);
             } else {
-                document.getElementById("addResult").innerHTML = '<div class="error">❌ ' + result.message + '</div>';
+                var errorMsg = (result && result.message) ? result.message : "Add failed";
+                document.getElementById("addResult").innerHTML = '<div class="error">❌ ' + errorMsg + '</div>';
             }
         });
     }
@@ -355,16 +384,19 @@
     }
     
     function showTab(tab) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        var tabs = document.querySelectorAll('.tab');
+        var contents = document.querySelectorAll('.tab-content');
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        
         if (tab === 'records') {
-            document.querySelector('.tab').classList.add('active');
+            tabs[0].classList.add('active');
             document.getElementById('recordsTab').classList.add('active');
         } else if (tab === 'add') {
-            document.querySelectorAll('.tab')[1].classList.add('active');
+            tabs[1].classList.add('active');
             document.getElementById('addTab').classList.add('active');
         } else if (tab === 'chart') {
-            document.querySelectorAll('.tab')[2].classList.add('active');
+            tabs[2].classList.add('active');
             document.getElementById('chartTab').classList.add('active');
             if (dashboardData) drawChart(dashboardData);
         }
@@ -380,7 +412,6 @@
         });
     }
     
-    // Close modal when clicking outside
     window.onclick = function(event) {
         var modal = document.getElementById("editModal");
         if (event.target === modal) {
