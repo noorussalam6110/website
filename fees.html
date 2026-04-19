@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noorussalam - Fee Dashboard</title>
+    <title>Noorussalam - Fees Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -22,7 +22,6 @@
             align-items: center;
         }
 
-        /* Main Container */
         .container {
             max-width: 500px;
             width: 100%;
@@ -30,21 +29,8 @@
             border-radius: 35px;
             overflow: hidden;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.5s ease;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Header */
         .header {
             background: linear-gradient(135deg, #0a4b2a 0%, #0d5e35 100%);
             padding: 30px 20px;
@@ -72,7 +58,6 @@
             margin-top: 12px;
         }
 
-        /* Content */
         .content {
             padding: 35px 25px;
         }
@@ -86,11 +71,6 @@
             font-weight: 600;
             color: #0a4b2a;
             margin-bottom: 8px;
-        }
-
-        label i {
-            color: #ff9800;
-            margin-right: 8px;
         }
 
         .mobile-wrapper {
@@ -113,8 +93,6 @@
             border: 2px solid #e0e0e0;
             border-radius: 60px;
             outline: none;
-            font-family: monospace;
-            font-size: 1rem;
             transition: all 0.3s;
         }
 
@@ -158,7 +136,7 @@
             text-decoration: none;
         }
 
-        /* Loader */
+        /* Loading Spinner */
         .loader {
             display: none;
             text-align: center;
@@ -180,100 +158,41 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Modal / Popup Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+        /* Result Card - Direct Display (No Modal for Speed) */
+        .result-card {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 25px;
+            background: #f8f9fa;
+            border-left: 6px solid #1b7e42;
             animation: fadeIn 0.3s ease;
         }
 
-        .modal-content {
-            background: white;
-            border-radius: 30px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            animation: slideUp 0.4s ease;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        .result-card.error {
+            background: #ffebee;
+            border-left-color: #c62828;
         }
 
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #0a4b2a 0%, #0d5e35 100%);
-            padding: 20px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 30px 30px 0 0;
-        }
-
-        .modal-header h2 {
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s;
-        }
-
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Boxes Grid */
         .boxes-grid {
-            padding: 25px;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            gap: 12px;
+            margin-top: 10px;
         }
 
         .info-box {
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 18px 12px;
+            background: white;
+            border-radius: 16px;
+            padding: 15px 10px;
             text-align: center;
-            transition: all 0.3s;
-            border: 1px solid #e0e0e0;
-        }
-
-        .info-box:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e8e8e8;
         }
 
         .info-box.full-width {
@@ -281,20 +200,20 @@
         }
 
         .info-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .info-label {
-            font-size: 0.75rem;
-            color: #777;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 1.8rem;
             margin-bottom: 8px;
         }
 
+        .info-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
         .info-value {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #0a4b2a;
             word-break: break-word;
@@ -308,52 +227,31 @@
             color: #2e7d32;
         }
 
-        .error-value {
-            color: #c62828;
-        }
-
-        .whatsapp-box {
+        .whatsapp-btn {
             background: #25D366;
             color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .whatsapp-box:hover {
-            background: #1da851;
-            transform: translateY(-3px);
-        }
-
-        .whatsapp-box .info-value {
-            color: white;
-        }
-
-        .whatsapp-box .info-label {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .message-box {
-            background: #e8f5e9;
-            border-radius: 15px;
-            padding: 15px;
-            margin: 0 25px 25px 25px;
+            padding: 12px;
+            border-radius: 50px;
             text-align: center;
-            font-size: 0.9rem;
-            border-left: 4px solid #1b7e42;
+            margin-top: 15px;
+            display: block;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
         }
 
-        /* Responsive */
+        .whatsapp-btn:hover {
+            background: #1da851;
+            transform: scale(1.02);
+        }
+
         @media (max-width: 480px) {
             .boxes-grid {
                 grid-template-columns: 1fr;
-                gap: 12px;
-                padding: 20px;
+                gap: 10px;
             }
             .info-box.full-width {
                 grid-column: span 1;
-            }
-            .modal-header h2 {
-                font-size: 1.1rem;
             }
         }
     </style>
@@ -364,16 +262,14 @@
     <div class="header">
         <h1>നൂറുസ്സലാം മദ്രസ</h1>
         <p>കമ്പിപ്പാലം</p>
-        <div class="badge">
-            <i class="fas fa-mosque"></i> ഫീസ് വിവര സംവിധാനം
-        </div>
+        <div class="badge">ഫീസ് വിവര സംവിധാനം</div>
     </div>
 
     <div class="content">
         <div class="input-group">
-            <label><i class="fas fa-phone-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</label>
+            <label>📱 രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</label>
             <div class="mobile-wrapper">
-                <i class="fas fa-mobile-alt"></i>
+                <i>📞</i>
                 <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off">
             </div>
         </div>
@@ -386,32 +282,20 @@
             <div class="spinner"></div>
             <p>ദയവായി കാത്തിരിക്കുക...</p>
         </div>
+
+        <div id="result"></div>
     </div>
 
     <div class="footer">
-        <a href="admin.html" style="color:#0a4b2a; text-decoration:none;">🔐 അഡ്മിൻ ലോഗിൻ</a> | നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം © 2026
-    </div>
-</div>
-
-<!-- Modal / Popup for Fee Details -->
-<div id="feeModal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>
-                <span>📋</span> ഫീസ് വിവരം
-            </h2>
-            <button class="close-btn" onclick="closeModal()">&times;</button>
-        </div>
-        <div id="modalBody">
-            <!-- Dynamic content will be inserted here -->
-        </div>
+        <a href="admin.html">🔐 അഡ്മിൻ ലോഗിൻ</a> | നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം © 2026
     </div>
 </div>
 
 <script>
+    // ========== CONFIGURATION ==========
     const API_URL = "https://script.google.com/macros/s/AKfycbyjXo3a8DBgjaTKiMQEwQqLmd-bxXa8KorSHCWnDAloVUFohs3bPVNUPgiYFlWTQtLr/exec";
     
-    // Malayalam months mapping
+    // Malayalam months
     const malayalamMonths = {
         "January": "ജനുവരി", "February": "ഫെബ്രുവരി", "March": "മാർച്ച്",
         "April": "ഏപ്രിൽ", "May": "മേയ്", "June": "ജൂൺ",
@@ -422,6 +306,7 @@
     function formatDateToMalayalam(dateString) {
         if (!dateString) return "വിവരം ലഭ്യമല്ല";
         
+        // If already in Malayalam format
         for (var key in malayalamMonths) {
             if (dateString.includes(key)) {
                 return dateString.replace(key, malayalamMonths[key]);
@@ -434,20 +319,21 @@
             
             var monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
                               "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
-            var month = monthNames[date.getUTCMonth()];
-            var year = date.getUTCFullYear();
+            var month = monthNames[date.getMonth()];
+            var year = date.getFullYear();
             return month + " " + year;
         } catch(e) {
             return dateString;
         }
     }
     
-    let currentCallback = null;
+    let currentRequest = null;
     
-    function checkFee() {
+    async function checkFee() {
         const mobile = document.getElementById("mobile").value.trim();
+        
         if (mobile.length !== 10 || isNaN(mobile)) {
-            alert("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.");
+            showError("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.");
             return;
         }
         
@@ -455,38 +341,62 @@
         btn.disabled = true;
         btn.style.opacity = "0.7";
         document.getElementById("loader").style.display = "block";
+        document.getElementById("result").innerHTML = "";
         
-        if (currentCallback) delete window[currentCallback];
-        const callbackName = "jsonpCallback_" + Date.now();
-        currentCallback = callbackName;
+        // Cancel previous request if any
+        if (currentRequest) {
+            currentRequest.abort();
+        }
         
-        window[callbackName] = function(data) {
-            delete window[callbackName];
-            btn.disabled = false;
-            btn.style.opacity = "1";
-            document.getElementById("loader").style.display = "none";
-            if (data && data.success !== undefined) {
-                showModal(data);
-            } else {
-                alert("വിവരങ്ങൾ ലഭ്യമല്ല. ദയവായി പിന്നീട് ശ്രമിക്കുക.");
+        // Use fetch with timeout (faster than JSONP)
+        const controller = new AbortController();
+        currentRequest = controller;
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        try {
+            const url = `${API_URL}?mobile=${encodeURIComponent(mobile)}`;
+            console.log("Fetching:", url);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                signal: controller.signal,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
-        };
-        
-        const script = document.createElement("script");
-        script.src = `${API_URL}?mobile=${encodeURIComponent(mobile)}&callback=${callbackName}`;
-        script.onerror = function() {
-            delete window[callbackName];
+            
+            const data = await response.json();
+            console.log("Response:", data);
+            
+            if (data && data.success !== undefined) {
+                displayResult(data);
+            } else {
+                showError("വിവരങ്ങൾ ലഭ്യമല്ല.");
+            }
+            
+        } catch (err) {
+            console.error("Error:", err);
+            if (err.name === 'AbortError') {
+                showError("സമയം കഴിഞ്ഞു. ഇൻറർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുക.");
+            } else {
+                showError("സെർവറുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല. \nApps Script 'Anyone' ആയി deploy ചെയ്തിട്ടുണ്ടോ?");
+            }
+        } finally {
+            currentRequest = null;
             btn.disabled = false;
             btn.style.opacity = "1";
             document.getElementById("loader").style.display = "none";
-            alert("സെർവറുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല.");
-        };
-        document.head.appendChild(script);
+        }
     }
     
-    function showModal(data) {
-        const modal = document.getElementById("feeModal");
-        const modalBody = document.getElementById("modalBody");
+    function displayResult(data) {
+        const resultDiv = document.getElementById("result");
         
         if (data.success) {
             const formattedLastPaidMonth = formatDateToMalayalam(data.lastPaidMonth);
@@ -496,78 +406,69 @@
             const whatsappMsg = `നമസ്കാരം ${data.parentName}%0A%0A📖 *നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം*%0A💰 *ബാക്കി തുക:* ₹${totalPending}%0A📅 *അവസാനം അടച്ച മാസം:* ${formattedLastPaidMonth}%0A%0Aദയവായി നിങ്ങളുടെ ഫീസ് അടക്കുക.%0A🙏 നന്ദി.`;
             const whatsappLink = `https://wa.me/91${data.mobile}?text=${whatsappMsg}`;
             
-            modalBody.innerHTML = `
-                <div class="boxes-grid">
-                    <!-- Parent Name Box -->
-                    <div class="info-box full-width">
-                        <div class="info-icon">👪</div>
-                        <div class="info-label">രക്ഷിതാവിൻ്റെ പേര്</div>
-                        <div class="info-value">${escapeHtml(data.parentName)}</div>
-                    </div>
-                    
-                    <!-- Last Paid Month Box -->
-                    <div class="info-box">
-                        <div class="info-icon">📅</div>
-                        <div class="info-label">അവസാനം അടച്ച മാസം</div>
-                        <div class="info-value">${escapeHtml(formattedLastPaidMonth)}</div>
-                    </div>
-                    
-                    <!-- Paid Months Box -->
-                    <div class="info-box">
-                        <div class="info-icon">✅</div>
-                        <div class="info-label">അടച്ച മാസങ്ങൾ</div>
-                        <div class="info-value">${data.paidMonths} മാസങ്ങൾ</div>
-                    </div>
-                    
-                    <!-- Pending Months Box -->
-                    <div class="info-box">
-                        <div class="info-icon">⏳</div>
-                        <div class="info-label">ബാക്കി മാസങ്ങൾ</div>
-                        <div class="info-value">${data.pendingMonths} മാസങ്ങൾ</div>
-                    </div>
-                    
-                    <!-- Current Month Fee Box -->
-                    <div class="info-box">
-                        <div class="info-icon">💰</div>
-                        <div class="info-label">ബാക്കി മാസത്തെ തുക</div>
-                        <div class="info-value">₹ ${currentMonthFee.toLocaleString()}</div>
-                    </div>
-                    
-                    <!-- Previous Balance Box -->
-                    <div class="info-box">
-                        <div class="info-icon">📜</div>
-                        <div class="info-label">മുൻപത്തെ ബാക്കി</div>
-                        <div class="info-value">₹ ${(data.previousBalance || 0).toLocaleString()}</div>
-                    </div>
-                    
-                    <!-- Total Pending Box -->
-                    <div class="info-box full-width">
-                        <div class="info-icon">📊</div>
-                        <div class="info-label">ആകെ ബാക്കി തുക</div>
-                        <div class="info-value ${totalPending > 0 ? 'pending-value' : 'success-value'}" style="font-size:1.5rem;">
-                            ${totalPending > 0 ? '⏳ ₹ ' + totalPending.toLocaleString() : '✅ ഫീസ് പൂർണ്ണമായി അടച്ചു'}
+            resultDiv.innerHTML = `
+                <div class="result-card">
+                    <div class="boxes-grid">
+                        <div class="info-box full-width">
+                            <div class="info-icon">👪</div>
+                            <div class="info-label">രക്ഷിതാവിൻ്റെ പേര്</div>
+                            <div class="info-value">${escapeHtml(data.parentName)}</div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="info-icon">📅</div>
+                            <div class="info-label">അവസാനം അടച്ച മാസം</div>
+                            <div class="info-value">${escapeHtml(formattedLastPaidMonth)}</div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="info-icon">✅</div>
+                            <div class="info-label">അടച്ച മാസങ്ങൾ</div>
+                            <div class="info-value">${data.paidMonths} മാസം</div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="info-icon">⏳</div>
+                            <div class="info-label">ബാക്കി മാസങ്ങൾ</div>
+                            <div class="info-value">${data.pendingMonths} മാസം</div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="info-icon">💰</div>
+                            <div class="info-label">ബാക്കി മാസത്തെ തുക</div>
+                            <div class="info-value">₹ ${currentMonthFee.toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <div class="info-icon">📜</div>
+                            <div class="info-label">മുൻപത്തെ ബാക്കി</div>
+                            <div class="info-value">₹ ${(data.previousBalance || 0).toLocaleString()}</div>
+                        </div>
+                        
+                        <div class="info-box full-width">
+                            <div class="info-icon">📊</div>
+                            <div class="info-label">ആകെ ബാക്കി തുക</div>
+                            <div class="info-value ${totalPending > 0 ? 'pending-value' : 'success-value'}" style="font-size:1.4rem;">
+                                ${totalPending > 0 ? '⏳ ₹ ' + totalPending.toLocaleString() : '✅ ഫീസ് പൂർണ്ണമായി അടച്ചു'}
+                            </div>
+                        </div>
+                        
+                        <div class="info-box full-width">
+                            <div class="info-icon">💬</div>
+                            <div class="info-label">സന്ദേശം</div>
+                            <div class="info-value">${escapeHtml(data.message)}</div>
                         </div>
                     </div>
                     
-                    <!-- Message Box -->
-                    <div class="info-box full-width">
-                        <div class="info-icon">💬</div>
-                        <div class="info-label">സന്ദേശം</div>
-                        <div class="info-value">${escapeHtml(data.message)}</div>
-                    </div>
-                    
-                    <!-- WhatsApp Box -->
-                    <div class="info-box full-width whatsapp-box" onclick="window.open('${whatsappLink}', '_blank')">
-                        <div class="info-icon">📱</div>
-                        <div class="info-label">WhatsApp-ൽ വിവരം ലഭിക്കുക</div>
-                        <div class="info-value">📲 ക്ലിക്ക് ചെയ്യുക</div>
-                    </div>
+                    <a href="${whatsappLink}" target="_blank" class="whatsapp-btn">
+                        📱 WhatsApp-ൽ വിവരം ലഭിക്കുക
+                    </a>
                 </div>
             `;
         } else {
-            modalBody.innerHTML = `
-                <div class="boxes-grid">
-                    <div class="info-box full-width" style="background:#ffebee; border-color:#c62828;">
+            resultDiv.innerHTML = `
+                <div class="result-card error">
+                    <div class="info-box full-width" style="background:transparent;">
                         <div class="info-icon">❌</div>
                         <div class="info-label">പിശക്</div>
                         <div class="info-value error-value">${escapeHtml(data.message)}</div>
@@ -576,11 +477,21 @@
             `;
         }
         
-        modal.style.display = "flex";
+        // Scroll to result
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
-    function closeModal() {
-        document.getElementById("feeModal").style.display = "none";
+    function showError(msg) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `
+            <div class="result-card error">
+                <div class="info-box full-width" style="background:transparent;">
+                    <div class="info-icon">⚠️</div>
+                    <div class="info-label">പിശക്</div>
+                    <div class="info-value error-value">${escapeHtml(msg)}</div>
+                </div>
+            </div>
+        `;
     }
     
     function escapeHtml(str) {
@@ -601,14 +512,8 @@
     });
     
     document.getElementById("mobile").focus();
-    
-    // Close modal on outside click
-    window.onclick = function(event) {
-        const modal = document.getElementById("feeModal");
-        if (event.target === modal) {
-            closeModal();
-        }
-    }
+    console.log("✅ Madrasa Fee Checker Ready (Fetch Mode)");
+    console.log("📡 API URL:", API_URL);
 </script>
 </body>
 </html>
