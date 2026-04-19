@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>അഡ്മിൻ ഡാഷ്ബോർഡ് - നൂറുസ്സലാം മദ്രസ</title>
+    <title>Admin Dashboard - Noorussalam</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -37,13 +37,13 @@
     <div class="login-box" id="loginBox">
         <h2>🔐 അഡ്മിൻ ലോഗിൻ</h2>
         <p style="color:#666; margin-bottom:15px;">നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം</p>
-        <input type="password" id="password" placeholder="പാസ്വേഡ്">
+        <input type="password" id="password" placeholder="Password">
         <button onclick="login()">പ്രവേശിക്കുക</button>
     </div>
     
     <div id="dashboard" style="display:none">
         <div class="header">
-            <h1>📊 നൂറുസ്സലാം മദ്രസ - അഡ്മിൻ ഡാഷ്ബോർഡ്</h1>
+            <h1>നൂറുസ്സലാം മദ്രസ - അഡ്മിൻ ഡാഷ്ബോർഡ്</h1>
             <p>കമ്പിപ്പാലം - ഫീസ് മാനേജ്മെന്റ് സിസ്റ്റം</p>
         </div>
         
@@ -70,7 +70,7 @@
             <h3>➕ പുതിയ രക്ഷിതാവ് ചേർക്കുക</h3>
             <input type="text" id="newParentName" placeholder="രക്ഷിതാവിൻ്റെ പേര്">
             <input type="tel" id="newMobile" placeholder="മൊബൈൽ നമ്പർ (10 അക്കം)">
-            <input type="text" id="newLastPaidMonth" placeholder="അവസാനം അടച്ച മാസം (ഉദാ: ഏപ്രിൽ 2026)">
+            <input type="text" id="newLastPaidMonth" placeholder="അവസാനം അടച്ച മാസം (ഉദാ: മാർച്ച് 2026)">
             <input type="number" id="newPaidMonths" placeholder="അടച്ച മാസങ്ങളുടെ എണ്ണം">
             <input type="number" id="newPreviousBalance" placeholder="മുൻപത്തെ ബാക്കി (₹)" value="0">
             <input type="date" id="newLastPaidDate" placeholder="അവസാന തീയതി">
@@ -82,16 +82,44 @@
             <canvas id="feeChart" width="400" height="200"></canvas>
         </div>
         
-        <a href="index.html" class="back-link">← രക്ഷിതാക്കളുടെ പേജിലേക്ക് മടങ്ങുക</a>
+        <a href="fees.html" class="back-link">← രക്ഷിതാക്കളുടെ പേജിലേക്ക് മടങ്ങുക</a>
     </div>
 </div>
 
 <script>
     // ⚠️ IMPORTANT: Replace with your Apps Script URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbyLCpOgCeKsyC3yRuIxTQRd6JFyUcptA8VWE8ER13pMSmNQ5Ef7iud55iHBGY3R_CktnQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwObe0gS3BrQ6ZzJr4oBXZo6fzUy2OahmRwYkEPmqef0hx6bv9sKwdBkX-IcxfRpRXYOQ/exec";
     
     let dashboardData = null;
     let currentCallback = null;
+    
+    // Malayalam months mapping for date formatting
+    function formatDateToMalayalam(dateString) {
+        if (!dateString) return "വിവരം ലഭ്യമല്ല";
+        
+        // If already in readable format, return as is
+        if (dateString.includes("ജനുവരി") || dateString.includes("ഫെബ്രുവരി") || 
+            dateString.includes("മാർച്ച്") || dateString.includes("ഏപ്രിൽ") ||
+            dateString.includes("മേയ്") || dateString.includes("ജൂൺ") ||
+            dateString.includes("ജൂലൈ") || dateString.includes("ഓഗസ്റ്റ്") ||
+            dateString.includes("സെപ്റ്റംബർ") || dateString.includes("ഒക്ടോബർ") ||
+            dateString.includes("നവംബർ") || dateString.includes("ഡിസംബർ")) {
+            return dateString;
+        }
+        
+        try {
+            var date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            var monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
+                              "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
+            var month = monthNames[date.getUTCMonth()];
+            var year = date.getUTCFullYear();
+            return month + " " + year;
+        } catch(e) {
+            return dateString;
+        }
+    }
     
     function callAppsScript(action, params, callback) {
         if (currentCallback) delete window[currentCallback];
@@ -103,7 +131,7 @@
             callback(data);
         };
         
-        let url = `${API_URL}?${action}&callback=${callbackName}`;
+        let url = `${API_URL}?action=${action}&callback=${callbackName}`;
         if (params) {
             for (let key in params) {
                 url += `&${key}=${encodeURIComponent(params[key])}`;
@@ -121,7 +149,7 @@
     
     function login() {
         var password = document.getElementById("password").value;
-        callAppsScript("action=verifyAdmin", { password: password }, function(result) {
+        callAppsScript("verifyAdmin", { password: password }, function(result) {
             if (result === true || result === "true") {
                 document.getElementById("loginBox").style.display = "none";
                 document.getElementById("dashboard").style.display = "block";
@@ -133,7 +161,7 @@
     }
     
     function loadDashboard() {
-        callAppsScript("action=getDashboardData", null, function(data) {
+        callAppsScript("getDashboardData", null, function(data) {
             dashboardData = data;
             displayStats(data);
             displayRecords(data.records);
@@ -156,17 +184,18 @@
         var html = "";
         for (var i = 0; i < records.length; i++) {
             var r = records[i];
+            var formattedMonth = formatDateToMalayalam(r.lastPaidMonth);
             var whatsappLink = `https://wa.me/91${r.mobile}?text=നമസ്കാരം%20${encodeURIComponent(r.parentName)}%2C%20നിങ്ങളുടെ%20ബാക്കി%20തുക%20₹${r.totalPending}%20ആണ്`;
             html += `<tr>
                 <td>${r.parentName}</td>
                 <td>${r.mobile}</td>
-                <td>${r.lastPaidMonth}</td>
+                <td>${formattedMonth}</td>
                 <td>${r.paidMonths}</td>
                 <td>${r.pendingMonths}</td>
                 <td>₹${r.previousBalance}</td>
                 <td style="color:${r.totalPending>0?'#c62828':'#2e7d32'}">₹${r.totalPending}</td>
                 <td><a href="${whatsappLink}" target="_blank" class="whatsapp-btn">📱 WhatsApp</a></td>
-            </td>`;
+            </tr>`;
         }
         document.getElementById("recordsBody").innerHTML = html;
     }
@@ -201,7 +230,7 @@
             return;
         }
         
-        callAppsScript("action=addNewParent", {
+        callAppsScript("addNewParent", {
             parentName: parentName,
             mobile: mobile,
             lastPaidMonth: lastPaidMonth,
