@@ -3,57 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noorussalam-fee dashboard</title>
+    <title>Noorussalam - Fee Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Anek Malayalam',sans-serif;background:linear-gradient(135deg,#0b5e2e 0%,#1b7e42 100%);min-height:100vh;padding:20px;display:flex;justify-content:center;align-items:center}
-        .container{max-width:500px;width:100%;background:white;border-radius:35px;overflow:hidden;box-shadow:0 25px 50px rgba(0,0,0,0.3);animation:fadeIn 0.5s ease}
-        @keyframes fadeIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-        .header{background:linear-gradient(135deg,#0a4b2a 0%,#0d5e35 100%);padding:30px 20px;text-align:center;color:white}
-        .header h1{font-size:1.8rem;font-weight:700}
-        .badge{background:#ff9800;display:inline-block;padding:5px 15px;border-radius:30px;font-size:0.75rem;margin-top:12px}
-        .content{padding:35px 25px}
-        input{width:100%;padding:15px 18px;font-size:1rem;border:2px solid #e0e0e0;border-radius:60px;text-align:center;margin:10px 0}
-        button{width:100%;padding:15px;background:linear-gradient(135deg,#0a4b2a 0%,#1b7e42 100%);color:white;border:none;border-radius:60px;font-size:1.1rem;font-weight:600;cursor:pointer;transition:0.3s}
-        button:hover{transform:translateY(-2px)}
-        .result-card{margin-top:25px;padding:20px;border-radius:25px;background:#f8f9fa;border-left:6px solid #1b7e42}
-        .result-card.error{background:#ffebee;border-left-color:#c62828}
-        .detail-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px dashed #ddd}
-        .detail-label{font-weight:600;color:#555}
-        .detail-value{color:#0a4b2a;font-weight:500;text-align:right}
-        .pending-badge{background:#ff9800;color:white;padding:4px 12px;border-radius:30px;font-size:0.8rem}
-        .success-badge{background:#2e7d32;color:white;padding:4px 12px;border-radius:30px;font-size:0.8rem}
-        .message-box{margin-top:15px;padding:12px;background:#e8f5e9;border-radius:15px;text-align:center}
-        .whatsapp-btn{background:#25D366;color:white;padding:12px;border-radius:60px;text-align:center;margin-top:15px;display:block;text-decoration:none;font-weight:600}
-        .footer{text-align:center;padding:18px;background:#f1f1f1;font-size:0.7rem}
-        .loader{display:none;text-align:center;padding:20px}
-        .spinner{width:40px;height:40px;border:3px solid #f3f3f3;border-top:3px solid #1b7e42;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
-        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        @media (max-width:480px){.detail-row{flex-direction:column;align-items:flex-start;gap:5px}.detail-value{text-align:left}}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Anek Malayalam', sans-serif;
+            background: linear-gradient(135deg, #0b5e2e 0%, #1b7e42 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            border-radius: 35px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0a4b2a 0%, #0d5e35 100%);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        .badge {
+            background: #ff9800;
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            margin-top: 12px;
+        }
+
+        /* Content */
+        .content {
+            padding: 35px 25px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #0a4b2a;
+            margin-bottom: 8px;
+        }
+
+        label i {
+            color: #ff9800;
+            margin-right: 8px;
+        }
+
+        .mobile-wrapper {
+            position: relative;
+        }
+
+        .mobile-wrapper i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 18px 15px 48px;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 60px;
+            outline: none;
+            font-family: monospace;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: #1b7e42;
+            box-shadow: 0 0 0 3px rgba(27, 126, 66, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #0a4b2a 0%, #1b7e42 100%);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(11, 94, 46, 0.3);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 18px;
+            background: #f1f1f1;
+            font-size: 0.7rem;
+            color: #777;
+        }
+
+        .footer a {
+            color: #0a4b2a;
+            text-decoration: none;
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1b7e42;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal / Popup Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #0a4b2a 0%, #0d5e35 100%);
+            padding: 20px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 30px 30px 0 0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        /* Boxes Grid */
+        .boxes-grid {
+            padding: 25px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 18px 12px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+
+        .info-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-box.full-width {
+            grid-column: span 2;
+        }
+
+        .info-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: #777;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #0a4b2a;
+            word-break: break-word;
+        }
+
+        .pending-value {
+            color: #ff9800;
+        }
+
+        .success-value {
+            color: #2e7d32;
+        }
+
+        .error-value {
+            color: #c62828;
+        }
+
+        .whatsapp-box {
+            background: #25D366;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .whatsapp-box:hover {
+            background: #1da851;
+            transform: translateY(-3px);
+        }
+
+        .whatsapp-box .info-value {
+            color: white;
+        }
+
+        .whatsapp-box .info-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .message-box {
+            background: #e8f5e9;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 0 25px 25px 25px;
+            text-align: center;
+            font-size: 0.9rem;
+            border-left: 4px solid #1b7e42;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .boxes-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                padding: 20px;
+            }
+            .info-box.full-width {
+                grid-column: span 1;
+            }
+            .modal-header h2 {
+                font-size: 1.1rem;
+            }
+        }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="header">
         <h1>നൂറുസ്സലാം മദ്രസ</h1>
         <p>കമ്പിപ്പാലം</p>
-        <div class="badge"> ഫീസ് വിവര സംവിധാനം</div>
+        <div class="badge">
+            <i class="fas fa-mosque"></i> ഫീസ് വിവര സംവിധാനം
+        </div>
     </div>
+
     <div class="content">
-        <input type="tel" id="mobile" placeholder="മൊബൈൽ നമ്പർ" maxlength="10">
-        <button onclick="checkFee()">🔍 പരിശോധിക്കുക</button>
-        <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
-        <div id="result"></div>
+        <div class="input-group">
+            <label><i class="fas fa-phone-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</label>
+            <div class="mobile-wrapper">
+                <i class="fas fa-mobile-alt"></i>
+                <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off">
+            </div>
+        </div>
+
+        <button onclick="checkFee()" id="checkBtn">
+            🔍 പരിശോധിക്കുക
+        </button>
+
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p>ദയവായി കാത്തിരിക്കുക...</p>
+        </div>
     </div>
+
     <div class="footer">
         <a href="admin.html" style="color:#0a4b2a; text-decoration:none;">🔐 അഡ്മിൻ ലോഗിൻ</a> | നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം © 2026
     </div>
 </div>
 
+<!-- Modal / Popup for Fee Details -->
+<div id="feeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>
+                <span>📋</span> ഫീസ് വിവരം
+            </h2>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modalBody">
+            <!-- Dynamic content will be inserted here -->
+        </div>
+    </div>
+</div>
+
 <script>
-    // ⚠️ IMPORTANT: Replace with your Apps Script URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbwObe0gS3BrQ6ZzJr4oBXZo6fzUy2OahmRwYkEPmqef0hx6bv9sKwdBkX-IcxfRpRXYOQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyjXo3a8DBgjaTKiMQEwQqLmd-bxXa8KorSHCWnDAloVUFohs3bPVNUPgiYFlWTQtLr/exec";
     
     // Malayalam months mapping
     const malayalamMonths = {
@@ -63,19 +419,13 @@
         "October": "ഒക്ടോബർ", "November": "നവംബർ", "December": "ഡിസംബർ"
     };
     
-    // Function to format date from ISO to Malayalam
     function formatDateToMalayalam(dateString) {
         if (!dateString) return "വിവരം ലഭ്യമല്ല";
         
-        // If already in readable format (like "മാർച്ച് 2026"), return as is
-        if (/[A-Za-z]/.test(dateString) && !dateString.includes('T')) {
-            // Check if it already has Malayalam month
-            for (var key in malayalamMonths) {
-                if (dateString.includes(key)) {
-                    return dateString;
-                }
+        for (var key in malayalamMonths) {
+            if (dateString.includes(key)) {
+                return dateString.replace(key, malayalamMonths[key]);
             }
-            return dateString;
         }
         
         try {
@@ -92,38 +442,19 @@
         }
     }
     
-    // Function to format date for display (full date)
-    function formatFullDateToMalayalam(dateString) {
-        if (!dateString) return "വിവരം ലഭ്യമല്ല";
-        
-        try {
-            var date = new Date(dateString);
-            if (isNaN(date.getTime())) return dateString;
-            
-            var monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
-                              "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
-            var month = monthNames[date.getUTCMonth()];
-            var year = date.getUTCFullYear();
-            var day = date.getUTCDate();
-            return day + " " + month + " " + year;
-        } catch(e) {
-            return dateString;
-        }
-    }
-    
     let currentCallback = null;
     
     function checkFee() {
         const mobile = document.getElementById("mobile").value.trim();
         if (mobile.length !== 10 || isNaN(mobile)) {
-            showError("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.");
+            alert("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.");
             return;
         }
-        const btn = document.querySelector("button");
+        
+        const btn = document.getElementById("checkBtn");
         btn.disabled = true;
         btn.style.opacity = "0.7";
         document.getElementById("loader").style.display = "block";
-        document.getElementById("result").innerHTML = "";
         
         if (currentCallback) delete window[currentCallback];
         const callbackName = "jsonpCallback_" + Date.now();
@@ -135,9 +466,9 @@
             btn.style.opacity = "1";
             document.getElementById("loader").style.display = "none";
             if (data && data.success !== undefined) {
-                showResult(data);
+                showModal(data);
             } else {
-                showError("Invalid response from server");
+                alert("വിവരങ്ങൾ ലഭ്യമല്ല. ദയവായി പിന്നീട് ശ്രമിക്കുക.");
             }
         };
         
@@ -148,45 +479,108 @@
             btn.disabled = false;
             btn.style.opacity = "1";
             document.getElementById("loader").style.display = "none";
-            showError("സെർവറുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല. Apps Script URL ശരിയാണോ എന്ന് പരിശോധിക്കുക.");
+            alert("സെർവറുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല.");
         };
         document.head.appendChild(script);
     }
     
-    function showResult(data) {
-        const resultDiv = document.getElementById("result");
+    function showModal(data) {
+        const modal = document.getElementById("feeModal");
+        const modalBody = document.getElementById("modalBody");
+        
         if (data.success) {
-            // Format dates to Malayalam
             const formattedLastPaidMonth = formatDateToMalayalam(data.lastPaidMonth);
-            const formattedLastPaidDate = formatFullDateToMalayalam(data.lastPaidDate);
-            
             const currentMonthFee = (data.pendingMonths || 0) * 200;
-            const badge = data.totalPending == 0 
-                ? '<span class="success-badge">✅ ഫീസ് പൂർണ്ണമായി അടച്ചു</span>'
-                : `<span class="pending-badge">⏳ ${data.totalPending.toLocaleString()} രൂപ ബാക്കി</span>`;
+            const totalPending = data.totalPending || 0;
             
-            const whatsappMsg = `നമസ്കാരം ${data.parentName}%0A%0A📖 *നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം*%0A💰 *ബാക്കി തുക:* ₹${data.totalPending}%0A📅 *അവസാനം അടച്ച മാസം:* ${formattedLastPaidMonth}%0A%0Aദയവായി നിങ്ങളുടെ ഫീസ് അടക്കുക.%0A🙏 നന്ദി.`;
+            const whatsappMsg = `നമസ്കാരം ${data.parentName}%0A%0A📖 *നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം*%0A💰 *ബാക്കി തുക:* ₹${totalPending}%0A📅 *അവസാനം അടച്ച മാസം:* ${formattedLastPaidMonth}%0A%0Aദയവായി നിങ്ങളുടെ ഫീസ് അടക്കുക.%0A🙏 നന്ദി.`;
             const whatsappLink = `https://wa.me/91${data.mobile}?text=${whatsappMsg}`;
             
-            resultDiv.innerHTML = `
-                <div class="result-card">
-                    <h4>📋 ഫീസ് വിവരം</h4>
-                    <div class="detail-row"><span class="detail-label">👪 രക്ഷിതാവ്</span><span class="detail-value">${escapeHtml(data.parentName)}</span></div>
-                    <div class="detail-row"><span class="detail-label">📅 അവസാനം അടച്ച മാസം</span><span class="detail-value">${escapeHtml(formattedLastPaidMonth)}</span></div>
-                    <div class="detail-row"><span class="detail-label">✅ അടച്ച മാസങ്ങൾ</span><span class="detail-value">${data.paidMonths}</span></div>
-                    <div class="detail-row"><span class="detail-label">⏳ ബാക്കി മാസങ്ങൾ</span><span class="detail-value">${data.pendingMonths} (${currentMonthFee.toLocaleString()} രൂപ)</span></div>
-                    <div class="detail-row"><span class="detail-label">💰 മുൻപത്തെ ബാക്കി</span><span class="detail-value">₹${data.previousBalance.toLocaleString()}</span></div>
-                    <div class="detail-row"><span class="detail-label">📊 ആകെ ബാക്കി</span><span class="detail-value">${badge}</span></div>
-                    <div class="message-box">${escapeHtml(data.message)}</div>
-                    <a href="${whatsappLink}" target="_blank" class="whatsapp-btn">📱 WhatsApp-ൽ വിവരം ലഭിക്കുക</a>
-                </div>`;
+            modalBody.innerHTML = `
+                <div class="boxes-grid">
+                    <!-- Parent Name Box -->
+                    <div class="info-box full-width">
+                        <div class="info-icon">👪</div>
+                        <div class="info-label">രക്ഷിതാവിൻ്റെ പേര്</div>
+                        <div class="info-value">${escapeHtml(data.parentName)}</div>
+                    </div>
+                    
+                    <!-- Last Paid Month Box -->
+                    <div class="info-box">
+                        <div class="info-icon">📅</div>
+                        <div class="info-label">അവസാനം അടച്ച മാസം</div>
+                        <div class="info-value">${escapeHtml(formattedLastPaidMonth)}</div>
+                    </div>
+                    
+                    <!-- Paid Months Box -->
+                    <div class="info-box">
+                        <div class="info-icon">✅</div>
+                        <div class="info-label">അടച്ച മാസങ്ങൾ</div>
+                        <div class="info-value">${data.paidMonths} മാസങ്ങൾ</div>
+                    </div>
+                    
+                    <!-- Pending Months Box -->
+                    <div class="info-box">
+                        <div class="info-icon">⏳</div>
+                        <div class="info-label">ബാക്കി മാസങ്ങൾ</div>
+                        <div class="info-value">${data.pendingMonths} മാസങ്ങൾ</div>
+                    </div>
+                    
+                    <!-- Current Month Fee Box -->
+                    <div class="info-box">
+                        <div class="info-icon">💰</div>
+                        <div class="info-label">ബാക്കി മാസത്തെ തുക</div>
+                        <div class="info-value">₹ ${currentMonthFee.toLocaleString()}</div>
+                    </div>
+                    
+                    <!-- Previous Balance Box -->
+                    <div class="info-box">
+                        <div class="info-icon">📜</div>
+                        <div class="info-label">മുൻപത്തെ ബാക്കി</div>
+                        <div class="info-value">₹ ${(data.previousBalance || 0).toLocaleString()}</div>
+                    </div>
+                    
+                    <!-- Total Pending Box -->
+                    <div class="info-box full-width">
+                        <div class="info-icon">📊</div>
+                        <div class="info-label">ആകെ ബാക്കി തുക</div>
+                        <div class="info-value ${totalPending > 0 ? 'pending-value' : 'success-value'}" style="font-size:1.5rem;">
+                            ${totalPending > 0 ? '⏳ ₹ ' + totalPending.toLocaleString() : '✅ ഫീസ് പൂർണ്ണമായി അടച്ചു'}
+                        </div>
+                    </div>
+                    
+                    <!-- Message Box -->
+                    <div class="info-box full-width">
+                        <div class="info-icon">💬</div>
+                        <div class="info-label">സന്ദേശം</div>
+                        <div class="info-value">${escapeHtml(data.message)}</div>
+                    </div>
+                    
+                    <!-- WhatsApp Box -->
+                    <div class="info-box full-width whatsapp-box" onclick="window.open('${whatsappLink}', '_blank')">
+                        <div class="info-icon">📱</div>
+                        <div class="info-label">WhatsApp-ൽ വിവരം ലഭിക്കുക</div>
+                        <div class="info-value">📲 ക്ലിക്ക് ചെയ്യുക</div>
+                    </div>
+                </div>
+            `;
         } else {
-            resultDiv.innerHTML = `<div class="result-card error"><h4>❌ കണ്ടെത്തിയില്ല</h4><p>${escapeHtml(data.message)}</p></div>`;
+            modalBody.innerHTML = `
+                <div class="boxes-grid">
+                    <div class="info-box full-width" style="background:#ffebee; border-color:#c62828;">
+                        <div class="info-icon">❌</div>
+                        <div class="info-label">പിശക്</div>
+                        <div class="info-value error-value">${escapeHtml(data.message)}</div>
+                    </div>
+                </div>
+            `;
         }
+        
+        modal.style.display = "flex";
     }
     
-    function showError(msg) {
-        document.getElementById("result").innerHTML = `<div class="result-card error"><h4>⚠️ പിശക്</h4><p>${escapeHtml(msg)}</p></div>`;
+    function closeModal() {
+        document.getElementById("feeModal").style.display = "none";
     }
     
     function escapeHtml(str) {
@@ -199,12 +593,22 @@
         });
     }
     
+    // Enter key support
     document.getElementById("mobile").addEventListener("keypress", function(e) {
-        if (e.key === "Enter") checkFee();
+        if (e.key === "Enter") {
+            checkFee();
+        }
     });
+    
     document.getElementById("mobile").focus();
-    console.log("✅ Madrasa Fee Checker Ready");
-    console.log("📡 API URL:", API_URL);
+    
+    // Close modal on outside click
+    window.onclick = function(event) {
+        const modal = document.getElementById("feeModal");
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
 </script>
 </body>
 </html>
