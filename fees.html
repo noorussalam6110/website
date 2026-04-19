@@ -1,631 +1,543 @@
 <!DOCTYPE html>
 <html lang="ml">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>Noorussalam-fees status</title>
-  
-  <!-- Google Fonts: Anek Malayalam -->
-  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Noorussalam-Fee Pending Status</title>
     
-    body {
-      font-family: 'Anek Malayalam', 'Noto Sans Malayalam', sans-serif;
-      background: linear-gradient(135deg, #0b5e2e 0%, #1b7e42 50%, #0a4b2a 100%);
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
-    }
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    /* Background pattern */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" opacity="0.05"><path fill="white" d="M20,20 L30,20 L25,30 Z M70,70 L80,70 L75,80 Z M50,50 L60,50 L55,60 Z"/></svg>');
-      background-repeat: repeat;
-      pointer-events: none;
-    }
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
-    .container {
-      max-width: 550px;
-      margin: auto;
-      background: #ffffff;
-      border-radius: 40px;
-      overflow: hidden;
-      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.3);
-      position: relative;
-      z-index: 1;
-      animation: fadeInUp 0.6s ease-out;
-    }
-    
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    
-    /* Header Section */
-    .header {
-      background: linear-gradient(135deg, #0a4b2a 0%, #0d5e35 100%);
-      padding: 30px 20px;
-      text-align: center;
-      color: white;
-      position: relative;
-    }
-    
-    .header::after {
-      content: "✦";
-      position: absolute;
-      bottom: -15px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ff9800;
-      color: white;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-    }
-    
-    .header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-    
-    .header p {
-      font-size: 0.9rem;
-      opacity: 0.9;
-      margin-top: 8px;
-    }
-    
-    .madrasa-name {
-      font-size: 0.75rem;
-      margin-top: 10px;
-      opacity: 0.8;
-    }
-    
-    /* Content Section */
-    .content {
-      padding: 35px 25px;
-    }
-    
-    .input-group {
-      margin-bottom: 25px;
-    }
-    
-    label {
-      display: block;
-      font-weight: 600;
-      color: #0a4b2a;
-      margin-bottom: 10px;
-      font-size: 1rem;
-    }
-    
-    label i {
-      margin-right: 8px;
-      color: #ff9800;
-    }
-    
-    .mobile-input-wrapper {
-      position: relative;
-    }
-    
-    .mobile-input-wrapper i {
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #0a4b2a;
-      font-size: 1.1rem;
-      opacity: 0.6;
-    }
-    
-    input {
-      width: 100%;
-      padding: 15px 18px 15px 45px;
-      font-size: 1.1rem;
-      font-family: 'Anek Malayalam', monospace;
-      border: 2px solid #e0e0e0;
-      border-radius: 60px;
-      outline: none;
-      text-align: left;
-      letter-spacing: 1px;
-      transition: all 0.3s;
-      background: #fafafa;
-    }
-    
-    input:focus {
-      border-color: #1b7e42;
-      box-shadow: 0 0 0 3px rgba(27, 126, 66, 0.2);
-      background: white;
-    }
-    
-    button {
-      width: 100%;
-      padding: 15px;
-      background: linear-gradient(135deg, #0a4b2a 0%, #1b7e42 100%);
-      color: white;
-      border: none;
-      border-radius: 60px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      font-family: 'Anek Malayalam', sans-serif;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      box-shadow: 0 4px 15px rgba(11, 94, 46, 0.3);
-    }
-    
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(11, 94, 46, 0.4);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    /* Result Card */
-    .result-card {
-      margin-top: 30px;
-      padding: 20px;
-      border-radius: 25px;
-      background: #f8f9fa;
-      border-left: 6px solid #1b7e42;
-      animation: slideIn 0.4s ease-out;
-    }
-    
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-    
-    .result-card.error {
-      background: #ffebee;
-      border-left-color: #c62828;
-    }
-    
-    .result-card h4 {
-      color: #0a4b2a;
-      margin-bottom: 15px;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .result-card.error h4 {
-      color: #c62828;
-    }
-    
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px dashed #ddd;
-    }
-    
-    .detail-row:last-child {
-      border-bottom: none;
-    }
-    
-    .detail-label {
-      font-weight: 600;
-      color: #555;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .detail-label i {
-      width: 22px;
-      color: #ff9800;
-    }
-    
-    .detail-value {
-      color: #0a4b2a;
-      font-weight: 600;
-      text-align: right;
-    }
-    
-    .pending-badge {
-      background: #ff9800;
-      color: white;
-      padding: 6px 14px;
-      border-radius: 40px;
-      font-size: 0.85rem;
-      font-weight: bold;
-      display: inline-block;
-    }
-    
-    .success-badge {
-      background: #2e7d32;
-      color: white;
-      padding: 6px 14px;
-      border-radius: 40px;
-      font-size: 0.85rem;
-      font-weight: bold;
-    }
-    
-    .message-box {
-      margin-top: 15px;
-      padding: 12px;
-      background: #e8f5e9;
-      border-radius: 15px;
-      text-align: center;
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-    
-    /* Loader */
-    .loader {
-      display: none;
-      text-align: center;
-      padding: 20px;
-    }
-    
-    .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #1b7e42;
-      border-radius: 50%;
-      width: 45px;
-      height: 45px;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 12px auto;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    /* Footer */
-    .footer {
-      text-align: center;
-      padding: 18px;
-      background: #f1f1f1;
-      font-size: 0.7rem;
-      color: #777;
-      border-top: 1px solid #e0e0e0;
-    }
-    
-    .footer a {
-      color: #1b7e42;
-      text-decoration: none;
-    }
-    
-    /* Info Box */
-    .info-box {
-      background: #e3f2fd;
-      padding: 12px;
-      border-radius: 15px;
-      margin-top: 20px;
-      font-size: 0.7rem;
-      text-align: center;
-      color: #1565c0;
-    }
-    
-    @media (max-width: 480px) {
-      .content {
-        padding: 25px 20px;
-      }
-      .header h1 {
-        font-size: 1.4rem;
-      }
-      .detail-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
-      }
-      .detail-value {
-        text-align: left;
-      }
-    }
-  </style>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Anek Malayalam', sans-serif;
+            background: linear-gradient(135deg, #0b5e2e 0%, #1b7e42 50%, #0a4b2a 100%);
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 500px;
+            width: 100%;
+            margin: auto;
+            background: white;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0a4b2a 0%, #0d5e35 100%);
+            padding: 28px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .badge {
+            background: #ff9800;
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            margin-top: 10px;
+        }
+
+        /* Content */
+        .content {
+            padding: 30px 24px;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #0a4b2a;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        label i {
+            margin-right: 6px;
+            color: #ff9800;
+        }
+
+        .mobile-wrapper {
+            position: relative;
+        }
+
+        .mobile-wrapper i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.1rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            font-size: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 60px;
+            outline: none;
+            font-family: monospace;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: #1b7e42;
+            box-shadow: 0 0 0 3px rgba(27, 126, 66, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0a4b2a 0%, #1b7e42 100%);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: 'Anek Malayalam', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(11, 94, 46, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Loader */
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #1b7e42;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Result Card */
+        .result-card {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 20px;
+            background: #f8f9fa;
+            border-left: 5px solid #1b7e42;
+            animation: slideIn 0.4s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .result-card.error {
+            background: #ffebee;
+            border-left-color: #c62828;
+        }
+
+        .result-card h4 {
+            color: #0a4b2a;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-card.error h4 {
+            color: #c62828;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-label i {
+            width: 20px;
+            color: #ff9800;
+        }
+
+        .detail-value {
+            color: #0a4b2a;
+            font-weight: 500;
+            text-align: right;
+        }
+
+        .pending-badge {
+            background: #ff9800;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .success-badge {
+            background: #2e7d32;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+        }
+
+        .message-box {
+            margin-top: 15px;
+            padding: 12px;
+            background: #e8f5e9;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 16px;
+            background: #f1f1f1;
+            font-size: 0.7rem;
+            color: #777;
+        }
+
+        .info {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 12px;
+            margin-top: 20px;
+            font-size: 0.7rem;
+            text-align: center;
+            color: #1565c0;
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 24px 18px;
+            }
+            .detail-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+            .detail-value {
+                text-align: left;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- Header -->
-  <div class="header">
-    <h1>📖 നൂറുസ്സലാം മദ്രസ</h1>
-    <p>കമ്പിപ്പാലം</p>
-    <div class="madrasa-name">
-      <i class="fas fa-mosque"></i> വിദ്യാഭ്യാസ & ദൈവിക പഠന കേന്ദ്രം
+    <div class="header">
+        <h1>📖 നൂറുസ്സലാം മദ്രസ</h1>
+        <p>കമ്പിപ്പാലം</p>
+        <div class="badge">
+            <i class="fas fa-mosque"></i> ഫീസ് വിവര സംവിധാനം
+        </div>
     </div>
-  </div>
-  
-  <!-- Content -->
-  <div class="content">
-    <div class="input-group">
-      <label><i class="fas fa-phone-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</label>
-      <div class="mobile-input-wrapper">
-        <i class="fas fa-mobile-alt"></i>
-        <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off" inputmode="numeric">
-      </div>
+
+    <div class="content">
+        <div class="input-group">
+            <label><i class="fas fa-phone-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</label>
+            <div class="mobile-wrapper">
+                <i class="fas fa-mobile-alt"></i>
+                <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off">
+            </div>
+        </div>
+
+        <button onclick="checkFee()" id="checkBtn">
+            <i class="fas fa-search"></i> പരിശോധിക്കുക
+        </button>
+
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p>ദയവായി കാത്തിരിക്കുക...</p>
+        </div>
+
+        <div id="result"></div>
+
+        <div class="info">
+            <i class="fas fa-info-circle"></i> വിവരങ്ങളിൽ എന്തെങ്കിലും തെറ്റുണ്ടെങ്കിൽ മദ്രസ അധികൃതരെ ബന്ധപ്പെടുക
+        </div>
     </div>
-    
-    <button onclick="checkFee()" id="checkBtn">
-      <i class="fas fa-search"></i> പരിശോധിക്കുക
-    </button>
-    
-    <!-- Loader -->
-    <div id="loader" class="loader">
-      <div class="spinner"></div>
-      <p>ദയവായി കാത്തിരിക്കുക... <i class="fas fa-spinner fa-pulse"></i></p>
+
+    <div class="footer">
+        <i class="fas fa-mosque"></i> നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം © 2026
     </div>
-    
-    <!-- Result Container -->
-    <div id="result"></div>
-    
-    <!-- Info Box -->
-    <div class="info-box">
-      <i class="fas fa-info-circle"></i> വിവരങ്ങളിൽ എന്തെങ്കിലും തെറ്റുണ്ടെങ്കിൽ മദ്രസ അധികൃതരെ ബന്ധപ്പെടുക
-    </div>
-  </div>
-  
-  <!-- Footer -->
-  <div class="footer">
-    <i class="fas fa-mosque"></i> നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം © 2026<br>
-    <span style="font-size: 0.65rem;">വിശ്വാസത്തിന്റെ വെളിച്ചം, അറിവിന്റെ പ്രകാശം</span>
-  </div>
 </div>
 
 <script>
-  // ============================================
-  // ⚠️ IMPORTANT: REPLACE WITH YOUR APPS SCRIPT URL
-  // ============================================
-  const API_URL = "https://script.google.com/macros/s/AKfycbxbXPoI4KDZOiMJgBn3f-hexpgVlyl1Gww_NPY4XlBT8XWRTmkI_Kr4HE7fvFUdCcqm8A/exec";
-  
-  // Test mode - set to true for testing without API
-  const TEST_MODE = false;
-  const TEST_MOBILE = "9876543210";
-  const TEST_DATA = {
-    success: true,
-    parentName: "അബ്ദുൽ റഹീം",
-    lastPaidMonth: "മാർച്ച് 2026",
-    paidMonths: 9,
-    pendingMonths: 15,
-    previousBalance: 500,
-    totalPending: 3500,
-    lastPaidDate: "2026-03-15",
-    message: "📌 3500 രൂപ ബാക്കിയുണ്ട്. (മുൻപത്തെ ബാക്കി: 500 രൂപ + 15 മാസത്തെ 3000 രൂപ)"
-  };
-  
-  // Enable/disable button state
-  let isChecking = false;
-  
-  async function checkFee() {
-    // Prevent multiple simultaneous requests
-    if (isChecking) return;
+    // ==================================================
+    // ⚠️ IMPORTANT: Replace with your Apps Script URL
+    // ==================================================
+    const API_URL = "https://script.google.com/macros/s/AKfycbws4MbibFS-hyUx12-wIBs-hQela512qieRN13OhmzIRoph_cJoaaxM8KdH-m7DpFXF1w/exec";
     
-    const mobileInput = document.getElementById("mobile");
-    const mobile = mobileInput.value.trim();
-    
-    // Validate mobile number
-    if (mobile.length !== 10 || isNaN(mobile)) {
-      showError("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.");
-      mobileInput.focus();
-      return;
-    }
-    
-    // Test mode check
-    if (TEST_MODE && mobile === TEST_MOBILE) {
-      showResult(TEST_DATA);
-      return;
-    }
-    
-    // Show loader, hide previous result
-    isChecking = true;
-    const checkBtn = document.getElementById("checkBtn");
-    checkBtn.disabled = true;
-    checkBtn.style.opacity = "0.7";
-    document.getElementById("loader").style.display = "block";
-    document.getElementById("result").innerHTML = "";
-    
-    try {
-      const url = `${API_URL}?mobile=${encodeURIComponent(mobile)}`;
-      console.log("📡 Fetching:", url);
-      
-      // Fetch with timeout (10 seconds)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        signal: controller.signal,
-        mode: 'cors',
-        headers: {
-          'Accept': 'application/json'
+    // Test mode (for testing without API)
+    const TEST_MODE = false;
+    const TEST_MOBILE = "9876543210";
+    const TEST_DATA = {
+        success: true,
+        parentName: "അബ്ദുൽ റഹീം",
+        lastPaidMonth: "മാർച്ച് 2026",
+        paidMonths: 9,
+        pendingMonths: 15,
+        previousBalance: 500,
+        totalPending: 3500,
+        lastPaidDate: "2026-03-15",
+        message: "📌 3500 രൂപ ബാക്കിയുണ്ട്"
+    };
+
+    let isChecking = false;
+
+    async function checkFee() {
+        if (isChecking) return;
+
+        const mobile = document.getElementById("mobile").value.trim();
+        
+        if (mobile.length !== 10 || isNaN(mobile)) {
+            showError("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.");
+            return;
         }
-      });
-      
-      clearTimeout(timeoutId);
-      
-      console.log("📡 Response status:", response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      console.log("📡 Data received:", data);
-      
-      if (data && data.success !== undefined) {
-        showResult(data);
-      } else {
-        throw new Error("Invalid response format");
-      }
-      
-    } catch (err) {
-      console.error("❌ Error:", err);
-      
-      let errorMessage = "സാങ്കേതിക തകരാർ. പിന്നീട് ശ്രമിക്കുക.";
-      
-      if (err.name === 'AbortError') {
-        errorMessage = "സമയം കഴിഞ്ഞു. ഇൻറർനെറ്റ് കണക്ഷൻ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.";
-      } else if (err.message.includes('Failed to fetch')) {
-        errorMessage = "സെർവറുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല. Apps Script URL ശരിയാണോ എന്ന് പരിശോധിക്കുക.";
-      } else if (err.message.includes('CORS')) {
-        errorMessage = "CORS പിശക്. Apps Script Web App 'Anyone' ആയി deploy ചെയ്തിട്ടുണ്ടോ?";
-      }
-      
-      showError(errorMessage + " Details: " + err.message);
-    } finally {
-      isChecking = false;
-      checkBtn.disabled = false;
-      checkBtn.style.opacity = "1";
-      document.getElementById("loader").style.display = "none";
+
+        // Test mode
+        if (TEST_MODE && mobile === TEST_MOBILE) {
+            showResult(TEST_DATA);
+            return;
+        }
+
+        isChecking = true;
+        const btn = document.getElementById("checkBtn");
+        btn.disabled = true;
+        btn.style.opacity = "0.7";
+        document.getElementById("loader").style.display = "block";
+        document.getElementById("result").innerHTML = "";
+
+        try {
+            const url = `${API_URL}?mobile=${encodeURIComponent(mobile)}`;
+            console.log("Fetching:", url);
+            
+            // Fetch with timeout
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 15000);
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                signal: controller.signal,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            
+            clearTimeout(timeout);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log("Response:", data);
+            
+            if (data && data.success !== undefined) {
+                showResult(data);
+            } else {
+                throw new Error("Invalid response format");
+            }
+            
+        } catch (err) {
+            console.error("Error:", err);
+            
+            let errorMsg = "സാങ്കേതിക തകരാർ. പിന്നീട് ശ്രമിക്കുക.";
+            
+            if (err.name === 'AbortError') {
+                errorMsg = "സമയം കഴിഞ്ഞു. ഇൻറർനെറ്റ് കണക്ഷൻ പരിശോധിക്കുക.";
+            } else if (err.message.includes('Failed to fetch')) {
+                errorMsg = "സെർവറുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല.\n\nപരിഹാരം:\n1. Apps Script 'Anyone' ആയി deploy ചെയ്തിട്ടുണ്ടോ?\n2. URL ശരിയാണോ?";
+            } else if (err.message.includes('CORS')) {
+                errorMsg = "CORS പിശക്.\n\nപരിഹാരം:\nApps Script-ൽ 'Who has access' → 'Anyone' ആക്കുക.\nവീണ്ടും Deploy ചെയ്യുക.";
+            }
+            
+            showError(errorMsg);
+        } finally {
+            isChecking = false;
+            btn.disabled = false;
+            btn.style.opacity = "1";
+            document.getElementById("loader").style.display = "none";
+        }
     }
-  }
-  
-  function showResult(data) {
-    const resultDiv = document.getElementById("result");
-    
-    if (data.success) {
-      const badge = data.totalPending == 0 
-        ? '<span class="success-badge"><i class="fas fa-check-circle"></i> ഫീസ് പൂർണ്ണമായി അടച്ചു</span>' 
-        : `<span class="pending-badge"><i class="fas fa-clock"></i> ⏳ ${data.totalPending.toLocaleString()} രൂപ ബാക്കി</span>`;
-      
-      // Calculate current month fee contribution
-      const currentMonthFee = (data.pendingMonths || 0) * 200;
-      
-      resultDiv.innerHTML = `
-        <div class="result-card">
-          <h4><i class="fas fa-receipt"></i> ഫീസ് വിവരം</h4>
-          
-          <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-user-friends"></i> രക്ഷിതാവിൻ്റെ പേര്</span>
-            <span class="detail-value">${escapeHtml(data.parentName)}</span>
-          </div>
-          
-          <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-calendar-alt"></i> അവസാനം അടച്ച മാസം</span>
-            <span class="detail-value">${escapeHtml(data.lastPaidMonth || "വിവരം ലഭ്യമല്ല")}</span>
-          </div>
-          
-          <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-check-circle"></i> അടച്ച മാസങ്ങൾ</span>
-            <span class="detail-value">${data.paidMonths} മാസങ്ങൾ</span>
-          </div>
-          
-          <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</span>
-            <span class="detail-value">${data.pendingMonths} മാസങ്ങൾ (${currentMonthFee.toLocaleString()} രൂപ)</span>
-          </div>
-          
-          <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-history"></i> മുൻപത്തെ ബാക്കി</span>
-            <span class="detail-value">₹ ${data.previousBalance.toLocaleString()}</span>
-          </div>
-          
-          <div class="detail-row">
-            <span class="detail-label"><i class="fas fa-rupee-sign"></i> ആകെ ബാക്കി തുക</span>
-            <span class="detail-value">${badge}</span>
-          </div>
-          
-          <div class="message-box">
-            <i class="fas fa-envelope"></i> ${escapeHtml(data.message)}
-          </div>
-        </div>
-      `;
-    } else {
-      resultDiv.innerHTML = `
-        <div class="result-card error">
-          <h4><i class="fas fa-exclamation-triangle"></i> കണ്ടെത്തിയില്ല</h4>
-          <p>${escapeHtml(data.message)}</p>
-        </div>
-      `;
+
+    function showResult(data) {
+        const resultDiv = document.getElementById("result");
+        
+        if (data.success) {
+            const currentMonthFee = (data.pendingMonths || 0) * 200;
+            const badge = data.totalPending == 0 
+                ? '<span class="success-badge"><i class="fas fa-check-circle"></i> ഫീസ് പൂർണ്ണമായി അടച്ചു</span>'
+                : `<span class="pending-badge"><i class="fas fa-clock"></i> ⏳ ${data.totalPending.toLocaleString()} രൂപ ബാക്കി</span>`;
+            
+            resultDiv.innerHTML = `
+                <div class="result-card">
+                    <h4><i class="fas fa-receipt"></i> ഫീസ് വിവരം</h4>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-user-friends"></i> രക്ഷിതാവ്</span>
+                        <span class="detail-value">${escapeHtml(data.parentName)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-calendar-alt"></i> അവസാനം അടച്ച മാസം</span>
+                        <span class="detail-value">${escapeHtml(data.lastPaidMonth || "വിവരം ലഭ്യമല്ല")}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-check-circle"></i> അടച്ച മാസങ്ങൾ</span>
+                        <span class="detail-value">${data.paidMonths} മാസങ്ങൾ</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</span>
+                        <span class="detail-value">${data.pendingMonths} മാസങ്ങൾ (${currentMonthFee.toLocaleString()} രൂപ)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-history"></i> മുൻപത്തെ ബാക്കി</span>
+                        <span class="detail-value">₹ ${data.previousBalance.toLocaleString()}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label"><i class="fas fa-rupee-sign"></i> ആകെ ബാക്കി</span>
+                        <span class="detail-value">${badge}</span>
+                    </div>
+                    <div class="message-box">
+                        <i class="fas fa-envelope"></i> ${escapeHtml(data.message)}
+                    </div>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="result-card error">
+                    <h4><i class="fas fa-exclamation-triangle"></i> കണ്ടെത്തിയില്ല</h4>
+                    <p>${escapeHtml(data.message)}</p>
+                </div>
+            `;
+        }
+        
+        resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    
-    // Scroll to result
-    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-  
-  function showError(msg) {
-    const resultDiv = document.getElementById("result");
-    resultDiv.innerHTML = `
-      <div class="result-card error">
-        <h4><i class="fas fa-exclamation-circle"></i> പിശക്</h4>
-        <p>${escapeHtml(msg)}</p>
-        <p style="margin-top: 10px; font-size: 0.8rem;">
-          <i class="fas fa-lightbulb"></i> നുറുങ്ങ്: 
-          <a href="#" onclick="testAPI()" style="color:#1b7e42;">API കണക്ഷൻ പരിശോധിക്കുക</a>
-        </p>
-      </div>
-    `;
-  }
-  
-  // Helper function to test API connection
-  async function testAPI() {
-    showError("API കണക്ഷൻ പരിശോധിക്കുന്നു...");
-    try {
-      const response = await fetch(API_URL);
-      const text = await response.text();
-      console.log("API Test Response:", text);
-      showError("API Response received. Check console for details.");
-    } catch(err) {
-      showError("API Test failed: " + err.message);
+
+    function showError(msg) {
+        document.getElementById("result").innerHTML = `
+            <div class="result-card error">
+                <h4><i class="fas fa-exclamation-circle"></i> പിശക്</h4>
+                <p style="white-space: pre-line;">${escapeHtml(msg)}</p>
+                <hr style="margin: 12px 0; border-color: #ffcdd2;">
+                <p style="font-size: 0.75rem;">
+                    <i class="fas fa-lightbulb"></i> 
+                    <strong>API URL:</strong><br>
+                    ${escapeHtml(API_URL)}
+                </p>
+            </div>
+        `;
     }
-  }
-  
-  // Helper function to escape HTML
-  function escapeHtml(str) {
-    if (!str) return "";
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Enter key support
+    document.getElementById("mobile").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+            checkFee();
+        }
     });
-  }
-  
-  // Enter key support
-  document.getElementById("mobile").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") {
-      checkFee();
-    }
-  });
-  
-  // Auto-focus on mobile input
-  document.getElementById("mobile").focus();
-  
-  // Show console message
-  console.log("✅ Madrasa Fee Checker Ready");
-  console.log("📡 API URL:", API_URL);
-  console.log("🧪 Test Mode:", TEST_MODE);
+    
+    // Auto focus
+    document.getElementById("mobile").focus();
+    
+    console.log("✅ Madrasa Fee Checker Ready");
+    console.log("📡 API URL:", API_URL);
 </script>
 </body>
 </html>
