@@ -9,27 +9,38 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Anek Malayalam',sans-serif;background:#f0f2f5;padding:20px}
-        .container{max-width:1200px;margin:auto}
+        .container{max-width:1400px;margin:auto}
         .header{background:#0a4b2a;color:#fff;padding:20px;border-radius:15px;margin-bottom:20px}
-        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:20px}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:20px}
         .stat-card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
-        .stat-card h3{color:#0a4b2a;margin-bottom:10px}
-        .stat-card .number{font-size:2rem;font-weight:700;color:#1b7e42}
+        .stat-card h3{color:#0a4b2a;margin-bottom:10px;font-size:0.9rem}
+        .stat-card .number{font-size:1.8rem;font-weight:700;color:#1b7e42}
         .login-box{max-width:400px;margin:100px auto;background:#fff;padding:30px;border-radius:20px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.1)}
         .login-box input{width:100%;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:10px}
         .login-box button{background:#0a4b2a;color:#fff;padding:12px;border:none;border-radius:10px;width:100%;cursor:pointer}
         table{width:100%;background:#fff;border-radius:15px;overflow:auto;margin-top:20px}
         th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd}
-        th{background:#0a4b2a;color:#fff}
-        .whatsapp-btn{background:#25D366;color:#fff;padding:5px 10px;border-radius:10px;text-decoration:none;font-size:0.8rem}
+        th{background:#0a4b2a;color:#fff;position:sticky;top:0}
+        .whatsapp-btn{background:#25D366;color:#fff;padding:5px 10px;border-radius:10px;text-decoration:none;font-size:0.75rem;display:inline-block}
+        .edit-btn{background:#ff9800;color:#fff;padding:5px 10px;border-radius:10px;border:none;cursor:pointer;font-size:0.75rem;margin-right:5px}
+        .delete-btn{background:#c62828;color:#fff;padding:5px 10px;border-radius:10px;border:none;cursor:pointer;font-size:0.75rem}
         .tab{display:inline-block;padding:10px 20px;background:#ddd;margin-right:5px;border-radius:10px 10px 0 0;cursor:pointer}
         .tab.active{background:#0a4b2a;color:#fff}
         .tab-content{display:none;background:#fff;padding:20px;border-radius:0 15px 15px 15px}
         .tab-content.active{display:block}
-        input,textarea{width:100%;padding:10px;margin:10px 0;border:1px solid #ddd;border-radius:10px}
+        input,select,textarea{width:100%;padding:10px;margin:10px 0;border:1px solid #ddd;border-radius:10px}
         .success{background:#d4edda;color:#155724;padding:10px;border-radius:10px;margin:10px 0}
         .error{background:#f8d7da;color:#721c24;padding:10px;border-radius:10px;margin:10px 0}
         .back-link{display:inline-block;margin-top:20px;color:#0a4b2a;text-decoration:none}
+        .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center}
+        .modal-content{background:#fff;padding:30px;border-radius:20px;max-width:500px;width:90%;max-height:80vh;overflow:auto}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+        .close{font-size:1.5rem;cursor:pointer;color:#999}
+        .close:hover{color:#333}
+        .search-box{width:100%;padding:10px;margin-bottom:20px;border:1px solid #ddd;border-radius:10px}
+        .table-wrapper{overflow-x:auto;max-height:500px;overflow-y:auto}
+        .action-buttons{display:flex;gap:5px;flex-wrap:wrap}
+        @media (max-width:768px){th,td{padding:8px;font-size:0.75rem}}
     </style>
 </head>
 <body>
@@ -37,13 +48,13 @@
     <div class="login-box" id="loginBox">
         <h2>🔐 അഡ്മിൻ ലോഗിൻ</h2>
         <p style="color:#666; margin-bottom:15px;">നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം</p>
-        <input type="password" id="password" placeholder="Password">
+        <input type="password" id="password" placeholder="പാസ്വേഡ്">
         <button onclick="login()">പ്രവേശിക്കുക</button>
     </div>
     
     <div id="dashboard" style="display:none">
         <div class="header">
-            <h1>നൂറുസ്സലാം മദ്രസ - അഡ്മിൻ ഡാഷ്ബോർഡ്</h1>
+            <h1>📊 നൂറുസ്സലാം മദ്രസ - അഡ്മിൻ ഡാഷ്ബോർഡ്</h1>
             <p>കമ്പിപ്പാലം - ഫീസ് മാനേജ്മെന്റ് സിസ്റ്റം</p>
         </div>
         
@@ -56,10 +67,11 @@
         </div>
         
         <div id="recordsTab" class="tab-content active">
-            <div style="overflow-x:auto">
+            <input type="text" id="searchInput" class="search-box" placeholder="🔍 പേര് അല്ലെങ്കിൽ മൊബൈൽ നമ്പർ ഉപയോഗിച്ച് തിരയുക..." onkeyup="filterTable()">
+            <div class="table-wrapper">
                 <table id="recordsTable">
                     <thead>
-                        <tr><th>രക്ഷിതാവ്</th><th>മൊബൈൽ</th><th>അവസാനം അടച്ച മാസം</th><th>അടച്ച മാസം</th><th>ബാക്കി മാസം</th><th>മുൻ ബാക്കി</th><th>ആകെ ബാക്കി</th><th>WhatsApp</th></tr>
+                        <tr><th>#</th><th>രക്ഷിതാവ്</th><th>മൊബൈൽ</th><th>അവസാനം അടച്ച മാസം</th><th>അടച്ച മാസം</th><th>ബാക്കി മാസം</th><th>മുൻ ബാക്കി</th><th>ആകെ ബാക്കി</th><th>WhatsApp</th><th>Actions</th></tr>
                     </thead>
                     <tbody id="recordsBody"></tbody>
                 </table>
@@ -82,7 +94,25 @@
             <canvas id="feeChart" width="400" height="200"></canvas>
         </div>
         
-        <a href="fees.html" class="back-link">← രക്ഷിതാക്കളുടെ പേജിലേക്ക് മടങ്ങുക</a>
+        <a href="index.html" class="back-link">← രക്ഷിതാക്കളുടെ പേജിലേക്ക് മടങ്ങുക</a>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✏️ വിവരങ്ങൾ തിരുത്തുക</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <input type="hidden" id="editMobile" value="">
+        <input type="text" id="editParentName" placeholder="രക്ഷിതാവിൻ്റെ പേര്">
+        <input type="text" id="editLastPaidMonth" placeholder="അവസാനം അടച്ച മാസം">
+        <input type="number" id="editPaidMonths" placeholder="അടച്ച മാസങ്ങൾ">
+        <input type="number" id="editPreviousBalance" placeholder="മുൻപത്തെ ബാക്കി">
+        <input type="date" id="editLastPaidDate" placeholder="അവസാന തീയതി">
+        <button onclick="updateRecord()">💾 സേവ് ചെയ്യുക</button>
+        <div id="editResult"></div>
     </div>
 </div>
 
@@ -92,25 +122,17 @@
     
     let dashboardData = null;
     let currentCallback = null;
+    let allRecords = [];
     
-    // Malayalam months mapping for date formatting
     function formatDateToMalayalam(dateString) {
         if (!dateString) return "വിവരം ലഭ്യമല്ല";
-        
-        // If already in readable format, return as is
         if (dateString.includes("ജനുവരി") || dateString.includes("ഫെബ്രുവരി") || 
-            dateString.includes("മാർച്ച്") || dateString.includes("ഏപ്രിൽ") ||
-            dateString.includes("മേയ്") || dateString.includes("ജൂൺ") ||
-            dateString.includes("ജൂലൈ") || dateString.includes("ഓഗസ്റ്റ്") ||
-            dateString.includes("സെപ്റ്റംബർ") || dateString.includes("ഒക്ടോബർ") ||
-            dateString.includes("നവംബർ") || dateString.includes("ഡിസംബർ")) {
+            dateString.includes("മാർച്ച്") || dateString.includes("ഏപ്രിൽ")) {
             return dateString;
         }
-        
         try {
             var date = new Date(dateString);
             if (isNaN(date.getTime())) return dateString;
-            
             var monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
                               "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
             var month = monthNames[date.getUTCMonth()];
@@ -163,8 +185,9 @@
     function loadDashboard() {
         callAppsScript("getDashboardData", null, function(data) {
             dashboardData = data;
+            allRecords = data.records || [];
             displayStats(data);
-            displayRecords(data.records);
+            displayRecords(allRecords);
             drawChart(data);
         });
     }
@@ -172,11 +195,9 @@
     function displayStats(data) {
         document.getElementById("statsGrid").innerHTML = `
             <div class="stat-card"><h3>👪 ആകെ രക്ഷിതാക്കൾ</h3><div class="number">${data.totalParents}</div></div>
-            <div class="stat-card"><h3>💰 ആകെ ബാക്കി തുക</h3><div class="number">₹${data.totalPendingAmount.toLocaleString()}</div></div>
-            <div class="stat-card"><h3>✅ ഫീസ് പൂർത്തിയായവർ</h3><div class="number">${data.parentsFullyPaid}</div></div>
-            <div class="stat-card"><h3>⏳ ബാക്കിയുള്ളവർ</h3><div class="number">${data.parentsWithBalance}</div></div>
-            <div class="stat-card"><h3>📅 ആകെ അടച്ച മാസങ്ങൾ</h3><div class="number">${data.totalPaidMonths}</div></div>
-            <div class="stat-card"><h3>⏰ ബാക്കി മാസങ്ങൾ</h3><div class="number">${data.totalPendingMonths}</div></div>
+            <div class="stat-card"><h3>💰 ആകെ ബാക്കി തുക</h3><div class="number">₹${(data.totalPendingAmount || 0).toLocaleString()}</div></div>
+            <div class="stat-card"><h3>✅ ഫീസ് പൂർത്തിയായവർ</h3><div class="number">${data.parentsFullyPaid || 0}</div></div>
+            <div class="stat-card"><h3>⏳ ബാക്കിയുള്ളവർ</h3><div class="number">${data.parentsWithBalance || 0}</div></div>
         `;
     }
     
@@ -187,34 +208,97 @@
             var formattedMonth = formatDateToMalayalam(r.lastPaidMonth);
             var whatsappLink = `https://wa.me/91${r.mobile}?text=നമസ്കാരം%20${encodeURIComponent(r.parentName)}%2C%20നിങ്ങളുടെ%20ബാക്കി%20തുക%20₹${r.totalPending}%20ആണ്`;
             html += `<tr>
-                <td>${r.parentName}</td>
+                <td>${i+1}</td>
+                <td>${escapeHtml(r.parentName)}</td>
                 <td>${r.mobile}</td>
-                <td>${formattedMonth}</td>
+                <td>${escapeHtml(formattedMonth)}</td>
                 <td>${r.paidMonths}</td>
                 <td>${r.pendingMonths}</td>
-                <td>₹${r.previousBalance}</td>
-                <td style="color:${r.totalPending>0?'#c62828':'#2e7d32'}">₹${r.totalPending}</td>
+                <td>₹${(r.previousBalance || 0).toLocaleString()}</td>
+                <td style="color:${r.totalPending>0?'#c62828':'#2e7d32'}; font-weight:bold;">₹${(r.totalPending || 0).toLocaleString()}</td>
                 <td><a href="${whatsappLink}" target="_blank" class="whatsapp-btn">📱 WhatsApp</a></td>
+                <td class="action-buttons">
+                    <button class="edit-btn" onclick="openEditModal('${r.mobile}')">✏️ എഡിറ്റ്</button>
+                    <button class="delete-btn" onclick="deleteRecord('${r.mobile}', '${escapeHtml(r.parentName)}')">🗑️ ഡിലീറ്റ്</button>
+                </td>
             </tr>`;
         }
         document.getElementById("recordsBody").innerHTML = html;
     }
     
-    function drawChart(data) {
-        var ctx = document.getElementById('feeChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['ഫീസ് പൂർത്തിയായവർ', 'ബാക്കിയുള്ളവർ'],
-                datasets: [{
-                    label: 'രക്ഷിതാക്കളുടെ എണ്ണം',
-                    data: [data.parentsFullyPaid, data.parentsWithBalance],
-                    backgroundColor: ['#2e7d32', '#ff9800'],
-                    borderRadius: 10
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+    function filterTable() {
+        var searchTerm = document.getElementById("searchInput").value.toLowerCase();
+        if (!allRecords) return;
+        var filtered = allRecords.filter(function(record) {
+            return record.parentName.toLowerCase().includes(searchTerm) || 
+                   record.mobile.includes(searchTerm);
         });
+        displayRecords(filtered);
+    }
+    
+    function openEditModal(mobile) {
+        var record = allRecords.find(function(r) { return r.mobile === mobile; });
+        if (!record) return;
+        
+        document.getElementById("editMobile").value = record.mobile;
+        document.getElementById("editParentName").value = record.parentName;
+        document.getElementById("editLastPaidMonth").value = record.lastPaidMonth;
+        document.getElementById("editPaidMonths").value = record.paidMonths;
+        document.getElementById("editPreviousBalance").value = record.previousBalance || 0;
+        document.getElementById("editLastPaidDate").value = record.lastPaidDate || "";
+        
+        document.getElementById("editModal").style.display = "flex";
+        document.getElementById("editResult").innerHTML = "";
+    }
+    
+    function updateRecord() {
+        var mobile = document.getElementById("editMobile").value;
+        var parentName = document.getElementById("editParentName").value;
+        var lastPaidMonth = document.getElementById("editLastPaidMonth").value;
+        var paidMonths = parseInt(document.getElementById("editPaidMonths").value);
+        var previousBalance = parseInt(document.getElementById("editPreviousBalance").value);
+        var lastPaidDate = document.getElementById("editLastPaidDate").value;
+        
+        if (!parentName || !lastPaidMonth || !paidMonths) {
+            document.getElementById("editResult").innerHTML = '<div class="error">❌ എല്ലാ ഫീൽഡുകളും പൂരിപ്പിക്കുക</div>';
+            return;
+        }
+        
+        callAppsScript("updateParent", {
+            mobile: mobile,
+            parentName: parentName,
+            lastPaidMonth: lastPaidMonth,
+            paidMonths: paidMonths,
+            previousBalance: previousBalance,
+            lastPaidDate: lastPaidDate
+        }, function(result) {
+            if (result.success) {
+                document.getElementById("editResult").innerHTML = '<div class="success">✅ ' + result.message + '</div>';
+                setTimeout(function() {
+                    closeModal();
+                    loadDashboard();
+                }, 1000);
+            } else {
+                document.getElementById("editResult").innerHTML = '<div class="error">❌ ' + result.message + '</div>';
+            }
+        });
+    }
+    
+    function deleteRecord(mobile, parentName) {
+        if (confirm(parentName + " ന്റെ വിവരങ്ങൾ ഡിലീറ്റ് ചെയ്യണോ? ഈ പ്രവൃത്തി തിരിച്ചെടുക്കാൻ സാധിക്കില്ല.")) {
+            callAppsScript("deleteParent", { mobile: mobile }, function(result) {
+                if (result.success) {
+                    alert("✅ " + result.message);
+                    loadDashboard();
+                } else {
+                    alert("❌ " + result.message);
+                }
+            });
+        }
+    }
+    
+    function closeModal() {
+        document.getElementById("editModal").style.display = "none";
     }
     
     function addParent() {
@@ -253,6 +337,23 @@
         });
     }
     
+    function drawChart(data) {
+        var ctx = document.getElementById('feeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['ഫീസ് പൂർത്തിയായവർ', 'ബാക്കിയുള്ളവർ'],
+                datasets: [{
+                    label: 'രക്ഷിതാക്കളുടെ എണ്ണം',
+                    data: [data.parentsFullyPaid || 0, data.parentsWithBalance || 0],
+                    backgroundColor: ['#2e7d32', '#ff9800'],
+                    borderRadius: 10
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+    }
+    
     function showTab(tab) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -266,6 +367,24 @@
             document.querySelectorAll('.tab')[2].classList.add('active');
             document.getElementById('chartTab').classList.add('active');
             if (dashboardData) drawChart(dashboardData);
+        }
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        var modal = document.getElementById("editModal");
+        if (event.target === modal) {
+            closeModal();
         }
     }
 </script>
