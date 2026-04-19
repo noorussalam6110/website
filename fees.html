@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Noorussalam-fee Dashboard</title>
+    <title>Noorussalam-fee dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
@@ -36,12 +36,12 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>നൂറുസ്സലാം മദ്‌റസ</h1>
+        <h1>നൂറുസ്സലാം മദ്രസ</h1>
         <p>കമ്പിപ്പാലം</p>
         <div class="badge"> ഫീസ് വിവര സംവിധാനം</div>
     </div>
     <div class="content">
-        <input type="tel" id="mobile" placeholder="രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ" maxlength="10">
+        <input type="tel" id="mobile" placeholder="മൊബൈൽ നമ്പർ" maxlength="10">
         <button onclick="checkFee()">🔍 പരിശോധിക്കുക</button>
         <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
         <div id="result"></div>
@@ -53,7 +53,63 @@
 
 <script>
     // ⚠️ IMPORTANT: Replace with your Apps Script URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbyLCpOgCeKsyC3yRuIxTQRd6JFyUcptA8VWE8ER13pMSmNQ5Ef7iud55iHBGY3R_CktnQ/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwObe0gS3BrQ6ZzJr4oBXZo6fzUy2OahmRwYkEPmqef0hx6bv9sKwdBkX-IcxfRpRXYOQ/exec";
+    
+    // Malayalam months mapping
+    const malayalamMonths = {
+        "January": "ജനുവരി", "February": "ഫെബ്രുവരി", "March": "മാർച്ച്",
+        "April": "ഏപ്രിൽ", "May": "മേയ്", "June": "ജൂൺ",
+        "July": "ജൂലൈ", "August": "ഓഗസ്റ്റ്", "September": "സെപ്റ്റംബർ",
+        "October": "ഒക്ടോബർ", "November": "നവംബർ", "December": "ഡിസംബർ"
+    };
+    
+    // Function to format date from ISO to Malayalam
+    function formatDateToMalayalam(dateString) {
+        if (!dateString) return "വിവരം ലഭ്യമല്ല";
+        
+        // If already in readable format (like "മാർച്ച് 2026"), return as is
+        if (/[A-Za-z]/.test(dateString) && !dateString.includes('T')) {
+            // Check if it already has Malayalam month
+            for (var key in malayalamMonths) {
+                if (dateString.includes(key)) {
+                    return dateString;
+                }
+            }
+            return dateString;
+        }
+        
+        try {
+            var date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            var monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
+                              "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
+            var month = monthNames[date.getUTCMonth()];
+            var year = date.getUTCFullYear();
+            return month + " " + year;
+        } catch(e) {
+            return dateString;
+        }
+    }
+    
+    // Function to format date for display (full date)
+    function formatFullDateToMalayalam(dateString) {
+        if (!dateString) return "വിവരം ലഭ്യമല്ല";
+        
+        try {
+            var date = new Date(dateString);
+            if (isNaN(date.getTime())) return dateString;
+            
+            var monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
+                              "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
+            var month = monthNames[date.getUTCMonth()];
+            var year = date.getUTCFullYear();
+            var day = date.getUTCDate();
+            return day + " " + month + " " + year;
+        } catch(e) {
+            return dateString;
+        }
+    }
     
     let currentCallback = null;
     
@@ -100,19 +156,23 @@
     function showResult(data) {
         const resultDiv = document.getElementById("result");
         if (data.success) {
+            // Format dates to Malayalam
+            const formattedLastPaidMonth = formatDateToMalayalam(data.lastPaidMonth);
+            const formattedLastPaidDate = formatFullDateToMalayalam(data.lastPaidDate);
+            
             const currentMonthFee = (data.pendingMonths || 0) * 200;
             const badge = data.totalPending == 0 
                 ? '<span class="success-badge">✅ ഫീസ് പൂർണ്ണമായി അടച്ചു</span>'
                 : `<span class="pending-badge">⏳ ${data.totalPending.toLocaleString()} രൂപ ബാക്കി</span>`;
             
-            const whatsappMsg = `നമസ്കാരം ${data.parentName}%0A%0A📖 *നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം*%0A💰 *ബാക്കി തുക:* ₹${data.totalPending}%0A📅 *അവസാനം അടച്ച മാസം:* ${data.lastPaidMonth}%0A%0Aദയവായി നിങ്ങളുടെ ഫീസ് അടക്കുക.%0A🙏 നന്ദി.`;
+            const whatsappMsg = `നമസ്കാരം ${data.parentName}%0A%0A📖 *നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം*%0A💰 *ബാക്കി തുക:* ₹${data.totalPending}%0A📅 *അവസാനം അടച്ച മാസം:* ${formattedLastPaidMonth}%0A%0Aദയവായി നിങ്ങളുടെ ഫീസ് അടക്കുക.%0A🙏 നന്ദി.`;
             const whatsappLink = `https://wa.me/91${data.mobile}?text=${whatsappMsg}`;
             
             resultDiv.innerHTML = `
                 <div class="result-card">
                     <h4>📋 ഫീസ് വിവരം</h4>
                     <div class="detail-row"><span class="detail-label">👪 രക്ഷിതാവ്</span><span class="detail-value">${escapeHtml(data.parentName)}</span></div>
-                    <div class="detail-row"><span class="detail-label">📅 അവസാനം അടച്ച മാസം</span><span class="detail-value">${escapeHtml(data.lastPaidMonth)}</span></div>
+                    <div class="detail-row"><span class="detail-label">📅 അവസാനം അടച്ച മാസം</span><span class="detail-value">${escapeHtml(formattedLastPaidMonth)}</span></div>
                     <div class="detail-row"><span class="detail-label">✅ അടച്ച മാസങ്ങൾ</span><span class="detail-value">${data.paidMonths}</span></div>
                     <div class="detail-row"><span class="detail-label">⏳ ബാക്കി മാസങ്ങൾ</span><span class="detail-value">${data.pendingMonths} (${currentMonthFee.toLocaleString()} രൂപ)</span></div>
                     <div class="detail-row"><span class="detail-label">💰 മുൻപത്തെ ബാക്കി</span><span class="detail-value">₹${data.previousBalance.toLocaleString()}</span></div>
