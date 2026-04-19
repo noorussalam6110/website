@@ -2,46 +2,371 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Noorussalam-Fees dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'Anek Malayalam',sans-serif;background:linear-gradient(135deg,#0b5e2e 0%,#1b7e42 100%);min-height:100vh;padding:16px;display:flex;justify-content:center;align-items:center}
-        .container{max-width:500px;width:100%;background:white;border-radius:32px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,0.2)}
-        .header{background:linear-gradient(135deg,#0a4b2a 0%,#0d5e35 100%);padding:28px 20px;text-align:center;color:white}
-        .header h1{font-size:1.6rem;font-weight:700}
-        .badge{background:#ff9800;display:inline-block;padding:5px 15px;border-radius:30px;font-size:0.7rem;margin-top:12px}
-        .content{padding:30px 24px}
-        input{width:100%;padding:14px 18px;font-size:1rem;border:2px solid #e0e0e0;border-radius:60px;text-align:center;font-family:monospace;font-size:1.1rem}
-        input:focus{border-color:#1b7e42;outline:none}
-        button{width:100%;padding:14px;background:linear-gradient(135deg,#0a4b2a 0%,#1b7e42 100%);color:white;border:none;border-radius:60px;font-size:1.1rem;font-weight:600;cursor:pointer}
-        .loader{display:none;text-align:center;padding:20px}
-        .spinner{width:40px;height:40px;border:3px solid #f3f3f3;border-top:3px solid #1b7e42;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px}
-        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        .result-card{margin-top:25px;padding:20px;border-radius:24px;background:#f8f9fa;border-left:5px solid #1b7e42}
-        .result-card.error{background:#ffebee;border-left-color:#c62828}
-        .info-box{padding:12px;margin:8px 0;background:white;border-radius:16px;border:1px solid #eee}
-        .info-label{font-size:0.7rem;color:#888;text-transform:uppercase}
-        .info-value{font-size:1.1rem;font-weight:700;color:#0a4b2a}
-        .whatsapp-btn{background:#25D366;color:white;padding:12px;border-radius:50px;text-align:center;margin-top:15px;display:block;text-decoration:none;font-weight:600}
-        .footer{text-align:center;padding:16px;background:#f1f1f1;font-size:0.7rem}
-        .footer a{color:#0a4b2a;text-decoration:none}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Anek Malayalam', sans-serif;
+            /* Radiant blue gradient with shine effect */
+            background: radial-gradient(circle at 30% 20%, #0a2e5a, #041a30, #020d1a);
+            min-height: 100vh;
+            padding: 20px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Animated shine overlay for blue gradient effect */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%);
+            animation: rotateShine 20s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes rotateShine {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Twinkling stars background */
+        .stars-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2.5s infinite alternate;
+            box-shadow: 0 0 4px rgba(255,255,200,0.6);
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(1);}
+            100% { opacity: 1; transform: scale(1.2);}
+        }
+
+        /* Main container */
+        .container {
+            max-width: 520px;
+            width: 100%;
+            background: rgba(255,255,255,0.98);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1);
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(0px);
+            transition: transform 0.2s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 35px 55px -18px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Header with Yellow Line (border-bottom) */
+        .header {
+            background: linear-gradient(115deg, #0a2a5c 0%, #1a4d8c 100%);
+            padding: 30px 20px 26px;
+            text-align: center;
+            color: white;
+            position: relative;
+            border-bottom: 4px solid #ffcd7e;
+        }
+
+        /* Subtle inner glow */
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #ffdd99, #ffcd7e, #ffdd99, transparent);
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .header h1 i {
+            color: #ffd966;
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .badge {
+            background: linear-gradient(95deg, #ffb347, #ff8c1a);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-top: 14px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
+        .badge i {
+            font-size: 0.75rem;
+        }
+
+        /* Content area */
+        .content {
+            padding: 32px 26px;
+            background: #ffffff;
+        }
+
+        /* Input styling */
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 1rem;
+            border: 2px solid #e2edf7;
+            border-radius: 60px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: 500;
+            background: #fbfeff;
+            transition: all 0.25s ease;
+            color: #0a2a4a;
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
+            background: white;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #0f3d72, #1b5da8);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 16px rgba(11, 55, 108, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #0c3360, #1f6ec0);
+            box-shadow: 0 10px 22px rgba(0, 32, 64, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .spinner {
+            width: 42px;
+            height: 42px;
+            border: 3px solid #e2edf7;
+            border-top: 3px solid #1f6eb0;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Premium Table Style Result Card */
+        .result-card {
+            margin-top: 28px;
+            border-radius: 28px;
+            background: #fafdff;
+            border: 1px solid #e8f0f8;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .result-card.error {
+            background: #fff8f6;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table tr {
+            border-bottom: 1px solid #eff4fa;
+        }
+
+        .info-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .info-table td {
+            padding: 14px 18px;
+            vertical-align: middle;
+        }
+
+        .info-table td:first-child {
+            width: 44%;
+            font-weight: 600;
+            color: #3a6b8f;
+            background: #fafdff;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+        }
+
+        .info-table td:last-child {
+            font-weight: 700;
+            color: #1a4a6f;
+            font-size: 1rem;
+            word-break: break-word;
+        }
+
+        .amount-pending {
+            color: #e67e22;
+            font-size: 1.2rem;
+        }
+
+        .amount-cleared {
+            color: #2e7d32;
+        }
+
+        /* WhatsApp Button */
+        .whatsapp-btn {
+            background: #25D366;
+            color: white;
+            padding: 14px 16px;
+            border-radius: 60px;
+            text-align: center;
+            margin: 16px 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            box-shadow: 0 5px 14px rgba(37,211,102,0.35);
+        }
+
+        .whatsapp-btn:hover {
+            background: #20b85a;
+            transform: scale(0.97);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 14px;
+            background: #f0f5fa;
+            font-size: 0.7rem;
+            border-top: 1px solid #e2ecf3;
+            color: #5a7f9a;
+        }
+
+        .footer a {
+            color: #1a5f8a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        @media (max-width: 480px) {
+            .content {
+                padding: 24px 18px;
+            }
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            .info-table td {
+                padding: 10px 12px;
+            }
+        }
     </style>
 </head>
 <body>
 
+<!-- Star background -->
+<div class="stars-bg" id="starContainer"></div>
+
 <div class="container">
     <div class="header">
-        <h1>നൂറുസ്സലാം മദ്റസ</h1>
-        <p>കമ്പിപ്പാലം</p>
-        <div class="badge">വരിസംഖ്യ പെന്റിംഗ് വിവര സംവിധാനം 2026-27</div>
+        <h1>
+            നൂറുസ്സലാം മദ്റസ
+        </h1>
+        <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
+        <div class="badge">
+            വരിസംഖ്യ പെന്റിംഗ് വിവര സംവിധാനം 2026-27
+        </div>
     </div>
 
     <div class="content">
         <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off">
-        <button onclick="checkFee()" id="checkBtn">🔍 പരിശോധിക്കുക</button>
-        <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
+        <button onclick="checkFee()" id="checkBtn">
+            🔍 പരിശോധിക്കുക
+        </button>
+        <div id="loader" class="loader">
+            <div class="spinner"></div>
+            <p style="color:#6a8fae;">ദയവായി കാത്തിരിക്കുക...</p>
+        </div>
         <div id="result"></div>
     </div>
 
@@ -51,11 +376,119 @@
 </div>
 
 <script>
-    // ⚠️ REPLACE WITH YOUR APPS SCRIPT URL
+    // Starfield background generator
+    function generateStars() {
+        const starContainer = document.getElementById('starContainer');
+        if (!starContainer) return;
+        starContainer.innerHTML = '';
+        const starCount = window.innerWidth < 700 ? 100 : 150;
+        for (let i = 0; i < starCount; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            const size = Math.random() * 2.5 + 1;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.animationDelay = `${Math.random() * 3}s`;
+            star.style.animationDuration = `${Math.random() * 2 + 1.5}s`;
+            starContainer.appendChild(star);
+        }
+    }
+    window.addEventListener('resize', generateStars);
+    generateStars();
+
+    // API Configuration
     const API_URL = "https://script.google.com/macros/s/AKfycbxiOZWTy5DdVCDajih7jSQ_YtgYIBavtkkj_CMXHi0glIogIslC8qy62IRNYJHI0FjbOw/exec";
-    
     let currentScript = null;
-    
+
+    // Enhanced Professional WhatsApp Message (keeping original text style)
+    function generateProfessionalWhatsAppMessage(data) {
+        const formatCurrency = (amount) => `₹${(amount || 0).toLocaleString('en-IN')}`;
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        let message = "";
+        message += "━━━━━━━━━━━━━━\n";
+        message += "         നൂറുസ്സലാം മദ്റസ, കമ്പിപ്പാലം\n";
+        message += "             വരിസംഖ്യ വിവരങ്ങൾ\n";
+        message += "━━━━━━━━━━━━━━━\n\n";
+        
+        message += "📋 *വിദ്യാർത്ഥി / രക്ഷിതാവിന്റെ വിവരങ്ങൾ*\n";
+        message += "───────────────\n";
+        message += `👤 പേര് : ${data.parentName || "---"}\n`;
+        message += `📞 രജിസ്റ്റർ ചെയ്ത മൊബൈൽ : ${data.mobile || "---"}\n\n`;
+        
+        message += "💰 *വരിസംഖ്യ നിലവിലെ സ്ഥിതി*\n";
+        message += "───────────────\n";
+        message += `📅 അവസാനം അടച്ച മാസം : ${data.lastPaidMonth || "---"}\n`;
+        message += `✅ ഈ വർഷം അടച്ച മാസങ്ങൾ : ${data.paidMonths || 0} മാസം\n`;
+        message += `⏳ ബാക്കി മാസങ്ങൾ : ${data.pendingMonths || 0} മാസം\n`;
+        
+        if (data.previousBalance && data.previousBalance > 0) {
+            message += `📌 മുൻ വർഷ ബാക്കി : ${formatCurrency(data.previousBalance)}\n`;
+        }
+        message += `💵 ആകെ ബാക്കി തുക : ${formatCurrency(data.totalPending)}\n\n`;
+        
+        message += "📢 *അറിയിപ്പ്*\n";
+        message += "───────────────\n";
+        message += `${data.message || "ദയവായി നിങ്ങളുടെ ബാക്കി തുക അടച്ച് സഹകരിക്കുക."}\n\n`;
+        
+        message += "━━━━━━━━━━━━━━\n";
+        message += `📅 തീയ്യതി : ${dateStr}\n`;
+        message += "📞 കൂടുതൽ വിവരങ്ങൾക്ക് : മദ്റസ ഓഫീസുമായി ബന്ധപ്പെടുക\n";
+        message += "✨ www.noorussalammadrasa.online\n";
+        
+        return message;
+    }
+
+    function displayResult(data) {
+        const resultDiv = document.getElementById("result");
+        const professionalMessage = generateProfessionalWhatsAppMessage(data);
+        const encodedMessage = encodeURIComponent(professionalMessage);
+        const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodedMessage}`;
+        
+        const totalPending = data.totalPending || 0;
+        const pendingClass = totalPending > 0 ? 'amount-pending' : 'amount-cleared';
+        
+        resultDiv.innerHTML = `
+            <div class="result-card">
+                <table class="info-table">
+                    <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
+                    <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td>${escapeHtml(data.lastPaidMonth)}</td></tr>
+                    <tr><td><i class="fas fa-check-circle"></i> ഈ വർഷത്തിൽ അടച്ച മാസങ്ങൾ</td><td>${data.paidMonths || 0} മാസം</td></tr>
+                    <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${data.pendingMonths || 0} മാസം</td></tr>
+                    <tr><td><i class="fas fa-history"></i> മുൻപത്തെ ബാക്കി</td><td>₹ ${(data.previousBalance || 0).toLocaleString('en-IN')}</td></tr>
+                    <tr style="background:#FFF8EC;"><td><i class="fas fa-rupee-sign"></i> ആകെ ബാക്കി തുക</td><td class="${pendingClass}"><strong>₹ ${totalPending.toLocaleString('en-IN')}</strong></td></tr>
+                    <tr><td><i class="fas fa-envelope"></i> സന്ദേശം</td><td>${escapeHtml(data.message)}</td></tr>
+                </table>
+                <a href="${whatsappLink}" target="_blank" class="whatsapp-btn">
+                    <i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കുക
+                </a>
+            </div>
+        `;
+    }
+
+    function showError(msg) {
+        document.getElementById("result").innerHTML = `
+            <div class="result-card error">
+                <table class="info-table">
+                    <tr><td><i class="fas fa-exclamation-triangle"></i> ⚠️ പിശക്</td><td style="color:#c0392b;">${escapeHtml(msg)}</td></tr>
+                </table>
+            </div>
+        `;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
     function checkFee() {
         const mobile = document.getElementById("mobile").value.trim();
         
@@ -70,11 +503,11 @@
         document.getElementById("loader").style.display = "block";
         document.getElementById("result").innerHTML = "";
         
-        if (currentScript) {
+        if (currentScript && document.head.contains(currentScript)) {
             document.head.removeChild(currentScript);
         }
         
-        const callbackName = "callback_" + Date.now();
+        const callbackName = "callback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
         
         window[callbackName] = function(data) {
             delete window[callbackName];
@@ -83,6 +516,7 @@
             document.getElementById("loader").style.display = "none";
             
             if (data && data.success === true) {
+                if (!data.mobile && mobile) data.mobile = mobile;
                 displayResult(data);
             } else if (data && data.success === false) {
                 showError(data.message);
@@ -104,126 +538,14 @@
         document.head.appendChild(script);
     }
     
-    // ========== ENHANCED PROFESSIONAL WHATSAPP MESSAGE FUNCTION ==========
-    // This function creates a clean, formal, and well-structured WhatsApp message
-    function generateProfessionalWhatsAppMessage(data) {
-        // Format currency with Indian Rupee style
-        const formatCurrency = (amount) => {
-            return `₹${(amount || 0).toLocaleString('en-IN')}`;
-        };
-        
-        // Get current date for official reference
-        const today = new Date();
-        const dateStr = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-        
-        // Build professional message with clear sections
-        let message = "";
-        
-        // Header with institution name (elegant)
-        message += "━━━━━━━━━━━━━━\n";
-        message += "         നൂറുസ്സലാം മദ്റസ, കമ്പിപ്പാലം\n";
-        message += "             വരിസംഖ്യ വിവരങ്ങൾ\n";
-        message += "━━━━━━━━━━━━━━━\n\n";
-        
-        // Parent/Student details section
-        message += "📋 *വിദ്യാർത്ഥി / രക്ഷിതാവിന്റെ വിവരങ്ങൾ*\n";
-        message += "───────────────\n";
-        message += `👤 പേര് : ${data.parentName || "---"}\n`;
-        message += `📞 രജിസ്റ്റർ ചെയ്ത മൊബൈൽ : ${data.mobile || "---"}\n\n`;
-        
-        // Fee payment status section
-        message += "💰 *വരിസംഖ്യ നിലവിലെ സ്ഥിതി*\n";
-        message += "───────────────\n";
-        message += `📅 അവസാനം അടച്ച മാസം : ${data.lastPaidMonth || "---"}\n`;
-        message += `✅ ഈ വർഷം അടച്ച മാസങ്ങൾ : ${data.paidMonths || 0} മാസം\n`;
-        message += `⏳ ബാക്കി മാസങ്ങൾ : ${data.pendingMonths || 0} മാസം\n`;
-        
-        // Financial summary with clear formatting
-        if (data.previousBalance && data.previousBalance > 0) {
-            message += `📌 മുൻ വർഷ ബാക്കി : ${formatCurrency(data.previousBalance)}\n`;
-        }
-        message += `💵 ആകെ ബാക്കി തുക : ${formatCurrency(data.totalPending)}\n\n`;
-        
-        // Official message/remark section
-        message += "📢 *അറിയിപ്പ്*\n";
-        message += "───────────────\n";
-        message += `${data.message || "ദയവായി നിങ്ങളുടെ ബാക്കി തുക അടച്ച് സഹകരിക്കുക."}\n\n`;
-        
-        // Footer with instructions and gratitude
-        message += "━━━━━━━━━━━━━━\n";
-        message += `📅 തീയ്യതി : ${dateStr}\n`;
-        message += "📞 കൂടുതൽ വിവരങ്ങൾക്ക് : മദ്റസ ഓഫീസുമായി ബന്ധപ്പെടുക\n";
-        message += "✨ www.noorussalammadrasa.online\n";
-        
-        return message;
-    }
-    
-    function displayResult(data) {
-        const resultDiv = document.getElementById("result");
-        
-        // Generate enhanced professional WhatsApp message
-        const professionalMessage = generateProfessionalWhatsAppMessage(data);
-        const encodedMessage = encodeURIComponent(professionalMessage);
-        const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodedMessage}`;
-        
-        resultDiv.innerHTML = `
-            <div class="result-card">
-                <div class="info-box">
-                    <div class="info-label">👪 രക്ഷിതാവിൻ്റെ പേര്</div>
-                    <div class="info-value">${escapeHtml(data.parentName)}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">📅 അവസാനം അടച്ച മാസം</div>
-                    <div class="info-value">${escapeHtml(data.lastPaidMonth)}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">✅ ഈ വർഷത്തിൽ അടച്ച മാസങ്ങൾ</div>
-                    <div class="info-value">${data.paidMonths} മാസം</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">⏳ ബാക്കി മാസങ്ങൾ</div>
-                    <div class="info-value">${data.pendingMonths} മാസം</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">💰 മുൻപത്തെ ബാക്കി</div>
-                    <div class="info-value">₹ ${(data.previousBalance || 0).toLocaleString()}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">📊 ആകെ ബാക്കി തുക</div>
-                    <div class="info-value" style="color:${data.totalPending > 0 ? '#ff9800' : '#2e7d32'}">₹ ${(data.totalPending || 0).toLocaleString()}</div>
-                </div>
-                <div class="info-box">
-                    <div class="info-label">💬 സന്ദേശം</div>
-                    <div class="info-value">${escapeHtml(data.message)}</div>
-                </div>
-                <a href="${whatsappLink}" target="_blank" class="whatsapp-btn">📱 WhatsApp-ൽ വിവരം ലഭിക്കുക</a>
-            </div>
-        `;
-    }
-    
-    function showError(msg) {
-        document.getElementById("result").innerHTML = `
-            <div class="result-card error">
-                <div class="info-box">
-                    <div class="info-label">⚠️ പിശക്</div>
-                    <div class="info-value">${escapeHtml(msg)}</div>
-                </div>
-            </div>
-        `;
-    }
-    
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-    
     document.getElementById("mobile").addEventListener("keypress", function(e) {
         if (e.key === "Enter") checkFee();
+    });
+    
+    // Input validation for digits only
+    const mobileInput = document.getElementById("mobile");
+    mobileInput.addEventListener("input", function(e) {
+        this.value = this.value.replace(/\D/g, '').slice(0, 10);
     });
 </script>
 </body>
