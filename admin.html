@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>അഡ്മിൻ ഡാഷ്ബോർഡ് - നൂറുസ്സലാം മദ്രസ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Anek Malayalam',sans-serif;background:#f0f2f5;padding:20px}
+        .container{max-width:1200px;margin:auto}
+        .header{background:#0a4b2a;color:#fff;padding:20px;border-radius:15px;margin-bottom:20px}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin-bottom:20px}
+        .stat-card{background:#fff;padding:20px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+        .stat-card h3{color:#0a4b2a;margin-bottom:10px}
+        .stat-card .number{font-size:2rem;font-weight:700;color:#1b7e42}
+        .login-box{max-width:400px;margin:100px auto;background:#fff;padding:30px;border-radius:20px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.1)}
+        .login-box input{width:100%;padding:12px;margin:10px 0;border:1px solid #ddd;border-radius:10px}
+        .login-box button{background:#0a4b2a;color:#fff;padding:12px;border:none;border-radius:10px;width:100%;cursor:pointer}
+        table{width:100%;background:#fff;border-radius:15px;overflow:auto;margin-top:20px}
+        th,td{padding:12px;text-align:left;border-bottom:1px solid #ddd}
+        th{background:#0a4b2a;color:#fff}
+        .whatsapp-btn{background:#25D366;color:#fff;padding:5px 10px;border-radius:10px;text-decoration:none;font-size:0.8rem}
+        .tab{display:inline-block;padding:10px 20px;background:#ddd;margin-right:5px;border-radius:10px 10px 0 0;cursor:pointer}
+        .tab.active{background:#0a4b2a;color:#fff}
+        .tab-content{display:none;background:#fff;padding:20px;border-radius:0 15px 15px 15px}
+        .tab-content.active{display:block}
+        input,textarea{width:100%;padding:10px;margin:10px 0;border:1px solid #ddd;border-radius:10px}
+        .success{background:#d4edda;color:#155724;padding:10px;border-radius:10px;margin:10px 0}
+        .error{background:#f8d7da;color:#721c24;padding:10px;border-radius:10px;margin:10px 0}
+        .back-link{display:inline-block;margin-top:20px;color:#0a4b2a;text-decoration:none}
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <div class="login-box" id="loginBox">
+        <h2>🔐 അഡ്മിൻ ലോഗിൻ</h2>
+        <p style="color:#666; margin-bottom:15px;">നൂറുസ്സലാം മദ്രസ കമ്പിപ്പാലം</p>
+        <input type="password" id="password" placeholder="പാസ്വേഡ്">
+        <button onclick="login()">പ്രവേശിക്കുക</button>
+    </div>
+    
+    <div id="dashboard" style="display:none">
+        <div class="header">
+            <h1>📊 നൂറുസ്സലാം മദ്രസ - അഡ്മിൻ ഡാഷ്ബോർഡ്</h1>
+            <p>കമ്പിപ്പാലം - ഫീസ് മാനേജ്മെന്റ് സിസ്റ്റം</p>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid"></div>
+        
+        <div>
+            <div class="tab active" onclick="showTab('records')">📋 ഫീസ് രേഖകൾ</div>
+            <div class="tab" onclick="showTab('add')">➕ പുതിയ രക്ഷിതാവ്</div>
+            <div class="tab" onclick="showTab('chart')">📈 ഗ്രാഫ്</div>
+        </div>
+        
+        <div id="recordsTab" class="tab-content active">
+            <div style="overflow-x:auto">
+                <table id="recordsTable">
+                    <thead>
+                        <tr><th>രക്ഷിതാവ്</th><th>മൊബൈൽ</th><th>അവസാനം അടച്ച മാസം</th><th>അടച്ച മാസം</th><th>ബാക്കി മാസം</th><th>മുൻ ബാക്കി</th><th>ആകെ ബാക്കി</th><th>WhatsApp</th></tr>
+                    </thead>
+                    <tbody id="recordsBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="addTab" class="tab-content">
+            <h3>➕ പുതിയ രക്ഷിതാവ് ചേർക്കുക</h3>
+            <input type="text" id="newParentName" placeholder="രക്ഷിതാവിൻ്റെ പേര്">
+            <input type="tel" id="newMobile" placeholder="മൊബൈൽ നമ്പർ (10 അക്കം)">
+            <input type="text" id="newLastPaidMonth" placeholder="അവസാനം അടച്ച മാസം (ഉദാ: ഏപ്രിൽ 2026)">
+            <input type="number" id="newPaidMonths" placeholder="അടച്ച മാസങ്ങളുടെ എണ്ണം">
+            <input type="number" id="newPreviousBalance" placeholder="മുൻപത്തെ ബാക്കി (₹)" value="0">
+            <input type="date" id="newLastPaidDate" placeholder="അവസാന തീയതി">
+            <button onclick="addParent()">➕ ചേർക്കുക</button>
+            <div id="addResult"></div>
+        </div>
+        
+        <div id="chartTab" class="tab-content">
+            <canvas id="feeChart" width="400" height="200"></canvas>
+        </div>
+        
+        <a href="index.html" class="back-link">← രക്ഷിതാക്കളുടെ പേജിലേക്ക് മടങ്ങുക</a>
+    </div>
+</div>
+
+<script>
+    // ⚠️ IMPORTANT: Replace with your Apps Script URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbyLCpOgCeKsyC3yRuIxTQRd6JFyUcptA8VWE8ER13pMSmNQ5Ef7iud55iHBGY3R_CktnQ/exec";
+    
+    let dashboardData = null;
+    let currentCallback = null;
+    
+    function callAppsScript(action, params, callback) {
+        if (currentCallback) delete window[currentCallback];
+        const callbackName = "jsonpCallback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 5);
+        currentCallback = callbackName;
+        
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            callback(data);
+        };
+        
+        let url = `${API_URL}?${action}&callback=${callbackName}`;
+        if (params) {
+            for (let key in params) {
+                url += `&${key}=${encodeURIComponent(params[key])}`;
+            }
+        }
+        
+        const script = document.createElement("script");
+        script.src = url;
+        script.onerror = function() {
+            delete window[callbackName];
+            callback({ error: "Network error" });
+        };
+        document.head.appendChild(script);
+    }
+    
+    function login() {
+        var password = document.getElementById("password").value;
+        callAppsScript("action=verifyAdmin", { password: password }, function(result) {
+            if (result === true || result === "true") {
+                document.getElementById("loginBox").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+                loadDashboard();
+            } else {
+                alert("തെറ്റായ പാസ്വേഡ്");
+            }
+        });
+    }
+    
+    function loadDashboard() {
+        callAppsScript("action=getDashboardData", null, function(data) {
+            dashboardData = data;
+            displayStats(data);
+            displayRecords(data.records);
+            drawChart(data);
+        });
+    }
+    
+    function displayStats(data) {
+        document.getElementById("statsGrid").innerHTML = `
+            <div class="stat-card"><h3>👪 ആകെ രക്ഷിതാക്കൾ</h3><div class="number">${data.totalParents}</div></div>
+            <div class="stat-card"><h3>💰 ആകെ ബാക്കി തുക</h3><div class="number">₹${data.totalPendingAmount.toLocaleString()}</div></div>
+            <div class="stat-card"><h3>✅ ഫീസ് പൂർത്തിയായവർ</h3><div class="number">${data.parentsFullyPaid}</div></div>
+            <div class="stat-card"><h3>⏳ ബാക്കിയുള്ളവർ</h3><div class="number">${data.parentsWithBalance}</div></div>
+            <div class="stat-card"><h3>📅 ആകെ അടച്ച മാസങ്ങൾ</h3><div class="number">${data.totalPaidMonths}</div></div>
+            <div class="stat-card"><h3>⏰ ബാക്കി മാസങ്ങൾ</h3><div class="number">${data.totalPendingMonths}</div></div>
+        `;
+    }
+    
+    function displayRecords(records) {
+        var html = "";
+        for (var i = 0; i < records.length; i++) {
+            var r = records[i];
+            var whatsappLink = `https://wa.me/91${r.mobile}?text=നമസ്കാരം%20${encodeURIComponent(r.parentName)}%2C%20നിങ്ങളുടെ%20ബാക്കി%20തുക%20₹${r.totalPending}%20ആണ്`;
+            html += `<tr>
+                <td>${r.parentName}</td>
+                <td>${r.mobile}</td>
+                <td>${r.lastPaidMonth}</td>
+                <td>${r.paidMonths}</td>
+                <td>${r.pendingMonths}</td>
+                <td>₹${r.previousBalance}</td>
+                <td style="color:${r.totalPending>0?'#c62828':'#2e7d32'}">₹${r.totalPending}</td>
+                <td><a href="${whatsappLink}" target="_blank" class="whatsapp-btn">📱 WhatsApp</a></td>
+            </td>`;
+        }
+        document.getElementById("recordsBody").innerHTML = html;
+    }
+    
+    function drawChart(data) {
+        var ctx = document.getElementById('feeChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['ഫീസ് പൂർത്തിയായവർ', 'ബാക്കിയുള്ളവർ'],
+                datasets: [{
+                    label: 'രക്ഷിതാക്കളുടെ എണ്ണം',
+                    data: [data.parentsFullyPaid, data.parentsWithBalance],
+                    backgroundColor: ['#2e7d32', '#ff9800'],
+                    borderRadius: 10
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'top' } } }
+        });
+    }
+    
+    function addParent() {
+        var parentName = document.getElementById("newParentName").value;
+        var mobile = document.getElementById("newMobile").value;
+        var lastPaidMonth = document.getElementById("newLastPaidMonth").value;
+        var paidMonths = parseInt(document.getElementById("newPaidMonths").value);
+        var previousBalance = parseInt(document.getElementById("newPreviousBalance").value);
+        var lastPaidDate = document.getElementById("newLastPaidDate").value;
+        
+        if (!parentName || mobile.length !== 10 || !lastPaidMonth || !paidMonths) {
+            document.getElementById("addResult").innerHTML = '<div class="error">❌ എല്ലാ ഫീൽഡുകളും ശരിയായി പൂരിപ്പിക്കുക</div>';
+            return;
+        }
+        
+        callAppsScript("action=addNewParent", {
+            parentName: parentName,
+            mobile: mobile,
+            lastPaidMonth: lastPaidMonth,
+            paidMonths: paidMonths,
+            previousBalance: previousBalance,
+            lastPaidDate: lastPaidDate
+        }, function(result) {
+            if (result.success) {
+                document.getElementById("addResult").innerHTML = '<div class="success">✅ ' + result.message + '</div>';
+                loadDashboard();
+                document.getElementById("newParentName").value = "";
+                document.getElementById("newMobile").value = "";
+                document.getElementById("newLastPaidMonth").value = "";
+                document.getElementById("newPaidMonths").value = "";
+                document.getElementById("newPreviousBalance").value = "0";
+                document.getElementById("newLastPaidDate").value = "";
+            } else {
+                document.getElementById("addResult").innerHTML = '<div class="error">❌ ' + result.message + '</div>';
+            }
+        });
+    }
+    
+    function showTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        if (tab === 'records') {
+            document.querySelector('.tab').classList.add('active');
+            document.getElementById('recordsTab').classList.add('active');
+        } else if (tab === 'add') {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('addTab').classList.add('active');
+        } else if (tab === 'chart') {
+            document.querySelectorAll('.tab')[2].classList.add('active');
+            document.getElementById('chartTab').classList.add('active');
+            if (dashboardData) drawChart(dashboardData);
+        }
+    }
+</script>
+</body>
+</html>
