@@ -104,9 +104,69 @@
         document.head.appendChild(script);
     }
     
+    // ========== ENHANCED PROFESSIONAL WHATSAPP MESSAGE FUNCTION ==========
+    // This function creates a clean, formal, and well-structured WhatsApp message
+    function generateProfessionalWhatsAppMessage(data) {
+        // Format currency with Indian Rupee style
+        const formatCurrency = (amount) => {
+            return `₹${(amount || 0).toLocaleString('en-IN')}`;
+        };
+        
+        // Get current date for official reference
+        const today = new Date();
+        const dateStr = today.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        // Build professional message with clear sections
+        let message = "";
+        
+        // Header with institution name (elegant)
+        message += "━━━━━━━━━━━━━━\n";
+        message += "         നൂറുസ്സലാം മദ്റസ, കമ്പിപ്പാലം\n";
+        message += "             വരിസംഖ്യ വിവരങ്ങൾ\n";
+        message += "━━━━━━━━━━━━━━━\n\n";
+        
+        // Parent/Student details section
+        message += "📋 *വിദ്യാർത്ഥി / രക്ഷിതാവിന്റെ വിവരങ്ങൾ*\n";
+        message += "───────────────\n";
+        message += `👤 പേര് : ${data.parentName || "---"}\n`;
+        message += `📞 രജിസ്റ്റർ ചെയ്ത മൊബൈൽ : ${data.mobile || "---"}\n\n`;
+        
+        // Fee payment status section
+        message += "💰 *വരിസംഖ്യ നിലവിലെ സ്ഥിതി*\n";
+        message += "───────────────\n";
+        message += `📅 അവസാനം അടച്ച മാസം : ${data.lastPaidMonth || "---"}\n`;
+        message += `✅ ഈ വർഷം അടച്ച മാസങ്ങൾ : ${data.paidMonths || 0} മാസം\n`;
+        message += `⏳ ബാക്കി മാസങ്ങൾ : ${data.pendingMonths || 0} മാസം\n`;
+        
+        // Financial summary with clear formatting
+        if (data.previousBalance && data.previousBalance > 0) {
+            message += `📌 മുൻ വർഷ ബാക്കി : ${formatCurrency(data.previousBalance)}\n`;
+        }
+        message += `💵 ആകെ ബാക്കി തുക : ${formatCurrency(data.totalPending)}\n\n`;
+        
+        // Official message/remark section
+        message += "📢 *ഔദ്യോഗിക അറിയിപ്പ്*\n";
+        message += "───────────────\n";
+        message += `${data.message || "ദയവായി നിങ്ങളുടെ ബാക്കി തുക അടച്ച് സഹകരിക്കുക."}\n\n`;
+        
+        // Footer with instructions and gratitude
+        message += "━━━━━━━━━━━━━━\n";
+        message += "🙏 *സഹകരണത്തിന് നന്ദി*\n";
+        message += "━━━━━━━━━━━━━━\n";
+        message += `📅 തീയ്യതി : ${dateStr}\n`;
+        message += "📞 കൂടുതൽ വിവരങ്ങൾക്ക് : മദ്റസ ഓഫീസുമായി ബന്ധപ്പെടുക\n";
+        message += "✨ www.noorussalammadrasa.online\n";
+        
+        return message;
+    }
+    
     function displayResult(data) {
         const resultDiv = document.getElementById("result");
-        const whatsappLink = `https://wa.me/91${data.mobile}?text=അസ്സലാമുഅലൈകും%20${encodeURIComponent(data.parentName)}%2C%20നിങ്ങളുടെ%20ബാക്കി%20വരിസംഖ്യ%20തുക%20₹${data.totalPending}%20ആണ്`;
+        
+        // Generate enhanced professional WhatsApp message
+        const professionalMessage = generateProfessionalWhatsAppMessage(data);
+        const encodedMessage = encodeURIComponent(professionalMessage);
+        const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodedMessage}`;
         
         resultDiv.innerHTML = `
             <div class="result-card">
