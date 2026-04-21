@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Noorussalam-Fees dashboard</title>
+    <title>Noorussalam - Fees Dashboard with Google Pay</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -15,7 +15,6 @@
 
         body {
             font-family: 'Anek Malayalam', sans-serif;
-            /* Radiant blue gradient with shine effect */
             background: radial-gradient(circle at 30% 20%, #0a2e5a, #041a30, #020d1a);
             min-height: 100vh;
             padding: 20px 16px;
@@ -25,7 +24,7 @@
             position: relative;
         }
 
-        /* Animated shine overlay for blue gradient effect */
+        /* Animated shine overlay */
         body::before {
             content: '';
             position: fixed;
@@ -44,7 +43,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Twinkling stars background */
+        /* Stars background */
         .stars-bg {
             position: fixed;
             top: 0;
@@ -71,7 +70,7 @@
 
         /* Main container */
         .container {
-            max-width: 520px;
+            max-width: 540px;
             width: 100%;
             background: rgba(255,255,255,0.98);
             border-radius: 40px;
@@ -79,42 +78,26 @@
             box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1);
             position: relative;
             z-index: 2;
-            backdrop-filter: blur(0px);
-            transition: transform 0.2s ease, box-shadow 0.3s ease;
+            transition: transform 0.2s ease;
         }
 
         .container:hover {
             transform: translateY(-3px);
-            box-shadow: 0 35px 55px -18px rgba(0, 0, 0, 0.6);
         }
 
-        /* Header with Yellow Line (border-bottom) */
+        /* Header */
         .header {
             background: linear-gradient(115deg, #0a2a5c 0%, #1a4d8c 100%);
             padding: 30px 20px 26px;
             text-align: center;
             color: white;
-            position: relative;
             border-bottom: 4px solid #ffcd7e;
-        }
-
-        /* Subtle inner glow */
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, #ffdd99, #ffcd7e, #ffdd99, transparent);
-            pointer-events: none;
+            position: relative;
         }
 
         .header h1 {
             font-size: 1.7rem;
             font-weight: 800;
-            letter-spacing: -0.3px;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -124,15 +107,6 @@
 
         .header h1 i {
             color: #ffd966;
-            font-size: 1.5rem;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-
-        .header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-            margin-top: 6px;
-            letter-spacing: 0.3px;
         }
 
         .badge {
@@ -145,20 +119,14 @@
             font-size: 0.72rem;
             font-weight: 700;
             margin-top: 14px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
-        .badge i {
-            font-size: 0.75rem;
-        }
-
-        /* Content area */
+        /* Content */
         .content {
             padding: 32px 26px;
             background: #ffffff;
         }
 
-        /* Input styling */
         input {
             width: 100%;
             padding: 15px 20px;
@@ -171,17 +139,15 @@
             font-weight: 500;
             background: #fbfeff;
             transition: all 0.25s ease;
-            color: #0a2a4a;
         }
 
         input:focus {
             border-color: #3b82f6;
             outline: none;
             box-shadow: 0 0 0 4px rgba(59,130,246,0.12);
-            background: white;
         }
 
-        button {
+        .check-btn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #0f3d72, #1b5da8);
@@ -200,46 +166,71 @@
             gap: 10px;
         }
 
-        button:hover {
+        .check-btn:hover {
             transform: translateY(-2px);
             background: linear-gradient(135deg, #0c3360, #1f6ec0);
-            box-shadow: 0 10px 22px rgba(0, 32, 64, 0.4);
         }
 
-        button:disabled {
+        .check-btn:disabled {
             opacity: 0.65;
             transform: none;
             cursor: not-allowed;
         }
 
-        .loader {
-            display: none;
-            text-align: center;
-            padding: 24px;
+        /* Google Pay Button Styling */
+        .gpay-container {
+            margin-top: 20px;
+            transition: all 0.2s;
         }
 
-        .spinner {
-            width: 42px;
-            height: 42px;
-            border: 3px solid #e2edf7;
-            border-top: 3px solid #1f6eb0;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            margin: 0 auto 12px;
+        .gpay-btn {
+            width: 100%;
+            background: #ffffff;
+            border: 2px solid #dadce0;
+            border-radius: 60px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #3c4043;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .gpay-btn:hover {
+            background-color: #f8f9fa;
+            border-color: #4285f4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
         }
 
-        /* Premium Table Style Result Card */
+        .gpay-btn img {
+            width: 32px;
+            height: auto;
+        }
+
+        .gpay-btn i {
+            font-size: 28px;
+            color: #3c4043;
+        }
+
+        .gpay-disabled {
+            opacity: 0.6;
+            pointer-events: none;
+            filter: grayscale(0.2);
+        }
+
+        /* Result Card */
         .result-card {
             margin-top: 28px;
             border-radius: 28px;
             background: #fafdff;
             border: 1px solid #e8f0f8;
             overflow: hidden;
-            transition: all 0.2s;
         }
 
         .result-card.error {
@@ -269,16 +260,13 @@
             width: 44%;
             font-weight: 600;
             color: #3a6b8f;
-            background: #fafdff;
             font-size: 0.85rem;
-            letter-spacing: 0.3px;
         }
 
         .info-table td:last-child {
             font-weight: 700;
             color: #1a4a6f;
             font-size: 1rem;
-            word-break: break-word;
         }
 
         .amount-pending {
@@ -304,9 +292,7 @@
             gap: 12px;
             text-decoration: none;
             font-weight: 700;
-            font-size: 0.95rem;
             transition: all 0.2s;
-            box-shadow: 0 5px 14px rgba(37,211,102,0.35);
         }
 
         .whatsapp-btn:hover {
@@ -319,7 +305,6 @@
             padding: 14px;
             background: #f0f5fa;
             font-size: 0.7rem;
-            border-top: 1px solid #e2ecf3;
             color: #5a7f9a;
         }
 
@@ -329,12 +314,29 @@
             font-weight: 600;
         }
 
+        .loader {
+            display: none;
+            text-align: center;
+            padding: 24px;
+        }
+
+        .spinner {
+            width: 42px;
+            height: 42px;
+            border: 3px solid #e2edf7;
+            border-top: 3px solid #1f6eb0;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 480px) {
             .content {
                 padding: 24px 18px;
-            }
-            .header h1 {
-                font-size: 1.4rem;
             }
             .info-table td {
                 padding: 10px 12px;
@@ -344,39 +346,63 @@
 </head>
 <body>
 
-<!-- Star background -->
 <div class="stars-bg" id="starContainer"></div>
 
 <div class="container">
     <div class="header">
         <h1>
-            നൂറുസ്സലാം മദ്റസ
+            നൂറുസ്സലാം മദ്റസ (6110)
         </h1>
         <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
         <div class="badge">
-            വരിസംഖ്യ പെന്റിംഗ് വിവര സംവിധാനം 2026-27
+            <i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ പെന്റിംഗ് വിവര സംവിധാനം
         </div>
     </div>
 
     <div class="content">
-        <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off">
-        <button onclick="checkFee()" id="checkBtn">
+        <input type="tel" id="mobile" placeholder="രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ (10 അക്കം)" maxlength="10" autocomplete="off">
+        <button class="check-btn" onclick="checkFee()" id="checkBtn">
             🔍 പരിശോധിക്കുക
         </button>
+        
+        <!-- Google Pay Payment Section (Shows only after successful fetch) -->
+        <div id="gpaySection" style="display: none;">
+            <div class="gpay-container">
+                <button id="googlePayBtn" class="gpay-btn">
+                    <i class="fab fa-google-pay" style="font-size: 28px; color: #3c4043;"></i>
+                    <span>📱 Google Pay-ൽ അടയ്ക്കുക</span>
+                </button>
+                <p style="font-size: 0.7rem; text-align: center; margin-top: 10px; color: #5f7f9e;">
+                    <i class="fas fa-shield-alt"></i> സുരക്ഷിത UPI പേയ്മെന്റ് | UPI ID: ameerpattani786@oksbi
+                </p>
+            </div>
+        </div>
+
         <div id="loader" class="loader">
             <div class="spinner"></div>
-            <p style="color:#6a8fae;">ദയവായി കാത്തിരിക്കുക...</p>
+            <p>ദയവായി കാത്തിരിക്കുക...</p>
         </div>
         <div id="result"></div>
     </div>
 
     <div class="footer">
-        <a href="admin.html">🔐 Admin</a> | Noorussalam Madrasa © 2026
+        <a href="#">🔐 Admin</a> | Noorussalam Madrasa © 2026 | <i class="fas fa-phone-alt"></i> 7034678818
     </div>
 </div>
 
 <script>
-    // Starfield background generator
+    // ======================== CONFIGURATION ==========================
+    const UPI_ID = "ameerpattani786@oksbi";      // Google Pay UPI ID
+    const PAYEE_NAME = "Noorussalam Madrasa";
+    const NOTE = "Madrasa Fee Payment";
+    const CURRENCY = "INR";
+    
+    // API Endpoint (unchanged from your original)
+    const API_URL = "https://script.google.com/macros/s/AKfycbwemeQr87pSilGvgkek0gme56wj3XAVyacYdObcMH0pM5OINPTfo06tJrRYccvPAx1jJQ/exec";
+    let currentScript = null;
+    let currentStudentData = null;   // Store latest fetched data for payment
+
+    // Star background generation
     function generateStars() {
         const starContainer = document.getElementById('starContainer');
         if (!starContainer) return;
@@ -398,11 +424,18 @@
     window.addEventListener('resize', generateStars);
     generateStars();
 
-    // API Configuration
-    const API_URL = "https://script.google.com/macros/s/AKfycbx8KbJkjrp67-eu7SiIe6SnAIQCv45GzEe67IJOWSD4t522JRhrIdX1w8BIspVS3miXWw/exec";
-    let currentScript = null;
+    // Helper: escape HTML
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
 
-    // Enhanced Professional WhatsApp Message (keeping original text style)
+    // Professional WhatsApp Message (enhanced with payment reminder)
     function generateProfessionalWhatsAppMessage(data) {
         const formatCurrency = (amount) => `₹${(amount || 0).toLocaleString('en-IN')}`;
         const today = new Date();
@@ -434,6 +467,9 @@
         message += "───────────────\n";
         message += `${data.message || "ദയവായി നിങ്ങളുടെ ബാക്കി തുക അടച്ച് സഹകരിക്കുക."}\n\n`;
         
+        message += "💳 *Google Pay UPI:* suhailp067@oksbi\n";
+        message += "⬆️ മുകളിലുള്ള UPI ID ഉപയോഗിച്ച് ബാക്കി തുക അടയ്ക്കാം.\n\n";
+        
         message += "━━━━━━━━━━━━━━\n";
         message += `📅 തീയ്യതി : ${dateStr}\n`;
         message += "📞 കൂടുതൽ വിവരങ്ങൾക്ക് : 9495844382(ദാരിമി ഉസ്താദ്)\n";
@@ -442,6 +478,7 @@
         return message;
     }
 
+    // Display result card + conditionally show GPay button
     function displayResult(data) {
         const resultDiv = document.getElementById("result");
         const professionalMessage = generateProfessionalWhatsAppMessage(data);
@@ -467,6 +504,31 @@
                 </a>
             </div>
         `;
+        
+        // Store data globally for Google Pay transaction
+        currentStudentData = {
+            mobile: data.mobile,
+            parentName: data.parentName,
+            totalPending: totalPending,
+            pendingMonths: data.pendingMonths
+        };
+        
+        // Show Google Pay section only if pending amount > 0 and valid data
+        const gpaySection = document.getElementById("gpaySection");
+        if (totalPending > 0 && totalPending !== undefined && totalPending !== null) {
+            gpaySection.style.display = "block";
+            // Attach event listener to Google Pay button (with latest amount)
+            const gpayBtn = document.getElementById("googlePayBtn");
+            // Remove previous listeners to avoid duplication
+            const newGpayBtn = gpayBtn.cloneNode(true);
+            gpayBtn.parentNode.replaceChild(newGpayBtn, gpayBtn);
+            newGpayBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                initiateGooglePay(totalPending, data.parentName, data.mobile);
+            });
+        } else {
+            gpaySection.style.display = "none";
+        }
     }
 
     function showError(msg) {
@@ -477,18 +539,41 @@
                 </table>
             </div>
         `;
+        document.getElementById("gpaySection").style.display = "none";
+        currentStudentData = null;
     }
 
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+    // ======================== GOOGLE PAY (UPI INTENT) ==========================
+    function initiateGooglePay(amount, studentName, mobile) {
+        if (!amount || amount <= 0) {
+            alert("ബാക്കി തുക ഇല്ല. പേയ്മെന്റ് ആവശ്യമില്ല.");
+            return;
+        }
+        
+        // Format amount to 2 decimal places
+        const payAmount = parseFloat(amount).toFixed(2);
+        const description = `${NOTE} - ${studentName} (${mobile})`;
+        // UPI Deep Link for Google Pay / any UPI app
+        // Using standard upi://pay?pa=... format (works for Google Pay, PhonePe, etc.)
+        const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${payAmount}&cu=${CURRENCY}&tn=${encodeURIComponent(description)}`;
+        
+        // For Google Pay specifically, we can also try intent: but upi:// is widely supported.
+        // Create an anchor and simulate click to open UPI intent
+        const anchor = document.createElement('a');
+        anchor.href = upiLink;
+        anchor.target = "_blank";   // Opens Google Pay or available UPI app
+        document.body.appendChild(anchor);
+        anchor.click();
+        document.body.removeChild(anchor);
+        
+        // Optional: Fallback message if UPI not installed
+        setTimeout(() => {
+            // subtle reminder
+            console.log("UPI intent triggered");
+        }, 200);
     }
 
+    // API call to fetch fee data
     function checkFee() {
         const mobile = document.getElementById("mobile").value.trim();
         
@@ -502,6 +587,8 @@
         btn.style.opacity = "0.7";
         document.getElementById("loader").style.display = "block";
         document.getElementById("result").innerHTML = "";
+        document.getElementById("gpaySection").style.display = "none"; // hide until new fetch
+        currentStudentData = null;
         
         if (currentScript && document.head.contains(currentScript)) {
             document.head.removeChild(currentScript);
@@ -517,9 +604,14 @@
             
             if (data && data.success === true) {
                 if (!data.mobile && mobile) data.mobile = mobile;
+                // Ensure totalPending is numeric
+                if (data.totalPending === undefined || isNaN(data.totalPending)) data.totalPending = 0;
+                if (data.previousBalance === undefined) data.previousBalance = 0;
+                if (data.pendingMonths === undefined) data.pendingMonths = 0;
+                if (data.paidMonths === undefined) data.paidMonths = 0;
                 displayResult(data);
             } else if (data && data.success === false) {
-                showError(data.message);
+                showError(data.message || "വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.");
             } else {
                 showError("വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.");
             }
@@ -532,21 +624,24 @@
             btn.disabled = false;
             btn.style.opacity = "1";
             document.getElementById("loader").style.display = "none";
-            showError("API-യുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല. URL ശരിയാണോ എന്ന് പരിശോധിക്കുക.");
+            showError("API-യുമായി ബന്ധപ്പെടാൻ കഴിഞ്ഞില്ല. നെറ്റ്വർക്ക് പരിശോധിക്കുക.");
         };
         currentScript = script;
         document.head.appendChild(script);
     }
     
+    // Enter key press
     document.getElementById("mobile").addEventListener("keypress", function(e) {
         if (e.key === "Enter") checkFee();
     });
     
-    // Input validation for digits only
+    // Mobile input validation digits only
     const mobileInput = document.getElementById("mobile");
     mobileInput.addEventListener("input", function(e) {
         this.value = this.value.replace(/\D/g, '').slice(0, 10);
     });
+    
+    // Note: No additional Google Pay button handler initially; will be attached after fetch
 </script>
 </body>
 </html>
