@@ -5,1346 +5,612 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="format-detection" content="telephone=no">
-    <title>NOORUSSALAM MADRASA - Student Dashboard</title>
+    <title>NOORUSSALAM MADRASA | Next-Gen Student Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        /* (Keep all the CSS styles from the previous dashboard) */
-        /* Add to your existing CSS */
-        
-        .data-refresh {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--gradient-1);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: var(--shadow-sm);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        .sync-status {
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 10% 20%, rgba(15, 25, 55, 0.95), rgba(5, 10, 30, 0.98));
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated BG elements */
+        body::before {
+            content: '';
             position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            padding: 10px 15px;
-            border-radius: 10px;
-            box-shadow: var(--shadow-md);
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            z-index: 100;
-            border-left: 3px solid var(--success);
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.05) 50%, transparent 80%);
+            animation: slowDrift 40s infinite alternate;
+            pointer-events: none;
+            z-index: 0;
         }
-        
-        .data-loading {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.9);
-            display: none;
+
+        @keyframes slowDrift {
+            0% { transform: translate(0,0) rotate(0deg); }
+            100% { transform: translate(5%, 5%) rotate(5deg); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Glassmorphism Core */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(59,130,246,0.5);
+            box-shadow: 0 30px 50px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Login Form */
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
-            border-radius: inherit;
         }
-        
-        .data-loading.active {
+
+        .login-panel {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(15, 25, 55, 0.75);
+            backdrop-filter: blur(20px);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 30px 50px rgba(0,0,0,0.5);
+            animation: floatIn 0.7s ease;
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .logo-circle {
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #3b82f6, #a855f7);
+            border-radius: 30px;
             display: flex;
-        }
-        
-        .offline-mode {
-            background: var(--warning);
-            color: black;
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            display: none;
             align-items: center;
-            gap: 10px;
-            font-weight: 600;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 15px 35px rgba(59,130,246,0.3);
         }
-        
-        .offline-mode.active {
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #93c5fd);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+        }
+
+        .input-group-custom {
+            background: rgba(255,255,255,0.06);
+            border-radius: 1.2rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            transition: all 0.3s;
+        }
+        .input-group-custom:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
+            background: rgba(255,255,255,0.1);
+        }
+        .form-control-glass {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 0.9rem 1.2rem;
+        }
+        .form-control-glass:focus {
+            background: transparent;
+            color: white;
+            box-shadow: none;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(95deg, #3b82f6, #8b5cf6);
+            border: none;
+            padding: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-radius: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-gradient:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px -10px #3b82f6;
+        }
+
+        /* Dashboard Header */
+        .dashboard-header-glow {
+            background: rgba(15, 25, 55, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .avatar-neon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border-radius: 30px;
             display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            box-shadow: 0 0 20px rgba(249,115,22,0.4);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card-neon {
+            background: rgba(20, 30, 55, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .stat-value-xl {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(120deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Progress Ring (custom) */
+        .progress-ring {
+            width: 60px;
+            height: 60px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .action-tile {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .action-tile:hover {
+            background: rgba(59,130,246,0.2);
+            transform: translateY(-8px);
+            border-color: #3b82f6;
+        }
+
+        /* Activity Feed */
+        .activity-timeline {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        /* Notifications */
+        .glass-toast {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(20px);
+            border-left: 4px solid #10b981;
+        }
+
+        .modal-glass {
+            background: rgba(10, 20, 40, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .badge-rank {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59,130,246,0); }
+            100% { box-shadow: 0 0 0 0 rgba(59,130,246,0); }
+        }
+        .refresh-btn {
+            animation: pulseGlow 2s infinite;
         }
     </style>
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="spinner"></div>
-        <p style="color: var(--primary); font-weight: 600;">Loading Dashboard...</p>
-    </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <div class="notification-icon" style="background: var(--success);">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="notification-content">
-            <div class="notification-title" id="notificationTitle">Success!</div>
-            <div class="notification-text" id="notificationText">Login successful</div>
-        </div>
-        <button class="notification-close" onclick="hideNotification()">
-            <i class="fas fa-times"></i>
-        </button>
-    </div>
+<div id="loadingOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:9999; display:none; justify-content:center; align-items:center; flex-direction:column; gap:1rem;">
+    <div class="spinner-border text-primary" style="width:4rem; height:4rem;" role="status"></div>
+    <p style="color:white; font-weight:600;">Loading smart portal...</p>
+</div>
 
-    <!-- Modal -->
-    <div class="modal-overlay" id="modalOverlay">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">Modal Title</h3>
-                <button class="modal-close" onclick="closeModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+<!-- Login Section -->
+<div id="loginSection" class="login-wrapper">
+    <div class="login-panel">
+        <div class="logo-circle">
+            <i class="fas fa-mosque fa-3x text-white"></i>
+        </div>
+        <h1 class="login-title mb-2">NOORUSSALAM</h1>
+        <p class="text-center text-white-50 mb-4">Student Intelligent Dashboard</p>
+        <div id="offlineBadge" style="display:none;" class="alert alert-warning small mb-3"><i class="fas fa-wifi-slash"></i> Offline mode (cached)</div>
+        <form id="loginForm">
+            <div class="mb-4">
+                <div class="input-group-custom d-flex align-items-center px-3">
+                    <i class="fas fa-id-card text-primary me-2"></i>
+                    <input type="text" id="studentId" class="form-control-glass form-control" placeholder="Student ID" autofocus>
+                </div>
             </div>
-            <div class="modal-body" id="modalBody">
-                Modal content will appear here
+            <div class="mb-4">
+                <div class="input-group-custom d-flex align-items-center px-3">
+                    <i class="fas fa-lock text-primary me-2"></i>
+                    <input type="password" id="password" class="form-control-glass form-control" placeholder="Password">
+                    <button type="button" id="togglePwd" class="btn btn-link text-white-50"><i class="fas fa-eye"></i></button>
+                </div>
             </div>
-        </div>
+            <button type="submit" class="btn-gradient btn w-100 text-white"><i class="fas fa-arrow-right-to-bracket me-2"></i> Access Dashboard</button>
+            <div class="mt-4 text-center text-white-50 small">
+                <i class="fas fa-flask"></i> Demo: NSM2025001 / welcome123
+            </div>
+        </form>
     </div>
-    
-    <!-- Sync Status -->
-    <div class="sync-status" id="syncStatus" style="display: none;">
-        <i class="fas fa-sync"></i>
-        <span id="syncText">Last synced: Just now</span>
-    </div>
+</div>
 
+<!-- Dashboard Section -->
+<div id="dashboardSection" style="display:none;">
     <div class="container">
-        <!-- Login Container -->
-        <div class="login-container active" id="loginContainer">
-            <div class="login-logo">
-                <i class="fas fa-user-graduate"></i>
+        <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-neon" id="avatarInitials">SK</div>
+                <div>
+                    <h2 class="text-white mb-0 fw-bold" id="studentFullName">Student Name</h2>
+                    <div class="text-white-50"><i class="fas fa-id-card me-1"></i> <span id="displayStudentId">ID</span> • <i class="fas fa-graduation-cap"></i> <span id="studentClassText">Class</span></div>
+                </div>
             </div>
-            <h1 class="login-title">Student Login</h1>
-            <p class="login-subtitle">NOORUSSALAM SECONDARY MADRASA</p>
-            
-            <!-- Offline Mode Alert -->
-            <div class="offline-mode" id="offlineMode">
-                <i class="fas fa-wifi-slash"></i>
-                <span>Offline Mode - Using cached data</span>
-            </div>
-            
-            <form id="loginForm">
-                <div class="form-group">
-                    <label class="form-label" for="studentId">
-                        <i class="fas fa-id-card"></i> Student ID
-                    </label>
-                    <input type="text" class="form-control" id="studentId" 
-                           placeholder="Enter your student ID" required autofocus>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="password">
-                        <i class="fas fa-lock"></i> Password
-                    </label>
-                    <div class="password-container">
-                        <input type="password" class="form-control" id="password" 
-                               placeholder="Enter your password" required>
-                        <button type="button" class="toggle-password" onclick="togglePassword()">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="form-group" style="text-align: right; margin-top: -10px;">
-                    <a href="#" onclick="showForgotPassword()" style="font-size: 0.85rem; color: var(--primary); text-decoration: none;">
-                        <i class="fas fa-key"></i> Forgot Password?
-                    </a>
-                </div>
-                
-                <button type="submit" class="btn-login" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i> Login to Dashboard
-                </button>
-                
-                <!-- Demo Credentials -->
-                <div style="margin-top: 20px; padding: 15px; background: rgba(30, 58, 138, 0.05); border-radius: 10px; border-left: 3px solid var(--accent);">
-                    <div style="font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
-                        <i class="fas fa-info-circle"></i> Demo Credentials
-                    </div>
-                    <div style="font-size: 0.8rem; color: #6B7280; line-height: 1.4;">
-                        Use: <strong>NSM2025001</strong> / <strong>welcome123</strong><br>
-                        Or: <strong>NSM2025002</strong> / <strong>welcome123</strong>
-                    </div>
-                </div>
-            </form>
-            
-            <div class="login-footer">
-                <p>For first-time login, use your student ID as password</p>
-                <p style="margin-top: 8px; font-size: 0.8rem;">
-                    <i class="fas fa-database"></i> Data stored in Google Sheets
-                </p>
+            <div class="d-flex gap-3 mt-2 mt-sm-0">
+                <button id="globalRefreshBtn" class="btn btn-outline-light rounded-pill px-4 refresh-btn"><i class="fas fa-sync-alt me-2"></i>Sync</button>
+                <button id="logoutBtn" class="btn btn-danger rounded-pill px-4"><i class="fas fa-sign-out-alt"></i> Exit</button>
             </div>
         </div>
 
-        <!-- Dashboard Container -->
-        <div class="dashboard-container" id="dashboardContainer">
-            <!-- Header with Refresh Button -->
-            <div class="dashboard-header">
-                <div class="header-left">
-                    <div class="student-avatar" id="studentAvatar">SK</div>
-                    <div class="student-info">
-                        <h2 id="studentName">Loading...</h2>
-                        <p>
-                            <i class="fas fa-id-card"></i> 
-                            <span id="studentIdDisplay">Loading...</span>
-                            • 
-                            <i class="fas fa-school"></i> 
-                            <span id="studentClass">Loading...</span>
-                        </p>
-                    </div>
+        <!-- STATS GRID -->
+        <div class="stats-grid">
+            <div class="stat-card-neon">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div><span class="stat-value-xl" id="overallGradeDisplay">A+</span><div class="text-white-50">Academic Grade</div></div>
+                    <div class="bg-primary bg-opacity-25 p-3 rounded-4"><i class="fas fa-crown fa-2x text-warning"></i></div>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button class="data-refresh" onclick="refreshAllData()" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> Refresh Data
-                    </button>
-                    <button class="logout-btn" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i> Logout
-                    </button>
+                <div class="mt-3"><div class="progress" style="height:8px;"><div id="gradeProgressFill" class="progress-bar bg-gradient" style="width:92%"></div></div><div class="d-flex justify-content-between mt-1"><small>Performance</small><small id="gradePercentLabel">92%</small></div></div>
+            </div>
+            <div class="stat-card-neon">
+                <div><span class="stat-value-xl" id="attendanceRateLabel">94%</span><div class="text-white-50">Attendance Rate</div></div>
+                <div class="mt-2 d-flex align-items-center gap-2"><i class="fas fa-chart-line text-success"></i><span class="text-white-50" id="attendanceTrend">+2% vs last month</span></div>
+                <div class="progress mt-2"><div id="attendanceProgressFill" class="progress-bar bg-success" style="width:94%"></div></div>
+            </div>
+            <div class="stat-card-neon">
+                <div><span class="stat-value-xl" id="rankNumber">3rd</span><div class="text-white-50">Class Rank</div></div>
+                <div class="mt-2"><span id="rankBadge" class="badge-rank"><i class="fas fa-arrow-up me-1"></i> Improved +1</span></div>
+            </div>
+            <div class="stat-card-neon">
+                <div><span class="stat-value-xl" id="assignmentsRatio">18/20</span><div class="text-white-50">Assignments</div></div>
+                <div class="progress mt-2"><div id="assignmentProgressFill" class="progress-bar bg-info" style="width:90%"></div></div>
+                <div class="mt-2 small text-white-50"><i class="fas fa-clock"></i> Completion 90%</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions with animations -->
+        <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+            <h4 class="text-white fw-semibold"><i class="fas fa-bolt text-warning me-2"></i>Neuro Actions</h4>
+        </div>
+        <div class="action-grid">
+            <div class="action-tile" onclick="showResultsModal()"><div class="bg-primary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-chart-simple fa-2x text-primary"></i></div><h6 class="text-white">Results</h6><small class="text-white-50">Exam analysis</small></div>
+            <div class="action-tile" onclick="showAttendanceReport()"><div class="bg-success bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-calendar-week fa-2x text-success"></i></div><h6 class="text-white">Attendance</h6><small class="text-white-50">Monthly report</small></div>
+            <div class="action-tile" onclick="showAssignmentsModal()"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">Assignments</h6><small class="text-white-50">Pending tasks</small></div>
+            <div class="action-tile" onclick="showTimetableModal()"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-table-list fa-2x text-warning"></i></div><h6 class="text-white">Timetable</h6><small class="text-white-50">Weekly schedule</small></div>
+            <div class="action-tile" onclick="showProfileCard()"><div class="bg-secondary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-user-astronaut fa-2x text-secondary"></i></div><h6 class="text-white">Profile</h6><small class="text-white-50">Personal info</small></div>
+        </div>
+
+        <!-- Activity & Calendar hybrid -->
+        <div class="row g-4 mt-2">
+            <div class="col-lg-6">
+                <div class="activity-timeline">
+                    <h5 class="text-white mb-3"><i class="fas fa-waveform me-2 text-primary"></i>Live Feed</h5>
+                    <ul class="list-unstyled" id="activityFeedList">
+                        <li class="text-white-50 text-center py-3"><i class="fas fa-spinner fa-pulse"></i> Loading intelligence...</li>
+                    </ul>
                 </div>
             </div>
-
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card" id="gradeCard">
-                    <div class="data-loading" id="gradeLoading">
-                        <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
-                    </div>
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="overallGrade">--</div>
-                            <div class="stat-label">Overall Grade</div>
-                        </div>
-                        <div class="stat-icon" style="background: var(--gradient-1);">
-                            <i class="fas fa-award"></i>
-                        </div>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-label">
-                            <span>Performance</span>
-                            <span id="performancePercent">--%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="performanceBar" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card" id="attendanceCard">
-                    <div class="data-loading" id="attendanceLoading">
-                        <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
-                    </div>
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="attendancePercent">--%</div>
-                            <div class="stat-label">Attendance Rate</div>
-                        </div>
-                        <div class="stat-icon" style="background: var(--gradient-success);">
-                            <i class="fas fa-calendar-check"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change" id="attendanceChange">
-                        <i class="fas fa-minus"></i>
-                        <span>Loading...</span>
-                    </div>
-                </div>
-
-                <div class="stat-card" id="rankCard">
-                    <div class="data-loading" id="rankLoading">
-                        <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
-                    </div>
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="classRank">--</div>
-                            <div class="stat-label">Class Rank</div>
-                        </div>
-                        <div class="stat-icon" style="background: var(--gradient-gold);">
-                            <i class="fas fa-trophy"></i>
-                        </div>
-                    </div>
-                    <div class="stat-change" id="rankChange">
-                        <i class="fas fa-minus"></i>
-                        <span>Loading...</span>
-                    </div>
-                </div>
-
-                <div class="stat-card" id="assignmentCard">
-                    <div class="data-loading" id="assignmentLoading">
-                        <div class="spinner" style="width: 30px; height: 30px; border-width: 3px;"></div>
-                    </div>
-                    <div class="stat-header">
-                        <div>
-                            <div class="stat-value" id="assignmentCompleted">--/--</div>
-                            <div class="stat-label">Assignments Done</div>
-                        </div>
-                        <div class="stat-icon" style="background: var(--accent);">
-                            <i class="fas fa-tasks"></i>
-                        </div>
-                    </div>
-                    <div class="progress-container">
-                        <div class="progress-label">
-                            <span>Completion</span>
-                            <span id="assignmentPercent">--%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="assignmentBar" style="width: 0%;"></div>
-                        </div>
+            <div class="col-lg-6">
+                <div class="activity-timeline">
+                    <h5 class="text-white mb-3"><i class="fas fa-calendar-alt me-2 text-warning"></i>Upcoming Events</h5>
+                    <div id="calendarEventsList" class="d-flex flex-column gap-3">
+                        <div class="text-white-50 text-center">Loading events...</div>
                     </div>
                 </div>
             </div>
-
-            <!-- Quick Actions -->
-            <div class="section-title">
-                <i class="fas fa-bolt"></i> Quick Actions
-            </div>
-            <div class="quick-actions-grid">
-                <div class="action-card" onclick="viewResults()">
-                    <div class="action-icon" style="background: var(--gradient-1);">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="action-title">View Results</h3>
-                    <p class="action-desc">Check your exam results and performance analysis</p>
-                </div>
-
-                <div class="action-card" onclick="viewAttendance()">
-                    <div class="action-icon" style="background: var(--gradient-success);">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <h3 class="action-title">Attendance Report</h3>
-                    <p class="action-desc">View your attendance history and statistics</p>
-                </div>
-
-                <div class="action-card" onclick="viewTimetable()">
-                    <div class="action-icon" style="background: var(--warning);">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h3 class="action-title">Class Timetable</h3>
-                    <p class="action-desc">Check your daily schedule and class timings</p>
-                </div>
-
-                <div class="action-card" onclick="viewAssignments()">
-                    <div class="action-icon" style="background: var(--accent);">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <h3 class="action-title">Assignments</h3>
-                    <p class="action-desc">View pending and submitted assignments</p>
-                </div>
-
-                <div class="action-card" onclick="viewProfile()">
-                    <div class="action-icon" style="background: var(--primary);">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <h3 class="action-title">My Profile</h3>
-                    <p class="action-desc">Update your personal information and settings</p>
-                </div>
-
-                <div class="action-card" onclick="downloadReports()">
-                    <div class="action-icon" style="background: var(--gradient-gold);">
-                        <i class="fas fa-download"></i>
-                    </div>
-                    <h3 class="action-title">Download Reports</h3>
-                    <p class="action-desc">Download academic reports and certificates</p>
-                </div>
-            </div>
-
-            <!-- Recent Activity -->
-            <div class="activity-section">
-                <div class="section-title">
-                    <i class="fas fa-history"></i> Recent Activity
-                    <button class="data-refresh" onclick="loadActivities()" style="margin-left: auto; padding: 6px 12px; font-size: 0.8rem;">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div class="data-loading" id="activitiesLoading">
-                    <div class="spinner" style="width: 40px; height: 40px;"></div>
-                </div>
-                <ul class="activity-list" id="activityList">
-                    <li style="text-align: center; padding: 30px; color: #6B7280;">
-                        <i class="fas fa-spinner fa-spin"></i> Loading activities...
-                    </li>
-                </ul>
-            </div>
-
-            <!-- Academic Calendar -->
-            <div class="calendar-section">
-                <div class="section-title">
-                    <i class="fas fa-calendar"></i> Upcoming Events
-                    <button class="data-refresh" onclick="loadCalendar()" style="margin-left: auto; padding: 6px 12px; font-size: 0.8rem;">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div class="data-loading" id="calendarLoading">
-                    <div class="spinner" style="width: 40px; height: 40px;"></div>
-                </div>
-                <div class="calendar-grid" id="calendarGrid">
-                    <div style="text-align: center; padding: 30px; color: #6B7280; grid-column: 1 / -1;">
-                        <i class="fas fa-spinner fa-spin"></i> Loading events...
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="dashboard-footer">
-                <p>© 2025 Noorussalam Madrasa Student Dashboard • Version 2.0</p>
-                <p style="margin-top: 8px; font-size: 0.8rem; color: #9CA3AF;">
-                    <i class="fas fa-google"></i> Google Sheets Integration • 
-                    <i class="fas fa-shield-alt"></i> Secure • 
-                    <i class="fas fa-mobile-alt"></i> Mobile-Friendly
-                </p>
-                <p id="lastSync" style="font-size: 0.75rem; color: #9CA3AF; margin-top: 5px;">
-                    Last sync: Never
-                </p>
-            </div>
+        </div>
+        <div class="text-center text-white-50 mt-5 pb-4 small">
+            <i class="fas fa-shield-alt me-1"></i> Encrypted session • Noorussalam Madrasa v3.0
         </div>
     </div>
+</div>
 
-    <script>
-        // Configuration
-        const CONFIG = {
-            GOOGLE_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyBlS-cqBVrwUkkz4zT8bUvbN5yLSMlm2eruJPfN84V9Coy6g3JeXgqEma-i9ReZdYyYA/exec', // Replace with your deployed script URL
-            CACHE_DURATION: 5 * 60 * 1000, // 5 minutes cache
-            OFFLINE_MODE: true,
-            DEMO_MODE: true
-        };
+<!-- MODAL GLASS -->
+<div id="globalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1050; align-items:center; justify-content:center;">
+    <div class="modal-glass rounded-4 p-4" style="max-width:500px; width:90%;">
+        <div class="d-flex justify-content-between mb-3"><h3 id="modalTitle" class="text-white fw-bold">Title</h3><button id="closeModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
+        <div id="modalContentBody" class="text-white-50" style="max-height:60vh; overflow-y:auto;"></div>
+    </div>
+</div>
 
-        // Demo data for offline/demo mode
-        const DEMO_DATA = {
-            'NSM2025001': {
-                password: 'welcome123',
-                name: 'Suhail Kerala',
-                class: 'Class 9',
-                section: 'A',
-                rollNumber: 'R15',
-                email: 'suhail@noorussalam.edu',
-                phone: '+91 9876543210',
-                overallGrade: 'A+',
-                attendancePercent: 94,
-                classRank: 3,
-                assignmentsCompleted: 18,
-                totalAssignments: 20,
-                performance: 92,
-                avatarInitials: 'SK',
-                rankChange: 1,
-                attendanceChange: '+2%'
-            },
-            'NSM2025002': {
-                password: 'welcome123',
-                name: 'Aisha Rahman',
-                class: 'Class 8',
-                section: 'B',
-                rollNumber: 'R12',
-                email: 'aisha@noorussalam.edu',
-                phone: '+91 9876543211',
-                overallGrade: 'A',
-                attendancePercent: 96,
-                classRank: 2,
-                assignmentsCompleted: 19,
-                totalAssignments: 20,
-                performance: 88,
-                avatarInitials: 'AR',
-                rankChange: 0,
-                attendanceChange: '+1%'
-            }
-        };
-
-        // DOM Elements
-        const loginContainer = document.getElementById('loginContainer');
-        const dashboardContainer = document.getElementById('dashboardContainer');
-        const loginForm = document.getElementById('loginForm');
-        const studentIdInput = document.getElementById('studentId');
-        const passwordInput = document.getElementById('password');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const notification = document.getElementById('notification');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const offlineMode = document.getElementById('offlineMode');
-        const syncStatus = document.getElementById('syncStatus');
-        const lastSync = document.getElementById('lastSync');
-        const refreshBtn = document.getElementById('refreshBtn');
-
-        // State Management
-        let currentStudent = null;
-        let isOnline = navigator.onLine;
-        let lastSyncTime = null;
-        let isLoading = false;
-
-        // Initialize
-        window.addEventListener('DOMContentLoaded', function() {
-            checkLoginStatus();
-            setupEventListeners();
-            updateOnlineStatus();
-            
-            // Set up network detection
-            window.addEventListener('online', updateOnlineStatus);
-            window.addEventListener('offline', updateOnlineStatus);
-            
-            // Set up periodic sync
-            setInterval(checkForUpdates, 60000); // Check every minute
-        });
-
-        // Event Listeners
-        function setupEventListeners() {
-            loginForm.addEventListener('submit', handleLogin);
-            
-            // Modal close on outside click
-            modalOverlay.addEventListener('click', function(e) {
-                if (e.target === modalOverlay) {
-                    closeModal();
-                }
-            });
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
-                    closeModal();
-                }
-                if (e.ctrlKey && e.key === 'r' && currentStudent) {
-                    e.preventDefault();
-                    refreshAllData();
-                }
-                if (e.key === 'F5') {
-                    e.preventDefault();
-                    refreshAllData();
-                }
-            });
+<script>
+    // ---------- Enhanced Mock Data ----------
+    const STUDENT_DATA = {
+        "NSM2025001": {
+            password: "welcome123",
+            name: "Suhail Kerala",
+            class: "Grade 9 - STEM",
+            roll: "15",
+            overallGrade: "A+",
+            attendance: 94,
+            rank: 3,
+            rankChange: "+1",
+            assignmentsDone: 18,
+            totalAssign: 20,
+            performance: 92,
+            avatar: "SK",
+            email: "suhail@noor.edu",
+            phone: "+91 9876543210",
+            trendAttendance: "+2%"
+        },
+        "NSM2025002": {
+            password: "welcome123",
+            name: "Aisha Rahman",
+            class: "Grade 8 - Arts",
+            roll: "08",
+            overallGrade: "A",
+            attendance: 96,
+            rank: 2,
+            rankChange: "0",
+            assignmentsDone: 19,
+            totalAssign: 20,
+            performance: 88,
+            avatar: "AR",
+            email: "aisha@noor.edu",
+            phone: "+91 9876543211",
+            trendAttendance: "+1%"
         }
+    };
 
-        // Network Status
-        function updateOnlineStatus() {
-            isOnline = navigator.onLine;
-            
-            if (!isOnline) {
-                offlineMode.classList.add('active');
-                showNotification('Offline Mode', 'Using cached data. Some features may be limited.', 'warning');
-            } else {
-                offlineMode.classList.remove('active');
-                
-                // If we were offline and now online, try to sync
-                if (currentStudent && lastSyncTime) {
-                    const timeSinceLastSync = Date.now() - lastSyncTime;
-                    if (timeSinceLastSync > CONFIG.CACHE_DURATION) {
-                        refreshAllData();
-                    }
-                }
-            }
+    let currentUser = null;
+
+    // DOM Elements
+    const loginSection = document.getElementById('loginSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const modal = document.getElementById('globalModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const modalTitleSpan = document.getElementById('modalTitle');
+    const modalBodyDiv = document.getElementById('modalContentBody');
+
+    function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
+    function showToast(message, type = 'success') {
+        let toastDiv = document.createElement('div');
+        toastDiv.className = 'position-fixed bottom-0 end-0 m-3 p-3 rounded-4 text-white d-flex align-items-center gap-3 glass-toast';
+        toastDiv.style.zIndex = '1200';
+        toastDiv.style.background = 'rgba(0,0,0,0.85)';
+        toastDiv.style.backdropFilter = 'blur(12px)';
+        toastDiv.style.borderLeft = `4px solid ${type === 'success' ? '#10b981' : '#ef4444'}`;
+        toastDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} fa-lg"></i><span>${message}</span>`;
+        document.body.appendChild(toastDiv);
+        setTimeout(() => { toastDiv.style.opacity = '0'; setTimeout(() => toastDiv.remove(), 500); }, 3000);
+    }
+
+    function updateDashboardUI() {
+        if (!currentUser) return;
+        document.getElementById('studentFullName').innerText = currentUser.name;
+        document.getElementById('displayStudentId').innerText = currentUser.studentId;
+        document.getElementById('studentClassText').innerText = currentUser.class;
+        document.getElementById('avatarInitials').innerText = currentUser.avatar;
+        document.getElementById('overallGradeDisplay').innerText = currentUser.overallGrade;
+        let perf = currentUser.performance;
+        document.getElementById('gradeProgressFill').style.width = perf + '%';
+        document.getElementById('gradePercentLabel').innerHTML = perf + '%';
+        document.getElementById('attendanceRateLabel').innerHTML = currentUser.attendance + '%';
+        document.getElementById('attendanceProgressFill').style.width = currentUser.attendance + '%';
+        document.getElementById('attendanceTrend').innerHTML = `<i class="fas fa-arrow-up"></i> ${currentUser.trendAttendance}`;
+        let rankDisplay = currentUser.rank + (currentUser.rank === 1 ? 'st' : currentUser.rank === 2 ? 'nd' : currentUser.rank === 3 ? 'rd' : 'th');
+        document.getElementById('rankNumber').innerHTML = rankDisplay;
+        let rankChangeHtml = currentUser.rankChange === '+1' ? '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser.rankChange === '-1' ? '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable');
+        document.getElementById('rankBadge').innerHTML = rankChangeHtml;
+        document.getElementById('assignmentsRatio').innerHTML = `${currentUser.assignmentsDone}/${currentUser.totalAssign}`;
+        let assignPercent = Math.round((currentUser.assignmentsDone / currentUser.totalAssign) * 100);
+        document.getElementById('assignmentProgressFill').style.width = assignPercent + '%';
+    }
+
+    async function loadActivitiesAndCalendar() {
+        // Simulate dynamic feed
+        const activities = [
+            { text: "📘 Submitted Mathematics Project", time: "2 hours ago", icon: "fa-book" },
+            { text: "🏆 Ranked 3rd in Monthly Test", time: "Yesterday", icon: "fa-trophy" },
+            { text: "✅ Attendance: 100% this week", time: "2 days ago", icon: "fa-calendar-check" }
+        ];
+        const events = [
+            { title: "Annual Exam Starts", date: "Mar 28, 2025", desc: "Final exams begin" },
+            { title: "Science Exhibition", date: "Apr 05, 2025", desc: "Inter-school" },
+            { title: "Result Day", date: "Apr 15, 2025", desc: "Performance meet" }
+        ];
+        const feedHtml = activities.map(act => `<li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas ${act.icon} text-primary mt-1"></i><div><div class="text-white">${act.text}</div><small class="text-white-50">${act.time}</small></div></li>`).join('');
+        document.getElementById('activityFeedList').innerHTML = feedHtml || '<li class="text-white-50">No updates</li>';
+        const calHtml = events.map(ev => `<div class="glass-card p-3"><div class="d-flex justify-content-between"><span class="text-warning fw-bold">${ev.date}</span><i class="fas fa-bell text-info"></i></div><div class="text-white fw-semibold mt-1">${ev.title}</div><small class="text-white-50">${ev.desc}</small></div>`).join('');
+        document.getElementById('calendarEventsList').innerHTML = calHtml;
+    }
+
+    // ---- Modal View Functions (Effective & stylish) ----
+    function showResultsModal() {
+        modalTitleSpan.innerText = "📊 Academic Excellence";
+        modalBodyDiv.innerHTML = `<div class="mb-3"><div class="d-flex justify-content-between"><span>Mathematics</span><span class="fw-bold text-white">95/100 (A+)</span></div><div class="progress mb-2"><div class="progress-bar bg-primary" style="width:95%"></div></div>
+        <div class="d-flex justify-content-between"><span>Science</span><span class="fw-bold text-white">88/100 (A)</span></div><div class="progress mb-2"><div class="progress-bar bg-success" style="width:88%"></div></div>
+        <div class="d-flex justify-content-between"><span>English</span><span class="fw-bold text-white">92/100 (A+)</span></div><div class="progress mb-2"><div class="progress-bar bg-info" style="width:92%"></div></div>
+        <div class="d-flex justify-content-between"><span>Arabic</span><span class="fw-bold text-white">85/100 (B+)</span></div><div class="progress mb-2"><div class="progress-bar bg-warning" style="width:85%"></div></div>
+        <div class="alert alert-dark mt-3">✨ Overall Percentage: ${currentUser.performance}% | Grade: ${currentUser.overallGrade}</div></div>`;
+        modal.style.display = 'flex';
+    }
+    function showAttendanceReport() {
+        modalTitleSpan.innerText = "📆 Attendance Analytics";
+        modalBodyDiv.innerHTML = `<div><div class="text-center mb-3"><span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span><p>Overall Attendance</p></div>
+        <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div>
+        <h6 class="text-white">Monthly Breakdown</h6><ul class="list-unstyled"><li class="d-flex justify-content-between"><span>March 2025</span><span>Present: 18/18 (100%)</span></li><li class="d-flex justify-content-between mt-2"><span>February 2025</span><span>Present: 20/22 (91%)</span></li><li class="d-flex justify-content-between mt-2"><span>January 2025</span><span>Present: 24/25 (96%)</span></li></ul></div>`;
+        modal.style.display = 'flex';
+    }
+    function showAssignmentsModal() {
+        let pending = currentUser.totalAssign - currentUser.assignmentsDone;
+        modalTitleSpan.innerText = "📋 Assignment Tracker";
+        modalBodyDiv.innerHTML = `<div><div class="d-flex justify-content-between"><span>Completed:</span><strong class="text-success">${currentUser.assignmentsDone}/${currentUser.totalAssign}</strong></div><div class="progress mb-3"><div class="progress-bar bg-info" style="width:${(currentUser.assignmentsDone/currentUser.totalAssign)*100}%"></div></div>
+        <div class="bg-dark p-3 rounded-3"><i class="fas fa-tasks text-warning"></i> <span class="text-white">Pending: ${pending} assignments</span><ul class="mt-2"><li>📖 English Essay (Due: 28 Mar)</li><li>🧪 Science Lab Report (Due: 30 Mar)</li></ul></div></div>`;
+        modal.style.display = 'flex';
+    }
+    function showTimetableModal() {
+        modalTitleSpan.innerText = "⏰ Weekly Timetable";
+        modalBodyDiv.innerHTML = `<div class="table-responsive"><table class="table table-dark table-borderless"><thead><tr><th>Day</th><th>9:00 - 10:30</th><th>10:45 - 12:15</th></tr></thead><tbody>
+        <tr><td>Monday</td><td>Mathematics</td><td>Physics</td></tr><tr><td>Tuesday</td><td>English Lit</td><td>Arabic</td></tr><tr><td>Wednesday</td><td>Chemistry</td><td>Computer Science</td></tr><tr><td>Thursday</td><td>Islamic Studies</td><td>Mathematics</td></tr><tr><td>Friday</td><td>Physical Ed</td><td>Social Studies</td></tr></tbody></table></div>`;
+        modal.style.display = 'flex';
+    }
+    function showProfileCard() {
+        modalTitleSpan.innerText = "👤 Student Profile";
+        modalBodyDiv.innerHTML = `<div class="text-center mb-3"><div class="avatar-neon mx-auto mb-2" style="width:80px;height:80px; font-size:32px;">${currentUser.avatar}</div><h4 class="text-white">${currentUser.name}</h4><p class="text-white-50">${currentUser.class}</p></div>
+        <div class="row"><div class="col-6"><small>Student ID</small><p class="text-white fw-bold">${currentUser.studentId}</p></div><div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll}</p></div>
+        <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div><div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div></div>`;
+        modal.style.display = 'flex';
+    }
+
+    async function refreshDashboardCompletely() {
+        if(!currentUser) return;
+        showLoading(true);
+        await new Promise(r => setTimeout(r, 700));
+        updateDashboardUI();
+        await loadActivitiesAndCalendar();
+        showToast("Dashboard sync complete", "success");
+        showLoading(false);
+    }
+
+    // Login Logic
+    async function handleLogin(e) {
+        e.preventDefault();
+        const id = document.getElementById('studentId').value.trim();
+        const pwd = document.getElementById('password').value.trim();
+        if(!id || !pwd) { showToast("Enter credentials", "error"); return; }
+        showLoading(true);
+        await new Promise(r => setTimeout(r, 800));
+        if(STUDENT_DATA[id] && STUDENT_DATA[id].password === pwd) {
+            currentUser = { ...STUDENT_DATA[id], studentId: id };
+            localStorage.setItem('noor_session', JSON.stringify(currentUser));
+            updateDashboardUI();
+            await loadActivitiesAndCalendar();
+            loginSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            showToast(`Welcome back, ${currentUser.name} ✨`, "success");
+        } else {
+            showToast("Invalid ID / Password. Use demo: NSM2025001", "error");
         }
+        showLoading(false);
+    }
 
-        // API Service
-        const API = {
-            async post(action, data = {}) {
-                const url = new URL(CONFIG.GOOGLE_SCRIPT_URL);
-                url.searchParams.append('action', action);
-                
-                Object.keys(data).forEach(key => {
-                    url.searchParams.append(key, data[key]);
-                });
-                
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        mode: 'no-cors'
-                    });
-                    
-                    // Note: 'no-cors' mode doesn't allow reading response
-                    // For production, use proper CORS or JSONP
-                    return await response.json();
-                } catch (error) {
-                    console.error('API Error:', error);
-                    throw error;
-                }
-            },
-            
-            async login(studentId, password) {
-                if (CONFIG.DEMO_MODE && DEMO_DATA[studentId]) {
-                    // Use demo data
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    if (DEMO_DATA[studentId].password === password) {
-                        return {
-                            success: true,
-                            student: DEMO_DATA[studentId]
-                        };
-                    } else {
-                        return {
-                            success: false,
-                            message: 'Invalid password'
-                        };
-                    }
-                }
-                
-                // Real API call
-                return await this.post('login', { studentId, password });
-            },
-            
-            async getStudentData(studentId) {
-                if (CONFIG.DEMO_MODE && currentStudent) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        student: currentStudent
-                    };
-                }
-                
-                return await this.post('getStudentData', { studentId });
-            },
-            
-            async getAttendance(studentId) {
-                if (CONFIG.DEMO_MODE) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        data: {
-                            attendancePercent: currentStudent.attendancePercent,
-                            totalPresent: 141,
-                            totalDays: 150,
-                            monthlyAttendance: [
-                                { month: 'Jan 2025', days: 25, present: 24 },
-                                { month: 'Feb 2025', days: 22, present: 20 },
-                                { month: 'Mar 2025', days: 18, present: 18 }
-                            ]
-                        }
-                    };
-                }
-                
-                return await this.post('getAttendance', { studentId });
-            },
-            
-            async getResults(studentId) {
-                if (CONFIG.DEMO_MODE) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        data: {
-                            detailedResults: [
-                                { exam: 'Annual', subject: 'Mathematics', score: 95, maxScore: 100, grade: 'A+', status: 'Pass' },
-                                { exam: 'Annual', subject: 'Science', score: 88, maxScore: 100, grade: 'A', status: 'Pass' },
-                                { exam: 'Annual', subject: 'English', score: 92, maxScore: 100, grade: 'A+', status: 'Pass' },
-                                { exam: 'Annual', subject: 'Arabic', score: 85, maxScore: 100, grade: 'B+', status: 'Pass' }
-                            ],
-                            subjectAverages: [
-                                { subject: 'Mathematics', averageScore: 92, latestGrade: 'A+', latestStatus: 'Pass', totalTests: 5 },
-                                { subject: 'Science', averageScore: 88, latestGrade: 'A', latestStatus: 'Pass', totalTests: 5 },
-                                { subject: 'English', averageScore: 90, latestGrade: 'A+', latestStatus: 'Pass', totalTests: 5 },
-                                { subject: 'Arabic', averageScore: 82, latestGrade: 'B+', latestStatus: 'Pass', totalTests: 5 }
-                            ],
-                            overallPerformance: { average: 88, grade: 'A', status: 'GOOD' }
-                        }
-                    };
-                }
-                
-                return await this.post('getResults', { studentId });
-            },
-            
-            async getAssignments(studentId) {
-                if (CONFIG.DEMO_MODE) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        data: {
-                            pendingAssignments: [
-                                { title: 'Science Project', subject: 'Science', dueDate: '2025-03-28', status: 'Pending' }
-                            ],
-                            completedAssignments: [
-                                { title: 'Algebra Problems', subject: 'Mathematics', submittedDate: '2025-03-15', marks: 18, maxMarks: 20, status: 'Graded' },
-                                { title: 'English Essay', subject: 'English', submittedDate: '2025-03-12', marks: 19, maxMarks: 20, status: 'Graded' }
-                            ],
-                            stats: {
-                                total: 20,
-                                completed: 18,
-                                pending: 2,
-                                completionRate: 90
-                            }
-                        }
-                    };
-                }
-                
-                return await this.post('getAssignments', { studentId });
-            },
-            
-            async getTimetable(studentClass) {
-                if (CONFIG.DEMO_MODE) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        data: {
-                            weeklyTimetable: {
-                                Monday: [
-                                    { time: '9:00-10:00', subject: 'English', teacher: 'Mr. Smith', room: 'Room 101' },
-                                    { time: '10:00-11:00', subject: 'Mathematics', teacher: 'Mr. Abdul', room: 'Room 102' }
-                                ],
-                                Tuesday: [
-                                    { time: '9:00-10:00', subject: 'Science', teacher: 'Mrs. Johnson', room: 'Room 103' },
-                                    { time: '10:00-11:00', subject: 'Arabic', teacher: 'Mr. Ahmed', room: 'Room 104' }
-                                ]
-                            },
-                            currentPeriod: { time: '10:00-11:00', subject: 'Mathematics', teacher: 'Mr. Abdul', room: 'Room 102' },
-                            currentDay: 'Monday'
-                        }
-                    };
-                }
-                
-                return await this.post('getTimetable', { class: studentClass });
-            },
-            
-            async getActivities(studentId) {
-                if (CONFIG.DEMO_MODE) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        data: [
-                            { date: '2025-03-20', type: 'Result', title: 'Mathematics Test Result Published', description: 'Scored 95/100', icon: 'fas fa-chart-line', color: 'var(--primary)' },
-                            { date: '2025-03-19', type: 'Attendance', title: 'Attendance Marked', description: 'Present for all classes', icon: 'fas fa-calendar-check', color: 'var(--success)' },
-                            { date: '2025-03-18', type: 'Assignment', title: 'Assignment Submitted', description: 'Science Project submitted', icon: 'fas fa-book', color: 'var(--warning)' }
-                        ]
-                    };
-                }
-                
-                return await this.post('getActivities', { studentId });
-            },
-            
-            async getCalendar() {
-                if (CONFIG.DEMO_MODE) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    return {
-                        success: true,
-                        data: [
-                            { date: '2025-03-25', title: 'Annual Examination', description: 'Final exams begin for all classes', type: 'Exam' },
-                            { date: '2025-03-28', title: 'Science Fair', description: 'Inter-school science competition', type: 'Event' },
-                            { date: '2025-04-01', title: 'Result Declaration', description: 'Annual exam results will be published', type: 'Result' }
-                        ]
-                    };
-                }
-                
-                return await this.post('getCalendar', {});
-            }
-        };
+    function logout() {
+        currentUser = null;
+        localStorage.removeItem('noor_session');
+        dashboardSection.style.display = 'none';
+        loginSection.style.display = 'flex';
+        document.getElementById('loginForm').reset();
+        showToast("Logged out securely", "success");
+    }
 
-        // Login Handler
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const studentId = studentIdInput.value.trim();
-            const password = passwordInput.value.trim();
-            
-            if (!studentId || !password) {
-                showNotification('Missing Information', 'Please enter both Student ID and Password.', 'warning');
-                return;
-            }
-            
-            showLoading();
-            
+    function restoreSession() {
+        const saved = localStorage.getItem('noor_session');
+        if(saved) {
             try {
-                const result = await API.login(studentId, password);
-                
-                if (result.success) {
-                    currentStudent = result.student;
-                    currentStudent.studentId = studentId;
-                    
-                    // Save to localStorage for persistence
-                    localStorage.setItem('studentData', JSON.stringify(currentStudent));
-                    localStorage.setItem('studentId', studentId);
-                    localStorage.setItem('lastLogin', new Date().toISOString());
-                    
-                    // Update dashboard
-                    updateDashboard(currentStudent);
-                    
-                    // Load additional data
-                    await loadAllData();
-                    
-                    // Switch to dashboard
-                    loginContainer.classList.remove('active');
-                    dashboardContainer.style.display = 'block';
-                    
-                    showNotification('Welcome Back!', `Successfully logged in as ${currentStudent.name}`, 'success');
-                    updateSyncStatus('Just now');
-                    
-                } else {
-                    showNotification('Login Failed', result.message || 'Invalid credentials', 'error');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showNotification('Connection Error', 'Unable to connect to server. Using demo mode.', 'warning');
-                
-                // Fallback to demo mode
-                if (DEMO_DATA[studentId] && DEMO_DATA[studentId].password === password) {
-                    currentStudent = DEMO_DATA[studentId];
-                    currentStudent.studentId = studentId;
-                    updateDashboard(currentStudent);
-                    await loadAllData();
-                    loginContainer.classList.remove('active');
-                    dashboardContainer.style.display = 'block';
-                    showNotification('Demo Mode', 'Logged in with demo data', 'info');
-                }
-            } finally {
-                hideLoading();
-            }
+                currentUser = JSON.parse(saved);
+                updateDashboardUI();
+                loadActivitiesAndCalendar();
+                loginSection.style.display = 'none';
+                dashboardSection.style.display = 'block';
+            } catch(e) {}
         }
+    }
 
-        // Load All Data
-        async function loadAllData() {
-            if (!currentStudent) return;
-            
-            const loaders = [
-                loadAttendanceData(),
-                loadResultsData(),
-                loadAssignmentsData(),
-                loadTimetableData(),
-                loadActivities(),
-                loadCalendar()
-            ];
-            
-            await Promise.all(loaders);
-            updateSyncStatus('Just now');
-        }
+    // Event Bindings
+    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    document.getElementById('globalRefreshBtn').addEventListener('click', refreshDashboardCompletely);
+    const togglePwdBtn = document.getElementById('togglePwd');
+    const pwdField = document.getElementById('password');
+    togglePwdBtn.addEventListener('click', () => {
+        const type = pwdField.getAttribute('type') === 'password' ? 'text' : 'password';
+        pwdField.setAttribute('type', type);
+        togglePwdBtn.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+    closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
+    window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
 
-        // Load Attendance Data
-        async function loadAttendanceData() {
-            if (!currentStudent) return;
-            
-            showLoadingState('attendanceLoading', true);
-            
-            try {
-                const result = await API.getAttendance(currentStudent.studentId);
-                if (result.success) {
-                    currentStudent.attendanceData = result.data;
-                    updateAttendanceDisplay(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading attendance:', error);
-            } finally {
-                showLoadingState('attendanceLoading', false);
-            }
-        }
+    // Expose modal functions globally
+    window.showResultsModal = showResultsModal;
+    window.showAttendanceReport = showAttendanceReport;
+    window.showAssignmentsModal = showAssignmentsModal;
+    window.showTimetableModal = showTimetableModal;
+    window.showProfileCard = showProfileCard;
+    window.refreshDashboardCompletely = refreshDashboardCompletely;
 
-        // Load Results Data
-        async function loadResultsData() {
-            if (!currentStudent) return;
-            
-            showLoadingState('gradeLoading', true);
-            
-            try {
-                const result = await API.getResults(currentStudent.studentId);
-                if (result.success) {
-                    currentStudent.resultsData = result.data;
-                    updateGradeDisplay(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading results:', error);
-            } finally {
-                showLoadingState('gradeLoading', false);
-            }
-        }
-
-        // Load Assignments Data
-        async function loadAssignmentsData() {
-            if (!currentStudent) return;
-            
-            showLoadingState('assignmentLoading', true);
-            
-            try {
-                const result = await API.getAssignments(currentStudent.studentId);
-                if (result.success) {
-                    currentStudent.assignmentsData = result.data;
-                    updateAssignmentsDisplay(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading assignments:', error);
-            } finally {
-                showLoadingState('assignmentLoading', false);
-            }
-        }
-
-        // Load Timetable Data
-        async function loadTimetableData() {
-            if (!currentStudent) return;
-            
-            try {
-                const result = await API.getTimetable(currentStudent.class);
-                if (result.success) {
-                    currentStudent.timetableData = result.data;
-                }
-            } catch (error) {
-                console.error('Error loading timetable:', error);
-            }
-        }
-
-        // Load Activities
-        async function loadActivities() {
-            if (!currentStudent) return;
-            
-            showLoadingState('activitiesLoading', true);
-            
-            try {
-                const result = await API.getActivities(currentStudent.studentId);
-                if (result.success) {
-                    updateActivitiesDisplay(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading activities:', error);
-            } finally {
-                showLoadingState('activitiesLoading', false);
-            }
-        }
-
-        // Load Calendar
-        async function loadCalendar() {
-            showLoadingState('calendarLoading', true);
-            
-            try {
-                const result = await API.getCalendar();
-                if (result.success) {
-                    updateCalendarDisplay(result.data);
-                }
-            } catch (error) {
-                console.error('Error loading calendar:', error);
-            } finally {
-                showLoadingState('calendarLoading', false);
-            }
-        }
-
-        // Update Dashboard Display
-        function updateDashboard(student) {
-            // Update header
-            document.getElementById('studentAvatar').textContent = student.avatarInitials || '?';
-            document.getElementById('studentName').textContent = student.name;
-            document.getElementById('studentIdDisplay').textContent = student.studentId;
-            document.getElementById('studentClass').textContent = `${student.class} ${student.section || ''}`;
-            
-            // Update stats
-            document.getElementById('overallGrade').textContent = student.overallGrade || '--';
-            document.getElementById('attendancePercent').textContent = student.attendancePercent ? `${student.attendancePercent}%` : '--%';
-            document.getElementById('classRank').textContent = student.classRank ? 
-                `${student.classRank}${getOrdinalSuffix(student.classRank)}` : '--';
-            document.getElementById('assignmentCompleted').textContent = 
-                student.assignmentsCompleted && student.totalAssignments ? 
-                `${student.assignmentsCompleted}/${student.totalAssignments}` : '--/--';
-            
-            // Update progress bars
-            const performancePercent = student.performance || 0;
-            document.getElementById('performancePercent').textContent = `${performancePercent}%`;
-            document.getElementById('performanceBar').style.width = `${performancePercent}%`;
-            
-            const assignmentPercent = student.assignmentsCompleted && student.totalAssignments ?
-                Math.round((student.assignmentsCompleted / student.totalAssignments) * 100) : 0;
-            document.getElementById('assignmentPercent').textContent = `${assignmentPercent}%`;
-            document.getElementById('assignmentBar').style.width = `${assignmentPercent}%`;
-            
-            // Update change indicators
-            if (student.rankChange > 0) {
-                document.getElementById('rankChange').innerHTML = `
-                    <i class="fas fa-arrow-up"></i>
-                    <span>Improved ${student.rankChange} position${student.rankChange > 1 ? 's' : ''}</span>
-                `;
-                document.getElementById('rankChange').className = 'stat-change positive';
-            } else if (student.rankChange < 0) {
-                document.getElementById('rankChange').innerHTML = `
-                    <i class="fas fa-arrow-down"></i>
-                    <span>Dropped ${Math.abs(student.rankChange)} position${Math.abs(student.rankChange) > 1 ? 's' : ''}</span>
-                `;
-                document.getElementById('rankChange').className = 'stat-change negative';
-            }
-            
-            if (student.attendanceChange) {
-                document.getElementById('attendanceChange').innerHTML = `
-                    <i class="fas ${student.attendanceChange.startsWith('+') ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
-                    <span>${student.attendanceChange} from last month</span>
-                `;
-                document.getElementById('attendanceChange').className = `stat-change ${student.attendanceChange.startsWith('+') ? 'positive' : 'negative'}`;
-            }
-        }
-
-        // Update Attendance Display
-        function updateAttendanceDisplay(data) {
-            const percent = data.attendancePercent || 0;
-            document.getElementById('attendancePercent').textContent = `${percent}%`;
-            
-            // Update change indicator based on monthly data
-            if (data.monthlyAttendance && data.monthlyAttendance.length >= 2) {
-                const currentMonth = data.monthlyAttendance[0];
-                const previousMonth = data.monthlyAttendance[1];
-                
-                if (currentMonth && previousMonth) {
-                    const currentPercent = Math.round((currentMonth.present / currentMonth.days) * 100);
-                    const previousPercent = Math.round((previousMonth.present / previousMonth.days) * 100);
-                    const change = currentPercent - previousPercent;
-                    
-                    if (change !== 0) {
-                        document.getElementById('attendanceChange').innerHTML = `
-                            <i class="fas ${change > 0 ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
-                            <span>${change > 0 ? '+' : ''}${change}% from last month</span>
-                        `;
-                        document.getElementById('attendanceChange').className = `stat-change ${change > 0 ? 'positive' : 'negative'}`;
-                    }
-                }
-            }
-        }
-
-        // Update Grade Display
-        function updateGradeDisplay(data) {
-            if (data.overallPerformance) {
-                document.getElementById('overallGrade').textContent = data.overallPerformance.grade;
-                document.getElementById('performancePercent').textContent = `${data.overallPerformance.average}%`;
-                document.getElementById('performanceBar').style.width = `${data.overallPerformance.average}%`;
-            }
-        }
-
-        // Update Assignments Display
-        function updateAssignmentsDisplay(data) {
-            if (data.stats) {
-                document.getElementById('assignmentCompleted').textContent = 
-                    `${data.stats.completed}/${data.stats.total}`;
-                document.getElementById('assignmentPercent').textContent = `${data.stats.completionRate}%`;
-                document.getElementById('assignmentBar').style.width = `${data.stats.completionRate}%`;
-            }
-        }
-
-        // Update Activities Display
-        function updateActivitiesDisplay(activities) {
-            const activityList = document.getElementById('activityList');
-            
-            if (!activities || activities.length === 0) {
-                activityList.innerHTML = `
-                    <li style="text-align: center; padding: 30px; color: #6B7280;">
-                        <i class="fas fa-inbox"></i> No recent activities
-                    </li>
-                `;
-                return;
-            }
-            
-            activityList.innerHTML = '';
-            
-            activities.forEach(activity => {
-                const activityItem = document.createElement('li');
-                activityItem.className = 'activity-item';
-                
-                const timeAgo = getTimeAgo(activity.date);
-                
-                activityItem.innerHTML = `
-                    <div class="activity-icon" style="background: ${activity.color || 'var(--primary)'};">
-                        <i class="${activity.icon || 'fas fa-bell'}"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">${activity.title}</div>
-                        <div class="activity-desc">${activity.description}</div>
-                        <div class="activity-time">
-                            <i class="far fa-clock"></i> ${timeAgo}
-                        </div>
-                    </div>
-                `;
-                activityList.appendChild(activityItem);
-            });
-        }
-
-        // Update Calendar Display
-        function updateCalendarDisplay(events) {
-            const calendarGrid = document.getElementById('calendarGrid');
-            
-            if (!events || events.length === 0) {
-                calendarGrid.innerHTML = `
-                    <div style="text-align: center; padding: 30px; color: #6B7280; grid-column: 1 / -1;">
-                        <i class="fas fa-calendar-times"></i> No upcoming events
-                    </div>
-                `;
-                return;
-            }
-            
-            calendarGrid.innerHTML = '';
-            
-            events.slice(0, 4).forEach(event => {
-                const eventDate = new Date(event.date);
-                const day = eventDate.getDate();
-                const month = eventDate.toLocaleString('default', { month: 'short' }).toUpperCase();
-                
-                const eventDiv = document.createElement('div');
-                eventDiv.className = 'calendar-event';
-                eventDiv.innerHTML = `
-                    <div class="event-date">
-                        <div class="event-day">${day}</div>
-                        <div class="event-month">${month}</div>
-                    </div>
-                    <div class="event-title">${event.title}</div>
-                    <div class="event-desc">${event.description}</div>
-                `;
-                calendarGrid.appendChild(eventDiv);
-            });
-        }
-
-        // Utility Functions
-        function getOrdinalSuffix(n) {
-            if (n > 3 && n < 21) return 'th';
-            switch (n % 10) {
-                case 1: return 'st';
-                case 2: return 'nd';
-                case 3: return 'rd';
-                default: return 'th';
-            }
-        }
-
-        function getTimeAgo(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-            
-            if (diffMins < 1) return 'Just now';
-            if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`;
-            if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-            if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-            return date.toLocaleDateString();
-        }
-
-        function updateSyncStatus(status) {
-            lastSyncTime = Date.now();
-            const timeString = new Date(lastSyncTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            if (status === 'Just now') {
-                syncStatus.style.display = 'flex';
-                syncStatus.innerHTML = `
-                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
-                    <span id="syncText">Synced ${status}</span>
-                `;
-            } else {
-                document.getElementById('syncText').textContent = `Last synced: ${timeString}`;
-            }
-            
-            lastSync.textContent = `Last sync: ${timeString}`;
-            
-            // Hide sync status after 3 seconds
-            if (status === 'Just now') {
-                setTimeout(() => {
-                    syncStatus.style.display = 'none';
-                }, 3000);
-            }
-        }
-
-        function showLoadingState(elementId, show) {
-            const element = document.getElementById(elementId);
-            if (element) {
-                if (show) {
-                    element.classList.add('active');
-                } else {
-                    element.classList.remove('active');
-                }
-            }
-        }
-
-        // Refresh all data
-        async function refreshAllData() {
-            if (!currentStudent || isLoading) return;
-            
-            isLoading = true;
-            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-            refreshBtn.disabled = true;
-            
-            try {
-                await loadAllData();
-                showNotification('Data Refreshed', 'All data has been updated successfully.', 'success');
-            } catch (error) {
-                showNotification('Refresh Failed', 'Could not refresh data. Please try again.', 'error');
-            } finally {
-                isLoading = false;
-                refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh Data';
-                refreshBtn.disabled = false;
-            }
-        }
-
-        // Check for updates periodically
-        async function checkForUpdates() {
-            if (!currentStudent || !isOnline || isLoading) return;
-            
-            try {
-                const result = await API.getStudentData(currentStudent.studentId);
-                if (result.success && result.student) {
-                    // Compare with current data
-                    const hasChanges = JSON.stringify(currentStudent) !== JSON.stringify(result.student);
-                    if (hasChanges) {
-                        currentStudent = { ...currentStudent, ...result.student };
-                        updateDashboard(currentStudent);
-                        updateSyncStatus('Just now');
-                        showNotification('Data Updated', 'New data has been loaded.', 'info');
-                    }
-                }
-            } catch (error) {
-                console.log('Background sync failed:', error);
-            }
-        }
-
-        // Check login status on page load
-        function checkLoginStatus() {
-            const savedStudentData = localStorage.getItem('studentData');
-            const savedStudentId = localStorage.getItem('studentId');
-            
-            if (savedStudentData && savedStudentId) {
-                try {
-                    currentStudent = JSON.parse(savedStudentData);
-                    
-                    // Update dashboard with saved data
-                    updateDashboard(currentStudent);
-                    
-                    // Show dashboard
-                    loginContainer.classList.remove('active');
-                    dashboardContainer.style.display = 'block';
-                    
-                    // Load fresh data in background
-                    setTimeout(() => {
-                        if (isOnline) {
-                            refreshAllData();
-                        } else {
-                            // Load activities and calendar from cache
-                            loadActivities();
-                            loadCalendar();
-                        }
-                    }, 1000);
-                    
-                    updateSyncStatus('Loading...');
-                    
-                } catch (error) {
-                    console.error('Error loading saved data:', error);
-                    localStorage.removeItem('studentData');
-                    localStorage.removeItem('studentId');
-                }
-            }
-        }
-
-        // Logout
-        function logout() {
-            showLoading();
-            
-            setTimeout(() => {
-                currentStudent = null;
-                
-                // Clear storage
-                localStorage.removeItem('studentData');
-                localStorage.removeItem('studentId');
-                
-                // Switch to login
-                dashboardContainer.style.display = 'none';
-                loginContainer.classList.add('active');
-                
-                // Clear form
-                loginForm.reset();
-                studentIdInput.focus();
-                
-                showNotification('Logged Out', 'You have been successfully logged out.', 'info');
-                hideLoading();
-            }, 500);
-        }
-
-        // View functions (same as before, but using loaded data)
-        function viewResults() {
-            if (!currentStudent || !currentStudent.resultsData) {
-                showNotification('Data Not Loaded', 'Please wait for data to load or refresh.', 'warning');
-                return;
-            }
-            
-            // Implementation for results modal
-            const content = `
-                <div style="margin-bottom: 20px;">
-                    <h4 style="color: var(--primary); margin-bottom: 15px;">Academic Results - ${currentStudent.class}</h4>
-                    
-                    ${currentStudent.resultsData.overallPerformance ? `
-                    <div style="background: #F0F9FF; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                            <div>
-                                <div style="font-size: 0.9rem; color: #6B7280;">Overall Performance</div>
-                                <div style="font-size: 2rem; font-weight: 800; color: var(--primary);">${currentStudent.resultsData.overallPerformance.average}%</div>
-                            </div>
-                            <div class="grade-indicator">${currentStudent.resultsData.overallPerformance.grade}</div>
-                        </div>
-                        
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${currentStudent.resultsData.overallPerformance.average}%;"></div>
-                        </div>
-                    </div>
-                    ` : ''}
-                    
-                    <h5 style="color: var(--primary); margin-bottom: 15px;">Subject-wise Performance</h5>
-                    
-                    ${currentStudent.resultsData.subjectAverages ? `
-                    <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #F0F9FF;">
-                                    <th style="padding: 12px; text-align: left; font-weight: 600;">Subject</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Average</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Grade</th>
-                                    <th style="padding: 12px; text-align: center; font-weight: 600;">Tests</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${currentStudent.resultsData.subjectAverages.map(subject => `
-                                <tr>
-                                    <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">${subject.subject}</td>
-                                    <td style="padding: 12px; text-align: center; border-bottom: 1px solid #E5E7EB; font-weight: 600;">${subject.averageScore}%</td>
-                                    <td style="padding: 12px; text-align: center; border-bottom: 1px solid #E5E7EB;">
-                                        <span style="background: ${getGradeColor(subject.latestGrade)}; color: white; padding: 4px 12px; border-radius: 15px; font-weight: 600;">${subject.latestGrade}</span>
-                                    </td>
-                                    <td style="padding: 12px; text-align: center; border-bottom: 1px solid #E5E7EB;">
-                                        ${subject.totalTests}
-                                    </td>
-                                </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    ` : '<p>No subject data available</p>'}
-                    
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="printResults()" style="background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;">
-                            <i class="fas fa-print"></i> Print Report
-                        </button>
-                        <button onclick="downloadResults()" style="background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; flex: 1;">
-                            <i class="fas fa-download"></i> Download PDF
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            showModal('Academic Results', content);
-        }
-
-        function getGradeColor(grade) {
-            switch(grade) {
-                case 'A+': return '#10B981';
-                case 'A': return '#06B6D4';
-                case 'B+': return '#3B82F6';
-                case 'B': return '#8B5CF6';
-                case 'C': return '#F59E0B';
-                case 'D': return '#EF4444';
-                case 'F': return '#DC2626';
-                default: return '#6B7280';
-            }
-        }
-
-        // Other view functions (attendance, timetable, assignments, profile) remain similar
-        // but updated to use currentStudent.data properties
-
-        // Keep all the other functions from the previous dashboard
-        // (showNotification, hideNotification, togglePassword, showLoading, hideLoading,
-        // showModal, closeModal, etc.)
-
-        // Note: The rest of the functions (viewAttendance, viewTimetable, viewAssignments,
-        // viewProfile, downloadReports, showForgotPassword, etc.) should be adapted
-        // to use the data loaded from Google Sheets via the API calls.
-
-        // For brevity, I haven't included all the modal content functions here,
-        // but they should follow the same pattern as viewResults() above.
-
-    </script>
+    restoreSession();
+</script>
 </body>
 </html>
