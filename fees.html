@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Noorussalam - Fees system</title>
+    <title>Noorussalam - fees system</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -18,32 +18,15 @@
             font-family: 'Anek Malayalam', sans-serif;
             background: radial-gradient(circle at 30% 20%, #0a2e5a, #041a30, #020d1a);
             min-height: 100vh;
-            padding: 16px;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             overflow-x: hidden;
+            padding: 20px;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 65%);
-            animation: rotateSlow 28s linear infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        @keyframes rotateSlow {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
+        /* Stars background */
         .stars-bg {
             position: fixed;
             top: 0;
@@ -64,29 +47,147 @@
 
         @keyframes twinkleSoft {
             0% { opacity: 0.2; transform: scale(1);}
-            100% { opacity: 1; transform: scale(1.25);}
+            100% { opacity: 1; transform: scale(1.2);}
         }
 
+        /* ===== CENTERED WRAPPER WITH DECREASED/SUBTLE ROTATING EFFECT ===== */
+        .outer-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
+        }
+
+        /* subtle rotating border - DECREASED intensity, slower and softer glow */
+        .rotating-border {
+            position: relative;
+            border-radius: 56px;
+            background: transparent;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        /* Main rotating gradient line - Decreased effect: thinner blur, slower animation, less glow */
+        .rotating-border::before {
+            content: "";
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(135deg, 
+                #ffb347, #ffaa55, 
+                #5a9eff, #aaccff,
+                #ffb347);
+            background-size: 250% 250%;
+            border-radius: 60px;
+            z-index: -2;
+            animation: softRotateGlow 6s cubic-bezier(0.45, 0.05, 0.2, 0.99) infinite;
+            filter: blur(1.5px);
+            opacity: 0.65;
+        }
+
+        /* Secondary subtle layer - decreased opacity and smaller spread */
+        .rotating-border::after {
+            content: "";
+            position: absolute;
+            top: -1.5px;
+            left: -1.5px;
+            right: -1.5px;
+            bottom: -1.5px;
+            background: linear-gradient(220deg, 
+                rgba(255,180,70,0.5), 
+                rgba(59,130,246,0.4),
+                rgba(255,180,70,0.5));
+            background-size: 200% 200%;
+            border-radius: 58px;
+            z-index: -1;
+            animation: subtleSpin 8s linear infinite;
+            opacity: 0.5;
+        }
+
+        /* Extra ring - thinner, slower spin for mild accent */
+        .subtle-ring {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border-radius: 62px;
+            border: 1px solid rgba(255, 180, 80, 0.4);
+            background: transparent;
+            animation: slowSpin 10s linear infinite;
+            pointer-events: none;
+            z-index: 3;
+            box-shadow: 0 0 3px rgba(255,160,50,0.2);
+        }
+
+        @keyframes softRotateGlow {
+            0% {
+                background-position: 0% 0%;
+                filter: blur(1.5px);
+            }
+            50% {
+                background-position: 100% 100%;
+                filter: blur(2px);
+            }
+            100% {
+                background-position: 0% 0%;
+                filter: blur(1.5px);
+            }
+        }
+
+        @keyframes subtleSpin {
+            0% {
+                background-position: 0% 0%;
+                transform: rotate(0deg);
+            }
+            100% {
+                background-position: 200% 200%;
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes slowSpin {
+            0% {
+                transform: rotate(0deg);
+                border-color: rgba(255, 180, 80, 0.3);
+            }
+            50% {
+                border-color: rgba(90, 158, 255, 0.4);
+            }
+            100% {
+                transform: rotate(360deg);
+                border-color: rgba(255, 180, 80, 0.3);
+            }
+        }
+
+        /* Main container - centered and responsive */
         .container {
-            max-width: 540px;
+            max-width: 580px;
             width: 100%;
             background: rgba(255,255,255,0.97);
             backdrop-filter: blur(1px);
-            border-radius: 48px;
+            border-radius: 52px;
             overflow: hidden;
-            box-shadow: 0 30px 45px -20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.2);
+            box-shadow: 0 20px 35px -15px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255,255,255,0.2);
             position: relative;
-            z-index: 2;
-            transition: transform 0.25s ease;
+            z-index: 10;
+            transition: transform 0.2s ease;
+            margin: 0 auto;
         }
 
         .container:active {
             transform: scale(0.99);
         }
 
+        /* Header same as before but refined */
         .header {
             background: linear-gradient(115deg, #0a2a5c 0%, #1a4d8c 100%);
-            padding: 32px 20px 28px;
+            padding: 28px 20px 24px;
             text-align: center;
             color: white;
             position: relative;
@@ -110,7 +211,7 @@
         }
 
         .header h1 {
-            font-size: 1.65rem;
+            font-size: 1.6rem;
             font-weight: 800;
             display: flex;
             align-items: center;
@@ -131,18 +232,18 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 20px;
+            padding: 6px 18px;
             border-radius: 50px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
-            margin-top: 14px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            margin-top: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
             position: relative;
             z-index: 2;
         }
 
         .content {
-            padding: 30px 24px;
+            padding: 28px 24px;
             background: #ffffff;
         }
 
@@ -167,7 +268,7 @@
 
         input {
             width: 100%;
-            padding: 16px 20px;
+            padding: 15px 20px;
             font-size: 1rem;
             border: 2px solid #e2edf7;
             border-radius: 60px;
@@ -188,7 +289,7 @@
 
         .check-btn {
             width: 100%;
-            padding: 16px;
+            padding: 15px;
             background: linear-gradient(135deg, #0f3d72, #1b5da8);
             color: white;
             border: none;
@@ -213,8 +314,68 @@
             opacity: 0.7;
         }
 
+        /* INFO BOX */
+        .info-box {
+            background: #f0f9ff;
+            border-left: 6px solid #ff8c1a;
+            border-radius: 28px;
+            padding: 18px 18px;
+            margin: 20px 0 12px;
+            box-shadow: 0 5px 12px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+            animation: gentleFade 0.6s ease;
+        }
+
+        @keyframes gentleFade {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-box-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #c45d00;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed #ffe0b5;
+            padding-bottom: 6px;
+        }
+
+        .info-box-title i {
+            font-size: 1.3rem;
+        }
+
+        .info-message {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: #2c3e4e;
+            font-weight: 500;
+        }
+
+        .info-message p {
+            margin-bottom: 10px;
+        }
+
+        .info-contact {
+            background: #fff1e0;
+            border-radius: 40px;
+            padding: 6px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            color: #b55200;
+            margin-top: 10px;
+        }
+
+        .info-contact i {
+            font-size: 1rem;
+        }
+
         .result-card {
-            margin-top: 28px;
+            margin-top: 20px;
             border-radius: 32px;
             background: #fafdff;
             border: 1px solid #e8f0f8;
@@ -243,7 +404,7 @@
         }
 
         .info-table td {
-            padding: 14px 16px;
+            padding: 12px 14px;
             vertical-align: middle;
         }
 
@@ -251,18 +412,18 @@
             width: 44%;
             font-weight: 600;
             color: #3a6b8f;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
 
         .info-table td:last-child {
             font-weight: 700;
             color: #1a4a6f;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .amount-pending {
             color: #e67e22;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
         }
 
         .amount-cleared {
@@ -272,7 +433,7 @@
         .whatsapp-btn {
             background: #25D366;
             color: white;
-            padding: 14px 16px;
+            padding: 12px 16px;
             border-radius: 60px;
             text-align: center;
             margin: 16px 20px 20px;
@@ -298,47 +459,47 @@
         .gpay-container {
             background: linear-gradient(135deg, #f8fafd, #ffffff);
             border-radius: 36px;
-            padding: 22px;
-            border: 3px solid #1a4d8c;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            border: 2px solid #1a4d8c;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
             position: relative;
         }
 
         .gpay-container::before {
             content: '';
             position: absolute;
-            top: -3px;
-            left: -3px;
-            right: -3px;
-            bottom: -3px;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
             background: linear-gradient(135deg, #ffcd7e, #1a4d8c, #ffb347);
             border-radius: 39px;
             z-index: -1;
-            opacity: 0.45;
+            opacity: 0.3;
         }
 
         .due-amount-badge {
             background: #eef3fc;
             border-radius: 40px;
-            padding: 8px 18px;
-            font-size: 0.8rem;
+            padding: 6px 16px;
+            font-size: 0.75rem;
             display: inline-block;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
             color: #0f3d72;
             font-weight: 700;
             border: 1px solid #cde0f0;
         }
 
         .amount-editor {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             text-align: center;
         }
 
         .amount-label {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 800;
             color: #1a4a6f;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -353,28 +514,27 @@
             background: white;
             border: 2px solid #e2edf7;
             border-radius: 60px;
-            padding: 6px 20px;
+            padding: 4px 16px;
             transition: all 0.2s;
         }
 
         .amount-input-wrapper:focus-within {
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
-            transform: scale(1.01);
         }
 
         .currency-symbol {
-            font-size: 1.35rem;
+            font-size: 1.2rem;
             font-weight: 800;
             color: #1a4a6f;
         }
 
         .amount-input-wrapper input {
             border: none;
-            padding: 12px 8px;
-            font-size: 1.3rem;
+            padding: 10px 8px;
+            font-size: 1.2rem;
             font-weight: 800;
-            width: 150px;
+            width: 140px;
             text-align: center;
             background: transparent;
             font-family: monospace;
@@ -388,10 +548,10 @@
         .advance-warning {
             background: #fff8e7;
             border-left: 3px solid #f59e0b;
-            padding: 10px 12px;
+            padding: 8px 12px;
             border-radius: 18px;
-            margin-top: 12px;
-            font-size: 0.7rem;
+            margin-top: 10px;
+            font-size: 0.68rem;
             color: #b85c00;
             text-align: left;
         }
@@ -401,7 +561,7 @@
             background: #ffffff;
             border: 2px solid #1a4d8c;
             border-radius: 60px;
-            padding: 14px 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -409,7 +569,7 @@
             cursor: pointer;
             transition: all 0.25s ease;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #1a4d8c;
             box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
@@ -420,20 +580,20 @@
         }
 
         .month-calc-note {
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #2c6e2c;
             background: #e8f5e9;
             border-radius: 20px;
-            padding: 4px 12px;
+            padding: 3px 10px;
             display: inline-block;
-            margin-top: 6px;
+            margin-top: 5px;
         }
 
         .footer {
             text-align: center;
-            padding: 14px;
+            padding: 12px;
             background: #f0f5fa;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: #5a7f9a;
         }
 
@@ -446,17 +606,17 @@
         .loader {
             display: none;
             text-align: center;
-            padding: 24px;
+            padding: 20px;
         }
 
         .spinner {
-            width: 46px;
-            height: 46px;
-            border: 4px solid #e2edf7;
-            border-top: 4px solid #1f6eb0;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2edf7;
+            border-top: 3px solid #1f6eb0;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
-            margin: 0 auto 12px;
+            margin: 0 auto 10px;
         }
 
         @keyframes spin {
@@ -470,9 +630,9 @@
             transform: translateX(-50%) translateY(100px);
             background: #1e293b;
             color: white;
-            padding: 12px 24px;
+            padding: 10px 22px;
             border-radius: 60px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
             z-index: 1000;
             transition: transform 0.25s ease;
@@ -484,16 +644,29 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 550px) {
             .content {
                 padding: 20px 16px;
             }
             .toast-message {
                 white-space: normal;
-                max-width: 90%;
+                max-width: 85%;
                 text-align: center;
-                font-size: 0.75rem;
-                padding: 10px 18px;
+                font-size: 0.7rem;
+                padding: 8px 16px;
+            }
+            .rotating-border::before {
+                filter: blur(1px);
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+            }
+            .subtle-ring {
+                top: -3px;
+                left: -3px;
+                right: -3px;
+                bottom: -3px;
             }
         }
     </style>
@@ -501,44 +674,67 @@
 <body>
 <div class="stars-bg" id="starContainer"></div>
 
-<div class="container">
-    <div class="header">
-        <h1>നൂറുസ്സലാം മദ്റസ</h1>
-        <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
-        <div class="badge"><i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ  പെൻഡിംങ് പേയ്മെന്റ് സിസ്റ്റം</div>
-    </div>
-
-    <div class="content">
-        <div class="input-group">
-            <div class="input-label"><i class="fas fa-mobile-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</div>
-            <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off" inputmode="numeric">
-        </div>
-        <button class="check-btn" onclick="checkFee()" id="checkBtn">🔍 പരിശോധിക്കുക</button>
-
-        <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
-        <div id="result"></div>
-
-        <!-- GPay section -->
-        <div id="gpaySectionWrapper" class="gpay-section-wrapper" style="display: none;">
-            <div class="gpay-container">
-                <div style="text-align: center;"><span class="due-amount-badge" id="dueAmountBadge">📋 ബാക്കി തുക: ₹0</span></div>
-                <div class="amount-editor">
-                    <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
-                    <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="0" placeholder="തുക നൽകുക"></div>
-                    <div class="amount-hint" style="font-size:0.7rem; color:#6c8eaa; margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.പൈസ അയച്ചാൽ അമീർ ഉസ്താദിന്റെ വാട്സാപ്പിലേക്ക് സ്ക്രീൻഷോട്ട് അയക്കേണ്ടതാണ്.</div>
-                    <div id="advanceWarningBox" class="advance-warning" style="display: none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്. അധിക തുക അഡ്വാൻസ് ആയി കണക്കാക്കപ്പെടും.</div>
-                </div>
-                <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
-                <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:#5f7f9e;"><i class="fas fa-shield-alt"></i> സുരക്ഷിത UPI പേയ്മെന്റ് | UPI ID: ameerpattani786@oksbi</p>
+<!-- CENTERED outer wrapper with decreased rotating effect -->
+<div class="outer-wrapper">
+    <div class="rotating-border">
+        <div class="subtle-ring"></div>
+        <div class="container">
+            <div class="header">
+                <h1> നൂറുസ്സലാം മദ്റസ</h1>
+                <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
+                <div class="badge"><i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ  പെൻഡിംങ് പേയ്മെന്റ് സിസ്റ്റം</div>
             </div>
+
+            <div class="content">
+                <div class="input-group">
+                    <div class="input-label"><i class="fas fa-mobile-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</div>
+                    <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off" inputmode="numeric">
+                </div>
+                <button class="check-btn" onclick="checkFee()" id="checkBtn">🔍 പരിശോധിക്കുക</button>
+
+                <!-- INFO BOX (notice) -->
+                <div class="info-box">
+                    <div class="info-box-title">
+                        <i class="fas fa-info-circle"></i> 
+                        <span> ശ്രദ്ധിക്കുക </span>
+                    </div>
+                    <div class="info-message">
+                        <p>⚠️ <strong>വരിസംഖ്യ അടച്ച് 0-3 ദിവസങ്ങൾക്കകം അപ്‌ഡേറ്റ് ആവുന്നതാണ്.</strong><br>
+                        ⚠️ അവസാനം അടച്ചതിന്റെ റസീപ്റ്റ് കയ്യിൽ സൂക്ഷിക്കേണ്ടതാണ്.</p>
+                        <div class="info-contact">
+                            <i class="fas fa-phone-alt"></i> 7034 678 818
+                            <i class="fab fa-whatsapp" style="color:#25D366;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
+                <div id="result"></div>
+
+                <!-- GPay section -->
+                <div id="gpaySectionWrapper" class="gpay-section-wrapper" style="display: none;">
+                    <div class="gpay-container">
+                        <div style="text-align: center;"><span class="due-amount-badge" id="dueAmountBadge">📋 ബാക്കി തുക: ₹0</span></div>
+                        <div class="amount-editor">
+                            <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
+                            <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="0" placeholder="തുക നൽകുക"></div>
+                            <div class="amount-hint" style="font-size:0.65rem; color:#6c8eaa; margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.പൈസ അയച്ചാൽ അമീർ ഉസ്താദിന്റെ വാട്സാപ്പിലേക്ക് സ്ക്രീൻഷോട്ട് അയക്കേണ്ടതാണ്.</div>
+                            <div id="advanceWarningBox" class="advance-warning" style="display: none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്. അധിക തുക അഡ്വാൻസ് ആയി കണക്കാക്കപ്പെടും.</div>
+                        </div>
+                        <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
+                        <p style="font-size:0.65rem; text-align:center; margin-top:12px; color:#5f7f9e;"><i class="fas fa-shield-alt"></i> Secure UPI Payment | UPI ID: ameerpattani786@oksbi</p>
+                    </div>
+                </div>
+            </div>
+            <div class="footer"><a href="admin.html">🔐 Admin</a> | Noorussalam Madrasa © 2026 | <i class="fas fa-phone-alt"></i> 7034678818</div>
         </div>
     </div>
-    <div class="footer"><a href="admin.html">🔐 Admin</a> | Noorussalam Madrasa © 2026 | <i class="fas fa-phone-alt"></i> 7034678818</div>
 </div>
+
 <div id="toastMsg" class="toast-message"></div>
 
 <script>
-    // ========== FIXED: "ആകെ അടക്കേണ്ട തുക" = (pendingMonths × 200) + previousBalance ==========
+    // Configuration
     const UPI_ID = "ameerpattani786@oksbi";
     const PAYEE_NAME = "Noorussalam Madrasa";
     const NOTE = "Madrasa Fee Payment";
@@ -584,13 +780,11 @@
         return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
     }
 
-    // Calculate total correctly: (pending months * 200) + previous balance
     function calculateTotalPending(pendingMonths, previousBalance) {
         const monthlyTotal = (pendingMonths || 0) * MONTHLY_FEE;
         return monthlyTotal + (previousBalance || 0);
     }
 
-    // Original WhatsApp message (preserved exactly)
     function generateProfessionalWhatsAppMessage(data) {
         const formatCurrency = (amount) => `₹${(amount || 0).toLocaleString('en-IN')}`;
         const today = new Date();
@@ -627,19 +821,16 @@
     }
 
     function displayResult(data) {
-        // Calculate using the correct formula
         const pendingMonths = data.pendingMonths || 0;
         const previousBalance = data.previousBalance || 0;
         const monthlyAmount = pendingMonths * MONTHLY_FEE;
-        const totalPending = monthlyAmount + previousBalance;   // ✅ FIXED: total due = months total + previous balance
-        
-        data.totalPending = totalPending;   // update for whatsapp message
+        const totalPending = monthlyAmount + previousBalance;
+        data.totalPending = totalPending;
 
         const professionalMessage = generateProfessionalWhatsAppMessage(data);
         const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(professionalMessage)}`;
         const pendingClass = totalPending > 0 ? 'amount-pending' : 'amount-cleared';
 
-        // Display table with proper calculation shown
         document.getElementById("result").innerHTML = `
             <div class="result-card">
                 <table class="info-table">
@@ -648,8 +839,8 @@
                     <tr><td><i class="fas fa-check-circle"></i> ഈ വർഷത്തിൽ അടച്ച മാസങ്ങൾ</td><td>${data.paidMonths || 0} മാസം</td></tr>
                     <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം<br><span class="month-calc-note">${pendingMonths} മാസം × ₹${MONTHLY_FEE} = ₹${monthlyAmount.toLocaleString('en-IN')}</span></td></tr>
                     ${previousBalance > 0 ? `<tr><td><i class="fas fa-history"></i> മുൻ വർഷ ബാക്കി (കുടിശ്ശിക)</td><td>₹ ${previousBalance.toLocaleString('en-IN')}</td></tr>` : ''}
-                    <tr style="background:#FFF8EC;"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${pendingClass}"><strong>₹ ${totalPending.toLocaleString('en-IN')}</strong><br><span style="font-size:0.7rem;">(${pendingMonths} മാസം + ${previousBalance > 0 ? 'കുടിശ്ശിക' : 'നിലവിലെ ബാക്കി'})</span></td></tr>
-                    <tr><td><i class="fas fa-envelope"></i> ചുരുക്കത്തിൽ</td><td>${escapeHtml(data.message)}</td></tr>
+                    <tr style="background:#FFF8EC;"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${pendingClass}"><strong>₹ ${totalPending.toLocaleString('en-IN')}</strong><br><span style="font-size:0.65rem;">(${pendingMonths} മാസം + ${previousBalance > 0 ? 'കുടിശ്ശിക' : 'നിലവിലെ ബാക്കി'})</span></td></tr>
+                    <tr><td><i class="fas fa-envelope"></i> ചുരുക്കത്തിൽ</td><td>${escapeHtml(data.message)}<\/td></tr>
                 </table>
                 <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
             </div>
@@ -704,7 +895,7 @@
     }
 
     function showError(msg) {
-        document.getElementById("result").innerHTML = `<div class="result-card error"><table class="info-table"><tr><td><i class="fas fa-exclamation-triangle"></i> ⚠️ പിശക്</td><td style="color:#c0392b;">${escapeHtml(msg)}</td></tr></table></div>`;
+        document.getElementById("result").innerHTML = `<div class="result-card error"><table class="info-table"><td><i class="fas fa-exclamation-triangle"></i> ⚠️ പിശക്</td><td style="color:#c0392b;">${escapeHtml(msg)}</td></tr></table></div>`;
         document.getElementById("gpaySectionWrapper").style.display = "none";
         currentStudentData = null;
         currentDueAmount = 0;
