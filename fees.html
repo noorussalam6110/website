@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Noorussalam-Online Fee System</title>
+    <title>Noorussalam - Online Fee System</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -186,10 +186,12 @@
             transform: scale(1.01);
         }
 
+        /* ========== SUPER-ENHANCED ANIMATED CHECK BUTTON with MORE EFFECTS ========== */
         .check-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #0f3d72, #1b5da8);
+            background: linear-gradient(135deg, #0f3d72, #1b5da8, #2b6eb0, #0f3d72);
+            background-size: 300% 100%;
             color: white;
             border: none;
             border-radius: 60px;
@@ -197,20 +199,132 @@
             font-weight: 700;
             cursor: pointer;
             margin-top: 16px;
-            transition: all 0.25s ease;
-            box-shadow: 0 6px 16px rgba(11, 55, 108, 0.4);
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            box-shadow: 0 0 0 0 rgba(27, 93, 168, 0), 0 6px 16px rgba(11, 55, 108, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            /* Infinite flow + floating glow + slight bounce */
+            animation: gradientFlow 3s ease infinite, floatGlow 2.2s infinite alternate, subtleBounce 2.4s infinite ease-in-out;
+            will-change: transform, background-position, box-shadow;
         }
 
+        /* Continuous gradient flow (left-right) */
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Floating glow + shadow breathing */
+        @keyframes floatGlow {
+            0% {
+                box-shadow: 0 6px 16px rgba(11, 55, 108, 0.4), 0 0 0 0 rgba(59, 130, 246, 0);
+                transform: translateY(0px);
+            }
+            100% {
+                box-shadow: 0 14px 26px rgba(27, 93, 168, 0.6), 0 0 0 3px rgba(59, 130, 246, 0.35);
+                transform: translateY(-3px);
+            }
+        }
+
+        /* Subtle vertical motion (bounce-like) */
+        @keyframes subtleBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-2px); }
+        }
+
+        /* Icon (🔍) rotation and scale animation */
+        .check-btn .btn-icon {
+            display: inline-block;
+            animation: iconSpinWobble 1.4s infinite ease-in-out;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+        }
+
+        @keyframes iconSpinWobble {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(12deg) scale(1.1); }
+            50% { transform: rotate(-8deg) scale(1.05); }
+            75% { transform: rotate(5deg) scale(1.1); }
+            100% { transform: rotate(0deg) scale(1); }
+        }
+
+        /* Hover effect: pause the infinite bounce and amplify */
+        .check-btn:hover {
+            animation: gradientFlow 1.8s ease infinite, floatGlowHover 0.4s forwards;
+            transform: scale(1.02) translateY(-2px);
+            letter-spacing: 0.5px;
+        }
+
+        @keyframes floatGlowHover {
+            0% { box-shadow: 0 6px 16px rgba(11, 55, 108, 0.4); transform: translateY(0); }
+            100% { box-shadow: 0 16px 32px rgba(27, 93, 168, 0.8), 0 0 0 5px rgba(59, 130, 246, 0.4); transform: translateY(-4px); }
+        }
+
+        /* Click ripple effect (stronger) */
         .check-btn:active {
-            transform: scale(0.97);
+            transform: scale(0.96) translateY(2px);
+            animation: none;
+            transition: transform 0.05s linear;
         }
 
+        .check-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
+            pointer-events: none;
+        }
+
+        .check-btn:hover::before {
+            left: 150%;
+        }
+
+        /* RIPPLE effect on click (enhanced) */
+        .check-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 60px;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.5s, opacity 0.4s;
+        }
+
+        .check-btn:active::after {
+            transform: translate(-50%, -50%) scale(3);
+            opacity: 1;
+            transition: transform 0s, opacity 0.2s;
+        }
+
+        /* Disabled state: remove all effects */
         .check-btn:disabled {
             opacity: 0.7;
+            transform: scale(1);
+            animation: none;
+            cursor: not-allowed;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            filter: grayscale(0.1);
+        }
+        .check-btn:disabled::before, .check-btn:disabled::after {
+            display: none;
+        }
+        .check-btn:disabled .btn-icon {
+            animation: none;
         }
 
         /* INFO BOX - വരിസംഖ്യ അറിയിപ്പ് - REDUCED FONT SIZE */
@@ -218,7 +332,7 @@
             background: #f0f9ff;
             border-left: 6px solid #ff8c1a;
             border-radius: 28px;
-            padding: 16px 16px;  /* slightly reduced padding */
+            padding: 16px 16px;
             margin: 20px 0 10px;
             box-shadow: 0 5px 14px rgba(0, 0, 0, 0.03);
             transition: all 0.2s;
@@ -233,17 +347,17 @@
             align-items: center;
             gap: 8px;
             font-weight: 700;
-            font-size: 0.82rem;   /* reduced from 1rem */
+            font-size: 0.82rem;
             color: #c45d00;
             margin-bottom: 10px;
             border-bottom: 1px dashed #ffe0b5;
             padding-bottom: 6px;
         }
         .info-box-title i {
-            font-size: 1.1rem;     /* reduced icon */
+            font-size: 1.1rem;
         }
         .info-message {
-            font-size: 0.72rem;    /* reduced from 0.9rem */
+            font-size: 0.72rem;
             line-height: 1.45;
             color: #2c3e4e;
             font-weight: 500;
@@ -261,7 +375,7 @@
             font-weight: 700;
             color: #b55200;
             margin-top: 8px;
-            font-size: 0.7rem;    /* smaller contact text */
+            font-size: 0.7rem;
         }
         .info-contact i {
             font-size: 0.9rem;
@@ -549,12 +663,18 @@
                 font-size: 0.75rem;
                 padding: 10px 18px;
             }
-            /* further reduce on very small screens */
             .info-message {
                 font-size: 0.68rem;
             }
             .info-box-title {
                 font-size: 0.78rem;
+            }
+            /* Slightly reduce intensity on mobile for performance */
+            .check-btn {
+                animation: gradientFlow 3s ease infinite, floatGlow 2.2s infinite alternate;
+            }
+            .check-btn .btn-icon {
+                animation: iconSpinWobble 1.6s infinite ease-in-out;
             }
         }
     </style>
@@ -574,9 +694,12 @@
             <div class="input-label"><i class="fas fa-mobile-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</div>
             <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off" inputmode="numeric">
         </div>
-        <button class="check-btn" onclick="checkFee()" id="checkBtn">🔍 പരിശോധിക്കുക</button>
+        <!-- Button with enhanced animations and icon wrapper -->
+        <button class="check-btn" onclick="checkFee()" id="checkBtn">
+            <span class="btn-icon">🔍</span> പരിശോധിക്കുക
+        </button>
 
-        <!-- ========== INFO BOX (STATIC NOTICE) WITH REDUCED FONT SIZE ========== -->
+        <!-- INFO BOX (STATIC NOTICE) WITH REDUCED FONT SIZE -->
         <div class="info-box">
             <div class="info-box-title">
                 <i class="fas fa-info-circle"></i> 
@@ -657,13 +780,11 @@
         return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
     }
 
-    // Calculate total correctly: (pending months * 200) + previous balance
     function calculateTotalPending(pendingMonths, previousBalance) {
         const monthlyTotal = (pendingMonths || 0) * MONTHLY_FEE;
         return monthlyTotal + (previousBalance || 0);
     }
 
-    // Original WhatsApp message (preserved exactly)
     function generateProfessionalWhatsAppMessage(data) {
         const formatCurrency = (amount) => `₹${(amount || 0).toLocaleString('en-IN')}`;
         const today = new Date();
@@ -700,19 +821,15 @@
     }
 
     function displayResult(data) {
-        // Calculate using the correct formula
         const pendingMonths = data.pendingMonths || 0;
         const previousBalance = data.previousBalance || 0;
         const monthlyAmount = pendingMonths * MONTHLY_FEE;
-        const totalPending = monthlyAmount + previousBalance;   // ✅ FIXED: total due = months total + previous balance
-        
-        data.totalPending = totalPending;   // update for whatsapp message
-
+        const totalPending = monthlyAmount + previousBalance;
+        data.totalPending = totalPending;
         const professionalMessage = generateProfessionalWhatsAppMessage(data);
         const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(professionalMessage)}`;
         const pendingClass = totalPending > 0 ? 'amount-pending' : 'amount-cleared';
 
-        // Display table with proper calculation shown
         document.getElementById("result").innerHTML = `
             <div class="result-card">
                 <table class="info-table">
@@ -730,18 +847,15 @@
 
         currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending: totalPending };
         currentDueAmount = totalPending;
-        
         const gpayWrapper = document.getElementById("gpaySectionWrapper");
         gpayWrapper.style.display = "block";
         document.getElementById("dueAmountBadge").innerHTML = `📋 നിലവിലെ ബാക്കി: ₹${totalPending.toLocaleString('en-IN')}`;
-        
         const amountInput = document.getElementById("payAmount");
         if (amountInput) {
             if (totalPending > 0) amountInput.value = totalPending;
             else { amountInput.value = ""; amountInput.placeholder = "അഡ്വാൻസ് തുക (ഉദാ: 500)"; }
             amountInput.min = 1;
         }
-
         const warnBox = document.getElementById("advanceWarningBox");
         const checkAdvance = () => {
             let val = parseFloat(amountInput.value);
@@ -756,7 +870,6 @@
         amountInput.removeEventListener("input", checkAdvance);
         amountInput.addEventListener("input", checkAdvance);
         checkAdvance();
-
         const oldBtn = document.getElementById("googlePayBtn");
         const newBtn = oldBtn.cloneNode(true);
         oldBtn.parentNode.replaceChild(newBtn, oldBtn);
