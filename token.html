@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TV Display | Google Sheets Backend Token System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            font-family: 'Anek Malayalam', sans-serif;
+            background: #0a0a1a;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .display-container { max-width: 1920px; margin: 0 auto; }
+        
+        .display-header {
+            background: linear-gradient(135deg, #e94560, #c62a40);
+            border-radius: 25px;
+            padding: 20px 30px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .title h1 { font-size: 2rem; color: white; }
+        .title p { color: rgba(255,255,255,0.9); }
+        .stats-info { display: flex; gap: 25px; }
+        .stat { text-align: center; background: rgba(0,0,0,0.3); padding: 10px 20px; border-radius: 15px; }
+        .stat .value { font-size: 1.8rem; font-weight: 800; color: #ffd700; }
+        .stat .label { font-size: 0.8rem; color: rgba(255,255,255,0.8); }
+        .time-box { background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 15px; text-align: center; }
+        .time-box .time { font-size: 1.8rem; font-weight: 700; color: white; }
+        
+        .announcement-bar {
+            background: linear-gradient(135deg, #1a1a2e, #0f0c29);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-left: 8px solid #e94560;
+        }
+        .announcement-icon { font-size: 3rem; }
+        .announcement-text { flex: 1; font-size: 2rem; font-weight: 800; color: #ffd700; letter-spacing: 2px; }
+        .speaker-btn { background: #e94560; border: none; width: 60px; height: 60px; border-radius: 50%; font-size: 1.8rem; cursor: pointer; }
+        
+        .counters-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .counter-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px 10px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .counter-card.active { background: linear-gradient(135deg, #4CAF50, #45a049); color: white; transform: scale(1.02); box-shadow: 0 0 0 3px #ffd700; }
+        .counter-card.waiting { background: linear-gradient(135deg, #FF9800, #fb8c00); color: white; }
+        .counter-number { font-size: 2rem; font-weight: 800; background: rgba(0,0,0,0.15); display: inline-block; padding: 5px 20px; border-radius: 40px; margin-bottom: 15px; }
+        .current-token-number { font-size: 3.5rem; font-weight: 800; font-family: monospace; letter-spacing: 4px; margin: 15px 0; }
+        .queue-badge { font-size: 1.2rem; font-weight: 700; background: rgba(0,0,0,0.15); display: inline-block; padding: 5px 15px; border-radius: 30px; }
+        .footer { background: rgba(0,0,0,0.5); border-radius: 20px; padding: 15px; text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; }
+        
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.5;box-shadow:0 0 0 3px #ffd700} }
+        .blink { animation: blink 0.5s ease-in-out 3; }
+        
+        @media (max-width: 1400px) {
+            .counters-grid { grid-template-columns: repeat(7, 1fr); gap: 12px; }
+            .current-token-number { font-size: 2.5rem; }
+            .announcement-text { font-size: 1.5rem; }
+        }
+        @media (max-width: 1000px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
+        
+        .status-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="display-container">
+        <div class="display-header">
+            <div class="title"><h1>🏫 സ്കൂൾ അഡ്മിഷൻ 2025</h1><p>Google Sheets Backend | ടോക്കൺ സിസ്റ്റം</p></div>
+            <div class="stats-info">
+                <div class="stat"><div class="value" id="displayActive">0</div><div class="label">🟢 സേവനത്തിൽ</div></div>
+                <div class="stat"><div class="value" id="displayWaiting">0</div><div class="label">🟠 ക്യൂവിൽ</div></div>
+                <div class="stat"><div class="value" id="displayCompleted">0</div><div class="label">✅ പൂർത്തിയായി</div></div>
+            </div>
+            <div class="time-box"><div class="time" id="currentTime">--:--:--</div><div style="font-size:0.7rem" id="currentDate">---</div></div>
+        </div>
+
+        <div class="announcement-bar">
+            <div class="announcement-icon">📢</div>
+            <div class="announcement-text" id="announcementText">🎤 ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...</div>
+            <button class="speaker-btn" onclick="repeatAnnouncement()">🔊</button>
+        </div>
+
+        <div class="counters-grid" id="countersGrid"></div>
+
+        <div class="footer"><span>🔄 Google Sheets വഴി ഓട്ടോമാറ്റിക് സമന്വയം | അപ്ഡേറ്റ് ചെയ്യുന്നത്: </span><span id="lastUpdated">---</span></div>
+        <div class="status-badge" id="syncStatus">🟢 Connected</div>
+    </div>
+
+    <script>
+        // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwscj5unnnmeNYthTf60VyGbjS8T6nqFk9AzEabcFuoXtaQz4J9mr4x9ifpUaPTUtor/exec';
+        
+        let counters = [];
+        let lastAnnouncement = '';
+        let pollingInterval = null;
+        
+        async function fetchAllData() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=get_all_data`);
+                const result = await response.json();
+                
+                if(result.success && result.data) {
+                    counters = result.data.counters || [];
+                    updateDisplay();
+                    updateStats();
+                    
+                    // Check for new announcement
+                    for(let counter of counters) {
+                        if(counter.lastAnnouncement && counter.lastAnnouncement !== lastAnnouncement) {
+                            lastAnnouncement = counter.lastAnnouncement;
+                            document.getElementById('announcementText').textContent = lastAnnouncement;
+                            setTimeout(() => {
+                                if(document.getElementById('announcementText').textContent === lastAnnouncement) {
+                                    document.getElementById('announcementText').textContent = '🎤 ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...';
+                                }
+                            }, 8000);
+                        }
+                    }
+                    
+                    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString();
+                    document.getElementById('syncStatus').textContent = '🟢 Connected';
+                    document.getElementById('syncStatus').style.background = '#28a745';
+                } else {
+                    throw new Error('Failed to fetch data');
+                }
+            } catch(error) {
+                console.error('Fetch error:', error);
+                document.getElementById('syncStatus').textContent = '🔴 Connection Error';
+                document.getElementById('syncStatus').style.background = '#dc3545';
+            }
+        }
+        
+        function updateDisplay() {
+            const grid = document.getElementById('countersGrid');
+            if(!grid) return;
+            
+            grid.innerHTML = '';
+            counters.forEach(counter => {
+                const hasQueue = counter.queue && counter.queue.length > 0;
+                const isActive = counter.currentToken !== null && counter.currentToken !== '---';
+                
+                const card = document.createElement('div');
+                card.className = `counter-card ${isActive ? 'active' : (hasQueue ? 'waiting' : '')}`;
+                card.setAttribute('data-counter', counter.id);
+                
+                card.innerHTML = `
+                    <div class="counter-number">🏪 കൗണ്ടർ ${counter.id}</div>
+                    <div class="current-token-number">${counter.currentToken && counter.currentToken !== '---' ? counter.currentToken : '---'}</div>
+                    <div class="queue-badge">🟠 ക്യൂ: ${counter.queue ? counter.queue.length : 0}</div>
+                    ${counter.queue && counter.queue.length > 0 ? `<div style="font-size:0.8rem; margin-top:8px;">⏩ അടുത്തത്: ${counter.queue[0]}</div>` : ''}
+                    <div style="font-size:0.7rem; margin-top:8px;">✅ ${counter.servedCount || 0} സേവനങ്ങൾ</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+        
+        function updateStats() {
+            const active = counters.filter(c => c.currentToken && c.currentToken !== '---').length;
+            const waiting = counters.reduce((sum, c) => sum + (c.queue ? c.queue.length : 0), 0);
+            const completed = counters.reduce((sum, c) => sum + (c.servedCount || 0), 0);
+            
+            document.getElementById('displayActive').textContent = active;
+            document.getElementById('displayWaiting').textContent = waiting;
+            document.getElementById('displayCompleted').textContent = completed;
+        }
+        
+        function repeatAnnouncement() {
+            if(lastAnnouncement) {
+                document.getElementById('announcementText').textContent = lastAnnouncement;
+                speak(lastAnnouncement);
+            }
+        }
+        
+        function speak(message) {
+            if('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = 'ml-IN';
+                utterance.rate = 0.85;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-IN');
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('ml-IN', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+        }
+        
+        // Poll every 3 seconds
+        setInterval(() => {
+            fetchAllData();
+            updateTime();
+        }, 3000);
+        
+        // Initial load
+        fetchAllData();
+        updateTime();
+    </script>
+</body>
+</html>
