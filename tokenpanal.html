@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>അഡ്മിൻ പാനൽ | Google Sheets Backend</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Anek Malayalam', sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .admin-container { max-width: 1400px; margin: 0 auto; }
+        
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .header h1 { color: white; font-size: 1.6rem; }
+        .sync-status { background: #28a745; padding: 8px 20px; border-radius: 30px; color: white; font-size: 0.85rem; }
+        
+        .admin-card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .admin-card h2 { color: #302b63; margin-bottom: 20px; border-left: 5px solid #e94560; padding-left: 15px; }
+        
+        .control-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .input-box { flex: 1; min-width: 200px; }
+        .input-box label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .input-box input, .input-box select { width: 100%; padding: 12px 15px; border: 2px solid #ddd; border-radius: 12px; font-size: 1rem; font-family: monospace; }
+        .input-box input:focus, .input-box select:focus { outline: none; border-color: #e94560; }
+        
+        .btn { padding: 12px 25px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: 'Anek Malayalam', sans-serif; }
+        .btn-primary { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+        
+        .counter-slider { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding: 15px; background: #f8f9fa; border-radius: 15px; margin-bottom: 20px; }
+        .counter-slider label { font-weight: 700; }
+        .counter-slider input { width: 200px; }
+        .counter-slider span { font-size: 1.3rem; font-weight: 700; color: #e94560; }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .stat-box { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 15px; border-radius: 15px; text-align: center; }
+        .stat-box .number { font-size: 2rem; font-weight: 800; }
+        
+        .counters-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .counter-admin-card { background: #f8f9fa; border-radius: 15px; padding: 15px; border-left: 5px solid #e94560; }
+        .counter-title { font-size: 1.3rem; font-weight: 700; }
+        .token-display { font-size: 1.8rem; font-weight: 800; font-family: monospace; margin: 10px 0; }
+        .counter-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .small-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        
+        .toast { position: fixed; bottom: 30px; right: 30px; background: #333; color: #ffd700; padding: 12px 20px; border-radius: 10px; z-index: 1000; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @media (max-width: 768px) { .control-group { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="header">
+            <h1>🎛️ അഡ്മിൻ പാനൽ | Google Sheets Backend</h1>
+            <div class="sync-status" id="syncStatus">🟢 Connected to Sheets</div>
+        </div>
+
+        <div class="admin-card">
+            <h2>🎫 ടോക്കൺ അലോട്ട്മെന്റ്</h2>
+            <div class="control-group">
+                <div class="input-box">
+                    <label>ടോക്കൺ നമ്പർ (ഒഴിവാക്കിയാൽ ഓട്ടോ)</label>
+                    <input type="text" id="tokenInput" placeholder="C1-001" autocomplete="off">
+                </div>
+                <div class="input-box">
+                    <label>കൗണ്ടർ തിരഞ്ഞെടുക്കുക</label>
+                    <select id="counterSelect">
+                        <option value="auto">🤖 ഓട്ടോമാറ്റിക്</option>
+                    </select>
+                </div>
+                <div class="input-box">
+                    <button class="btn btn-primary" onclick="addToken()" style="width:100%">➕ ടോക്കൺ അലോട്ട്</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="input-box">
+                    <label>സ്റ്റാറ്റസ് മാറ്റാനുള്ള ടോക്കൺ</label>
+                    <input type="text" id="statusTokenInput" placeholder="C1-001">
+                </div>
+                <div class="input-box">
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-warning" onclick="updateStatus('pending')">🟠 Pending</button>
+                        <button class="btn btn-danger" onclick="updateStatus('closed')">🔴 Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <h2>⚙️ ക്രമീകരണങ്ങൾ</h2>
+            <div class="counter-slider">
+                <label>📊 സജീവ കൗണ്ടറുകൾ:</label>
+                <input type="range" id="counterCountSlider" min="1" max="14" value="14" step="1">
+                <span id="counterCountValue">14</span>
+                <button class="btn btn-secondary" onclick="resetAll()">🔄 എല്ലാം റീസെറ്റ്</button>
+                <button class="btn btn-info" onclick="fetchData()">📡 Refresh</button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box"><div class="number" id="totalTokens">0</div><div class="label">📋 ആകെ ടോക്കൺ</div></div>
+            <div class="stat-box"><div class="number" id="activeCounters">0</div><div class="label">🟢 Active കൗണ്ടറുകൾ</div></div>
+            <div class="stat-box"><div class="number" id="waitingTokens">0</div><div class="label">🟠 ക്യൂവിൽ</div></div>
+            <div class="stat-box"><div class="number" id="completedCount">0</div><div class="label">✅ പൂർത്തിയായവ</div></div>
+        </div>
+
+        <div class="admin-card">
+            <h2>🏪 കൗണ്ടറുകളുടെ നിലവിലെ സ്ഥിതി</h2>
+            <div class="counters-list" id="countersList"></div>
+        </div>
+    </div>
+
+    <script>
+        // REPLACE WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwscj5unnnmeNYthTf60VyGbjS8T6nqFk9AzEabcFuoXtaQz4J9mr4x9ifpUaPTUtor/exec';
+        
+        let counters = [];
+        let allTokens = [];
+        
+        async function fetchData() {
+            try {
+                const response = await fetch(`${GAS_URL}?action=get_all_data`);
+                const result = await response.json();
+                
+                if(result.success && result.data) {
+                    counters = result.data.counters || [];
+                    allTokens = result.data.tokens || [];
+                    renderCountersList();
+                    updateStats();
+                    document.getElementById('syncStatus').textContent = '🟢 Connected to Sheets';
+                    document.getElementById('syncStatus').style.background = '#28a745';
+                    showToast('✅ Data synced from Google Sheets');
+                } else {
+                    throw new Error('Failed to fetch');
+                }
+            } catch(error) {
+                console.error('Fetch error:', error);
+                document.getElementById('syncStatus').textContent = '🔴 Connection Error';
+                document.getElementById('syncStatus').style.background = '#dc3545';
+                showToast('❌ Cannot connect to Google Sheets');
+            }
+        }
+        
+        async function addToken() {
+            const input = document.getElementById('tokenInput');
+            let tokenNumber = input.value.trim().toUpperCase();
+            const selectedValue = document.getElementById('counterSelect').value;
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'add_token',
+                        token_number: tokenNumber || '',
+                        counter: selectedValue === 'auto' ? 0 : parseInt(selectedValue),
+                        auto: selectedValue === 'auto'
+                    })
+                });
+                const result = await response.json();
+                
+                if(result.success) {
+                    showToast(`✅ ${result.data.token_number} added to counter ${result.data.counter}`);
+                    input.value = '';
+                    await fetchData();
+                } else {
+                    showToast('❌ ' + result.data);
+                }
+            } catch(error) {
+                showToast('❌ Error adding token');
+            }
+        }
+        
+        async function updateStatus(status) {
+            const input = document.getElementById('statusTokenInput');
+            let tokenNumber = input.value.trim().toUpperCase();
+            
+            if(!tokenNumber) {
+                showToast('⚠️ Enter token number');
+                return;
+            }
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update_token_status',
+                        token_number: tokenNumber,
+                        status: status
+                    })
+                });
+                const result = await response.json();
+                
+                if(result.success) {
+                    showToast(`✅ ${tokenNumber} → ${status}`);
+                    input.value = '';
+                    await fetchData();
+                } else {
+                    showToast('❌ Token not found');
+                }
+            } catch(error) {
+                showToast('❌ Error updating status');
+            }
+        }
+        
+        async function callNext(counterId) {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'call_next',
+                        counter_id: counterId
+                    })
+                });
+                const result = await response.json();
+                
+                if(result.success) {
+                    showToast(`🔔 ${result.data.token} called at counter ${counterId}`);
+                    await fetchData();
+                } else {
+                    showToast('⚠️ No tokens in queue');
+                }
+            } catch(error) {
+                showToast('❌ Error');
+            }
+        }
+        
+        async function resetCurrent(counterId) {
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'reset_counter',
+                        counter_id: counterId
+                    })
+                });
+                const result = await response.json();
+                
+                if(result.success) {
+                    showToast(`↩️ ${result.data.message}`);
+                    await fetchData();
+                } else {
+                    showToast('⚠️ No current token');
+                }
+            } catch(error) {
+                showToast('❌ Error');
+            }
+        }
+        
+        async function resetAll() {
+            if(!confirm('Reset all counters and tokens?')) return;
+            
+            try {
+                const response = await fetch(GAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'reset_all' })
+                });
+                const result = await response.json();
+                
+                if(result.success) {
+                    showToast('🔄 All data reset');
+                    await fetchData();
+                }
+            } catch(error) {
+                showToast('❌ Error resetting');
+            }
+        }
+        
+        function renderCountersList() {
+            const container = document.getElementById('countersList');
+            container.innerHTML = '';
+            
+            counters.forEach(counter => {
+                const card = document.createElement('div');
+                card.className = 'counter-admin-card';
+                card.innerHTML = `
+                    <div class="counter-title">🏪 കൗണ്ടർ ${counter.id}</div>
+                    <div class="token-display">📌 ${counter.currentToken && counter.currentToken !== '---' ? counter.currentToken : '---'}</div>
+                    <div>🟠 ക്യൂ: ${counter.queue ? counter.queue.length : 0} | ✅ സേവനം: ${counter.servedCount || 0}</div>
+                    ${counter.queue && counter.queue.length > 0 ? `<div style="font-size:0.8rem;">⏩ അടുത്തത്: ${counter.queue[0]}</div>` : ''}
+                    <div class="counter-buttons">
+                        <button class="small-btn" style="background:#28a745; color:white;" onclick="callNext(${counter.id})">⏩ നെക്സ്റ്റ്</button>
+                        <button class="small-btn" style="background:#ffc107;" onclick="resetCurrent(${counter.id})">🔄 Reset</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+        
+        function updateStats() {
+            const total = allTokens.length;
+            const active = counters.filter(c => c.currentToken && c.currentToken !== '---').length;
+            const waiting = counters.reduce((sum, c) => sum + (c.queue ? c.queue.length : 0), 0);
+            const completed = counters.reduce((sum, c) => sum + (c.servedCount || 0), 0);
+            
+            document.getElementById('totalTokens').textContent = total;
+            document.getElementById('activeCounters').textContent = active;
+            document.getElementById('waitingTokens').textContent = waiting;
+            document.getElementById('completedCount').textContent = completed;
+        }
+        
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+        
+        // Auto refresh
+        setInterval(() => fetchData(), 5000);
+        
+        // Initial load
+        fetchData();
+    </script>
+</body>
+</html>
