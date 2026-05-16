@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Token System | Suhail kerala</title>
+    <title>Token System | Suhail</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
@@ -166,23 +166,54 @@
         .badge-idle { background: #f0f0f0; color: #1f2937; border: 1px solid #cbd5e1; }
         .badge-closed { background: #c0392b; color: white; }
         
-        /* Blinking animation */
-        @keyframes blinkGreen {
-            0%, 100% { background-color: #10b981; box-shadow: 0 0 5px #10b981; }
-            50% { background-color: #facc15; box-shadow: 0 0 25px #facc15; transform: scale(1.02); }
+        /* ========== COUNTER BOX BLINK ANIMATION - 3 TIMES ========== */
+        @keyframes counterBoxBlink {
+            0% { 
+                transform: scale(1);
+                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+            }
+            25% { 
+                background: #facc15 !important;
+                border: 4px solid #ffffff !important;
+                transform: scale(1.08);
+                box-shadow: 0 0 50px #facc15;
+                color: #1f2937 !important;
+            }
+            50% { 
+                transform: scale(1);
+                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+            }
+            75% { 
+                background: #facc15 !important;
+                border: 4px solid #ffffff !important;
+                transform: scale(1.08);
+                box-shadow: 0 0 50px #facc15;
+                color: #1f2937 !important;
+            }
+            100% { 
+                transform: scale(1);
+                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+            }
         }
         
-        @keyframes blinkGold {
-            0%, 100% { background-color: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
-            50% { background-color: #ffeb3b; box-shadow: 0 0 30px #ffeb3b; transform: scale(1.05); color: #1f2937; }
+        /* Blink class for counter card - will override background */
+        .blink-counter-box {
+            animation: counterBoxBlink 0.8s ease-in-out 3;
+            position: relative;
+            z-index: 10;
         }
         
-        .blink-new-token {
-            animation: blinkGreen 0.8s ease-in-out 4;
+        /* Person card blink */
+        @keyframes personCardBlink {
+            0% { transform: scale(1); }
+            25% { background: #facc15 !important; border-left-color: #ffffff !important; transform: scale(1.05); color: #1f2937 !important; }
+            50% { transform: scale(1); }
+            75% { background: #facc15 !important; border-left-color: #ffffff !important; transform: scale(1.05); color: #1f2937 !important; }
+            100% { transform: scale(1); }
         }
         
-        .blink-counter-card {
-            animation: blinkGold 0.6s ease-in-out 5;
+        .blink-person-card {
+            animation: personCardBlink 0.8s ease-in-out 3;
         }
         
         .token-card {
@@ -348,6 +379,7 @@
         .legend-color.green { background: #2e7d32; }
         .legend-color.orange { background: #e67e22; }
         .legend-color.red { background: #c0392b; }
+        .legend-color.blink-demo { background: #facc15; animation: counterBoxBlink 0.8s ease-in-out infinite; }
         
         .announcement-bar {
             background: linear-gradient(135deg, #1e293b, #0f172a);
@@ -378,6 +410,8 @@
             text-align: center;
             transition: all 0.2s;
             box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+            border: 2px solid transparent;
+            cursor: pointer;
         }
         
         .counter-card.idle { background: #334155; color: white; border: 2px solid #94a3b8; }
@@ -401,16 +435,10 @@
         
         .persons-title { font-size: 1.8rem; font-weight: 800; color: #ffd966; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .persons-grid { display: flex; flex-wrap: wrap; gap: 14px; max-height: 400px; overflow-y: auto; padding: 8px 4px; }
-        .person-card { background: #1e293b; border-radius: 28px; padding: 12px 20px; min-width: 140px; text-align: center; border-left: 5px solid #facc15; transition: all 0.2s; }
+        .person-card { background: #1e293b; border-radius: 28px; padding: 12px 20px; min-width: 140px; text-align: center; border-left: 5px solid #facc15; transition: all 0.2s; cursor: pointer; }
         .person-token { font-size: 1.6rem; font-weight: 800; font-family: monospace; color: #facc15; }
         .person-counter { font-size: 0.9rem; background: #0f172a; display: inline-block; padding: 4px 12px; border-radius: 30px; margin-top: 6px; color: #cbd5e1; }
         .person-status { font-size: 0.7rem; background: #2dd4bf20; border-radius: 20px; padding: 2px 10px; margin-top: 6px; color: #b9f5f0; }
-        
-        /* Blinking for new person card */
-        .blink-person-card {
-            animation: blinkGold 0.6s ease-in-out 4;
-            border-left: 5px solid #ffeb3b !important;
-        }
         
         .time-box { background: rgba(0,0,0,0.45); padding: 10px 24px; border-radius: 28px; text-align: center; }
         .current-time { font-size: 1.9rem; font-weight: 800; color: white; font-family: monospace; }
@@ -569,13 +597,13 @@
                 <div class="legend-item"><div class="legend-color green"></div><span>സേവനത്തിൽ (ACTIVE)</span></div>
                 <div class="legend-item"><div class="legend-color orange"></div><span>ക്യൂവിൽ (WAITING)</span></div>
                 <div class="legend-item"><div class="legend-color red"></div><span>അടച്ചു (CLOSED)</span></div>
-                <div class="legend-item"><div class="legend-color" style="background:#facc15;"></div><span>✨ പുതിയ ടോക്കൺ (Blink)</span></div>
+                <div class="legend-item"><div class="legend-color blink-demo"></div><span>✨ പുതിയ ടോക്കൺ</span></div>
             </div>
             <div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-text" id="announcementText">✨ സ്വാഗതം! ടോക്കൺ വിളികൾ ഇവിടെ ദൃശ്യമാകും...</div><div><span class="live-dot"></span> LIVE</div></div>
             <div class="counters-grid" id="displayCountersGrid"></div>
             
             <div class="all-persons-section">
-                <div class="persons-title"><span>👥 എല്ലാ വ്യക്തികളും (All Persons / Tokens)</span><span style="font-size:1rem;">🔄 live</span></div>
+                <div class="persons-title"><span>👥 All Persons / Tokens</span><span style="font-size:1rem;">🔄 live</span></div>
                 <div class="persons-grid" id="allPersonsList"></div>
             </div>
             <div class="footer">© All Right Reserved by SUHAIL KERALA | Public Display</div>
@@ -677,7 +705,7 @@
                         const annEl = document.getElementById('announcementText');
                         if (annEl) annEl.textContent = lastAnnouncementText;
                         setTimeout(() => {
-                            if (annEl && annEl.textContent === lastAnnouncementText) annEl.textContent = '✨ സ്വാഗതം! ടോക്കൺ വിളികൾ ഇവിടെ ദൃശ്യമാകും...';
+                            if (annEl && annEl.textContent === lastAnnouncementText) annEl.textContent = '✨ ദാറുന്നജാത്ത് കുടുംബത്തിലേക്ക് സ്വാഗതം !';
                         }, 10000);
                     }
                 }
@@ -694,29 +722,6 @@
                 if (currLen === prevLen && curr.id < prev.id) return curr;
                 return prev;
             }, openCounters[0]);
-        }
-        
-        function triggerBlinkEffects(tokenNum, counterId) {
-            lastAssignedToken = tokenNum;
-            lastAssignedCounterId = counterId;
-            
-            // Blink on admin side: find the counter item and add blink class to current token display
-            setTimeout(() => {
-                const counterItem = document.querySelector(`.counter-item:has(strong:contains("കൗണ്ടർ ${counterId}"))`);
-                const tokenDisplaySpan = document.querySelector(`.counter-item:has(strong:contains("കൗണ്ടർ ${counterId}")) .counter-current`);
-                if (tokenDisplaySpan) {
-                    tokenDisplaySpan.classList.add('blink-new-token');
-                    setTimeout(() => tokenDisplaySpan.classList.remove('blink-new-token'), 3500);
-                }
-                // Blink the badge as well
-                const badges = document.querySelectorAll('.badge');
-                badges.forEach(badge => {
-                    if (badge.textContent == counterId) {
-                        badge.classList.add('blink-new-token');
-                        setTimeout(() => badge.classList.remove('blink-new-token'), 3500);
-                    }
-                });
-            }, 100);
         }
         
         async function assignTokenToCounter(counterId) {
@@ -741,8 +746,9 @@
                 showToast(`✅ ടോക്കൺ ${nextToken} → കൗണ്ടർ ${counterId}`);
                 speakMalayalam(`പുതിയ ടോക്കൺ ${nextToken} കൗണ്ടർ ${counterId} ലേക്ക്`);
                 
-                // Trigger blink effects after assignment
-                triggerBlinkEffects(nextToken, counterId);
+                // Store for blinking
+                lastAssignedToken = nextToken;
+                lastAssignedCounterId = counterId;
             } catch (e) { showToast("പിശക്: ടോക്കൺ അലോട്ട് ചെയ്യാനായില്ല"); }
         }
         
@@ -855,7 +861,7 @@
                     div.innerHTML = `
                         <div class="counter-header">
                             <strong>കൗണ്ടർ ${c.id} ${c.isClosed ? '🔴 അടച്ചു' : '🟢 തുറന്നു'}</strong>
-                            <span class="counter-current" data-counter="${c.id}">${c.currentToken || '---'}</span>
+                            <span class="counter-current">${c.currentToken || '---'}</span>
                         </div>
                         <div>🟠 ക്യൂ: ${c.queue?.length || 0} &nbsp;| ✅ സേവനം: ${c.servedCount || 0}</div>
                         ${c.queue?.length ? `<div style="font-size:0.75rem;">അടുത്തത്: ${c.queue[0]}</div>` : ''}
@@ -893,12 +899,18 @@
                     grid.appendChild(card);
                 });
                 
-                // Trigger blink on the counter card if new token was assigned
+                // Apply blink to the counter box where new token was allotted
                 if (lastAssignedCounterId) {
                     const targetCard = document.querySelector(`.counter-card[data-counter-id="${lastAssignedCounterId}"]`);
                     if (targetCard) {
-                        targetCard.classList.add('blink-counter-card');
-                        setTimeout(() => targetCard.classList.remove('blink-counter-card'), 3500);
+                        // Store original background classes
+                        const originalClasses = targetCard.className;
+                        targetCard.classList.add('blink-counter-box');
+                        
+                        // Remove blink class after 3 blinks (2.4 seconds)
+                        setTimeout(() => {
+                            targetCard.classList.remove('blink-counter-box');
+                        }, 2500);
                     }
                 }
             }
@@ -929,20 +941,25 @@
                     allEntries.forEach(p => {
                         let card = document.createElement('div');
                         card.className = 'person-card';
+                        card.setAttribute('data-token', p.token);
                         card.innerHTML = `<div class="person-token">🎫 ${p.token}</div><div class="person-counter">കൗണ്ടർ ${p.counter}</div><div class="person-status">${p.status}</div>`;
                         personsList.appendChild(card);
                         
-                        // Blink if this is the newly assigned token
+                        // Apply blink to person card if this is the newly assigned token
                         if (lastAssignedToken && p.token == lastAssignedToken) {
                             card.classList.add('blink-person-card');
-                            setTimeout(() => card.classList.remove('blink-person-card'), 3500);
+                            setTimeout(() => card.classList.remove('blink-person-card'), 2500);
                         }
                     });
                 }
             }
-            // Reset last assigned flags after blink has been applied
+            
+            // Clear last assigned flags after blink completes
             if (lastAssignedToken) {
-                setTimeout(() => { lastAssignedToken = null; lastAssignedCounterId = null; }, 3600);
+                setTimeout(() => { 
+                    lastAssignedToken = null; 
+                    lastAssignedCounterId = null; 
+                }, 2600);
             }
         }
         
@@ -988,10 +1005,6 @@
         window.setMode = setMode; window.login = login; window.logout = logout;
         window.callNext = callNext; window.resetCounter = resetCounter; window.resetAll = resetAll;
         window.toggleCounterClose = toggleCounterClose;
-        
-        // Helper for contains selector
-        jQuery = function(selector) { return document.querySelector(selector); };
-        Element.prototype.matches = Element.prototype.matches || Element.prototype.msMatchesSelector;
     </script>
 </body>
 </html>
