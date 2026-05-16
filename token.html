@@ -2,20 +2,162 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>📺 ടോക്കൺ ഡിസ്പ്ലേ | TV Screen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🏫 ടോക്കൺ സിസ്റ്റം | Admin + Display</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Anek Malayalam', sans-serif;
             background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
             min-height: 100vh;
-            padding: 20px;
         }
-        .container { max-width: 1920px; margin: 0 auto; }
+        
+        /* Mode Toggle Buttons */
+        .mode-toggle {
+            background: #1a1a2e;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            border-bottom: 2px solid rgba(233,69,96,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .mode-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px 30px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #e94560, #c62a40);
+            box-shadow: 0 0 15px rgba(233,69,96,0.5);
+        }
+        
+        /* Admin Mode */
+        .admin-mode { display: none; padding: 15px; }
+        .display-mode { display: none; padding: 20px; }
+        .admin-mode.active { display: block; }
+        .display-mode.active { display: block; }
+        
+        /* Admin Styles */
+        .admin-container { max-width: 550px; margin: 0 auto; }
+        .display-container { max-width: 1920px; margin: 0 auto; }
         
         .header {
+            background: linear-gradient(135deg, #e94560, #c62a40);
+            border-radius: 20px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { color: white; font-size: 1.2rem; }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .stats {
+            background: linear-gradient(135deg, #1a1a2e, #0f0c29);
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .stat-item { text-align: center; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 10px; min-width: 70px; }
+        .stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.7); }
+        .stat-value { font-size: 1.2rem; font-weight: 800; color: #ffd700; }
+        
+        .badges {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .badge {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .badge-active { background: #4CAF50; color: white; }
+        .badge-waiting { background: #FF9800; color: white; }
+        .badge-idle { background: #ffffff; color: #333; border: 1px solid #ddd; }
+        .badge-closed { background: #f44336; color: white; }
+        
+        .token-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .token-display {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .token-number { font-size: 3rem; font-weight: 800; color: #ffd700; font-family: monospace; }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+        }
+        .btn-primary { background: #28a745; color: white; flex: 2; }
+        .btn-danger { background: #dc3545; color: white; flex: 1; }
+        
+        .counters-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
+        .counter-item {
+            background: #f8f9fa;
+            border-radius: 14px;
+            padding: 12px;
+            border-left: 4px solid #e94560;
+        }
+        .counter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .counter-current { font-size: 1.6rem; font-weight: 800; font-family: monospace; }
+        .counter-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .action-btn { flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .btn-call { background: #28a745; color: white; }
+        .btn-reset { background: #ffc107; color: #333; }
+        .btn-close { background: #f44336; color: white; }
+        
+        /* ========== DISPLAY SCREEN STYLES ========== */
+        .display-header {
             background: linear-gradient(135deg, #e94560, #c62a40);
             border-radius: 25px;
             padding: 20px 30px;
@@ -26,24 +168,47 @@
             flex-wrap: wrap;
             gap: 20px;
         }
-        .title h1 { font-size: 2rem; color: white; }
-        .title p { color: rgba(255,255,255,0.9); }
-        .stats { display: flex; gap: 20px; }
-        .stat-card {
+        .display-title h1 { font-size: 2rem; color: white; }
+        .display-title p { color: rgba(255,255,255,0.9); }
+        .display-stats { display: flex; gap: 20px; }
+        .display-stat {
             background: rgba(0,0,0,0.3);
             padding: 10px 20px;
             border-radius: 15px;
             text-align: center;
         }
-        .stat-number { font-size: 1.8rem; font-weight: 800; color: #ffd700; }
-        .stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.8); }
-        .time-box {
-            background: rgba(0,0,0,0.4);
-            padding: 10px 20px;
-            border-radius: 15px;
-            text-align: center;
+        .display-stat-number { font-size: 1.8rem; font-weight: 800; color: #ffd700; }
+        .display-stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.8); }
+        
+        /* Color Legend */
+        .color-legend {
+            background: rgba(0,0,0,0.5);
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+            backdrop-filter: blur(5px);
         }
-        .current-time { font-size: 1.8rem; font-weight: 800; color: white; font-family: monospace; }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+        }
+        .legend-color.white { background: #ffffff; border: 1px solid #ddd; }
+        .legend-color.green { background: #4CAF50; }
+        .legend-color.orange { background: #FF9800; }
+        .legend-color.red { background: #f44336; }
         
         .announcement-bar {
             background: linear-gradient(135deg, #1a1a2e, #0f0c29);
@@ -75,12 +240,17 @@
             margin-bottom: 20px;
         }
         .counter-card {
-            background: white;
             border-radius: 20px;
             padding: 20px 12px;
             text-align: center;
             transition: all 0.3s;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        /* Color coding for counter cards */
+        .counter-card.idle {
+            background: #ffffff;
+            color: #333;
+            border: 2px solid #e0e0e0;
         }
         .counter-card.active {
             background: linear-gradient(135deg, #4CAF50, #2e7d32);
@@ -92,9 +262,23 @@
             background: linear-gradient(135deg, #FF9800, #e65100);
             color: white;
         }
+        .counter-card.closed {
+            background: linear-gradient(135deg, #f44336, #c62828);
+            color: white;
+            opacity: 0.8;
+        }
         .counter-number { font-size: 1.6rem; font-weight: 800; background: rgba(0,0,0,0.1); display: inline-block; padding: 5px 18px; border-radius: 30px; margin-bottom: 12px; }
-        .current-token { font-size: 3rem; font-weight: 800; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
+        .display-current-token { font-size: 3rem; font-weight: 800; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
         .queue-badge { font-size: 1rem; font-weight: 700; background: rgba(0,0,0,0.15); display: inline-block; padding: 4px 12px; border-radius: 25px; }
+        .status-text { font-size: 0.7rem; margin-top: 8px; font-weight: 500; }
+        
+        .time-box {
+            background: rgba(0,0,0,0.4);
+            padding: 10px 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        .current-time { font-size: 1.8rem; font-weight: 800; color: white; font-family: monospace; }
         
         .footer {
             background: rgba(0,0,0,0.4);
@@ -105,144 +289,617 @@
             font-size: 0.8rem;
         }
         
-        @keyframes blinkCall {
-            0%,100%{ transform: scale(1); box-shadow: 0 0 0 3px #ffd700; }
-            50%{ transform: scale(1.03); box-shadow: 0 0 0 8px #ffd700; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #ffd700;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            z-index: 1000;
         }
-        .blink-call { animation: blinkCall 0.5s ease-in-out 3; }
+        
+        /* Login Screen */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a1a, #1a1a2e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-box h1 { color: #e94560; margin-bottom: 10px; }
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #e94560, #c62a40);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .error-msg { color: #f44336; margin-top: 10px; font-size: 0.8rem; }
         
         @media (max-width: 1400px) {
             .counters-grid { grid-template-columns: repeat(7, 1fr); gap: 12px; }
-            .current-token { font-size: 2.2rem; }
+            .display-current-token { font-size: 2.2rem; }
         }
         @media (max-width: 1000px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
-        
-        .status-badge {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #28a745;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
+        @media (max-width: 600px) { .display-header { flex-direction: column; text-align: center; } }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <div class="title">
-            <h1>🏫 സ്കൂൾ അഡ്മിഷൻ 2025</h1>
-            <p>ടോക്കൺ മാനേജ്മെന്റ് സിസ്റ്റം</p>
-        </div>
-        <div class="stats">
-            <div class="stat-card"><div class="stat-number" id="activeCount">0</div><div class="stat-label">🟢 സേവനത്തിൽ</div></div>
-            <div class="stat-card"><div class="stat-number" id="waitingCount">0</div><div class="stat-label">🟠 ക്യൂവിൽ</div></div>
-            <div class="stat-card"><div class="stat-number" id="completedCount">0</div><div class="stat-label">✅ പൂർത്തിയായി</div></div>
-        </div>
-        <div class="time-box">
-            <div class="current-time" id="currentTime">--:--:--</div>
-            <div style="font-size:0.7rem" id="currentDate"></div>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h1>🔐 അഡ്മിൻ ലോഗിൻ</h1>
+            <p>ടോക്കൺ സിസ്റ്റത്തിലേക്ക് പ്രവേശിക്കുക</p>
+            <input type="email" id="loginEmail" placeholder="Email">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button onclick="login()">🔓 പ്രവേശിക്കുക</button>
+            <div id="loginError" class="error-msg"></div>
         </div>
     </div>
     
-    <div class="announcement-bar">
-        <div class="announcement-icon">📢</div>
-        <div class="announcement-text" id="announcementText">🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...</div>
-        <div><span class="live-dot"></span> LIVE</div>
+    <!-- Mode Toggle -->
+    <div class="mode-toggle" id="modeToggle" style="display: none;">
+        <button class="mode-btn active" onclick="setMode('admin')">🎛️ അഡ്മിൻ പാനൽ</button>
+        <button class="mode-btn" onclick="setMode('display')">📺 പൊതു ഡിസ്പ്ലേ</button>
     </div>
-    
-    <div class="counters-grid" id="countersGrid"></div>
-    
-    <div class="footer">
-        ☁️ Cloud Sync | Auto-refresh | Real-time Updates
-    </div>
-</div>
-<div class="status-badge" id="syncBadge">🟢 Connected</div>
 
-<script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyjif0GXovMa98LHKAiZOfsk6UHN3N1xIjO0R66hZgHUrr9EKugJ6zZCpf-nO_xj8eU/exec'; // 🔴 Replace with your URL
-
-let counters = [];
-let lastAnnouncement = '';
-
-async function fetchData() {
-    try {
-        const response = await fetch(`${GAS_URL}?action=get_all`);
-        const result = await response.json();
-        
-        if (result.success) {
-            counters = result.data.counters || [];
-            updateDisplay();
-            updateStats();
-            document.getElementById('syncBadge').innerHTML = '🟢 Connected';
-            document.getElementById('syncBadge').style.background = '#28a745';
+    <!-- ========== ADMIN MODE ========== -->
+    <div id="adminMode" class="admin-mode">
+        <div class="admin-container">
+            <div class="header">
+                <h1>🎛️ അഡ്മിൻ പാനൽ</h1>
+                <button class="logout-btn" onclick="logout()">🚪 ലോഗൗട്ട്</button>
+            </div>
             
-            const newAnnouncement = result.data.config?.last_announcement;
-            if (newAnnouncement && newAnnouncement !== lastAnnouncement) {
-                lastAnnouncement = newAnnouncement;
-                const annEl = document.getElementById('announcementText');
-                annEl.textContent = lastAnnouncement;
-                setTimeout(() => {
-                    if (annEl.textContent === lastAnnouncement) {
-                        annEl.textContent = '🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...';
-                    }
-                }, 8000);
-            }
-        } else {
-            throw new Error('API error');
-        }
-    } catch (error) {
-        document.getElementById('syncBadge').innerHTML = '🔴 Error';
-        document.getElementById('syncBadge').style.background = '#dc3545';
-        console.error(error);
-    }
-}
+            <div class="stats">
+                <div class="stat-item"><div class="stat-label">📋 ആകെ</div><div class="stat-value" id="totalTokens">0</div></div>
+                <div class="stat-item"><div class="stat-label">🟢 Active</div><div class="stat-value" id="activeCount">0</div></div>
+                <div class="stat-item"><div class="stat-label">🟠 ക്യൂ</div><div class="stat-value" id="waitingCount">0</div></div>
+                <div class="stat-item"><div class="stat-label">✅ Completed</div><div class="stat-value" id="completedCount">0</div></div>
+                <div class="stat-item"><div class="stat-label">🔴 Closed</div><div class="stat-value" id="closedCount">0</div></div>
+            </div>
+            
+            <div class="badges" id="badges"></div>
+            
+            <div class="token-card">
+                <div class="token-display">
+                    <div>🎫 അടുത്ത ടോക്കൺ</div>
+                    <div class="token-number" id="nextToken">1</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="addNewToken()">➕ പുതിയ ടോക്കൺ</button>
+                    <button class="btn btn-danger" onclick="resetAll()">🔁 Reset</button>
+                </div>
+            </div>
+            
+            <div class="counters-list" id="countersList"></div>
+        </div>
+    </div>
 
-function updateDisplay() {
-    const grid = document.getElementById('countersGrid');
-    grid.innerHTML = '';
-    
-    counters.forEach(counter => {
-        const hasQueue = counter.queue?.length > 0;
-        const isActive = counter.currentToken !== null && counter.currentToken !== '';
-        const cardClass = isActive ? 'active' : (hasQueue ? 'waiting' : '');
+    <!-- ========== DISPLAY MODE ========== -->
+    <div id="displayMode" class="display-mode">
+        <div class="display-container">
+            <div class="display-header">
+                <div class="display-title">
+                    <h1>🏫 സ്കൂൾ അഡ്മിഷൻ 2025</h1>
+                    <p>ടോക്കൺ മാനേജ്മെന്റ് സിസ്റ്റം</p>
+                </div>
+                <div class="display-stats">
+                    <div class="display-stat"><div class="display-stat-number" id="displayActiveCount">0</div><div class="display-stat-label">🟢 സേവനത്തിൽ</div></div>
+                    <div class="display-stat"><div class="display-stat-number" id="displayWaitingCount">0</div><div class="display-stat-label">🟠 ക്യൂവിൽ</div></div>
+                    <div class="display-stat"><div class="display-stat-number" id="displayCompletedCount">0</div><div class="display-stat-label">✅ പൂർത്തിയായി</div></div>
+                    <div class="display-stat"><div class="display-stat-number" id="displayClosedCount">0</div><div class="display-stat-label">🔴 Closed</div></div>
+                </div>
+                <div class="time-box">
+                    <div class="current-time" id="displayTime">--:--:--</div>
+                    <div style="font-size:0.7rem" id="displayDate"></div>
+                </div>
+            </div>
+            
+            <!-- Color Legend -->
+            <div class="color-legend">
+                <div class="legend-item">
+                    <div class="legend-color white"></div>
+                    <span>⚪ Idle (ഒഴിവ്)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color green"></div>
+                    <span>🟢 Active (സേവനത്തിൽ)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color orange"></div>
+                    <span>🟠 Waiting (ക്യൂവിൽ)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color red"></div>
+                    <span>🔴 Closed (അടച്ചു)</span>
+                </div>
+            </div>
+            
+            <div class="announcement-bar">
+                <div class="announcement-icon">📢</div>
+                <div class="announcement-text" id="announcementText">🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...</div>
+                <div><span class="live-dot"></span> LIVE</div>
+            </div>
+            
+            <div class="counters-grid" id="displayCountersGrid"></div>
+            
+            <div class="footer">🔥 Firebase Backend | Real-time Sync | Instant Updates</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // FIREBASE CONFIGURATION
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-0CCGYVtfTGQBnOEvub5M3sPaZDdsaUY",
+            authDomain: "school-token-system-b75c7.firebaseapp.com",
+            databaseURL: "https://school-token-system-b75c7-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "school-token-system-b75c7",
+            storageBucket: "school-token-system-b75c7.firebasestorage.app",
+            messagingSenderId: "511726803989",
+            appId: "1:511726803989:web:c6b51bdb63d28e7433c21c"
+        };
         
-        const card = document.createElement('div');
-        card.className = `counter-card ${cardClass}`;
-        card.innerHTML = `
-            <div class="counter-number">🏪 കൗണ്ടർ ${counter.id}</div>
-            <div class="current-token">${counter.currentToken || '---'}</div>
-            <div class="queue-badge">🟠 ക്യൂ: ${counter.queue?.length || 0}</div>
-            <div style="font-size:0.65rem; margin-top:6px;">✅ ${counter.servedCount || 0} സേവനങ്ങൾ</div>
-            ${counter.queue?.length > 0 ? `<div style="font-size:0.6rem; margin-top:4px;">⏩ അടുത്തത്: ${counter.queue[0]}</div>` : ''}
-        `;
-        grid.appendChild(card);
-    });
-}
-
-function updateStats() {
-    const active = counters.filter(c => c.currentToken && c.currentToken !== '').length;
-    const waiting = counters.reduce((s, c) => s + (c.queue?.length || 0), 0);
-    const completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
-    
-    document.getElementById('activeCount').innerHTML = active;
-    document.getElementById('waitingCount').innerHTML = waiting;
-    document.getElementById('completedCount').innerHTML = completed;
-}
-
-function updateTime() {
-    const now = new Date();
-    document.getElementById('currentTime').innerHTML = now.toLocaleTimeString('en-IN');
-    document.getElementById('currentDate').innerHTML = now.toLocaleDateString('ml-IN', { 
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-    });
-}
-
-setInterval(() => { fetchData(); updateTime(); }, 3000);
-fetchData();
-updateTime();
-</script>
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
+        let counters = [];
+        let config = { next_token_id: 1, last_announcement: '' };
+        let currentMode = 'admin';
+        let lastAnnouncement = '';
+        
+        // ============================================
+        // AUTHENTICATION
+        // ============================================
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('modeToggle').style.display = 'flex';
+                    initializeDatabase();
+                    setupListeners();
+                })
+                .catch(() => {
+                    errorDiv.textContent = '❌ തെറ്റായ email അല്ലെങ്കിൽ password';
+                });
+        }
+        
+        function logout() {
+            auth.signOut().then(() => {
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('modeToggle').style.display = 'none';
+                document.getElementById('adminMode').classList.remove('active');
+                document.getElementById('displayMode').classList.remove('active');
+            });
+        }
+        
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('modeToggle').style.display = 'flex';
+                initializeDatabase();
+                setupListeners();
+            }
+        });
+        
+        // ============================================
+        // MODE SWITCH
+        // ============================================
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('adminMode').classList.toggle('active', mode === 'admin');
+            document.getElementById('displayMode').classList.toggle('active', mode === 'display');
+            document.querySelectorAll('.mode-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (i === 0 && mode === 'admin') || (i === 1 && mode === 'display'));
+            });
+            if (mode === 'display') {
+                updateDisplayTime();
+                renderDisplay();
+            }
+        }
+        
+        // ============================================
+        // DATABASE INITIALIZATION
+        // ============================================
+        function initializeDatabase() {
+            const countersRef = database.ref('counters');
+            countersRef.once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    const initialCounters = [];
+                    for (let i = 1; i <= 14; i++) {
+                        initialCounters.push({
+                            id: i,
+                            currentToken: null,
+                            queue: [],
+                            servedCount: 0,
+                            isClosed: false
+                        });
+                    }
+                    countersRef.set(initialCounters);
+                }
+            });
+            
+            const configRef = database.ref('config');
+            configRef.once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    configRef.set({
+                        next_token_id: 1,
+                        last_used_token: null,
+                        last_announcement: ''
+                    });
+                }
+            });
+        }
+        
+        function setupListeners() {
+            // Counters listener
+            database.ref('counters').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    counters = data;
+                    renderAdmin();
+                    renderDisplay();
+                    updateStats();
+                }
+            });
+            
+            // Config listener
+            database.ref('config').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    config = data;
+                    document.getElementById('nextToken').innerHTML = config.next_token_id || 1;
+                    
+                    if (config.last_announcement && config.last_announcement !== lastAnnouncement) {
+                        lastAnnouncement = config.last_announcement;
+                        const annEl = document.getElementById('announcementText');
+                        if (annEl) {
+                            annEl.textContent = lastAnnouncement;
+                            setTimeout(() => {
+                                if (annEl.textContent === lastAnnouncement) {
+                                    annEl.textContent = '🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...';
+                                }
+                            }, 8000);
+                        }
+                    }
+                }
+            });
+        }
+        
+        // ============================================
+        // ADMIN FUNCTIONS
+        // ============================================
+        function getShortestQueue() {
+            const activeCounters = counters.filter(c => !c.isClosed);
+            if (!activeCounters.length) return { id: 1, queue: [] };
+            return activeCounters.reduce((a, b) => (a.queue?.length || 0) < (b.queue?.length || 0) ? a : b, activeCounters[0]);
+        }
+        
+        async function addNewToken() {
+            const tokenNumber = config.next_token_id?.toString() || '1';
+            const targetCounter = getShortestQueue();
+            
+            if (targetCounter.isClosed) {
+                showToast("⚠️ All counters are closed! Please open a counter first.");
+                return;
+            }
+            
+            try {
+                const updatedCounters = [...counters];
+                const counterIndex = updatedCounters.findIndex(c => c.id === targetCounter.id);
+                if (counterIndex !== -1) {
+                    if (!updatedCounters[counterIndex].queue) updatedCounters[counterIndex].queue = [];
+                    updatedCounters[counterIndex].queue.push(tokenNumber);
+                    await database.ref('counters').set(updatedCounters);
+                }
+                
+                await database.ref('config').update({
+                    next_token_id: (parseInt(tokenNumber) + 1),
+                    last_used_token: tokenNumber
+                });
+                
+                showToast(`✅ ടോക്കൺ ${tokenNumber} → കൗണ്ടർ ${targetCounter.id}`);
+                speak(`പുതിയ ടോക്കൺ ${tokenNumber}, കൗണ്ടർ ${targetCounter.id} ലേക്ക്`);
+            } catch (error) {
+                showToast("❌ Error");
+            }
+        }
+        
+        async function callNext(counterId) {
+            const counterIndex = counters.findIndex(c => c.id === counterId);
+            if (counterIndex === -1) return;
+            
+            if (counters[counterIndex].isClosed) {
+                showToast(`⚠️ കൗണ്ടർ ${counterId} closed ആണ്`);
+                return;
+            }
+            
+            const counter = counters[counterIndex];
+            if (!counter.queue || counter.queue.length === 0) {
+                showToast(`⚠️ കൗണ്ടർ ${counterId} ൽ ടോക്കൺ ഇല്ല`);
+                return;
+            }
+            
+            try {
+                const nextToken = counter.queue.shift();
+                const currentToken = counter.currentToken;
+                
+                if (currentToken) {
+                    counters[counterIndex].servedCount = (counters[counterIndex].servedCount || 0) + 1;
+                }
+                
+                counters[counterIndex].currentToken = nextToken;
+                await database.ref('counters').set(counters);
+                
+                const announcement = `📢 കൗണ്ടർ ${counterId} ലേക്ക്, ടോക്കൺ നമ്പർ ${nextToken} ദയവായി എത്തുക`;
+                await database.ref('config').update({ last_announcement: announcement });
+                
+                showToast(`🔔 കൗണ്ടർ ${counterId}: ടോക്കൺ ${nextToken}`);
+                speak(`കൗണ്ടർ ${counterId} ലേക്ക്, ടോക്കൺ ${nextToken} ദയവായി എത്തുക`);
+            } catch (error) {
+                showToast("❌ Error");
+            }
+        }
+        
+        async function resetCounter(counterId) {
+            const counterIndex = counters.findIndex(c => c.id === counterId);
+            if (counterIndex === -1) return;
+            
+            const currentToken = counters[counterIndex].currentToken;
+            if (!currentToken) {
+                showToast(`⚠️ കൗണ്ടർ ${counterId} ൽ നിലവിൽ ടോക്കൺ ഇല്ല`);
+                return;
+            }
+            
+            try {
+                if (!counters[counterIndex].queue) counters[counterIndex].queue = [];
+                counters[counterIndex].queue.unshift(currentToken);
+                counters[counterIndex].currentToken = null;
+                await database.ref('counters').set(counters);
+                showToast(`↩️ ടോക്കൺ ${currentToken} വീണ്ടും ക്യൂവിൽ`);
+            } catch (error) {
+                showToast("❌ Error");
+            }
+        }
+        
+        async function toggleCounterClose(counterId) {
+            const counterIndex = counters.findIndex(c => c.id === counterId);
+            if (counterIndex === -1) return;
+            
+            counters[counterIndex].isClosed = !counters[counterIndex].isClosed;
+            
+            // If closing, clear current token
+            if (counters[counterIndex].isClosed) {
+                if (counters[counterIndex].currentToken) {
+                    if (!counters[counterIndex].queue) counters[counterIndex].queue = [];
+                    counters[counterIndex].queue.unshift(counters[counterIndex].currentToken);
+                    counters[counterIndex].currentToken = null;
+                }
+                showToast(`🔴 കൗണ്ടർ ${counterId} closed ആക്കി`);
+            } else {
+                showToast(`🟢 കൗണ്ടർ ${counterId} opened`);
+            }
+            
+            await database.ref('counters').set(counters);
+        }
+        
+        async function resetAll() {
+            if (!confirm('⚠️ എല്ലാം റീസെറ്റ് ചെയ്യണോ?')) return;
+            
+            try {
+                const freshCounters = [];
+                for (let i = 1; i <= 14; i++) {
+                    freshCounters.push({
+                        id: i,
+                        currentToken: null,
+                        queue: [],
+                        servedCount: 0,
+                        isClosed: false
+                    });
+                }
+                await database.ref('counters').set(freshCounters);
+                await database.ref('config').update({
+                    next_token_id: 1,
+                    last_used_token: null,
+                    last_announcement: ''
+                });
+                showToast('🔄 എല്ലാം റീസെറ്റ് ചെയ്തു');
+            } catch (error) {
+                showToast("❌ Error");
+            }
+        }
+        
+        // ============================================
+        // RENDER FUNCTIONS
+        // ============================================
+        function renderAdmin() {
+            // Render badges
+            const badgesDiv = document.getElementById('badges');
+            if (badgesDiv) {
+                badgesDiv.innerHTML = '';
+                counters.forEach(c => {
+                    let cls = 'badge-idle';
+                    if (c.isClosed) cls = 'badge-closed';
+                    else if (c.currentToken) cls = 'badge-active';
+                    else if (c.queue?.length > 0) cls = 'badge-waiting';
+                    
+                    let badge = document.createElement('div');
+                    badge.className = `badge ${cls}`;
+                    badge.textContent = c.id;
+                    badge.style.cursor = 'pointer';
+                    badge.title = c.isClosed ? 'Closed - Click to open' : 'Click to close';
+                    badge.onclick = () => toggleCounterClose(c.id);
+                    badgesDiv.appendChild(badge);
+                });
+            }
+            
+            // Render counters list
+            const listDiv = document.getElementById('countersList');
+            if (listDiv) {
+                listDiv.innerHTML = '';
+                counters.forEach(c => {
+                    let div = document.createElement('div');
+                    div.className = 'counter-item';
+                    div.id = `counter_${c.id}`;
+                    div.innerHTML = `
+                        <div class="counter-header">
+                            <span class="counter-title">🏪 കൗണ്ടർ ${c.id} ${c.isClosed ? '🔴 (Closed)' : '🟢 (Open)'}</span>
+                            <span class="counter-current">${c.currentToken || '---'}</span>
+                        </div>
+                        <div>🟠 ക്യൂ: ${c.queue?.length || 0} | ✅ ${c.servedCount || 0}</div>
+                        ${c.queue?.length > 0 ? `<div style="font-size:0.7rem;">⏩ ${c.queue.slice(0, 3).join(', ')}${c.queue.length > 3 ? '...' : ''}</div>` : ''}
+                        <div class="counter-actions">
+                            <button class="action-btn btn-call" onclick="callNext(${c.id})" ${c.isClosed ? 'disabled style="opacity:0.5;"' : ''}>⏩ നെക്സ്റ്റ്</button>
+                            <button class="action-btn btn-reset" onclick="resetCounter(${c.id})">🔄 റീസെറ്റ്</button>
+                            <button class="action-btn btn-close" onclick="toggleCounterClose(${c.id})">${c.isClosed ? '🔓 Open' : '🔒 Close'}</button>
+                        </div>
+                    `;
+                    listDiv.appendChild(div);
+                });
+            }
+        }
+        
+        function renderDisplay() {
+            const grid = document.getElementById('displayCountersGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            counters.forEach(counter => {
+                let cardClass = 'idle';
+                let statusText = '⚪ Idle';
+                
+                if (counter.isClosed) {
+                    cardClass = 'closed';
+                    statusText = '🔴 Closed';
+                } else if (counter.currentToken) {
+                    cardClass = 'active';
+                    statusText = '🟢 Active';
+                } else if (counter.queue?.length > 0) {
+                    cardClass = 'waiting';
+                    statusText = '🟠 Waiting';
+                }
+                
+                const card = document.createElement('div');
+                card.className = `counter-card ${cardClass}`;
+                card.innerHTML = `
+                    <div class="counter-number">🏪 കൗണ്ടർ ${counter.id}</div>
+                    <div class="display-current-token">${counter.currentToken || '---'}</div>
+                    <div class="queue-badge">🟠 ക്യൂ: ${counter.queue?.length || 0}</div>
+                    <div class="status-text">${statusText}</div>
+                    <div style="font-size:0.65rem; margin-top:6px;">✅ ${counter.servedCount || 0} സേവനങ്ങൾ</div>
+                    ${counter.queue?.length > 0 && !counter.isClosed ? `<div style="font-size:0.6rem; margin-top:4px;">⏩ അടുത്തത്: ${counter.queue[0]}</div>` : ''}
+                `;
+                grid.appendChild(card);
+            });
+            
+            // Update display stats
+            const active = counters.filter(c => !c.isClosed && c.currentToken).length;
+            const waiting = counters.filter(c => !c.isClosed).reduce((s, c) => s + (c.queue?.length || 0), 0);
+            const completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
+            const closed = counters.filter(c => c.isClosed).length;
+            
+            document.getElementById('displayActiveCount').innerHTML = active;
+            document.getElementById('displayWaitingCount').innerHTML = waiting;
+            document.getElementById('displayCompletedCount').innerHTML = completed;
+            document.getElementById('displayClosedCount').innerHTML = closed;
+        }
+        
+        function updateStats() {
+            const total = counters.reduce((s, c) => s + (c.servedCount || 0) + (c.queue?.length || 0) + (c.currentToken ? 1 : 0), 0);
+            const active = counters.filter(c => !c.isClosed && c.currentToken).length;
+            const waiting = counters.filter(c => !c.isClosed).reduce((s, c) => s + (c.queue?.length || 0), 0);
+            const completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
+            const closed = counters.filter(c => c.isClosed).length;
+            
+            document.getElementById('totalTokens').innerHTML = total;
+            document.getElementById('activeCount').innerHTML = active;
+            document.getElementById('waitingCount').innerHTML = waiting;
+            document.getElementById('completedCount').innerHTML = completed;
+            document.getElementById('closedCount').innerHTML = closed;
+        }
+        
+        function updateDisplayTime() {
+            const now = new Date();
+            document.getElementById('displayTime').innerHTML = now.toLocaleTimeString('en-IN');
+            document.getElementById('displayDate').innerHTML = now.toLocaleDateString('ml-IN', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+        }
+        
+        // ============================================
+        // UTILITIES
+        // ============================================
+        function speak(message) {
+            if ('speechSynthesis' in window) {
+                let u = new SpeechSynthesisUtterance(message);
+                u.lang = 'ml-IN';
+                u.rate = 0.85;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+            }
+        }
+        
+        function showToast(message) {
+            let t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = message;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 2000);
+        }
+        
+        // Auto update time for display
+        setInterval(() => {
+            if (currentMode === 'display') {
+                updateDisplayTime();
+            }
+        }, 1000);
+        
+        // Expose functions
+        window.setMode = setMode;
+        window.login = login;
+        window.logout = logout;
+        window.addNewToken = addNewToken;
+        window.callNext = callNext;
+        window.resetCounter = resetCounter;
+        window.resetAll = resetAll;
+        window.toggleCounterClose = toggleCounterClose;
+    </script>
 </body>
 </html>
