@@ -2,7 +2,7 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>📱 അഡ്മിൻ പാനൽ | Token System</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -15,7 +15,6 @@
         }
         .container { max-width: 550px; margin: 0 auto; }
         
-        /* Header */
         .header {
             background: linear-gradient(135deg, #e94560, #c62a40);
             border-radius: 20px;
@@ -36,7 +35,43 @@
             font-size: 0.7rem;
         }
         
-        /* Stats */
+        .url-section {
+            background: white;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .url-label { font-size: 0.75rem; font-weight: 600; margin-bottom: 5px; color: #333; }
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        .test-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        
+        .error-panel {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .error-panel.show { display: block; }
+        .error-message { color: #d32f2f; font-size: 0.7rem; word-break: break-all; }
+        
         .stats {
             background: linear-gradient(135deg, #1a1a2e, #0f0c29);
             border-radius: 16px;
@@ -46,19 +81,11 @@
             justify-content: space-around;
             flex-wrap: wrap;
             gap: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
         }
-        .stat-item {
-            text-align: center;
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 10px;
-            min-width: 70px;
-        }
+        .stat-item { text-align: center; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 10px; min-width: 70px; }
         .stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.7); }
         .stat-value { font-size: 1.2rem; font-weight: 800; color: #ffd700; }
         
-        /* Counter Badges */
         .badges {
             background: #1a1a2e;
             border-radius: 16px;
@@ -79,14 +106,11 @@
             font-weight: bold;
             font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.2s;
         }
-        .badge-active { background: #4CAF50; color: white; box-shadow: 0 0 8px #4CAF50; }
-        .badge-waiting { background: #FF9800; color: white; box-shadow: 0 0 8px #FF9800; }
+        .badge-active { background: #4CAF50; color: white; }
+        .badge-waiting { background: #FF9800; color: white; }
         .badge-idle { background: #6c757d; color: white; }
-        .badge:active { transform: scale(0.95); }
         
-        /* Token Control */
         .token-card {
             background: white;
             border-radius: 20px;
@@ -100,15 +124,9 @@
             padding: 20px;
             margin-bottom: 15px;
         }
-        .token-label { font-size: 0.8rem; color: rgba(255,255,255,0.8); }
         .token-number { font-size: 3rem; font-weight: 800; color: #ffd700; font-family: monospace; }
         
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 15px;
-        }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
         .btn {
             padding: 12px 20px;
             font-size: 0.9rem;
@@ -116,25 +134,17 @@
             border: none;
             border-radius: 40px;
             cursor: pointer;
-            transition: all 0.2s;
         }
-        .btn:active { transform: scale(0.97); }
         .btn-primary { background: #28a745; color: white; flex: 2; }
         .btn-danger { background: #dc3545; color: white; flex: 1; }
         
-        /* Token Settings */
         .token-settings {
             background: #f8f9fa;
             border-radius: 16px;
             padding: 12px;
             margin-top: 10px;
         }
-        .settings-buttons {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
+        .settings-buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
         .setting-btn {
             padding: 6px 14px;
             font-size: 0.75rem;
@@ -145,70 +155,22 @@
         }
         .btn-first { background: #17a2b8; color: white; }
         .btn-last { background: #6c757d; color: white; }
-        .custom-input {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            justify-content: center;
-        }
-        .custom-input input {
-            width: 90px;
-            padding: 6px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            text-align: center;
-        }
-        .custom-input button {
-            padding: 6px 15px;
-            background: #e94560;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        .last-token-info {
-            font-size: 0.65rem;
-            text-align: center;
-            margin-top: 8px;
-            color: #666;
-        }
+        .custom-input { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+        .custom-input input { width: 90px; padding: 6px; border: 1px solid #ddd; border-radius: 20px; text-align: center; }
+        .custom-input button { padding: 6px 15px; background: #e94560; color: white; border: none; border-radius: 20px; cursor: pointer; }
         
-        /* Counters List */
-        .counters-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
+        .counters-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
         .counter-item {
             background: #f8f9fa;
             border-radius: 14px;
             padding: 12px;
             border-left: 4px solid #e94560;
         }
-        .counter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
+        .counter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .counter-title { font-size: 1rem; font-weight: 800; }
         .counter-current { font-size: 1.6rem; font-weight: 800; font-family: monospace; }
-        .counter-stats { font-size: 0.7rem; color: #666; margin: 5px 0; }
-        .counter-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-        .action-btn {
-            flex: 1;
-            padding: 8px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-        }
+        .counter-actions { display: flex; gap: 8px; margin-top: 8px; }
+        .action-btn { flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
         .btn-call { background: #28a745; color: white; }
         .btn-reset { background: #ffc107; color: #333; }
         
@@ -223,24 +185,27 @@
             border-radius: 30px;
             font-size: 0.8rem;
             z-index: 1000;
-            white-space: nowrap;
         }
-        .footer {
-            text-align: center;
-            padding: 15px;
-            color: rgba(255,255,255,0.4);
-            font-size: 0.65rem;
-        }
+        .footer { text-align: center; padding: 15px; color: rgba(255,255,255,0.4); font-size: 0.65rem; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <h1>🎛️ അഡ്മിൻ പാനൽ</h1>
-        <div class="sync-status" id="syncStatus">🔄 Connecting...</div>
+        <div class="sync-status" id="syncStatus">⚙️ Setup Required</div>
     </div>
     
-    <!-- Stats -->
+    <div class="url-section">
+        <div class="url-label">🔗 Google Apps Script URL</div>
+        <input type="text" class="url-input" id="gasUrlInput" placeholder="Paste your Apps Script URL here">
+        <button class="test-btn" onclick="testConnection()">🔍 Test & Save</button>
+    </div>
+    
+    <div class="error-panel" id="errorPanel">
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+    
     <div class="stats">
         <div class="stat-item"><div class="stat-label">📋 ആകെ</div><div class="stat-value" id="totalTokens">0</div></div>
         <div class="stat-item"><div class="stat-label">🟢 Active</div><div class="stat-value" id="activeCount">0</div></div>
@@ -248,18 +213,16 @@
         <div class="stat-item"><div class="stat-label">✅ Completed</div><div class="stat-value" id="completedCount">0</div></div>
     </div>
     
-    <!-- Counter Badges -->
     <div class="badges" id="badges"></div>
     
-    <!-- Token Control -->
     <div class="token-card">
         <div class="token-display">
-            <div class="token-label">🎫 അടുത്ത ടോക്കൺ</div>
+            <div>🎫 അടുത്ത ടോക്കൺ</div>
             <div class="token-number" id="nextToken">1</div>
         </div>
         <div class="btn-group">
             <button class="btn btn-primary" onclick="addNewToken()">➕ പുതിയ ടോക്കൺ</button>
-            <button class="btn btn-danger" onclick="resetAll()">🔁 എല്ലാം റീസെറ്റ്</button>
+            <button class="btn btn-danger" onclick="resetAll()">🔁 Reset</button>
         </div>
         
         <div class="token-settings">
@@ -271,29 +234,35 @@
                 <input type="number" id="customToken" placeholder="നമ്പർ">
                 <button onclick="setCustomToken()">✅ സെറ്റ്</button>
             </div>
-            <div class="last-token-info" id="lastTokenInfo">💡 അവസാന ടോക്കൺ: -</div>
         </div>
     </div>
     
-    <!-- Counters List -->
     <div class="counters-list" id="countersList"></div>
-    <div class="footer">☁️ Cloud Sync | Real-time Updates</div>
+    <div class="footer">☁️ Cloud Sync | Auto-refresh</div>
 </div>
 
 <script>
-// ============================================
-// 🔴 REPLACE WITH YOUR GOOGLE APPS SCRIPT URL
-// ============================================
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbx5oDdJ2yyb1oV51Tzl3mkUL-sZ-2ACioiWksR7-OgV8SbacXAO5LTKe0iQVVOT2G8t/exec';
-
+let GAS_URL = localStorage.getItem('gas_url') || '';
 let counters = [];
 let config = { next_token_id: 1, last_used_token: null };
-let autoRefresh = true;
 
-// ============================================
-// API CALLS
-// ============================================
+// Load saved URL
+if (GAS_URL) {
+    document.getElementById('gasUrlInput').value = GAS_URL;
+    fetchData();
+}
+
+async function testConnection() {
+    const url = document.getElementById('gasUrlInput').value.trim();
+    if (!url) { showError('Please enter URL'); return; }
+    GAS_URL = url;
+    localStorage.setItem('gas_url', url);
+    await fetchData();
+}
+
 async function fetchData() {
+    if (!GAS_URL) { updateSyncStatus('⚠️ Setup', 'Enter URL'); return; }
+    
     try {
         const response = await fetch(`${GAS_URL}?action=get_all`);
         const result = await response.json();
@@ -301,20 +270,21 @@ async function fetchData() {
         if (result.success) {
             counters = result.data.counters || [];
             config = result.data.config || {};
-            updateSyncStatus('online', '☁️ Connected');
+            hideError();
+            updateSyncStatus('🟢 Online', 'Connected');
             renderAll();
-            return true;
         } else {
-            throw new Error('API error');
+            throw new Error(result.data);
         }
     } catch (error) {
-        updateSyncStatus('offline', '⚠️ Connection Error');
-        console.error('Fetch error:', error);
-        return false;
+        showError(error.message);
+        updateSyncStatus('🔴 Offline', 'Error');
     }
 }
 
 async function addNewToken() {
+    if (!GAS_URL) { showError('Configure URL first'); return; }
+    
     const tokenNumber = config.next_token_id?.toString() || '1';
     const targetCounter = getShortestQueue();
     
@@ -322,11 +292,7 @@ async function addNewToken() {
         const response = await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                action: 'add_token',
-                token_number: tokenNumber,
-                counter: targetCounter.id
-            })
+            body: JSON.stringify({ action: 'add_token', token_number: tokenNumber, counter: targetCounter.id })
         });
         const result = await response.json();
         
@@ -335,12 +301,9 @@ async function addNewToken() {
             speak(`പുതിയ ടോക്കൺ ${tokenNumber}, കൗണ്ടർ ${targetCounter.id} ലേക്ക്`);
             await fetchData();
         } else {
-            showToast('❌ Failed to add token');
+            throw new Error(result.data);
         }
-    } catch (error) {
-        showToast('❌ Network error');
-        console.error(error);
-    }
+    } catch (error) { showError(error.message); }
 }
 
 async function callNext(counterId) {
@@ -356,38 +319,22 @@ async function callNext(counterId) {
             showToast(`🔔 കൗണ്ടർ ${counterId}: ടോക്കൺ ${result.data.token}`);
             speak(`കൗണ്ടർ ${counterId} ലേക്ക്, ടോക്കൺ ${result.data.token} ദയവായി എത്തുക`);
             await fetchData();
-            
-            // Highlight effect
-            const el = document.getElementById(`counter_${counterId}`);
-            if (el) {
-                el.style.transition = 'all 0.3s';
-                el.style.boxShadow = '0 0 0 3px #ffd700';
-                setTimeout(() => { el.style.boxShadow = ''; }, 1000);
-            }
         } else {
             showToast(`⚠️ കൗണ്ടർ ${counterId} ൽ ടോക്കൺ ഇല്ല`);
         }
-    } catch (error) {
-        showToast('❌ Error');
-        console.error(error);
-    }
+    } catch (error) { showError(error.message); }
 }
 
 async function resetCounter(counterId) {
     try {
-        const response = await fetch(GAS_URL, {
+        await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'reset_counter', counter_id: counterId })
         });
-        const result = await response.json();
-        if (result.success) {
-            showToast(`↩️ ${result.data.message}`);
-            await fetchData();
-        }
-    } catch (error) {
-        showToast('❌ Error');
-    }
+        await fetchData();
+        showToast(`↩️ Reset complete`);
+    } catch (error) { showError(error.message); }
 }
 
 async function setFirstToken() {
@@ -400,17 +347,12 @@ async function setFirstToken() {
         });
         showToast('✅ ടോക്കൺ 1 ആക്കി');
         await fetchData();
-    } catch (error) {
-        showToast('❌ Error');
-    }
+    } catch (error) { showError(error.message); }
 }
 
 async function setLastToken() {
     const lastUsed = config.last_used_token;
-    if (!lastUsed) {
-        showToast('⚠️ അവസാന ടോക്കൺ ഒന്നുമില്ല');
-        return;
-    }
+    if (!lastUsed) { showToast('⚠️ അവസാന ടോക്കൺ ഒന്നുമില്ല'); return; }
     const newNext = parseInt(lastUsed) + 1;
     if (!confirm(`അടുത്ത ടോക്കൺ ${newNext} ആക്കണോ?`)) return;
     try {
@@ -421,18 +363,13 @@ async function setLastToken() {
         });
         showToast(`✅ അടുത്ത ടോക്കൺ ${newNext} ആക്കി`);
         await fetchData();
-    } catch (error) {
-        showToast('❌ Error');
-    }
+    } catch (error) { showError(error.message); }
 }
 
 async function setCustomToken() {
     const input = document.getElementById('customToken');
     const value = parseInt(input.value.trim());
-    if (isNaN(value) || value < 1) {
-        showToast('⚠️ ശരിയായ നമ്പർ നൽകുക');
-        return;
-    }
+    if (isNaN(value) || value < 1) { showToast('⚠️ ശരിയായ നമ്പർ നൽകുക'); return; }
     if (!confirm(`അടുത്ത ടോക്കൺ ${value} ആക്കണോ?`)) return;
     try {
         await fetch(GAS_URL, {
@@ -443,13 +380,11 @@ async function setCustomToken() {
         showToast(`✅ അടുത്ത ടോക്കൺ ${value} ആക്കി`);
         input.value = '';
         await fetchData();
-    } catch (error) {
-        showToast('❌ Error');
-    }
+    } catch (error) { showError(error.message); }
 }
 
 async function resetAll() {
-    if (!confirm('⚠️ എല്ലാം റീസെറ്റ് ചെയ്യണോ? എല്ലാ ടോക്കണുകളും നഷ്ടപ്പെടും!')) return;
+    if (!confirm('⚠️ എല്ലാം റീസെറ്റ് ചെയ്യണോ?')) return;
     try {
         await fetch(GAS_URL, {
             method: 'POST',
@@ -458,75 +393,70 @@ async function resetAll() {
         });
         showToast('🔄 എല്ലാം റീസെറ്റ് ചെയ്തു');
         await fetchData();
-    } catch (error) {
-        showToast('❌ Error');
-    }
+    } catch (error) { showError(error.message); }
 }
 
-// ============================================
-// UTILITIES
-// ============================================
 function getShortestQueue() {
-    if (!counters.length) return { id: 1, queue: [] };
+    if (!counters.length) return { id: 1 };
     return counters.reduce((a, b) => (a.queue?.length || 0) < (b.queue?.length || 0) ? a : b, counters[0]);
 }
 
 function updateSyncStatus(status, message) {
     const el = document.getElementById('syncStatus');
-    if (el) {
-        el.innerHTML = status === 'online' ? '🟢 ' + message : (status === 'offline' ? '🔴 ' + message : '🟡 ' + message);
-    }
+    if (el) el.innerHTML = `${status} ${message}`;
 }
 
-function speak(message) {
+function showError(msg) {
+    const panel = document.getElementById('errorPanel');
+    const msgDiv = document.getElementById('errorMessage');
+    msgDiv.innerHTML = `⚠️ ${msg}`;
+    panel.classList.add('show');
+    setTimeout(() => panel.classList.remove('show'), 5000);
+}
+
+function hideError() {
+    document.getElementById('errorPanel').classList.remove('show');
+}
+
+function speak(msg) {
     if ('speechSynthesis' in window) {
-        const u = new SpeechSynthesisUtterance(message);
-        u.lang = 'ml-IN';
-        u.rate = 0.85;
+        let u = new SpeechSynthesisUtterance(msg);
+        u.lang = 'ml-IN'; u.rate = 0.85;
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(u);
     }
 }
 
 function showToast(msg) {
-    const t = document.createElement('div');
+    let t = document.createElement('div');
     t.className = 'toast';
     t.textContent = msg;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 2000);
 }
 
-// ============================================
-// RENDER FUNCTIONS
-// ============================================
-function renderBadges() {
-    const container = document.getElementById('badges');
-    if (!container) return;
-    container.innerHTML = '';
+function renderAll() {
+    document.getElementById('nextToken').innerHTML = config.next_token_id || 1;
+    
+    // Badges
+    const badgesDiv = document.getElementById('badges');
+    badgesDiv.innerHTML = '';
     counters.forEach(c => {
         let cls = 'badge-idle';
         if (c.currentToken) cls = 'badge-active';
         else if (c.queue?.length > 0) cls = 'badge-waiting';
-        const badge = document.createElement('div');
+        let badge = document.createElement('div');
         badge.className = `badge ${cls}`;
         badge.textContent = c.id;
-        badge.onclick = () => {
-            document.getElementById(`counter_${c.id}`)?.scrollIntoView({ behavior: 'smooth' });
-        };
-        container.appendChild(badge);
+        badge.onclick = () => document.getElementById(`counter_${c.id}`)?.scrollIntoView({ behavior: 'smooth' });
+        badgesDiv.appendChild(badge);
     });
-}
-
-function renderCounters() {
-    const container = document.getElementById('countersList');
-    if (!container) return;
-    container.innerHTML = '';
     
+    // Counters List
+    const listDiv = document.getElementById('countersList');
+    listDiv.innerHTML = '';
     counters.forEach(c => {
-        const queuePreview = (c.queue || []).slice(0, 3).join(', ');
-        const more = (c.queue?.length || 0) > 3 ? ` +${c.queue.length - 3}` : '';
-        
-        const div = document.createElement('div');
+        let div = document.createElement('div');
         div.className = 'counter-item';
         div.id = `counter_${c.id}`;
         div.innerHTML = `
@@ -534,55 +464,27 @@ function renderCounters() {
                 <span class="counter-title">🏪 കൗണ്ടർ ${c.id}</span>
                 <span class="counter-current">${c.currentToken || '---'}</span>
             </div>
-            <div class="counter-stats">🟠 ക്യൂ: ${c.queue?.length || 0} &nbsp;|&nbsp; ✅ ${c.servedCount || 0} പൂർത്തിയായി</div>
-            ${c.queue?.length > 0 ? `<div style="font-size:0.7rem; color:#666;">⏩ ${queuePreview}${more}</div>` : ''}
+            <div>🟠 ക്യൂ: ${c.queue?.length || 0} | ✅ ${c.servedCount || 0}</div>
             <div class="counter-actions">
                 <button class="action-btn btn-call" onclick="callNext(${c.id})">⏩ നെക്സ്റ്റ്</button>
                 <button class="action-btn btn-reset" onclick="resetCounter(${c.id})">🔄 റീസെറ്റ്</button>
             </div>
         `;
-        container.appendChild(div);
+        listDiv.appendChild(div);
     });
-}
-
-function updateStats() {
-    const total = counters.reduce((s, c) => s + (c.servedCount || 0) + (c.queue?.length || 0) + (c.currentToken ? 1 : 0), 0);
-    const active = counters.filter(c => c.currentToken).length;
-    const waiting = counters.reduce((s, c) => s + (c.queue?.length || 0), 0);
-    const completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
     
+    // Stats
+    let total = counters.reduce((s, c) => s + (c.servedCount || 0) + (c.queue?.length || 0) + (c.currentToken ? 1 : 0), 0);
+    let active = counters.filter(c => c.currentToken).length;
+    let waiting = counters.reduce((s, c) => s + (c.queue?.length || 0), 0);
+    let completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
     document.getElementById('totalTokens').innerHTML = total;
     document.getElementById('activeCount').innerHTML = active;
     document.getElementById('waitingCount').innerHTML = waiting;
     document.getElementById('completedCount').innerHTML = completed;
 }
 
-function renderAll() {
-    document.getElementById('nextToken').innerHTML = config.next_token_id || 1;
-    document.getElementById('lastTokenInfo').innerHTML = `💡 അവസാന ടോക്കൺ: ${config.last_used_token || '-'}`;
-    renderBadges();
-    renderCounters();
-    updateStats();
-}
-
-// ============================================
-// AUTO REFRESH
-// ============================================
-setInterval(() => {
-    if (autoRefresh) fetchData();
-}, 5000);
-
-// Initial load
-fetchData();
-
-// Expose functions globally
-window.addNewToken = addNewToken;
-window.callNext = callNext;
-window.resetCounter = resetCounter;
-window.setFirstToken = setFirstToken;
-window.setLastToken = setLastToken;
-window.setCustomToken = setCustomToken;
-window.resetAll = resetAll;
+setInterval(() => { if (GAS_URL) fetchData(); }, 5000);
 </script>
 </body>
 </html>
