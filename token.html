@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>display | Token System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>📺 ടോക്കൺ ഡിസ്പ്ലേ | TV Screen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
-        
         body {
             font-family: 'Anek Malayalam', sans-serif;
             background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
             min-height: 100vh;
             padding: 20px;
         }
-        
         .container { max-width: 1920px; margin: 0 auto; }
         
         .header {
@@ -59,20 +57,14 @@
         }
         .announcement-icon { font-size: 2.5rem; }
         .announcement-text { flex: 1; font-size: 1.6rem; font-weight: 800; color: #ffd700; }
-        .live-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(0,0,0,0.5);
-            padding: 5px 15px;
-            border-radius: 30px;
-        }
         .live-dot {
             width: 12px;
             height: 12px;
             background: #ff0000;
             border-radius: 50%;
             animation: livePulse 1s infinite;
+            display: inline-block;
+            margin-right: 8px;
         }
         @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
         
@@ -82,7 +74,6 @@
             gap: 15px;
             margin-bottom: 20px;
         }
-        
         .counter-card {
             background: white;
             border-radius: 20px;
@@ -102,9 +93,8 @@
             color: white;
         }
         .counter-number { font-size: 1.6rem; font-weight: 800; background: rgba(0,0,0,0.1); display: inline-block; padding: 5px 18px; border-radius: 30px; margin-bottom: 12px; }
-        .current-token-number { font-size: 3rem; font-weight: 800; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
+        .current-token { font-size: 3rem; font-weight: 800; font-family: monospace; letter-spacing: 3px; margin: 10px 0; }
         .queue-badge { font-size: 1rem; font-weight: 700; background: rgba(0,0,0,0.15); display: inline-block; padding: 4px 12px; border-radius: 25px; }
-        .next-token-info { font-size: 0.7rem; margin-top: 8px; opacity: 0.8; }
         
         .footer {
             background: rgba(0,0,0,0.4);
@@ -123,12 +113,11 @@
         
         @media (max-width: 1400px) {
             .counters-grid { grid-template-columns: repeat(7, 1fr); gap: 12px; }
-            .current-token-number { font-size: 2.2rem; }
-            .announcement-text { font-size: 1.3rem; }
+            .current-token { font-size: 2.2rem; }
         }
         @media (max-width: 1000px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
         
-        .sync-badge {
+        .status-badge {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -141,120 +130,119 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="title">
-                <h1>🏫 സ്കൂൾ അഡ്മിഷൻ 2025</h1>
-                <p>ടോക്കൺ മാനേജ്മെന്റ് സിസ്റ്റം</p>
-            </div>
-            <div class="stats">
-                <div class="stat-card"><div class="stat-number" id="activeCount">0</div><div class="stat-label">🟢 സേവനത്തിൽ</div></div>
-                <div class="stat-card"><div class="stat-number" id="waitingCount">0</div><div class="stat-label">🟠 ക്യൂവിൽ</div></div>
-                <div class="stat-card"><div class="stat-number" id="completedCount">0</div><div class="stat-label">✅ പൂർത്തിയായി</div></div>
-            </div>
-            <div class="time-box">
-                <div class="current-time" id="currentTime">--:--:--</div>
-                <div style="font-size:0.7rem" id="currentDate">---</div>
-            </div>
+<div class="container">
+    <div class="header">
+        <div class="title">
+            <h1>🏫 സ്കൂൾ അഡ്മിഷൻ 2025</h1>
+            <p>ടോക്കൺ മാനേജ്മെന്റ് സിസ്റ്റം</p>
         </div>
-        
-        <div class="announcement-bar">
-            <div class="announcement-icon">📢</div>
-            <div class="announcement-text" id="announcementText">🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...</div>
-            <div class="live-indicator"><span class="live-dot"></span><span>LIVE</span></div>
+        <div class="stats">
+            <div class="stat-card"><div class="stat-number" id="activeCount">0</div><div class="stat-label">🟢 സേവനത്തിൽ</div></div>
+            <div class="stat-card"><div class="stat-number" id="waitingCount">0</div><div class="stat-label">🟠 ക്യൂവിൽ</div></div>
+            <div class="stat-card"><div class="stat-number" id="completedCount">0</div><div class="stat-label">✅ പൂർത്തിയായി</div></div>
         </div>
-        
-        <div class="counters-grid" id="countersGrid"></div>
-        
-        <div class="footer">
-            ☁️ Google Sheets Backend | Cross-browser Sync | Auto-refresh
+        <div class="time-box">
+            <div class="current-time" id="currentTime">--:--:--</div>
+            <div style="font-size:0.7rem" id="currentDate"></div>
         </div>
     </div>
-    <div class="sync-badge" id="syncBadge">🟢 Connected</div>
+    
+    <div class="announcement-bar">
+        <div class="announcement-icon">📢</div>
+        <div class="announcement-text" id="announcementText">🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...</div>
+        <div><span class="live-dot"></span> LIVE</div>
+    </div>
+    
+    <div class="counters-grid" id="countersGrid"></div>
+    
+    <div class="footer">
+        ☁️ Cloud Sync | Auto-refresh | Real-time Updates
+    </div>
+</div>
+<div class="status-badge" id="syncBadge">🟢 Connected</div>
 
-    <script>
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzQo1nMRAjYNRc-CAfGc5pzHYBTH7a_aMonGZkO-T2LXrjbjXCax_2IDQag798U2wOW/exec';
-        let counters = [];
-        let lastAnnouncement = '';
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyjif0GXovMa98LHKAiZOfsk6UHN3N1xIjO0R66hZgHUrr9EKugJ6zZCpf-nO_xj8eU/exec'; // 🔴 Replace with your URL
+
+let counters = [];
+let lastAnnouncement = '';
+
+async function fetchData() {
+    try {
+        const response = await fetch(`${GAS_URL}?action=get_all`);
+        const result = await response.json();
         
-        async function fetchData() {
-            try {
-                const response = await fetch(`${GAS_URL}?action=get_counters`);
-                const result = await response.json();
-                if (result.success) {
-                    counters = result.data.counters || [];
-                    updateDisplay();
-                    updateStats();
-                    document.getElementById('syncBadge').innerHTML = '🟢 Connected';
-                    document.getElementById('syncBadge').style.background = '#28a745';
-                } else {
-                    throw new Error('Failed');
-                }
-            } catch (error) {
-                document.getElementById('syncBadge').innerHTML = '🔴 Connection Error';
-                document.getElementById('syncBadge').style.background = '#dc3545';
-            }
-        }
-        
-        async function fetchAnnouncement() {
-            try {
-                const response = await fetch(`${GAS_URL}?action=get_all`);
-                const result = await response.json();
-                if (result.success && result.data.config && result.data.config.last_announcement) {
-                    const newAnnouncement = result.data.config.last_announcement;
-                    if (newAnnouncement !== lastAnnouncement) {
-                        lastAnnouncement = newAnnouncement;
-                        document.getElementById('announcementText').textContent = lastAnnouncement;
-                        setTimeout(() => {
-                            const annEl = document.getElementById('announcementText');
-                            if (annEl && annEl.textContent === lastAnnouncement) {
-                                annEl.textContent = '🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...';
-                            }
-                        }, 8000);
+        if (result.success) {
+            counters = result.data.counters || [];
+            updateDisplay();
+            updateStats();
+            document.getElementById('syncBadge').innerHTML = '🟢 Connected';
+            document.getElementById('syncBadge').style.background = '#28a745';
+            
+            const newAnnouncement = result.data.config?.last_announcement;
+            if (newAnnouncement && newAnnouncement !== lastAnnouncement) {
+                lastAnnouncement = newAnnouncement;
+                const annEl = document.getElementById('announcementText');
+                annEl.textContent = lastAnnouncement;
+                setTimeout(() => {
+                    if (annEl.textContent === lastAnnouncement) {
+                        annEl.textContent = '🎤 സ്വാഗതം! ടോക്കൺ വിളിക്കുന്നത് ഇവിടെ കാണാം...';
                     }
-                }
-            } catch (error) {}
+                }, 8000);
+            }
+        } else {
+            throw new Error('API error');
         }
+    } catch (error) {
+        document.getElementById('syncBadge').innerHTML = '🔴 Error';
+        document.getElementById('syncBadge').style.background = '#dc3545';
+        console.error(error);
+    }
+}
+
+function updateDisplay() {
+    const grid = document.getElementById('countersGrid');
+    grid.innerHTML = '';
+    
+    counters.forEach(counter => {
+        const hasQueue = counter.queue?.length > 0;
+        const isActive = counter.currentToken !== null && counter.currentToken !== '';
+        const cardClass = isActive ? 'active' : (hasQueue ? 'waiting' : '');
         
-        function updateDisplay() {
-            const grid = document.getElementById('countersGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            counters.forEach(counter => {
-                const hasQueue = counter.queue && counter.queue.length > 0;
-                const isActive = counter.currentToken !== null && counter.currentToken !== '';
-                const card = document.createElement('div');
-                card.className = `counter-card ${isActive ? 'active' : (hasQueue ? 'waiting' : '')}`;
-                card.setAttribute('data-counter', counter.id);
-                card.innerHTML = `
-                    <div class="counter-number">🏪 കൗണ്ടർ ${counter.id}</div>
-                    <div class="current-token-number">${counter.currentToken || '---'}</div>
-                    <div class="queue-badge">🟠 ക്യൂ: ${counter.queue ? counter.queue.length : 0}</div>
-                    ${counter.queue && counter.queue.length > 0 ? `<div class="next-token-info">⏩ അടുത്തത്: ${counter.queue[0]}</div>` : ''}
-                    <div style="font-size:0.65rem; margin-top:6px;">✅ ${counter.servedCount || 0} സേവനങ്ങൾ</div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-        
-        function updateStats() {
-            const active = counters.filter(c => c.currentToken && c.currentToken !== '').length;
-            const waiting = counters.reduce((sum, c) => sum + (c.queue ? c.queue.length : 0), 0);
-            const completed = counters.reduce((sum, c) => sum + (c.servedCount || 0), 0);
-            document.getElementById('activeCount').textContent = active;
-            document.getElementById('waitingCount').textContent = waiting;
-            document.getElementById('completedCount').textContent = completed;
-        }
-        
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-IN');
-            document.getElementById('currentDate').textContent = now.toLocaleDateString('ml-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
-        
-        setInterval(() => { fetchData(); fetchAnnouncement(); updateTime(); }, 3000);
-        fetchData();
-        updateTime();
-    </script>
+        const card = document.createElement('div');
+        card.className = `counter-card ${cardClass}`;
+        card.innerHTML = `
+            <div class="counter-number">🏪 കൗണ്ടർ ${counter.id}</div>
+            <div class="current-token">${counter.currentToken || '---'}</div>
+            <div class="queue-badge">🟠 ക്യൂ: ${counter.queue?.length || 0}</div>
+            <div style="font-size:0.65rem; margin-top:6px;">✅ ${counter.servedCount || 0} സേവനങ്ങൾ</div>
+            ${counter.queue?.length > 0 ? `<div style="font-size:0.6rem; margin-top:4px;">⏩ അടുത്തത്: ${counter.queue[0]}</div>` : ''}
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function updateStats() {
+    const active = counters.filter(c => c.currentToken && c.currentToken !== '').length;
+    const waiting = counters.reduce((s, c) => s + (c.queue?.length || 0), 0);
+    const completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
+    
+    document.getElementById('activeCount').innerHTML = active;
+    document.getElementById('waitingCount').innerHTML = waiting;
+    document.getElementById('completedCount').innerHTML = completed;
+}
+
+function updateTime() {
+    const now = new Date();
+    document.getElementById('currentTime').innerHTML = now.toLocaleTimeString('en-IN');
+    document.getElementById('currentDate').innerHTML = now.toLocaleDateString('ml-IN', { 
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+    });
+}
+
+setInterval(() => { fetchData(); updateTime(); }, 3000);
+fetchData();
+updateTime();
+</script>
 </body>
 </html>
