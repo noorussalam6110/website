@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Token System | suhail kerala</title>
+    <title>Token System | Multi-Device Sync | suhail kerala</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
@@ -13,7 +13,7 @@
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Anek Malayalam', sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%); min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%); min-height: 100vh; }
         
         .mode-toggle { background: #0f0f23; padding: 12px 16px; display: flex; justify-content: center; gap: 15px; border-bottom: 3px solid rgba(233,69,96,0.5); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); flex-wrap: wrap; }
         body.display-active .mode-toggle { display: none !important; }
@@ -21,37 +21,86 @@
         
         .admin-mode, .display-mode { display: none; padding: 16px 14px 32px; }
         .admin-mode.active, .display-mode.active { display: block; }
-        .admin-container { max-width: 700px; margin: 0 auto; width: 100%; }
+        .admin-container { max-width: 800px; margin: 0 auto; width: 100%; }
         .display-container { max-width: 1920px; margin: 0 auto; }
         
-        /* Blinking animation for counter card when token appears */
-        @keyframes counterBoxBlink {
-            0% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
-            25% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.08); box-shadow: 0 0 50px #facc15; color: #1f2937 !important; }
-            50% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
-            75% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.08); box-shadow: 0 0 50px #facc15; color: #1f2937 !important; }
+        /* Blink animation for counter card when token is called */
+        @keyframes globalCounterBlink {
+            0% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); background: inherit; }
+            20% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.06); box-shadow: 0 0 40px #ffdd44; color: #1f2937 !important; }
+            40% { transform: scale(1); }
+            60% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.06); box-shadow: 0 0 40px #ffdd44; }
             100% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
         }
-        .blink-counter-box {
-            animation: counterBoxBlink 0.8s ease-in-out 3;
-            position: relative;
-            z-index: 10;
+        .blink-global-card {
+            animation: globalCounterBlink 0.75s ease-in-out 3;
+            z-index: 20;
         }
         
-        @keyframes personCardBlink {
-            0% { transform: scale(1); }
-            25% { background: #facc15 !important; border-left-color: #ffffff !important; transform: scale(1.05); color: #1f2937 !important; }
-            50% { transform: scale(1); }
-            75% { background: #facc15 !important; border-left-color: #ffffff !important; transform: scale(1.05); color: #1f2937 !important; }
-            100% { transform: scale(1); }
+        /* Person card blink sync */
+        @keyframes personBlinkSync {
+            0% { background: #1e293b; }
+            25% { background: #facc15 !important; color: #0f172a !important; border-left-color: #ffffff; transform: scale(1.03); }
+            75% { background: #facc15 !important; color: #0f172a !important; }
+            100% { background: #1e293b; }
         }
-        .blink-person-card {
-            animation: personCardBlink 0.8s ease-in-out 3;
+        .blink-person-sync {
+            animation: personBlinkSync 0.8s ease-in-out 3;
+        }
+        
+        /* White "call ended" box */
+        .call-ended-notice {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: transparent;
+            padding: 6px 16px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            transition: all 0.1s ease;
+            min-width: 100px;
+            opacity: 0;
+            visibility: hidden;
+        }
+        .call-ended-notice.visible-white {
+            background: white !important;
+            color: #1e293b !important;
+            opacity: 1;
+            visibility: visible;
+            box-shadow: 0 0 8px rgba(255,255,255,0.6);
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Blank token box for idle counters (queue 0 & no active token) */
+        .blank-token-display {
+            background: white !important;
+            color: #94a3b8 !important;
+            border-radius: 20px;
+            padding: 16px;
+            font-size: 1.8rem;
+            font-weight: 500;
+            box-shadow: inset 0 0 0 2px #cbd5e1;
+            margin: 12px 0;
+            font-family: monospace;
         }
         
         .header { background: linear-gradient(135deg, #e94560, #c62a40); border-radius: 28px; padding: 14px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .header h1 { color: white; font-size: 1.35rem; font-weight: 800; }
         .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
+        
+        .voice-control { background: #1e1e3a; border-radius: 60px; padding: 8px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; justify-content: space-between; }
+        .voice-status { font-size: 0.8rem; color: #a5f3c3; }
+        .voice-buttons { display: flex; gap: 8px; }
+        .voice-btn { background: #8b5cf6; border: none; padding: 6px 14px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+        .voice-btn.green { background: #10b981; }
+        
+        .token-customize { background: #1e293b; border-radius: 28px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .token-customize label { color: white; font-weight: 600; }
+        .token-customize input { background: #0f172a; border: 1px solid #475569; padding: 10px 16px; border-radius: 40px; color: white; font-weight: 700; width: 120px; text-align: center; }
+        .token-customize button { background: #3b82f6; border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
         
         .stats { background: linear-gradient(135deg, #1a1a2e, #0f0c29); border-radius: 24px; padding: 14px 12px; margin-bottom: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .stat-item { text-align: center; padding: 8px 12px; background: rgba(255,255,255,0.08); border-radius: 20px; min-width: 70px; flex: 1 0 auto; }
@@ -74,12 +123,12 @@
         .btn-auto { background: #10b981; color: white; }
         .btn-manual { background: #3b82f6; color: white; }
         .btn-danger { background: #ef4444; color: white; }
-        .btn-voice { background: #8b5cf6; color: white; }
         
         .counters-list { display: flex; flex-direction: column; gap: 16px; max-height: 550px; overflow-y: auto; padding-right: 4px; }
         .counter-item { background: #f8fafc; border-radius: 28px; padding: 16px; border-left: 6px solid #e94560; }
         .counter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
         .counter-current { font-size: 1.7rem; font-weight: 800; font-family: monospace; background: #eef2ff; padding: 4px 16px; border-radius: 40px; }
+        .visibility-toggle { display: flex; align-items: center; gap: 8px; background: #e2e8f0; padding: 4px 12px; border-radius: 40px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
         .counter-actions { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
         .action-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 50px; font-weight: 800; cursor: pointer; font-size: 0.85rem; }
         .btn-call { background: #059669; color: white; }
@@ -102,7 +151,8 @@
         .legend-color.green { background: #2e7d32; }
         .legend-color.orange { background: #e67e22; }
         .legend-color.red { background: #c0392b; }
-        .legend-color.blink-demo { background: #facc15; animation: counterBoxBlink 0.8s ease-in-out infinite; }
+        .legend-color.blank-demo { background: white; border: 1px solid #aaa; box-shadow: inset 0 0 0 1px #cbd5e1; }
+        .legend-color.blink-demo { background: #facc15; animation: globalCounterBlink 0.8s ease-in-out infinite; }
         
         .announcement-bar { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 40px; padding: 22px 28px; margin-bottom: 34px; display: flex; align-items: center; gap: 20px; border-left: 8px solid #e94560; flex-wrap: wrap; }
         .announcement-text { flex: 1; font-size: 1.8rem; font-weight: 800; color: #ffffff; word-break: break-word; }
@@ -110,13 +160,13 @@
         @keyframes livePulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
         
         .counters-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 20px; margin-bottom: 35px; }
-        .counter-card { border-radius: 28px; padding: 22px 10px; text-align: center; transition: all 0.2s; box-shadow: 0 12px 28px rgba(0,0,0,0.3); border: 2px solid transparent; cursor: pointer; }
+        .counter-card { border-radius: 28px; padding: 22px 10px; text-align: center; transition: all 0.2s; box-shadow: 0 12px 28px rgba(0,0,0,0.3); border: 2px solid transparent; position: relative; }
         .counter-card.idle { background: #334155; color: white; border: 2px solid #94a3b8; }
         .counter-card.active { background: linear-gradient(135deg, #15803d, #14532d); color: white; transform: scale(1.02); box-shadow: 0 0 0 4px #ffd966; }
         .counter-card.waiting { background: linear-gradient(135deg, #ea580c, #9a3412); color: white; }
         .counter-card.closed { background: linear-gradient(135deg, #b91c1c, #7f1a1a); color: white; opacity: 0.9; }
         .counter-number { font-size: 1.7rem; font-weight: 800; background: rgba(0,0,0,0.2); display: inline-block; padding: 5px 20px; border-radius: 60px; margin-bottom: 15px; color: white; }
-        .display-current-token { font-size: 3rem; font-weight: 800; font-family: monospace; margin: 12px 0; color: #ffd966; }
+        .display-current-token { font-size: 3rem; font-weight: 800; font-family: monospace; margin: 12px 0; color: #ffd966; min-height: 85px; display: flex; align-items: center; justify-content: center; }
         .queue-badge { font-size: 1.1rem; font-weight: 700; background: rgba(0,0,0,0.3); display: inline-block; padding: 5px 16px; border-radius: 40px; color: white; }
         .status-text { font-size: 0.85rem; margin-top: 12px; font-weight: 600; color: white; }
         
@@ -148,43 +198,33 @@
         .modal-card h3 { color: #ffd966; font-size: 1.8rem; margin-bottom: 20px; }
         .counter-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0; max-height: 300px; overflow-y: auto; }
         .counter-option { background: #334155; padding: 14px 8px; border-radius: 60px; font-weight: 800; font-size: 1.3rem; cursor: pointer; transition: 0.1s; color: white; }
-        .counter-option:hover { background: #e94560; transform: scale(1.02);}
-        .modal-close { background: #475569; color: white; border: none; padding: 12px 24px; border-radius: 60px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-        
-        .voice-control { background: #1e1e3a; border-radius: 60px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
-        .voice-status { font-size: 0.8rem; color: #a5f3c3; }
         
         @media (max-width: 1100px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 700px) { .display-header { flex-direction: column; text-align: center; } .display-stats { justify-content: center; } .counters-grid { grid-template-columns: repeat(2, 1fr); } .counter-options { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 700px) { .display-header { flex-direction: column; text-align: center; } .display-stats { justify-content: center; } .counters-grid { grid-template-columns: repeat(2, 1fr); } }
     </style>
 </head>
 <body>
     <div id="loginScreen" class="login-container">
-        <div class="login-box">
-            <h1>🔐 Admin Login</h1>
-            <p>Token System</p>
-            <input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com">
-            <input type="password" id="loginPassword" placeholder="Password" value="admin123">
-            <button onclick="login()">🔓 Admin Access</button>
-            <button onclick="createAdminAccount()" class="btn-secondary">➕ Create New Admin Account</button>
-            <div id="loginError" class="error-msg"></div>
-            <div id="createSuccess" class="success-msg"></div>
-        </div>
+        <div class="login-box"><h1>🔐 Admin Login</h1><p>Token System</p><input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com"><input type="password" id="loginPassword" placeholder="Password" value="admin123"><button onclick="login()">🔓 Admin Access</button><button onclick="createAdminAccount()" class="btn-secondary">➕ Create New Admin Account</button><div id="loginError" class="error-msg"></div><div id="createSuccess" class="success-msg"></div></div>
     </div>
+    <div class="mode-toggle" id="modeToggle" style="display: none;"><button class="mode-btn active" onclick="setMode('admin')">MANAGING</button><button class="mode-btn" onclick="setMode('display')">DISPLAY</button></div>
     
-    <div class="mode-toggle" id="modeToggle" style="display: none;">
-        <button class="mode-btn active" onclick="setMode('admin')">MANAGING</button>
-        <button class="mode-btn" onclick="setMode('display')">DISPLAY</button>
-    </div>
-
     <div id="adminMode" class="admin-mode">
         <div class="admin-container">
             <div class="header"><h1>📱 Admin Panel</h1><button class="logout-btn" onclick="logout()">Logout</button></div>
             <div class="voice-control">
-                <span>🔊 Male English Voice:</span>
+                <span>🔊 Male English Voice Announcement</span>
                 <span class="voice-status" id="voiceStatus">🔄 Loading voices...</span>
-                <button onclick="testVoice()" style="background:#8b5cf6; border:none; padding:4px 12px; border-radius:40px; color:white; cursor:pointer;">Test Voice</button>
-                <button onclick="enableVoicePermission()" style="background:#10b981; border:none; padding:4px 12px; border-radius:40px; color:white; cursor:pointer;">Request Permission</button>
+                <div class="voice-buttons">
+                    <button class="voice-btn" onclick="testVoice()">Test Voice</button>
+                    <button class="voice-btn green" onclick="enableVoicePermission()">Request Permission</button>
+                </div>
+            </div>
+            <!-- Custom First Token Number -->
+            <div class="token-customize">
+                <label>🎫 Set Next Token Number:</label>
+                <input type="number" id="nextTokenInput" min="1" value="1">
+                <button onclick="updateNextToken()">Update</button>
             </div>
             <div class="stats">
                 <div class="stat-item"><div class="stat-label">Total</div><div class="stat-value" id="totalTokens">0</div></div>
@@ -194,545 +234,106 @@
                 <div class="stat-item"><div class="stat-label">🔴 Closed</div><div class="stat-value" id="closedCount">0</div></div>
             </div>
             <div class="badges" id="badges"></div>
-            <div class="token-card">
-                <div class="token-display"><div>🎫 Next Token Number</div><div class="token-number" id="nextToken">1</div></div>
-                <div class="btn-group">
-                    <button class="btn btn-auto" id="autoAssignBtn">⚡ Auto Assign (Shortest Queue)</button>
-                    <button class="btn btn-manual" id="manualAssignBtn">📋 Manual Assign (Select Counter)</button>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-danger" onclick="resetAll()">Reset All System</button>
-                </div>
-            </div>
+            <div class="token-card"><div class="token-display"><div>🎫 Next Token Number</div><div class="token-number" id="nextToken">1</div></div><div class="btn-group"><button class="btn btn-auto" id="autoAssignBtn">⚡ Auto Assign (Shortest Queue)</button><button class="btn btn-manual" id="manualAssignBtn">📋 Manual Assign (Select Counter)</button></div><div class="btn-group"><button class="btn btn-danger" onclick="resetAll()">Reset All System</button></div></div>
             <div class="counters-list" id="countersList"></div>
         </div>
     </div>
-
+    
     <div id="displayMode" class="display-mode">
         <div class="display-container">
-            <div class="display-header">
-                <div class="display-title"><h1>DARUNNAJATH UP SCHOOL</h1><p>LIVE TOKEN & COUNTER SYSTEM</p></div>
-                <div class="display-stats">
-                    <div class="display-stat"><div class="display-stat-number" id="displayActiveCount">0</div><div class="display-stat-label">🟢 Active</div></div>
-                    <div class="display-stat"><div class="display-stat-number" id="displayWaitingCount">0</div><div class="display-stat-label">🟠 Waiting</div></div>
-                    <div class="display-stat"><div class="display-stat-number" id="displayCompletedCount">0</div><div class="display-stat-label">✅ Completed</div></div>
-                    <div class="display-stat"><div class="display-stat-number" id="displayClosedCount">0</div><div class="display-stat-label">🔴 Closed</div></div>
-                </div>
-                <div class="time-box"><div class="current-time" id="displayTime">--:--:--</div><div style="font-size:0.85rem; color:white;" id="displayDate"></div></div>
-            </div>
+            <div class="display-header"><div class="display-title"><h1>DARUNNAJATH UP SCHOOL</h1><p>LIVE TOKEN & COUNTER SYSTEM</p></div><div class="display-stats"><div class="display-stat"><div class="display-stat-number" id="displayActiveCount">0</div><div class="display-stat-label">🟢 Active</div></div><div class="display-stat"><div class="display-stat-number" id="displayWaitingCount">0</div><div class="display-stat-label">🟠 Waiting</div></div><div class="display-stat"><div class="display-stat-number" id="displayCompletedCount">0</div><div class="display-stat-label">✅ Completed</div></div><div class="display-stat"><div class="display-stat-number" id="displayClosedCount">0</div><div class="display-stat-label">🔴 Closed</div></div></div><div class="time-box"><div class="current-time" id="displayTime">--:--:--</div><div style="font-size:0.85rem; color:white;" id="displayDate"></div></div></div>
             <div class="color-legend">
                 <div class="legend-item"><div class="legend-color white"></div><span>Idle</span></div>
                 <div class="legend-item"><div class="legend-color green"></div><span>Active</span></div>
                 <div class="legend-item"><div class="legend-color orange"></div><span>Waiting</span></div>
                 <div class="legend-item"><div class="legend-color red"></div><span>Closed</span></div>
-                <div class="legend-item"><div class="legend-color blink-demo"></div><span>✨ New Token</span></div>
+                <div class="legend-item"><div class="legend-color blank-demo"></div><span>Blank (Queue 0)</span></div>
+                <div class="legend-item"><div class="legend-color blink-demo"></div><span>✨ New Token Call</span></div>
             </div>
             <div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-text" id="announcementText">✨ Welcome to Darunnajath UP School!</div><div><span class="live-dot"></span> LIVE</div></div>
             <div class="counters-grid" id="displayCountersGrid"></div>
-            
-            <div class="all-persons-section">
-                <div class="persons-title"><span>👥 All Persons / Tokens</span><span style="font-size:1rem;">🔄 live</span></div>
-                <div class="persons-grid" id="allPersonsList"></div>
-            </div>
-            <div class="footer">© All Right Reserved by SUHAIL KERALA | Public Display </div>
+            <div class="all-persons-section"><div class="persons-title"><span>👥 All Persons / Tokens</span><span style="font-size:1rem;">🔄 live</span></div><div class="persons-grid" id="allPersonsList"></div></div>
+            <div class="footer">© All Right Reserved by SUHAIL KERALA | Public Display</div>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD-0CCGYVtfTGQBnOEvub5M3sPaZDdsaUY",
-            authDomain: "school-token-system-b75c7.firebaseapp.com",
-            databaseURL: "https://school-token-system-b75c7-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "school-token-system-b75c7",
-            storageBucket: "school-token-system-b75c7.firebasestorage.app",
-            appId: "1:511726803989:web:c6b51bdb63d28e7433c21c"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyD-0CCGYVtfTGQBnOEvub5M3sPaZDdsaUY", authDomain: "school-token-system-b75c7.firebaseapp.com", databaseURL: "https://school-token-system-b75c7-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "school-token-system-b75c7", storageBucket: "school-token-system-b75c7.firebasestorage.app", appId: "1:511726803989:web:c6b51bdb63d28e7433c21c" };
+        firebase.initializeApp(firebaseConfig); const auth = firebase.auth(); const database = firebase.database();
+        let counters = [], config = { next_token_id: 1 }; let currentMode = 'admin', lastAnnouncementText = ''; let maleEnglishVoice = null;
         
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const database = firebase.database();
+        // Voice initialization
+        function initVoices() { return new Promise((resolve) => { if (window.speechSynthesis.getVoices().length > 0) { selectMaleEnglishVoice(); resolve(); } else { window.speechSynthesis.onvoiceschanged = () => { selectMaleEnglishVoice(); resolve(); }; } }); }
+        function selectMaleEnglishVoice() { const voices = window.speechSynthesis.getVoices(); let selected = voices.find(v => v.name === "Google UK English Male") || voices.find(v => v.name === "Microsoft David Desktop") || voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('male')) || voices.find(v => v.lang === 'en-US'); maleEnglishVoice = selected; const statusSpan = document.getElementById('voiceStatus'); if(statusSpan) statusSpan.innerHTML = maleEnglishVoice ? `✅ Voice Ready: ${maleEnglishVoice.name}` : "⚠️ Default English voice"; }
+        function speakEnglish(text) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.9; utterance.pitch = 1.0; if (maleEnglishVoice) utterance.voice = maleEnglishVoice; window.speechSynthesis.speak(utterance); }
+        function testVoice() { speakEnglish("Voice announcement is working. Token system ready."); showToast("🔊 Testing male English voice"); }
+        function enableVoicePermission() { const utterance = new SpeechSynthesisUtterance(" "); utterance.volume = 0; window.speechSynthesis.speak(utterance); testVoice(); }
         
-        let counters = [];
-        let config = { next_token_id: 1, last_announcement: '' };
-        let currentMode = 'admin';
-        let lastAnnouncementText = '';
-        let blinkCounterId = null;
-        let blinkToken = null;
+        // Multi-device blink & white ended box effects
+        function triggerBlinkEffectGlobally(counterId) { database.ref('blink_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => { database.ref('blink_effect').remove(); }, 1800); }); }
+        function triggerCallEndedWhiteBox(counterId) { database.ref('call_ended_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => { database.ref('call_ended_effect').remove(); }, 2000); }); }
         
-        let maleEnglishVoice = null;
-        
-        // Voice initialization - prioritize male English voices
-        function initVoices() {
-            return new Promise((resolve) => {
-                if (window.speechSynthesis.getVoices().length > 0) {
-                    selectMaleEnglishVoice();
-                    resolve();
-                } else {
-                    window.speechSynthesis.onvoiceschanged = () => {
-                        selectMaleEnglishVoice();
-                        resolve();
-                    };
-                }
-            });
+        function initGlobalEffects() {
+            database.ref('blink_effect').on('value', (snap) => { if(snap.exists() && snap.val().counterId) { const cid = snap.val().counterId; const card = document.querySelector(`.counter-card[data-counter-id='${cid}']`); if(card) { card.classList.add('blink-global-card'); setTimeout(() => card.classList.remove('blink-global-card'), 1700); } document.querySelectorAll('.person-card').forEach(p => { if(p.innerText.includes(`Counter ${cid}`)) { p.classList.add('blink-person-sync'); setTimeout(() => p.classList.remove('blink-person-sync'), 1600); } }); } });
+            database.ref('call_ended_effect').on('value', (snap) => { if(snap.exists() && snap.val().counterId) { const cid = snap.val().counterId; const cardDiv = document.querySelector(`.counter-card[data-counter-id='${cid}']`); if(cardDiv) { const endedBox = cardDiv.querySelector('.call-ended-notice'); if(endedBox) { endedBox.classList.add('visible-white'); setTimeout(() => endedBox.classList.remove('visible-white'), 1900); } } } });
         }
         
-        function selectMaleEnglishVoice() {
-            const voices = window.speechSynthesis.getVoices();
-            console.log("Available voices:", voices.map(v => v.lang + " - " + v.name));
-            
-            // Priority list for male English voices
-            const maleKeywords = ["Male", "Google UK English Male", "Microsoft David", "Microsoft Guy", "Samantha", "Alex", "Fred", "Daniel", "Rishi"];
-            // First try to find a voice that explicitly contains "Male" or common male names
-            let selected = null;
-            
-            // 1. Look for voices with "Male" in the name
-            selected = voices.find(voice => voice.lang === 'en-US' && voice.name.toLowerCase().includes('male'));
-            if (!selected) selected = voices.find(voice => voice.lang === 'en-GB' && voice.name.toLowerCase().includes('male'));
-            
-            // 2. Look for specific male voices (Google UK English Male, Microsoft David, etc.)
-            if (!selected) {
-                selected = voices.find(voice => voice.name === "Google UK English Male");
-            }
-            if (!selected) {
-                selected = voices.find(voice => voice.name === "Microsoft David Desktop");
-            }
-            if (!selected) {
-                selected = voices.find(voice => voice.name === "Microsoft Guy");
-            }
-            if (!selected) {
-                selected = voices.find(voice => voice.name === "Alex" && voice.lang === 'en-US'); // Mac male voice
-            }
-            if (!selected) {
-                selected = voices.find(voice => voice.name === "Daniel" && voice.lang === 'en-GB');
-            }
-            
-            // 3. Fallback to any English voice
-            if (!selected) {
-                selected = voices.find(voice => voice.lang === 'en-US');
-            }
-            if (!selected) {
-                selected = voices.find(voice => voice.lang === 'en-GB');
-            }
-            if (!selected) {
-                selected = voices.find(voice => voice.lang.startsWith('en'));
-            }
-            
-            maleEnglishVoice = selected;
-            const statusSpan = document.getElementById('voiceStatus');
-            if (maleEnglishVoice) {
-                statusSpan.innerHTML = `✅ Voice Ready: ${maleEnglishVoice.name} (${maleEnglishVoice.lang})`;
+        function login() { const email = document.getElementById('loginEmail').value, pw = document.getElementById('loginPassword').value, errDiv = document.getElementById('loginError'); auth.signInWithEmailAndPassword(email, pw).then(() => { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('modeToggle').style.display = 'flex'; initData(); attachListeners(); initVoices(); initGlobalEffects(); }).catch((error) => { errDiv.textContent = error.code === 'auth/user-not-found' ? '❌ No account. Create new.' : '❌ '+error.message; }); }
+        function createAdminAccount() { const email = document.getElementById('loginEmail').value, pw = document.getElementById('loginPassword').value, successDiv = document.getElementById('createSuccess'), errorDiv = document.getElementById('loginError'); if(pw.length < 6) { errorDiv.textContent = '⚠️ Password 6+ chars'; return; } auth.createUserWithEmailAndPassword(email, pw).then(() => { successDiv.textContent = '✅ Account created! Login now.'; errorDiv.textContent = ''; setTimeout(() => successDiv.textContent='',4000); }).catch((error) => { errorDiv.textContent = error.message; }); }
+        function logout() { auth.signOut().then(() => { location.reload(); }); }
+        auth.onAuthStateChanged((user) => { if (user) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('modeToggle').style.display = 'flex'; initData(); attachListeners(); initVoices(); initGlobalEffects(); } });
+        function setMode(mode) { currentMode = mode; document.getElementById('adminMode').classList.toggle('active', mode === 'admin'); document.getElementById('displayMode').classList.toggle('active', mode === 'display'); document.body.classList.toggle('display-active', mode === 'display'); if(mode === 'display') updateDisplayClock(); }
+        
+        function initData() { database.ref('counters').once('value', (snap) => { if (!snap.exists()) { let arr = []; for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false, visible: true }); database.ref('counters').set(arr); } else { // ensure visible property exists
+            let existing = snap.val();
+            let updated = false;
+            existing.forEach(c => { if (c.visible === undefined) { c.visible = true; updated = true; } });
+            if (updated) database.ref('counters').set(existing);
+        } }); database.ref('config').once('value', (snap) => { if (!snap.exists()) database.ref('config').set({ next_token_id: 1, last_announcement: '' }); }); }
+        
+        function attachListeners() { database.ref('counters').on('value', (snap) => { if (snap.exists()) { counters = snap.val(); renderAdminUI(); renderDisplayUI(); updateStatsPanel(); } }); database.ref('config').on('value', (snap) => { if (snap.exists()) { config = snap.val(); document.getElementById('nextToken').innerHTML = config.next_token_id || 1; document.getElementById('nextTokenInput').value = config.next_token_id || 1; if (config.last_announcement && config.last_announcement !== lastAnnouncementText) { lastAnnouncementText = config.last_announcement; const annEl = document.getElementById('announcementText'); if (annEl) annEl.textContent = lastAnnouncementText; setTimeout(() => { if (annEl && annEl.textContent === lastAnnouncementText) annEl.textContent = '✨ Welcome to Darunnajath UP School!'; }, 9000); } } }); }
+        
+        function updateNextToken() { const newVal = parseInt(document.getElementById('nextTokenInput').value); if (isNaN(newVal) || newVal < 1) { showToast("Enter valid number >=1"); return; } database.ref('config').update({ next_token_id: newVal }).then(() => { showToast(`Next token set to ${newVal}`); speakEnglish(`Next token number set to ${newVal}`); }); }
+        
+        async function toggleVisibility(counterId, currentVisible) { let idx = counters.findIndex(c => c.id === counterId); if (idx !== -1) { counters[idx].visible = !currentVisible; await database.ref('counters').set(counters); showToast(`Counter ${counterId} ${!currentVisible ? 'visible' : 'hidden'} on display`); } }
+        
+        function getShortestQueueCounter() { const openCounters = counters.filter(c => !c.isClosed); if (openCounters.length === 0) return null; return openCounters.reduce((prev, curr) => ((curr.queue?.length || 0) < (prev.queue?.length || 0) ? curr : prev), openCounters[0]); }
+        async function assignTokenToCounter(counterId) { try { const counterSnap = await database.ref('counters').once('value'); const configSnap = await database.ref('config').once('value'); if (!counterSnap.exists()) return; let currentCounters = counterSnap.val(); let currentConfig = configSnap.val(); const nextToken = currentConfig.next_token_id || 1; const targetIdx = currentCounters.findIndex(c => c.id === counterId); if (targetIdx === -1 || currentCounters[targetIdx].isClosed) { showToast("Counter closed"); return; } if (!currentCounters[targetIdx].queue) currentCounters[targetIdx].queue = []; currentCounters[targetIdx].queue.push(nextToken.toString()); await database.ref('counters').set(currentCounters); await database.ref('config').update({ next_token_id: nextToken + 1, last_used_token: nextToken }); const ann = `📢 New Token ${nextToken} assigned to Counter ${counterId}`; await database.ref('config').update({ last_announcement: ann }); showToast(`✅ Token ${nextToken} → Counter ${counterId}`); speakEnglish(`New token ${nextToken} assigned to counter ${counterId}`); } catch(e) { showToast("Error assign"); } }
+        async function autoAssignToken() { const target = getShortestQueueCounter(); if (!target) { showToast("All counters closed!"); return; } await assignTokenToCounter(target.id); }
+        function showManualPicker() { const openCounters = counters.filter(c => !c.isClosed); if (!openCounters.length) { showToast("No open counters"); return; } const modalDiv = document.createElement('div'); modalDiv.className = 'modal-overlay'; modalDiv.innerHTML = `<div class="modal-card"><h3>🎯 Select Counter</h3><div class="counter-options" id="counterOptionsModal"></div><button class="modal-close" id="closeModalBtn">Close</button></div>`; document.body.appendChild(modalDiv); const container = modalDiv.querySelector('#counterOptionsModal'); openCounters.forEach(c => { const btn = document.createElement('div'); btn.className = 'counter-option'; btn.textContent = `Counter ${c.id}  (Queue:${c.queue?.length||0})`; btn.onclick = () => { modalDiv.remove(); assignTokenToCounter(c.id); }; container.appendChild(btn); }); modalDiv.querySelector('#closeModalBtn').onclick = () => modalDiv.remove(); }
+        document.getElementById('autoAssignBtn')?.addEventListener('click', autoAssignToken); document.getElementById('manualAssignBtn')?.addEventListener('click', showManualPicker);
+        
+        async function callNext(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1 || counters[idx].isClosed) { showToast(`Counter ${counterId} closed`); return; } let counter = counters[idx]; if (!counter.queue || counter.queue.length === 0) { showToast(`Counter ${counterId} queue empty`); return; } try { let nextTok = counter.queue.shift(); if (counter.currentToken) counters[idx].servedCount = (counters[idx].servedCount || 0) + 1; counters[idx].currentToken = nextTok; await database.ref('counters').set(counters); let ann = `📢 Counter ${counterId}, Token number ${nextTok}, please come forward`; await database.ref('config').update({ last_announcement: ann }); showToast(`🔔 Counter ${counterId} → Token ${nextTok}`); speakEnglish(`Counter ${counterId}, token number ${nextTok}, please come forward`);
+            triggerBlinkEffectGlobally(counterId); triggerCallEndedWhiteBox(counterId);
+        } catch(e) { showToast("Call error"); } }
+        
+        async function resetCounter(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1) return; let cur = counters[idx].currentToken; if (!cur) { showToast(`Counter ${counterId} no active token`); return; } try { if (!counters[idx].queue) counters[idx].queue = []; counters[idx].queue.unshift(cur); counters[idx].currentToken = null; await database.ref('counters').set(counters); showToast(`↩️ Token ${cur} back to queue`); } catch(e) { showToast("Reset error"); } }
+        async function toggleCounterClose(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1) return; counters[idx].isClosed = !counters[idx].isClosed; if (counters[idx].isClosed && counters[idx].currentToken) { if (!counters[idx].queue) counters[idx].queue = []; counters[idx].queue.unshift(counters[idx].currentToken); counters[idx].currentToken = null; } await database.ref('counters').set(counters); showToast(counters[idx].isClosed ? `Counter ${counterId} closed` : `Opened`); }
+        async function resetAll() { if (!confirm('⚠️ RESET all data?')) return; let fresh = []; for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false, visible: true }); await database.ref('counters').set(fresh); await database.ref('config').update({ next_token_id: 1, last_announcement: '' }); showToast('System fully reset'); window.speechSynthesis.cancel(); }
+        
+        function renderAdminUI() { const badgesDiv = document.getElementById('badges'); if(badgesDiv) { badgesDiv.innerHTML = ''; counters.forEach(c => { let cls = 'badge-idle'; if(c.isClosed) cls = 'badge-closed'; else if(c.currentToken) cls = 'badge-active'; else if(c.queue?.length>0) cls = 'badge-waiting'; let b = document.createElement('div'); b.className = `badge ${cls}`; b.textContent = c.id; b.onclick = () => toggleCounterClose(c.id); badgesDiv.appendChild(b); }); } const listDiv = document.getElementById('countersList'); if(listDiv) { listDiv.innerHTML = ''; counters.forEach(c => { let div = document.createElement('div'); div.className = 'counter-item'; div.innerHTML = `<div class="counter-header"><strong>Counter ${c.id} ${c.isClosed ? '🔴 Closed' : '🟢 Open'}</strong><span class="counter-current">${c.currentToken || '---'}</span><div class="visibility-toggle" onclick="toggleVisibility(${c.id}, ${c.visible})">👁️ ${c.visible ? 'Visible' : 'Hidden'}</div></div><div>🟠 Queue: ${c.queue?.length || 0} &nbsp;| ✅ Served: ${c.servedCount || 0}</div>${c.queue?.length ? `<div style="font-size:0.75rem;">Next: ${c.queue[0]}</div>` : ''}<div class="counter-actions"><button class="action-btn btn-call" onclick="callNext(${c.id})" ${c.isClosed ? 'disabled' : ''}>Call Next Token</button><button class="action-btn btn-reset" onclick="resetCounter(${c.id})">Reset</button><button class="action-btn btn-close" onclick="toggleCounterClose(${c.id})">${c.isClosed ? 'Open' : 'Close'}</button></div>`; listDiv.appendChild(div); }); } }
+        
+        function renderDisplayUI() { const grid = document.getElementById('displayCountersGrid'); if (grid) { grid.innerHTML = ''; const visibleCounters = counters.filter(c => c.visible === true); visibleCounters.forEach(c => { let cardClass = 'idle', statusText = '⚪ Idle'; if (c.isClosed) { cardClass = 'closed'; statusText = '🔴 Closed'; } else if (c.currentToken) { cardClass = 'active'; statusText = '🟢 Active'; } else if (c.queue?.length > 0) { cardClass = 'waiting'; statusText = '🟠 Waiting'; } const card = document.createElement('div'); card.className = `counter-card ${cardClass}`; card.setAttribute('data-counter-id', c.id); 
+            let tokenDisplayHtml = '';
+            const hasQueue = (c.queue && c.queue.length > 0);
+            const hasActiveToken = (c.currentToken !== null && c.currentToken !== undefined);
+            if (!hasActiveToken && !hasQueue && !c.isClosed) {
+                tokenDisplayHtml = `<div class="blank-token-display">—</div>`;
             } else {
-                statusSpan.innerHTML = "⚠️ No voice found. Using default English voice.";
+                tokenDisplayHtml = `<div class="display-current-token">${c.currentToken || '---'}</div>`;
             }
-        }
+            card.innerHTML = `<div class="counter-number">Counter ${c.id}</div>${tokenDisplayHtml}<div class="queue-badge">🟠 Queue: ${c.queue?.length || 0}</div><div class="status-text">${statusText}</div><div style="font-size:0.8rem; margin-top:8px; color:white;">✅ ${c.servedCount || 0} Served</div>${c.queue?.length && !c.isClosed ? `<div style="font-size:0.7rem; color:#ffeb99;">➡️ Next: ${c.queue[0]}</div>` : ''}<div class="call-ended-notice">✓ CALL ENDED</div>`; 
+            grid.appendChild(card); }); }
+            const activeCount = counters.filter(c => !c.isClosed && c.currentToken).length, waitingCount = counters.filter(c => !c.isClosed).reduce((s,c) => s + (c.queue?.length||0),0), completedCount = counters.reduce((s,c) => s + (c.servedCount||0),0), closedCount = counters.filter(c => c.isClosed).length;
+            document.getElementById('displayActiveCount').innerHTML = activeCount; document.getElementById('displayWaitingCount').innerHTML = waitingCount; document.getElementById('displayCompletedCount').innerHTML = completedCount; document.getElementById('displayClosedCount').innerHTML = closedCount;
+            const personsList = document.getElementById('allPersonsList'); if(personsList) { personsList.innerHTML = ''; let allEntries = []; counters.forEach(c => { if(c.currentToken) allEntries.push({ token: c.currentToken, counter: c.id, status: '🟢 Active' }); if(c.queue && Array.isArray(c.queue)) c.queue.forEach(tok => { allEntries.push({ token: tok, counter: c.id, status: '🟠 Waiting' }); }); }); allEntries.sort((a,b) => parseInt(a.token) - parseInt(b.token)); if(allEntries.length ===0) personsList.innerHTML = '<div style="padding:20px;text-align:center;color:#ccc;">✨ No tokens</div>'; else allEntries.forEach(p => { let card = document.createElement('div'); card.className = 'person-card'; card.setAttribute('data-related-counter', p.counter); card.innerHTML = `<div class="person-token">🎫 ${p.token}</div><div class="person-counter">Counter ${p.counter}</div><div class="person-status">${p.status}</div>`; personsList.appendChild(card); }); } }
         
-        function enableVoicePermission() {
-            const utterance = new SpeechSynthesisUtterance(" ");
-            utterance.volume = 0;
-            window.speechSynthesis.speak(utterance);
-            showToast("🔊 Permission requested. Try Test Voice.");
-            setTimeout(() => testVoice(), 500);
-        }
-        
-        function speakEnglish(text) {
-            if (!window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.9;
-            utterance.pitch = 1.0;   // Lower pitch for male voice (range 0-2, 1 is default, lower = more male)
-            utterance.volume = 1;
-            if (maleEnglishVoice) utterance.voice = maleEnglishVoice;
-            utterance.onerror = (e) => console.error("Speech error", e);
-            window.speechSynthesis.speak(utterance);
-            console.log("Speaking (male voice):", text);
-        }
-        
-        function testVoice() {
-            speakEnglish("Voice announcement is working. Token system readyanu.");
-            showToast("🔊 Testing male English voice...");
-        }
-        
-        // Firebase helpers
-        function createAdminAccount() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const successDiv = document.getElementById('createSuccess');
-            const errorDiv = document.getElementById('loginError');
-            if (!email || !password) { errorDiv.textContent = '⚠️ Please enter Email and Password'; return; }
-            if (password.length < 6) { errorDiv.textContent = '⚠️ Password must be at least 6 characters'; return; }
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(() => { successDiv.textContent = '✅ Admin Account Created! You can now login.'; errorDiv.textContent = ''; setTimeout(() => successDiv.textContent = '', 5000); })
-                .catch((error) => { errorDiv.textContent = error.code === 'auth/email-already-in-use' ? '⚠️ Email already exists. Please try logging in.' : '⚠️ Error: ' + error.message; successDiv.textContent = ''; });
-        }
-        
-        function login() {
-            const email = document.getElementById('loginEmail').value;
-            const pw = document.getElementById('loginPassword').value;
-            const errDiv = document.getElementById('loginError');
-            auth.signInWithEmailAndPassword(email, pw)
-                .then(() => {
-                    document.getElementById('loginScreen').style.display = 'none';
-                    document.getElementById('modeToggle').style.display = 'flex';
-                    initData();
-                    attachListeners();
-                    initVoices();
-                })
-                .catch((error) => {
-                    if (error.code === 'auth/user-not-found') errDiv.textContent = '❌ Account not found. Click "Create New Admin Account" first.';
-                    else if (error.code === 'auth/wrong-password') errDiv.textContent = '❌ Wrong password.';
-                    else errDiv.textContent = '❌ ' + error.message;
-                });
-        }
-        
-        function logout() {
-            auth.signOut().then(() => {
-                document.getElementById('loginScreen').style.display = 'flex';
-                document.getElementById('modeToggle').style.display = 'none';
-                document.getElementById('adminMode').classList.remove('active');
-                document.getElementById('displayMode').classList.remove('active');
-                document.body.classList.remove('display-active');
-                window.speechSynthesis.cancel();
-            });
-        }
-        
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('modeToggle').style.display = 'flex';
-                initData();
-                attachListeners();
-                initVoices();
-            }
-        });
-        
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('adminMode').classList.toggle('active', mode === 'admin');
-            document.getElementById('displayMode').classList.toggle('active', mode === 'display');
-            if (mode === 'display') {
-                document.body.classList.add('display-active');
-                updateDisplayClock();
-                renderDisplayUI();
-            } else {
-                document.body.classList.remove('display-active');
-            }
-            const btns = document.querySelectorAll('.mode-btn');
-            btns[0].classList.toggle('active', mode === 'admin');
-            btns[1].classList.toggle('active', mode === 'display');
-        }
-        
-        function initData() {
-            database.ref('counters').once('value', (snap) => {
-                if (!snap.exists()) {
-                    let arr = [];
-                    for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false });
-                    database.ref('counters').set(arr);
-                }
-            });
-            database.ref('config').once('value', (snap) => {
-                if (!snap.exists()) database.ref('config').set({ next_token_id: 1, last_used_token: null, last_announcement: '' });
-            });
-        }
-        
-        function attachListeners() {
-            database.ref('counters').on('value', (snap) => {
-                if (snap.exists()) { counters = snap.val(); renderAdminUI(); renderDisplayUI(); updateStatsPanel(); }
-            });
-            database.ref('config').on('value', (snap) => {
-                if (snap.exists()) {
-                    config = snap.val();
-                    document.getElementById('nextToken').innerHTML = config.next_token_id || 1;
-                    if (config.last_announcement && config.last_announcement !== lastAnnouncementText) {
-                        lastAnnouncementText = config.last_announcement;
-                        const annEl = document.getElementById('announcementText');
-                        if (annEl) annEl.textContent = lastAnnouncementText;
-                        setTimeout(() => {
-                            if (annEl && annEl.textContent === lastAnnouncementText) annEl.textContent = '✨ Welcome to Darunnajath UP School!';
-                        }, 10000);
-                    }
-                }
-            });
-        }
-        
-        function getShortestQueueCounter() {
-            const openCounters = counters.filter(c => !c.isClosed);
-            if (openCounters.length === 0) return null;
-            return openCounters.reduce((prev, curr) => {
-                const prevLen = prev.queue?.length || 0;
-                const currLen = curr.queue?.length || 0;
-                return currLen < prevLen ? curr : (currLen === prevLen && curr.id < prev.id ? curr : prev);
-            }, openCounters[0]);
-        }
-        
-        async function assignTokenToCounter(counterId) {
-            try {
-                const counterSnap = await database.ref('counters').once('value');
-                const configSnap = await database.ref('config').once('value');
-                if (!counterSnap.exists() || !configSnap.exists()) return;
-                let currentCounters = counterSnap.val();
-                let currentConfig = configSnap.val();
-                const nextToken = currentConfig.next_token_id || 1;
-                const targetIdx = currentCounters.findIndex(c => c.id === counterId);
-                if (targetIdx === -1 || currentCounters[targetIdx].isClosed) {
-                    showToast("Counter is closed or unavailable");
-                    return;
-                }
-                if (!currentCounters[targetIdx].queue) currentCounters[targetIdx].queue = [];
-                currentCounters[targetIdx].queue.push(nextToken.toString());
-                await database.ref('counters').set(currentCounters);
-                await database.ref('config').update({ next_token_id: nextToken + 1, last_used_token: nextToken });
-                const ann = `📢 New Token ${nextToken} assigned to Counter ${counterId}`;
-                await database.ref('config').update({ last_announcement: ann });
-                showToast(`✅ Token ${nextToken} → Counter ${counterId}`);
-                speakEnglish(`New token ${nextToken} assigned to counter ${counterId}`);
-            } catch (e) { showToast("Error assigning token"); }
-        }
-        
-        async function autoAssignToken() {
-            const target = getShortestQueueCounter();
-            if (!target) { showToast("All counters are closed! Please open one."); return; }
-            await assignTokenToCounter(target.id);
-        }
-        
-        function showManualPicker() {
-            const openCounters = counters.filter(c => !c.isClosed);
-            if (openCounters.length === 0) { showToast("All counters are closed! Please open one."); return; }
-            const modalDiv = document.createElement('div'); modalDiv.className = 'modal-overlay';
-            modalDiv.innerHTML = `
-                <div class="modal-card">
-                    <h3>🎯 Select Counter</h3>
-                    <div class="counter-options" id="counterOptionsModal"></div>
-                    <button class="modal-close" id="closeModalBtn">Close</button>
-                </div>
-            `;
-            document.body.appendChild(modalDiv);
-            const container = modalDiv.querySelector('#counterOptionsModal');
-            openCounters.forEach(c => {
-                const btn = document.createElement('div'); btn.className = 'counter-option'; btn.textContent = `Counter ${c.id}  (Queue:${c.queue?.length||0})`;
-                btn.onclick = () => { modalDiv.remove(); assignTokenToCounter(c.id); };
-                container.appendChild(btn);
-            });
-            modalDiv.querySelector('#closeModalBtn').onclick = () => modalDiv.remove();
-        }
-        
-        document.getElementById('autoAssignBtn')?.addEventListener('click', autoAssignToken);
-        document.getElementById('manualAssignBtn')?.addEventListener('click', showManualPicker);
-        
-        // CALL NEXT TOKEN - BLINK + MALE ENGLISH VOICE
-        async function callNext(counterId) {
-            let idx = counters.findIndex(c => c.id === counterId);
-            if (idx === -1 || counters[idx].isClosed) { showToast(`Counter ${counterId} is closed`); return; }
-            let counter = counters[idx];
-            if (!counter.queue || counter.queue.length === 0) { showToast(`Counter ${counterId} has no tokens in queue`); return; }
-            try {
-                let nextTok = counter.queue.shift();
-                if (counter.currentToken) counters[idx].servedCount = (counters[idx].servedCount || 0) + 1;
-                counters[idx].currentToken = nextTok;
-                await database.ref('counters').set(counters);
-                let ann = `📢 Counter ${counterId}, Token number ${nextTok}, please come forward`;
-                await database.ref('config').update({ last_announcement: ann });
-                showToast(`🔔 Counter ${counterId} : Token ${nextTok}`);
-                speakEnglish(`Counter ${counterId}, token number ${nextTok}, please come forward`);
-                
-                // Blink effect
-                blinkCounterId = counterId;
-                blinkToken = nextTok;
-                renderDisplayUI();
-                setTimeout(() => {
-                    blinkCounterId = null;
-                    blinkToken = null;
-                    renderDisplayUI();
-                }, 2600);
-            } catch(e) { showToast("Error"); }
-        }
-        
-        async function resetCounter(counterId) {
-            let idx = counters.findIndex(c => c.id === counterId);
-            if (idx === -1) return;
-            let cur = counters[idx].currentToken;
-            if (!cur) { showToast(`Counter ${counterId} has no active token`); return; }
-            try {
-                if (!counters[idx].queue) counters[idx].queue = [];
-                counters[idx].queue.unshift(cur);
-                counters[idx].currentToken = null;
-                await database.ref('counters').set(counters);
-                showToast(`↩️ Token ${cur} added back to queue`);
-            } catch(e) { showToast("Error"); }
-        }
-        
-        async function toggleCounterClose(counterId) {
-            let idx = counters.findIndex(c => c.id === counterId);
-            if (idx === -1) return;
-            counters[idx].isClosed = !counters[idx].isClosed;
-            if (counters[idx].isClosed && counters[idx].currentToken) {
-                if (!counters[idx].queue) counters[idx].queue = [];
-                counters[idx].queue.unshift(counters[idx].currentToken);
-                counters[idx].currentToken = null;
-            }
-            await database.ref('counters').set(counters);
-            showToast(counters[idx].isClosed ? `Counter ${counterId} closed` : `Counter ${counterId} opened`);
-        }
-        
-        async function resetAll() {
-            if (!confirm('⚠️ Reset all counters and tokens? All data will be lost.')) return;
-            let fresh = [];
-            for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false });
-            await database.ref('counters').set(fresh);
-            await database.ref('config').update({ next_token_id: 1, last_used_token: null, last_announcement: '' });
-            showToast('System fully reset');
-            window.speechSynthesis.cancel();
-        }
-        
-        function renderAdminUI() {
-            const badgesDiv = document.getElementById('badges');
-            if (badgesDiv) {
-                badgesDiv.innerHTML = '';
-                counters.forEach(c => {
-                    let cls = 'badge-idle';
-                    if (c.isClosed) cls = 'badge-closed';
-                    else if (c.currentToken) cls = 'badge-active';
-                    else if (c.queue?.length > 0) cls = 'badge-waiting';
-                    let b = document.createElement('div');
-                    b.className = `badge ${cls}`;
-                    b.textContent = c.id;
-                    b.onclick = () => toggleCounterClose(c.id);
-                    badgesDiv.appendChild(b);
-                });
-            }
-            const listDiv = document.getElementById('countersList');
-            if (listDiv) {
-                listDiv.innerHTML = '';
-                counters.forEach(c => {
-                    let div = document.createElement('div');
-                    div.className = 'counter-item';
-                    div.innerHTML = `
-                        <div class="counter-header">
-                            <strong>Counter ${c.id} ${c.isClosed ? '🔴 Closed' : '🟢 Open'}</strong>
-                            <span class="counter-current">${c.currentToken || '---'}</span>
-                        </div>
-                        <div>🟠 Queue: ${c.queue?.length || 0} &nbsp;| ✅ Served: ${c.servedCount || 0}</div>
-                        ${c.queue?.length ? `<div style="font-size:0.75rem;">Next: ${c.queue[0]}</div>` : ''}
-                        <div class="counter-actions">
-                            <button class="action-btn btn-call" onclick="callNext(${c.id})" ${c.isClosed ? 'disabled' : ''}>Call Next Token</button>
-                            <button class="action-btn btn-reset" onclick="resetCounter(${c.id})">Reset</button>
-                            <button class="action-btn btn-close" onclick="toggleCounterClose(${c.id})">${c.isClosed ? 'Open' : 'Close'}</button>
-                        </div>
-                    `;
-                    listDiv.appendChild(div);
-                });
-            }
-        }
-        
-        function renderDisplayUI() {
-            const grid = document.getElementById('displayCountersGrid');
-            if (grid) {
-                grid.innerHTML = '';
-                counters.forEach(c => {
-                    let cardClass = 'idle', statusText = '⚪ Idle';
-                    if (c.isClosed) { cardClass = 'closed'; statusText = '🔴 Closed'; }
-                    else if (c.currentToken) { cardClass = 'active'; statusText = '🟢 Active'; }
-                    else if (c.queue?.length > 0) { cardClass = 'waiting'; statusText = '🟠 Waiting'; }
-                    
-                    const card = document.createElement('div');
-                    card.className = `counter-card ${cardClass}`;
-                    card.setAttribute('data-counter-id', c.id);
-                    card.innerHTML = `
-                        <div class="counter-number">Counter ${c.id}</div>
-                        <div class="display-current-token">${c.currentToken || '---'}</div>
-                        <div class="queue-badge">🟠 Queue: ${c.queue?.length || 0}</div>
-                        <div class="status-text">${statusText}</div>
-                        <div style="font-size:0.8rem; margin-top:8px; color:white;">✅ ${c.servedCount || 0} Served</div>
-                        ${c.queue?.length && !c.isClosed ? `<div style="font-size:0.7rem; color:#ffeb99;">➡️ Next: ${c.queue[0]}</div>` : ''}
-                    `;
-                    grid.appendChild(card);
-                });
-                
-                if (blinkCounterId) {
-                    const targetCard = document.querySelector(`.counter-card[data-counter-id="${blinkCounterId}"]`);
-                    if (targetCard) {
-                        targetCard.classList.add('blink-counter-box');
-                        setTimeout(() => targetCard.classList.remove('blink-counter-box'), 2600);
-                    }
-                }
-            }
-            
-            const activeCount = counters.filter(c => !c.isClosed && c.currentToken).length;
-            const waitingCount = counters.filter(c => !c.isClosed).reduce((s, c) => s + (c.queue?.length || 0), 0);
-            const completedCount = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
-            const closedCount = counters.filter(c => c.isClosed).length;
-            document.getElementById('displayActiveCount').innerHTML = activeCount;
-            document.getElementById('displayWaitingCount').innerHTML = waitingCount;
-            document.getElementById('displayCompletedCount').innerHTML = completedCount;
-            document.getElementById('displayClosedCount').innerHTML = closedCount;
-            
-            const personsList = document.getElementById('allPersonsList');
-            if (personsList) {
-                personsList.innerHTML = '';
-                let allEntries = [];
-                counters.forEach(c => {
-                    if (c.currentToken) allEntries.push({ token: c.currentToken, counter: c.id, status: '🟢 Active' });
-                    if (c.queue && Array.isArray(c.queue)) {
-                        c.queue.forEach(tok => { allEntries.push({ token: tok, counter: c.id, status: '🟠 Waiting' }); });
-                    }
-                });
-                allEntries.sort((a, b) => parseInt(a.token) - parseInt(b.token));
-                if (allEntries.length === 0) {
-                    personsList.innerHTML = '<div style="padding:20px; text-align:center;color:#ccc;">✨ No tokens at the moment</div>';
-                } else {
-                    allEntries.forEach(p => {
-                        let card = document.createElement('div');
-                        card.className = 'person-card';
-                        card.innerHTML = `<div class="person-token">🎫 ${p.token}</div><div class="person-counter">Counter ${p.counter}</div><div class="person-status">${p.status}</div>`;
-                        personsList.appendChild(card);
-                        if (blinkToken && p.token == blinkToken) {
-                            card.classList.add('blink-person-card');
-                            setTimeout(() => card.classList.remove('blink-person-card'), 2500);
-                        }
-                    });
-                }
-            }
-        }
-        
-        function updateStatsPanel() {
-            const total = counters.reduce((s, c) => s + (c.servedCount || 0) + (c.queue?.length || 0) + (c.currentToken ? 1 : 0), 0);
-            const activeAdmin = counters.filter(c => !c.isClosed && c.currentToken).length;
-            const waitingAdmin = counters.filter(c => !c.isClosed).reduce((s, c) => s + (c.queue?.length || 0), 0);
-            const completedAdmin = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
-            const closedAdmin = counters.filter(c => c.isClosed).length;
-            document.getElementById('totalTokens').innerHTML = total;
-            document.getElementById('activeCount').innerHTML = activeAdmin;
-            document.getElementById('waitingCount').innerHTML = waitingAdmin;
-            document.getElementById('completedCount').innerHTML = completedAdmin;
-            document.getElementById('closedCount').innerHTML = closedAdmin;
-        }
-        
-        function updateDisplayClock() {
-            const now = new Date();
-            document.getElementById('displayTime').innerHTML = now.toLocaleTimeString('en-US');
-            document.getElementById('displayDate').innerHTML = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-        }
-        
-        function showToast(msg) {
-            let t = document.createElement('div');
-            t.className = 'toast';
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 2600);
-        }
-        
+        function updateStatsPanel() { const total = counters.reduce((s,c) => s + (c.servedCount||0) + (c.queue?.length||0) + (c.currentToken?1:0),0); const activeAdmin = counters.filter(c => !c.isClosed && c.currentToken).length; const waitingAdmin = counters.filter(c => !c.isClosed).reduce((s,c)=> s+(c.queue?.length||0),0); const completedAdmin = counters.reduce((s,c)=> s+(c.servedCount||0),0); const closedAdmin = counters.filter(c=>c.isClosed).length; document.getElementById('totalTokens').innerHTML = total; document.getElementById('activeCount').innerHTML = activeAdmin; document.getElementById('waitingCount').innerHTML = waitingAdmin; document.getElementById('completedCount').innerHTML = completedAdmin; document.getElementById('closedCount').innerHTML = closedAdmin; }
+        function updateDisplayClock() { const now = new Date(); document.getElementById('displayTime').innerHTML = now.toLocaleTimeString('en-US'); document.getElementById('displayDate').innerHTML = now.toLocaleDateString('en-US',{ weekday:'long', year:'numeric', month:'long', day:'numeric' }); }
+        function showToast(msg) { let t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
         setInterval(() => { if (currentMode === 'display') updateDisplayClock(); }, 1000);
         
-        window.setMode = setMode;
-        window.login = login;
-        window.logout = logout;
-        window.callNext = callNext;
-        window.resetCounter = resetCounter;
-        window.resetAll = resetAll;
-        window.toggleCounterClose = toggleCounterClose;
-        window.createAdminAccount = createAdminAccount;
-        window.testVoice = testVoice;
-        window.enableVoicePermission = enableVoicePermission;
+        window.setMode = setMode; window.login = login; window.logout = logout; window.callNext = callNext; window.resetCounter = resetCounter; window.resetAll = resetAll; window.toggleCounterClose = toggleCounterClose; window.createAdminAccount = createAdminAccount; window.testVoice = testVoice; window.enableVoicePermission = enableVoicePermission; window.updateNextToken = updateNextToken; window.toggleVisibility = toggleVisibility;
     </script>
 </body>
 </html>
