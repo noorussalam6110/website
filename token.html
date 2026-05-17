@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Token System | Suhail - Blinking Counter Box</title>
+    <title>Token System | Blink on Call Next Token (Display)</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
@@ -12,100 +12,26 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Anek Malayalam', sans-serif; background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%); min-height: 100vh; }
         
-        body {
-            font-family: 'Anek Malayalam', sans-serif;
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
-            min-height: 100vh;
-        }
+        .mode-toggle { background: #0f0f23; padding: 12px 16px; display: flex; justify-content: center; gap: 15px; border-bottom: 3px solid rgba(233,69,96,0.5); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); flex-wrap: wrap; }
+        body.display-active .mode-toggle { display: none !important; }
+        .mode-btn { background: rgba(255,255,255,0.12); border: none; padding: 12px 28px; border-radius: 60px; color: white; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; min-width: 130px; }
         
-        .mode-toggle {
-            background: #0f0f23;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            border-bottom: 3px solid rgba(233,69,96,0.5);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(8px);
-            flex-wrap: wrap;
-        }
+        .admin-mode, .display-mode { display: none; padding: 16px 14px 32px; }
+        .admin-mode.active, .display-mode.active { display: block; }
+        .admin-container { max-width: 700px; margin: 0 auto; width: 100%; }
+        .display-container { max-width: 1920px; margin: 0 auto; }
         
-        body.display-active .mode-toggle {
-            display: none !important;
-        }
-        
-        .mode-btn {
-            background: rgba(255,255,255,0.12);
-            border: none;
-            padding: 12px 28px;
-            border-radius: 60px;
-            color: white;
-            font-weight: 800;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Anek Malayalam', sans-serif;
-            min-width: 130px;
-        }
-        
-        .admin-mode, .display-mode {
-            display: none;
-            padding: 16px 14px 32px;
-        }
-        
-        .admin-mode.active, .display-mode.active {
-            display: block;
-        }
-        
-        .admin-container {
-            max-width: 700px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        
-        .display-container {
-            max-width: 1920px;
-            margin: 0 auto;
-        }
-        
-        /* ========== BLINKING EFFECT FOR COUNTER BOX - 3 TIMES ========== */
+        /* Blinking animation for counter card when token appears */
         @keyframes counterBoxBlink {
-            0% { 
-                transform: scale(1);
-                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-            }
-            25% { 
-                background: #facc15 !important;
-                border: 4px solid #ffffff !important;
-                transform: scale(1.08);
-                box-shadow: 0 0 50px #facc15;
-                color: #1f2937 !important;
-            }
-            50% { 
-                transform: scale(1);
-                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-            }
-            75% { 
-                background: #facc15 !important;
-                border: 4px solid #ffffff !important;
-                transform: scale(1.08);
-                box-shadow: 0 0 50px #facc15;
-                color: #1f2937 !important;
-            }
-            100% { 
-                transform: scale(1);
-                box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-            }
+            0% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+            25% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.08); box-shadow: 0 0 50px #facc15; color: #1f2937 !important; }
+            50% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+            75% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.08); box-shadow: 0 0 50px #facc15; color: #1f2937 !important; }
+            100% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
         }
-        
         .blink-counter-box {
             animation: counterBoxBlink 0.8s ease-in-out 3;
             position: relative;
@@ -120,259 +46,57 @@
             75% { background: #facc15 !important; border-left-color: #ffffff !important; transform: scale(1.05); color: #1f2937 !important; }
             100% { transform: scale(1); }
         }
-        
         .blink-person-card {
             animation: personCardBlink 0.8s ease-in-out 3;
         }
-        /* ==================================================== */
         
-        .header {
-            background: linear-gradient(135deg, #e94560, #c62a40);
-            border-radius: 28px;
-            padding: 14px 20px;
-            margin-bottom: 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .header { background: linear-gradient(135deg, #e94560, #c62a40); border-radius: 28px; padding: 14px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .header h1 { color: white; font-size: 1.35rem; font-weight: 800; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
         
-        .header h1 {
-            color: white;
-            font-size: 1.35rem;
-            font-weight: 800;
-        }
+        .stats { background: linear-gradient(135deg, #1a1a2e, #0f0c29); border-radius: 24px; padding: 14px 12px; margin-bottom: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .stat-item { text-align: center; padding: 8px 12px; background: rgba(255,255,255,0.08); border-radius: 20px; min-width: 70px; flex: 1 0 auto; }
+        .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.8); }
+        .stat-value { font-size: 1.4rem; font-weight: 800; color: #ffd966; }
         
-        .logout-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            padding: 8px 20px;
-            border-radius: 40px;
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        
-        .stats {
-            background: linear-gradient(135deg, #1a1a2e, #0f0c29);
-            border-radius: 24px;
-            padding: 14px 12px;
-            margin-bottom: 18px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .stat-item {
-            text-align: center;
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 20px;
-            min-width: 70px;
-            flex: 1 0 auto;
-        }
-        
-        .stat-label {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.8);
-        }
-        
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: #ffd966;
-        }
-        
-        .badges {
-            background: #1a1a2e;
-            border-radius: 28px;
-            padding: 16px 12px;
-            margin-bottom: 18px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(62px, auto));
-            gap: 12px;
-            justify-content: center;
-        }
-        
-        .badge {
-            width: 56px;
-            height: 56px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.3rem;
-            cursor: pointer;
-            margin: 0 auto;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            transition: all 0.1s ease;
-        }
-        
+        .badges { background: #1a1a2e; border-radius: 28px; padding: 16px 12px; margin-bottom: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, auto)); gap: 12px; justify-content: center; }
+        .badge { width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; cursor: pointer; margin: 0 auto; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
         .badge-active { background: #2e7d32; color: white; box-shadow: 0 0 10px #4caf50; }
         .badge-waiting { background: #e67e22; color: white; }
         .badge-idle { background: #f0f0f0; color: #1f2937; border: 1px solid #cbd5e1; }
         .badge-closed { background: #c0392b; color: white; }
         
-        .token-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 32px;
-            padding: 20px 18px;
-            margin-bottom: 20px;
-            text-align: center;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
+        .token-card { background: rgba(255,255,255,0.95); border-radius: 32px; padding: 20px 18px; margin-bottom: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .token-display { background: linear-gradient(135deg, #2c3e66, #1a2639); border-radius: 28px; padding: 18px; margin-bottom: 18px; }
+        .token-number { font-size: 3rem; font-weight: 800; color: #f9d56e; font-family: monospace; }
         
-        .token-display {
-            background: linear-gradient(135deg, #2c3e66, #1a2639);
-            border-radius: 28px;
-            padding: 18px;
-            margin-bottom: 18px;
-        }
+        .btn-group { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 8px; }
+        .btn { padding: 14px 16px; font-size: 1rem; font-weight: 800; border: none; border-radius: 60px; cursor: pointer; transition: 0.2s; flex: 1; }
+        .btn-auto { background: #10b981; color: white; }
+        .btn-manual { background: #3b82f6; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-voice { background: #8b5cf6; color: white; }
         
-        .token-number {
-            font-size: 3rem;
-            font-weight: 800;
-            color: #f9d56e;
-            font-family: monospace;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-        
-        .btn {
-            padding: 14px 16px;
-            font-size: 1rem;
-            font-weight: 800;
-            border: none;
-            border-radius: 60px;
-            cursor: pointer;
-            transition: 0.2s;
-            flex: 1;
-        }
-        
-        .btn-auto {
-            background: #10b981;
-            color: white;
-        }
-        
-        .btn-manual {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-        
-        .counters-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            max-height: 550px;
-            overflow-y: auto;
-            padding-right: 4px;
-        }
-        
-        .counter-item {
-            background: #f8fafc;
-            border-radius: 28px;
-            padding: 16px;
-            border-left: 6px solid #e94560;
-            transition: all 0.2s;
-        }
-        
-        .counter-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        
-        .counter-current {
-            font-size: 1.7rem;
-            font-weight: 800;
-            font-family: monospace;
-            background: #eef2ff;
-            padding: 4px 16px;
-            border-radius: 40px;
-            transition: all 0.2s;
-        }
-        
-        .counter-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 14px;
-            flex-wrap: wrap;
-        }
-        
-        .action-btn {
-            flex: 1;
-            padding: 12px 8px;
-            border: none;
-            border-radius: 50px;
-            font-weight: 800;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-        
+        .counters-list { display: flex; flex-direction: column; gap: 16px; max-height: 550px; overflow-y: auto; padding-right: 4px; }
+        .counter-item { background: #f8fafc; border-radius: 28px; padding: 16px; border-left: 6px solid #e94560; }
+        .counter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .counter-current { font-size: 1.7rem; font-weight: 800; font-family: monospace; background: #eef2ff; padding: 4px 16px; border-radius: 40px; }
+        .counter-actions { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+        .action-btn { flex: 1; padding: 12px 8px; border: none; border-radius: 50px; font-weight: 800; cursor: pointer; font-size: 0.85rem; }
         .btn-call { background: #059669; color: white; }
         .btn-reset { background: #f59e0b; color: #1e293b; }
         .btn-close { background: #dc2626; color: white; }
         
         /* DISPLAY MODE */
-        .display-header {
-            background: linear-gradient(135deg, #e94560, #b91c3c);
-            border-radius: 36px;
-            padding: 24px 28px;
-            margin-bottom: 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        
+        .display-header { background: linear-gradient(135deg, #e94560, #b91c3c); border-radius: 36px; padding: 24px 28px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
         .display-title h1 { font-size: 2.4rem; color: white; font-weight: 800; }
         .display-title p { font-size: 1.2rem; color: rgba(255,255,255,0.9); }
-        
-        .display-stats {
-            display: flex;
-            gap: 22px;
-            flex-wrap: wrap;
-        }
-        
-        .display-stat {
-            background: rgba(0,0,0,0.3);
-            padding: 12px 22px;
-            border-radius: 28px;
-            text-align: center;
-            min-width: 100px;
-        }
-        
+        .display-stats { display: flex; gap: 22px; flex-wrap: wrap; }
+        .display-stat { background: rgba(0,0,0,0.3); padding: 12px 22px; border-radius: 28px; text-align: center; min-width: 100px; }
         .display-stat-number { font-size: 2rem; font-weight: 800; color: #ffd966; }
         .display-stat-label { font-size: 0.85rem; font-weight: 600; color: white; }
         
-        .color-legend {
-            background: rgba(0,0,0,0.55);
-            border-radius: 50px;
-            padding: 14px 24px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 35px;
-        }
-        
+        .color-legend { background: rgba(0,0,0,0.55); border-radius: 50px; padding: 14px 24px; margin-bottom: 30px; display: flex; justify-content: center; flex-wrap: wrap; gap: 35px; }
         .legend-item { display: flex; align-items: center; gap: 12px; color: white; font-size: 1.1rem; font-weight: 600; }
         .legend-color { width: 34px; height: 34px; border-radius: 12px; }
         .legend-color.white { background: #ffffff; border: 1px solid #aaa; }
@@ -381,58 +105,23 @@
         .legend-color.red { background: #c0392b; }
         .legend-color.blink-demo { background: #facc15; animation: counterBoxBlink 0.8s ease-in-out infinite; }
         
-        .announcement-bar {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            border-radius: 40px;
-            padding: 22px 28px;
-            margin-bottom: 34px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            border-left: 8px solid #e94560;
-            flex-wrap: wrap;
-        }
-        
+        .announcement-bar { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 40px; padding: 22px 28px; margin-bottom: 34px; display: flex; align-items: center; gap: 20px; border-left: 8px solid #e94560; flex-wrap: wrap; }
         .announcement-text { flex: 1; font-size: 1.8rem; font-weight: 800; color: #ffffff; word-break: break-word; }
         .live-dot { width: 14px; height: 14px; background: #e11d48; border-radius: 50%; animation: livePulse 1.2s infinite; display: inline-block; margin-right: 10px; }
         @keyframes livePulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
         
-        .counters-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 20px;
-            margin-bottom: 35px;
-        }
-        
-        .counter-card {
-            border-radius: 28px;
-            padding: 22px 10px;
-            text-align: center;
-            transition: all 0.2s;
-            box-shadow: 0 12px 28px rgba(0,0,0,0.3);
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-        
+        .counters-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 20px; margin-bottom: 35px; }
+        .counter-card { border-radius: 28px; padding: 22px 10px; text-align: center; transition: all 0.2s; box-shadow: 0 12px 28px rgba(0,0,0,0.3); border: 2px solid transparent; cursor: pointer; }
         .counter-card.idle { background: #334155; color: white; border: 2px solid #94a3b8; }
         .counter-card.active { background: linear-gradient(135deg, #15803d, #14532d); color: white; transform: scale(1.02); box-shadow: 0 0 0 4px #ffd966; }
         .counter-card.waiting { background: linear-gradient(135deg, #ea580c, #9a3412); color: white; }
         .counter-card.closed { background: linear-gradient(135deg, #b91c1c, #7f1a1a); color: white; opacity: 0.9; }
-        
         .counter-number { font-size: 1.7rem; font-weight: 800; background: rgba(0,0,0,0.2); display: inline-block; padding: 5px 20px; border-radius: 60px; margin-bottom: 15px; color: white; }
         .display-current-token { font-size: 3rem; font-weight: 800; font-family: monospace; margin: 12px 0; color: #ffd966; }
         .queue-badge { font-size: 1.1rem; font-weight: 700; background: rgba(0,0,0,0.3); display: inline-block; padding: 5px 16px; border-radius: 40px; color: white; }
         .status-text { font-size: 0.85rem; margin-top: 12px; font-weight: 600; color: white; }
         
-        .all-persons-section {
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px);
-            border-radius: 32px;
-            padding: 20px 24px;
-            margin: 30px 0 20px;
-            border: 1px solid rgba(255,215,0,0.3);
-        }
-        
+        .all-persons-section { background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); border-radius: 32px; padding: 20px 24px; margin: 30px 0 20px; border: 1px solid rgba(255,215,0,0.3); }
         .persons-title { font-size: 1.8rem; font-weight: 800; color: #ffd966; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
         .persons-grid { display: flex; flex-wrap: wrap; gap: 14px; max-height: 400px; overflow-y: auto; padding: 8px 4px; }
         .person-card { background: #1e293b; border-radius: 28px; padding: 12px 20px; min-width: 140px; text-align: center; border-left: 5px solid #facc15; transition: all 0.2s; cursor: pointer; }
@@ -444,107 +133,37 @@
         .current-time { font-size: 1.9rem; font-weight: 800; color: white; font-family: monospace; }
         .footer { background: rgba(0,0,0,0.4); border-radius: 28px; padding: 18px; text-align: center; color: rgba(255,255,255,0.7); margin-top: 16px; }
         
-        .toast {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e293b;
-            color: #facc15;
-            padding: 12px 24px;
-            border-radius: 60px;
-            font-weight: 700;
-            z-index: 2000;
-            box-shadow: 0 6px 20px black;
-            text-align: center;
-            max-width: 90%;
-        }
+        .toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #facc15; padding: 12px 24px; border-radius: 60px; font-weight: 700; z-index: 2000; box-shadow: 0 6px 20px black; text-align: center; max-width: 90%; }
         
-        .login-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0a0a1a, #1a1a2e);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1100;
-        }
-        
-        .login-box {
-            background: white;
-            border-radius: 42px;
-            padding: 40px 28px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-        
+        .login-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0a1a, #1a1a2e); display: flex; justify-content: center; align-items: center; z-index: 1100; }
+        .login-box { background: white; border-radius: 42px; padding: 40px 28px; width: 90%; max-width: 400px; text-align: center; }
         .login-box h1 { color: #e94560; margin-bottom: 12px; }
         .login-box input { width: 100%; padding: 14px; margin-bottom: 18px; border: 2px solid #e2e8f0; border-radius: 32px; font-size: 1rem; }
-        .login-box button { width: 100%; padding: 14px; background: linear-gradient(135deg, #e94560, #b91c3c); color: white; border: none; border-radius: 36px; font-weight: bold; cursor: pointer; }
-        .btn-secondary { background: linear-gradient(135deg, #3b82f6, #1e40af) !important; margin-top: 10px; }
+        .login-box button { width: 100%; padding: 14px; background: linear-gradient(135deg, #e94560, #b91c3c); color: white; border: none; border-radius: 36px; font-weight: bold; cursor: pointer; margin-bottom: 12px; }
+        .btn-secondary { background: linear-gradient(135deg, #3b82f6, #1e40af) !important; margin-top: 0; }
         .error-msg { color: #e11d48; margin-top: 12px; font-size: 0.9rem; }
         .success-msg { color: #10b981; margin-top: 12px; font-size: 0.9rem; }
         
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        .modal-card {
-            background: #0f172a;
-            border-radius: 48px;
-            padding: 28px 22px;
-            width: 85%;
-            max-width: 400px;
-            text-align: center;
-            border: 2px solid #e94560;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-card { background: #0f172a; border-radius: 48px; padding: 28px 22px; width: 85%; max-width: 400px; text-align: center; border: 2px solid #e94560; }
         .modal-card h3 { color: #ffd966; font-size: 1.8rem; margin-bottom: 20px; }
-        .counter-options {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin: 20px 0;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .counter-option {
-            background: #334155;
-            padding: 14px 8px;
-            border-radius: 60px;
-            font-weight: 800;
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: 0.1s;
-            color: white;
-        }
+        .counter-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0; max-height: 300px; overflow-y: auto; }
+        .counter-option { background: #334155; padding: 14px 8px; border-radius: 60px; font-weight: 800; font-size: 1.3rem; cursor: pointer; transition: 0.1s; color: white; }
         .counter-option:hover { background: #e94560; transform: scale(1.02);}
         .modal-close { background: #475569; color: white; border: none; padding: 12px 24px; border-radius: 60px; margin-top: 10px; font-weight: bold; cursor: pointer; }
         
+        .voice-control { background: #1e1e3a; border-radius: 60px; padding: 8px 20px; display: inline-flex; align-items: center; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
+        .voice-status { font-size: 0.8rem; color: #a5f3c3; }
+        
         @media (max-width: 1100px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 700px) { 
-            .display-header { flex-direction: column; text-align: center; } 
-            .display-stats { justify-content: center; } 
-            .counters-grid { grid-template-columns: repeat(2, 1fr); }
-            .counter-options { grid-template-columns: repeat(3, 1fr); }
-        }
+        @media (max-width: 700px) { .display-header { flex-direction: column; text-align: center; } .display-stats { justify-content: center; } .counters-grid { grid-template-columns: repeat(2, 1fr); } .counter-options { grid-template-columns: repeat(3, 1fr); } }
     </style>
 </head>
 <body>
     <div id="loginScreen" class="login-container">
         <div class="login-box">
             <h1>🔐 Admin Login</h1>
-            <p>Token Management System</p>
+            <p>Token System with Malayalam Voice & Blink on Call</p>
             <input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com">
             <input type="password" id="loginPassword" placeholder="Password" value="admin123">
             <button onclick="login()">🔓 Admin Access</button>
@@ -562,6 +181,12 @@
     <div id="adminMode" class="admin-mode">
         <div class="admin-container">
             <div class="header"><h1>📱 Admin Panel</h1><button class="logout-btn" onclick="logout()">Logout</button></div>
+            <div class="voice-control">
+                <span>🔊 Malayalam Voice:</span>
+                <span class="voice-status" id="voiceStatus">🔄 Loading...</span>
+                <button onclick="testVoice()" style="background:#8b5cf6; border:none; padding:4px 12px; border-radius:40px; color:white; cursor:pointer;">Test Voice</button>
+                <button onclick="enableVoicePermission()" style="background:#10b981; border:none; padding:4px 12px; border-radius:40px; color:white; cursor:pointer;">Request Permission</button>
+            </div>
             <div class="stats">
                 <div class="stat-item"><div class="stat-label">ആകെ</div><div class="stat-value" id="totalTokens">0</div></div>
                 <div class="stat-item"><div class="stat-label">സജീവം</div><div class="stat-value" id="activeCount">0</div></div>
@@ -601,7 +226,7 @@
                 <div class="legend-item"><div class="legend-color green"></div><span>സേവനത്തിൽ (ACTIVE)</span></div>
                 <div class="legend-item"><div class="legend-color orange"></div><span>ക്യൂവിൽ (WAITING)</span></div>
                 <div class="legend-item"><div class="legend-color red"></div><span>അടച്ചു (CLOSED)</span></div>
-                <div class="legend-item"><div class="legend-color blink-demo"></div><span>✨ പുതിയ ടോക്കൺ - കൗണ്ടർ ബോക്സ് 3 തവണ മിന്നും</span></div>
+                <div class="legend-item"><div class="legend-color blink-demo"></div><span>✨ Call Next Token ചെയ്യുമ്പോൾ ബോക്സ് 3 തവണ മിന്നും + വോയ്സ്</span></div>
             </div>
             <div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-text" id="announcementText">✨ നജാത്ത് കുടുംബത്തിലേക്ക് സ്വാഗതം !</div><div><span class="live-dot"></span> LIVE</div></div>
             <div class="counters-grid" id="displayCountersGrid"></div>
@@ -610,7 +235,7 @@
                 <div class="persons-title"><span>👥 All Persons / Tokens</span><span style="font-size:1rem;">🔄 live</span></div>
                 <div class="persons-grid" id="allPersonsList"></div>
             </div>
-            <div class="footer">© All Right Reserved by SUHAIL KERALA | Public Display | 🔔 പുതിയ ടോക്കൺ അലോട്ട് ചെയ്ത കൗണ്ടർ ബോക്സ് 3 തവണ മിന്നും</div>
+            <div class="footer">© All Right Reserved by SUHAIL KERALA | Public Display | 🔔 Call Next Token ചെയ്യുമ്പോൾ ആ കൗണ്ടർ ബോക്സ് മിന്നും</div>
         </div>
     </div>
 
@@ -632,41 +257,79 @@
         let config = { next_token_id: 1, last_announcement: '' };
         let currentMode = 'admin';
         let lastAnnouncementText = '';
-        let lastAssignedToken = null;
-        let lastAssignedCounterId = null;
-
+        let blinkCounterId = null;      // Store which counter blinked last (for display)
+        let blinkToken = null;           // Store which token blinked (for person card)
+        
+        let malayalamVoice = null;
+        
+        // Voice initialization
+        function initVoices() {
+            return new Promise((resolve) => {
+                if (window.speechSynthesis.getVoices().length > 0) {
+                    selectMalayalamVoice();
+                    resolve();
+                } else {
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        selectMalayalamVoice();
+                        resolve();
+                    };
+                }
+            });
+        }
+        
+        function selectMalayalamVoice() {
+            const voices = window.speechSynthesis.getVoices();
+            malayalamVoice = voices.find(voice => voice.lang === 'ml-IN');
+            if (!malayalamVoice) {
+                malayalamVoice = voices.find(voice => voice.lang.startsWith('hi') || voice.lang === 'en-IN');
+            }
+            const statusSpan = document.getElementById('voiceStatus');
+            if (malayalamVoice) {
+                statusSpan.innerHTML = `✅ Malayalam Voice Ready (${malayalamVoice.name})`;
+            } else {
+                statusSpan.innerHTML = "⚠️ No Malayalam voice. Using default.";
+            }
+        }
+        
+        function enableVoicePermission() {
+            const utterance = new SpeechSynthesisUtterance(" ");
+            utterance.volume = 0;
+            window.speechSynthesis.speak(utterance);
+            showToast("🔊 Permission requested. Try Test Voice.");
+            setTimeout(() => testVoice(), 500);
+        }
+        
+        function speakMalayalam(text) {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ml-IN';
+            utterance.rate = 0.85;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+            if (malayalamVoice) utterance.voice = malayalamVoice;
+            utterance.onerror = (e) => console.error("Speech error", e);
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function testVoice() {
+            speakMalayalam("ശബ്ദ പ്രഖ്യാപനം പ്രവർത്തിക്കുന്നു. ടോക്കൺ സിസ്റ്റം തയ്യാർ.");
+            showToast("🔊 Testing voice...");
+        }
+        
+        // Firebase helpers
         function createAdminAccount() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const successDiv = document.getElementById('createSuccess');
             const errorDiv = document.getElementById('loginError');
-            
-            if (!email || !password) {
-                errorDiv.textContent = '⚠️ Please enter Email and Password first';
-                return;
-            }
-            
-            if (password.length < 6) {
-                errorDiv.textContent = '⚠️ Password must be at least 6 characters';
-                return;
-            }
-            
+            if (!email || !password) { errorDiv.textContent = '⚠️ Please enter Email and Password'; return; }
+            if (password.length < 6) { errorDiv.textContent = '⚠️ Password must be at least 6 characters'; return; }
             auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
-                    successDiv.textContent = '✅ Admin Account Created Successfully! You can now login.';
-                    errorDiv.textContent = '';
-                    setTimeout(() => successDiv.textContent = '', 5000);
-                })
-                .catch((error) => {
-                    if (error.code === 'auth/email-already-in-use') {
-                        errorDiv.textContent = '⚠️ Email already exists. Please try logging in.';
-                    } else {
-                        errorDiv.textContent = '⚠️ Error: ' + error.message;
-                    }
-                    successDiv.textContent = '';
-                });
+                .then(() => { successDiv.textContent = '✅ Admin Account Created! You can now login.'; errorDiv.textContent = ''; setTimeout(() => successDiv.textContent = '', 5000); })
+                .catch((error) => { errorDiv.textContent = error.code === 'auth/email-already-in-use' ? '⚠️ Email already exists. Please try logging in.' : '⚠️ Error: ' + error.message; successDiv.textContent = ''; });
         }
-
+        
         function login() {
             const email = document.getElementById('loginEmail').value;
             const pw = document.getElementById('loginPassword').value;
@@ -677,15 +340,12 @@
                     document.getElementById('modeToggle').style.display = 'flex';
                     initData();
                     attachListeners();
+                    initVoices();
                 })
                 .catch((error) => {
-                    if (error.code === 'auth/user-not-found') {
-                        errDiv.textContent = '❌ Account not found. Click "Create New Admin Account" first.';
-                    } else if (error.code === 'auth/wrong-password') {
-                        errDiv.textContent = '❌ Wrong password. Please try again.';
-                    } else {
-                        errDiv.textContent = '❌ ' + error.message;
-                    }
+                    if (error.code === 'auth/user-not-found') errDiv.textContent = '❌ Account not found. Click "Create New Admin Account" first.';
+                    else if (error.code === 'auth/wrong-password') errDiv.textContent = '❌ Wrong password.';
+                    else errDiv.textContent = '❌ ' + error.message;
                 });
         }
         
@@ -696,6 +356,7 @@
                 document.getElementById('adminMode').classList.remove('active');
                 document.getElementById('displayMode').classList.remove('active');
                 document.body.classList.remove('display-active');
+                window.speechSynthesis.cancel();
             });
         }
         
@@ -705,6 +366,7 @@
                 document.getElementById('modeToggle').style.display = 'flex';
                 initData();
                 attachListeners();
+                initVoices();
             }
         });
         
@@ -763,9 +425,7 @@
             return openCounters.reduce((prev, curr) => {
                 const prevLen = prev.queue?.length || 0;
                 const currLen = curr.queue?.length || 0;
-                if (currLen < prevLen) return curr;
-                if (currLen === prevLen && curr.id < prev.id) return curr;
-                return prev;
+                return currLen < prevLen ? curr : (currLen === prevLen && curr.id < prev.id ? curr : prev);
             }, openCounters[0]);
         }
         
@@ -788,12 +448,9 @@
                 await database.ref('config').update({ next_token_id: nextToken + 1, last_used_token: nextToken });
                 const ann = `📢 പുതിയ ടോക്കൺ ${nextToken} → കൗണ്ടർ ${counterId} ലേക്ക് അലോട്ട് ചെയ്തു`;
                 await database.ref('config').update({ last_announcement: ann });
-                showToast(`✅ ടോക്കൺ ${nextToken} → കൗണ്ടർ ${counterId} (ബോക്സ് 3 തവണ മിന്നും)`);
-                speakMalayalam(`പുതിയ ടോക്കൺ ${nextToken} കൗണ്ടർ ${counterId} ലേക്ക്`);
-                
-                // Store for blinking effect
-                lastAssignedToken = nextToken;
-                lastAssignedCounterId = counterId;
+                showToast(`✅ ടോക്കൺ ${nextToken} → കൗണ്ടർ ${counterId}`);
+                speakMalayalam(`പുതിയ ടോക്കൺ ${nextToken} കൗണ്ടർ ${counterId} ലേക്ക് അലോട്ട് ചെയ്തു`);
+                // No blink here - only on call next
             } catch (e) { showToast("പിശക്: ടോക്കൺ അലോട്ട് ചെയ്യാനായില്ല"); }
         }
         
@@ -810,7 +467,6 @@
             modalDiv.innerHTML = `
                 <div class="modal-card">
                     <h3>🎯 കൗണ്ടർ തിരഞ്ഞെടുക്കുക</h3>
-                    <div style="color:#cbd5e6; margin-bottom:5px;">ടോക്കൺ അലോട്ട് ചെയ്യാനുള്ള കൗണ്ടർ</div>
                     <div class="counter-options" id="counterOptionsModal"></div>
                     <button class="modal-close" id="closeModalBtn">അടയ്ക്കുക</button>
                 </div>
@@ -828,6 +484,7 @@
         document.getElementById('autoAssignBtn')?.addEventListener('click', autoAssignToken);
         document.getElementById('manualAssignBtn')?.addEventListener('click', showManualPicker);
         
+        // CALL NEXT TOKEN - THIS IS WHERE BLINK HAPPENS
         async function callNext(counterId) {
             let idx = counters.findIndex(c => c.id === counterId);
             if (idx === -1 || counters[idx].isClosed) { showToast(`കൗണ്ടർ ${counterId} അടച്ചിരിക്കുന്നു`); return; }
@@ -842,6 +499,18 @@
                 await database.ref('config').update({ last_announcement: ann });
                 showToast(`🔔 കൗണ്ടർ ${counterId} : ടോക്കൺ ${nextTok}`);
                 speakMalayalam(`കൗണ്ടർ ${counterId} ലേക്ക്, ടോക്കൺ ${nextTok} ദയവായി എത്തുക`);
+                
+                // 🔔 BLINK: Set the counter and token that should blink
+                blinkCounterId = counterId;
+                blinkToken = nextTok;
+                // Force re-render of display to apply blink (renderDisplayUI will pick up blinkCounterId)
+                renderDisplayUI();
+                // Clear blink after animation
+                setTimeout(() => {
+                    blinkCounterId = null;
+                    blinkToken = null;
+                    renderDisplayUI();
+                }, 2600);
             } catch(e) { showToast("പിശക്"); }
         }
         
@@ -879,6 +548,7 @@
             await database.ref('counters').set(fresh);
             await database.ref('config').update({ next_token_id: 1, last_used_token: null, last_announcement: '' });
             showToast('സിസ്റ്റം പൂർണ്ണമായി പുനഃസജ്ജമാക്കി');
+            window.speechSynthesis.cancel();
         }
         
         function renderAdminUI() {
@@ -945,14 +615,13 @@
                     grid.appendChild(card);
                 });
                 
-                // ========== BLINK THE COUNTER BOX WHERE NEW TOKEN WAS ALLOTTED ==========
-                if (lastAssignedCounterId) {
-                    const targetCard = document.querySelector(`.counter-card[data-counter-id="${lastAssignedCounterId}"]`);
+                // Apply blink to the counter that just got a new currentToken (blinkCounterId)
+                if (blinkCounterId) {
+                    const targetCard = document.querySelector(`.counter-card[data-counter-id="${blinkCounterId}"]`);
                     if (targetCard) {
                         targetCard.classList.add('blink-counter-box');
-                        setTimeout(() => {
-                            targetCard.classList.remove('blink-counter-box');
-                        }, 2500);
+                        // remove after animation ends (will be cleared by timeout in callNext, but ensure it's removed)
+                        setTimeout(() => targetCard.classList.remove('blink-counter-box'), 2600);
                     }
                 }
             }
@@ -961,7 +630,6 @@
             const waitingCount = counters.filter(c => !c.isClosed).reduce((s, c) => s + (c.queue?.length || 0), 0);
             const completedCount = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
             const closedCount = counters.filter(c => c.isClosed).length;
-            
             document.getElementById('displayActiveCount').innerHTML = activeCount;
             document.getElementById('displayWaitingCount').innerHTML = waitingCount;
             document.getElementById('displayCompletedCount').innerHTML = completedCount;
@@ -986,17 +654,12 @@
                         card.className = 'person-card';
                         card.innerHTML = `<div class="person-token">🎫 ${p.token}</div><div class="person-counter">കൗണ്ടർ ${p.counter}</div><div class="person-status">${p.status}</div>`;
                         personsList.appendChild(card);
-                        
-                        if (lastAssignedToken && p.token == lastAssignedToken) {
+                        if (blinkToken && p.token == blinkToken) {
                             card.classList.add('blink-person-card');
                             setTimeout(() => card.classList.remove('blink-person-card'), 2500);
                         }
                     });
                 }
-            }
-            
-            if (lastAssignedToken) {
-                setTimeout(() => { lastAssignedToken = null; lastAssignedCounterId = null; }, 2600);
             }
         }
         
@@ -1019,16 +682,6 @@
             document.getElementById('displayDate').innerHTML = now.toLocaleDateString('ml-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }
         
-        function speakMalayalam(msg) {
-            if ('speechSynthesis' in window) {
-                let utterance = new SpeechSynthesisUtterance(msg);
-                utterance.lang = 'ml-IN';
-                utterance.rate = 0.85;
-                window.speechSynthesis.cancel();
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-        
         function showToast(msg) {
             let t = document.createElement('div');
             t.className = 'toast';
@@ -1047,6 +700,8 @@
         window.resetAll = resetAll;
         window.toggleCounterClose = toggleCounterClose;
         window.createAdminAccount = createAdminAccount;
+        window.testVoice = testVoice;
+        window.enableVoicePermission = enableVoicePermission;
     </script>
 </body>
 </html>
