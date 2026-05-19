@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Token System | Multi-Device Sync | suhail kerala</title>
+    <title>Token System | suhail kerala</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Anek Malayalam Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -18,13 +20,14 @@
         .mode-toggle { background: #0f0f23; padding: 12px 16px; display: flex; justify-content: center; gap: 15px; border-bottom: 3px solid rgba(233,69,96,0.5); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); flex-wrap: wrap; }
         body.display-active .mode-toggle { display: none !important; }
         .mode-btn { background: rgba(255,255,255,0.12); border: none; padding: 12px 28px; border-radius: 60px; color: white; font-weight: 800; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; min-width: 130px; }
+        .mode-btn.active { background: #e94560; box-shadow: 0 0 12px #e94560; }
         
         .admin-mode, .display-mode { display: none; padding: 16px 14px 32px; }
         .admin-mode.active, .display-mode.active { display: block; }
-        .admin-container { max-width: 800px; margin: 0 auto; width: 100%; }
+        .admin-container { max-width: 900px; margin: 0 auto; width: 100%; }
         .display-container { max-width: 1920px; margin: 0 auto; }
         
-        /* Blink animation for counter card when token is called */
+        /* Animations */
         @keyframes globalCounterBlink {
             0% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); background: inherit; }
             20% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.06); box-shadow: 0 0 40px #ffdd44; color: #1f2937 !important; }
@@ -32,64 +35,35 @@
             60% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.06); box-shadow: 0 0 40px #ffdd44; }
             100% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
         }
-        .blink-global-card {
-            animation: globalCounterBlink 0.75s ease-in-out 3;
-            z-index: 20;
-        }
+        .blink-global-card { animation: globalCounterBlink 0.75s ease-in-out 3; z-index: 20; }
         
-        /* Person card blink sync */
         @keyframes personBlinkSync {
             0% { background: #1e293b; }
             25% { background: #facc15 !important; color: #0f172a !important; border-left-color: #ffffff; transform: scale(1.03); }
             75% { background: #facc15 !important; color: #0f172a !important; }
             100% { background: #1e293b; }
         }
-        .blink-person-sync {
-            animation: personBlinkSync 0.8s ease-in-out 3;
-        }
+        .blink-person-sync { animation: personBlinkSync 0.8s ease-in-out 3; }
         
-        /* White "call ended" box */
         .call-ended-notice {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            color: transparent;
-            padding: 6px 16px;
-            border-radius: 60px;
-            font-weight: 800;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            transition: all 0.1s ease;
-            min-width: 100px;
-            opacity: 0;
-            visibility: hidden;
+            display: inline-flex; align-items: center; justify-content: center; background: transparent; color: transparent;
+            padding: 6px 16px; border-radius: 60px; font-weight: 800; font-size: 0.85rem; margin-top: 10px;
+            transition: all 0.1s ease; min-width: 100px; opacity: 0; visibility: hidden;
         }
         .call-ended-notice.visible-white {
-            background: white !important;
-            color: #1e293b !important;
-            opacity: 1;
-            visibility: visible;
-            box-shadow: 0 0 8px rgba(255,255,255,0.6);
-            border: 1px solid #e2e8f0;
+            background: white !important; color: #1e293b !important; opacity: 1; visibility: visible;
+            box-shadow: 0 0 8px rgba(255,255,255,0.6); border: 1px solid #e2e8f0;
         }
         
-        /* Blank token box for idle counters (queue 0 & no active token) */
         .blank-token-display {
-            background: white !important;
-            color: #94a3b8 !important;
-            border-radius: 20px;
-            padding: 16px;
-            font-size: 1.8rem;
-            font-weight: 500;
-            box-shadow: inset 0 0 0 2px #cbd5e1;
-            margin: 12px 0;
-            font-family: monospace;
+            background: white !important; color: #94a3b8 !important; border-radius: 20px; padding: 16px;
+            font-size: 1.8rem; font-weight: 500; box-shadow: inset 0 0 0 2px #cbd5e1; margin: 12px 0; font-family: monospace;
         }
         
         .header { background: linear-gradient(135deg, #e94560, #c62a40); border-radius: 28px; padding: 14px 20px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .header h1 { color: white; font-size: 1.35rem; font-weight: 800; }
-        .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
+        .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .logout-btn:hover { background: rgba(255,255,255,0.4); }
         
         .voice-control { background: #1e1e3a; border-radius: 60px; padding: 8px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; justify-content: space-between; }
         .voice-status { font-size: 0.8rem; color: #a5f3c3; }
@@ -100,7 +74,7 @@
         .token-customize { background: #1e293b; border-radius: 28px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
         .token-customize label { color: white; font-weight: 600; }
         .token-customize input { background: #0f172a; border: 1px solid #475569; padding: 10px 16px; border-radius: 40px; color: white; font-weight: 700; width: 120px; text-align: center; }
-        .token-customize button { background: #3b82f6; border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; }
+        .token-customize button { background: #3b82f6; border: none; padding: 10px 20px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; transition: 0.2s; }
         
         .stats { background: linear-gradient(135deg, #1a1a2e, #0f0c29); border-radius: 24px; padding: 14px 12px; margin-bottom: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .stat-item { text-align: center; padding: 8px 12px; background: rgba(255,255,255,0.08); border-radius: 20px; min-width: 70px; flex: 1 0 auto; }
@@ -108,7 +82,7 @@
         .stat-value { font-size: 1.4rem; font-weight: 800; color: #ffd966; }
         
         .badges { background: #1a1a2e; border-radius: 28px; padding: 16px 12px; margin-bottom: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, auto)); gap: 12px; justify-content: center; }
-        .badge { width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; cursor: pointer; margin: 0 auto; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        .badge { width: 56px; height: 56px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; cursor: pointer; margin: 0 auto; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: 0.1s; }
         .badge-active { background: #2e7d32; color: white; box-shadow: 0 0 10px #4caf50; }
         .badge-waiting { background: #e67e22; color: white; }
         .badge-idle { background: #f0f0f0; color: #1f2937; border: 1px solid #cbd5e1; }
@@ -135,7 +109,7 @@
         .btn-reset { background: #f59e0b; color: #1e293b; }
         .btn-close { background: #dc2626; color: white; }
         
-        /* DISPLAY MODE */
+        /* DISPLAY MODE enhanced responsive */
         .display-header { background: linear-gradient(135deg, #e94560, #b91c3c); border-radius: 36px; padding: 24px 28px; margin-bottom: 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
         .display-title h1 { font-size: 2.4rem; color: white; font-weight: 800; }
         .display-title p { font-size: 1.2rem; color: rgba(255,255,255,0.9); }
@@ -151,11 +125,13 @@
         .legend-color.green { background: #2e7d32; }
         .legend-color.orange { background: #e67e22; }
         .legend-color.red { background: #c0392b; }
-        .legend-color.blank-demo { background: white; border: 1px solid #aaa; box-shadow: inset 0 0 0 1px #cbd5e1; }
-        .legend-color.blink-demo { background: #facc15; animation: globalCounterBlink 0.8s ease-in-out infinite; }
         
+        /* Malayalam announcement area with Anek Malayalam font */
         .announcement-bar { background: linear-gradient(135deg, #1e293b, #0f172a); border-radius: 40px; padding: 22px 28px; margin-bottom: 34px; display: flex; align-items: center; gap: 20px; border-left: 8px solid #e94560; flex-wrap: wrap; }
         .announcement-text { flex: 1; font-size: 1.8rem; font-weight: 800; color: #ffffff; word-break: break-word; }
+        .announcement-malayalam { background: rgba(0,0,0,0.4); border-radius: 30px; padding: 16px 24px; margin-bottom: 20px; text-align: center; border: 1px solid #ffd966; }
+        .malayalam-text { font-size: 2rem; font-weight: 800; color: #facc15; font-family: 'Anek Malayalam', 'Noto Sans Malayalam', 'Malayalam MN', 'Segoe UI', sans-serif; letter-spacing: 1px; line-height: 1.4; word-break: break-word; }
+        .malayalam-label { font-size: 0.9rem; color: #94a3b8; margin-bottom: 8px; letter-spacing: 1px; font-family: 'Inter', sans-serif; }
         .live-dot { width: 14px; height: 14px; background: #e11d48; border-radius: 50%; animation: livePulse 1.2s infinite; display: inline-block; margin-right: 10px; }
         @keyframes livePulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
         
@@ -168,7 +144,6 @@
         .counter-number { font-size: 1.7rem; font-weight: 800; background: rgba(0,0,0,0.2); display: inline-block; padding: 5px 20px; border-radius: 60px; margin-bottom: 15px; color: white; }
         .display-current-token { font-size: 3rem; font-weight: 800; font-family: monospace; margin: 12px 0; color: #ffd966; min-height: 85px; display: flex; align-items: center; justify-content: center; }
         .queue-badge { font-size: 1.1rem; font-weight: 700; background: rgba(0,0,0,0.3); display: inline-block; padding: 5px 16px; border-radius: 40px; color: white; }
-        .status-text { font-size: 0.85rem; margin-top: 12px; font-weight: 600; color: white; }
         
         .all-persons-section { background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); border-radius: 32px; padding: 20px 24px; margin: 30px 0 20px; border: 1px solid rgba(255,215,0,0.3); }
         .persons-title { font-size: 1.8rem; font-weight: 800; color: #ffd966; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -190,51 +165,37 @@
         .login-box input { width: 100%; padding: 14px; margin-bottom: 18px; border: 2px solid #e2e8f0; border-radius: 32px; font-size: 1rem; }
         .login-box button { width: 100%; padding: 14px; background: linear-gradient(135deg, #e94560, #b91c3c); color: white; border: none; border-radius: 36px; font-weight: bold; cursor: pointer; margin-bottom: 12px; }
         .btn-secondary { background: linear-gradient(135deg, #3b82f6, #1e40af) !important; margin-top: 0; }
-        .error-msg { color: #e11d48; margin-top: 12px; font-size: 0.9rem; }
-        .success-msg { color: #10b981; margin-top: 12px; font-size: 0.9rem; }
         
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; z-index: 2000; }
         .modal-card { background: #0f172a; border-radius: 48px; padding: 28px 22px; width: 85%; max-width: 400px; text-align: center; border: 2px solid #e94560; }
-        .modal-card h3 { color: #ffd966; font-size: 1.8rem; margin-bottom: 20px; }
         .counter-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 20px 0; max-height: 300px; overflow-y: auto; }
         .counter-option { background: #334155; padding: 14px 8px; border-radius: 60px; font-weight: 800; font-size: 1.3rem; cursor: pointer; transition: 0.1s; color: white; }
         
         @media (max-width: 1100px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 700px) { .display-header { flex-direction: column; text-align: center; } .display-stats { justify-content: center; } .counters-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 700px) { 
+            .display-header { flex-direction: column; text-align: center; } 
+            .display-stats { justify-content: center; } 
+            .counters-grid { grid-template-columns: repeat(2, 1fr); } 
+            .announcement-text { font-size: 1.2rem; } 
+            .display-title h1 { font-size: 1.6rem; } 
+            .malayalam-text { font-size: 1.3rem; }
+        }
     </style>
 </head>
 <body>
     <div id="loginScreen" class="login-container">
-        <div class="login-box"><h1>🔐 Admin Login</h1><p>Token System</p><input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com"><input type="password" id="loginPassword" placeholder="Password" value="admin123"><button onclick="login()">🔓 Admin Access</button><button onclick="createAdminAccount()" class="btn-secondary">➕ Create New Admin Account</button><div id="loginError" class="error-msg"></div><div id="createSuccess" class="success-msg"></div></div>
+        <div class="login-box"><h1>🔐 Admin Login</h1><p>Token System Pro</p><input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com"><input type="password" id="loginPassword" placeholder="Password" value="admin123"><button onclick="login()">🔓 Admin Access</button><button onclick="createAdminAccount()" class="btn-secondary">➕ Create New Admin Account</button><div id="loginError" class="error-msg"></div><div id="createSuccess" class="success-msg"></div></div>
     </div>
-    <div class="mode-toggle" id="modeToggle" style="display: none;"><button class="mode-btn active" onclick="setMode('admin')">MANAGING</button><button class="mode-btn" onclick="setMode('display')">DISPLAY</button></div>
+    <div class="mode-toggle" id="modeToggle" style="display: none;"><button class="mode-btn active" onclick="setMode('admin')">📋 MANAGING</button><button class="mode-btn" onclick="setMode('display')">📺 DISPLAY</button></div>
     
     <div id="adminMode" class="admin-mode">
         <div class="admin-container">
-            <div class="header"><h1>📱 Admin Panel</h1><button class="logout-btn" onclick="logout()">Logout</button></div>
-            <div class="voice-control">
-                <span>🔊 Male English Voice Announcement</span>
-                <span class="voice-status" id="voiceStatus">🔄 Loading voices...</span>
-                <div class="voice-buttons">
-                    <button class="voice-btn" onclick="testVoice()">Test Voice</button>
-                    <button class="voice-btn green" onclick="enableVoicePermission()">Request Permission</button>
-                </div>
-            </div>
-            <!-- Custom First Token Number -->
-            <div class="token-customize">
-                <label>🎫 Set Next Token Number:</label>
-                <input type="number" id="nextTokenInput" min="1" value="1">
-                <button onclick="updateNextToken()">Update</button>
-            </div>
-            <div class="stats">
-                <div class="stat-item"><div class="stat-label">Total</div><div class="stat-value" id="totalTokens">0</div></div>
-                <div class="stat-item"><div class="stat-label">Active</div><div class="stat-value" id="activeCount">0</div></div>
-                <div class="stat-item"><div class="stat-label">Waiting</div><div class="stat-value" id="waitingCount">0</div></div>
-                <div class="stat-item"><div class="stat-label">✅ Completed</div><div class="stat-value" id="completedCount">0</div></div>
-                <div class="stat-item"><div class="stat-label">🔴 Closed</div><div class="stat-value" id="closedCount">0</div></div>
-            </div>
+            <div class="header"><h1>📱 Admin Panel — Multi Counter</h1><button class="logout-btn" onclick="logout()">Logout</button></div>
+            <div class="voice-control"><span>🔊 Male English Voice</span><span class="voice-status" id="voiceStatus">🔄 Loading...</span><div class="voice-buttons"><button class="voice-btn" onclick="testVoice()">Test Voice</button><button class="voice-btn green" onclick="enableVoicePermission()">Request Permission</button></div></div>
+            <div class="token-customize"><label>🎫 Set Next Token Number:</label><input type="number" id="nextTokenInput" min="1" value="1"><button onclick="updateNextToken()">Update</button></div>
+            <div class="stats"><div class="stat-item"><div class="stat-label">Total Tokens</div><div class="stat-value" id="totalTokens">0</div></div><div class="stat-item"><div class="stat-label">Active</div><div class="stat-value" id="activeCount">0</div></div><div class="stat-item"><div class="stat-label">Waiting</div><div class="stat-value" id="waitingCount">0</div></div><div class="stat-item"><div class="stat-label">✅ Completed</div><div class="stat-value" id="completedCount">0</div></div><div class="stat-item"><div class="stat-label">🔴 Closed</div><div class="stat-value" id="closedCount">0</div></div></div>
             <div class="badges" id="badges"></div>
-            <div class="token-card"><div class="token-display"><div>🎫 Next Token Number</div><div class="token-number" id="nextToken">1</div></div><div class="btn-group"><button class="btn btn-auto" id="autoAssignBtn">⚡ Auto Assign (Shortest Queue)</button><button class="btn btn-manual" id="manualAssignBtn">📋 Manual Assign (Select Counter)</button></div><div class="btn-group"><button class="btn btn-danger" onclick="resetAll()">Reset All System</button></div></div>
+            <div class="token-card"><div class="token-display"><div>🎫 Next Token Number</div><div class="token-number" id="nextToken">1</div></div><div class="btn-group"><button class="btn btn-auto" id="autoAssignBtn">⚡ Auto Assign (Shortest Queue)</button><button class="btn btn-manual" id="manualAssignBtn">📋 Manual Assign (Select Counter)</button></div><div class="btn-group"><button class="btn btn-danger" onclick="resetAll()">⚠️ Reset All System</button></div></div>
             <div class="counters-list" id="countersList"></div>
         </div>
     </div>
@@ -242,18 +203,20 @@
     <div id="displayMode" class="display-mode">
         <div class="display-container">
             <div class="display-header"><div class="display-title"><h1>DARUNNAJATH UP SCHOOL</h1><p>LIVE TOKEN & COUNTER SYSTEM</p></div><div class="display-stats"><div class="display-stat"><div class="display-stat-number" id="displayActiveCount">0</div><div class="display-stat-label">🟢 Active</div></div><div class="display-stat"><div class="display-stat-number" id="displayWaitingCount">0</div><div class="display-stat-label">🟠 Waiting</div></div><div class="display-stat"><div class="display-stat-number" id="displayCompletedCount">0</div><div class="display-stat-label">✅ Completed</div></div><div class="display-stat"><div class="display-stat-number" id="displayClosedCount">0</div><div class="display-stat-label">🔴 Closed</div></div></div><div class="time-box"><div class="current-time" id="displayTime">--:--:--</div><div style="font-size:0.85rem; color:white;" id="displayDate"></div></div></div>
-            <div class="color-legend">
-                <div class="legend-item"><div class="legend-color white"></div><span>Idle</span></div>
-                <div class="legend-item"><div class="legend-color green"></div><span>Active</span></div>
-                <div class="legend-item"><div class="legend-color orange"></div><span>Waiting</span></div>
-                <div class="legend-item"><div class="legend-color red"></div><span>Closed</span></div>
-                <div class="legend-item"><div class="legend-color blank-demo"></div><span>Blank (Queue 0)</span></div>
-                <div class="legend-item"><div class="legend-color blink-demo"></div><span>✨ New Token Call</span></div>
+            
+            <div class="color-legend"><div class="legend-item"><div class="legend-color white"></div><span>Idle</span></div><div class="legend-item"><div class="legend-color green"></div><span>Active</span></div><div class="legend-item"><div class="legend-color orange"></div><span>Waiting</span></div><div class="legend-item"><div class="legend-color red"></div><span>Closed</span></div><div class="legend-item"><div style="width:34px;height:34px;background:#facc15;border-radius:12px;animation:globalCounterBlink 0.8s infinite;"></div><span>New Call</span></div></div>
+            
+            <!-- MALAYALAM ANNOUNCEMENT SECTION with Anek Malayalam Font -->
+            <div class="announcement-malayalam">
+                <div class="malayalam-label">📢 അറിയിപ്പ് | Announcement</div>
+                <div class="malayalam-text" id="malayalamAnnouncementText">✨ സ്വാഗതം ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക്</div>
             </div>
-            <div class="announcement-bar"><div class="announcement-icon">📢</div><div class="announcement-text" id="announcementText">✨ Welcome to Darunnajath UP School!</div><div><span class="live-dot"></span> LIVE</div></div>
+            
+            <div class="announcement-bar"><div class="announcement-icon">🔊</div><div class="announcement-text" id="announcementText">✨ Welcome to Darunnajath UP School!</div><div><span class="live-dot"></span> LIVE</div></div>
+            
             <div class="counters-grid" id="displayCountersGrid"></div>
-            <div class="all-persons-section"><div class="persons-title"><span>👥 All Persons / Tokens</span><span style="font-size:1rem;">🔄 live</span></div><div class="persons-grid" id="allPersonsList"></div></div>
-            <div class="footer">© All Right Reserved by SUHAIL KERALA | Public Display</div>
+            <div class="all-persons-section"><div class="persons-title"><span>👥 All Tokens</span><span style="font-size:1rem;">🔄 live</span></div><div class="persons-grid" id="allPersonsList"></div></div>
+            <div class="footer">© All Right Reserved by SUHAIL KERALA </div>
         </div>
     </div>
 
@@ -262,16 +225,45 @@
         firebase.initializeApp(firebaseConfig); const auth = firebase.auth(); const database = firebase.database();
         let counters = [], config = { next_token_id: 1 }; let currentMode = 'admin', lastAnnouncementText = ''; let maleEnglishVoice = null;
         
-        // Voice initialization
+        // Malayalam translation mapping for announcements (clean and professional)
+        function getMalayalamAnnouncement(englishText) {
+            if (englishText.includes('assigned to Counter')) {
+                const match = englishText.match(/Token (\d+) assigned to Counter (\d+)/);
+                if (match) return `✨ പുതിയ ടോക്കൺ ${match[1]} കൗണ്ടർ ${match[2]} ലേക്ക് നൽകി. ദയവായി കാത്തിരിക്കുക.`;
+            }
+            if (englishText.includes('please come forward')) {
+                const match = englishText.match(/Counter (\d+), token number (\d+)/);
+                if (match) return `🔔 കൗണ്ടർ ${match[1]}, ടോക്കൺ നമ്പർ ${match[2]}, ദയവായി മുന്നോട്ട് വരിക.`;
+            }
+            if (englishText.includes('Welcome')) return '✨ സ്വാഗതം ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക്';
+            if (englishText.includes('reset') || englishText.includes('Reset')) return '⚠️ സിസ്റ്റം പുനഃസജ്ജമാക്കി. എല്ലാ കൗണ്ടറുകളും തുറന്നിരിക്കുന്നു.';
+            if (englishText.includes('Next token number set to')) {
+                const match = englishText.match(/set to (\d+)/);
+                if (match) return `🎫 അടുത്ത ടോക്കൺ നമ്പർ ${match[1]} ആയി സജ്ജമാക്കി.`;
+            }
+            return '📢 ടോക്കൺ സിസ്റ്റം അപ്ഡേറ്റ് ചെയ്തു. നന്ദി.';
+        }
+        
+        function updateMalayalamAnnouncement(text) {
+            const malayalamDiv = document.getElementById('malayalamAnnouncementText');
+            if (malayalamDiv) {
+                const malText = getMalayalamAnnouncement(text);
+                malayalamDiv.textContent = malText;
+                // Add subtle flash effect for malayalam announcement
+                malayalamDiv.style.transition = '0.2s';
+                malayalamDiv.style.textShadow = '0 0 8px #ffd966';
+                setTimeout(() => { malayalamDiv.style.textShadow = 'none'; }, 600);
+            }
+        }
+        
         function initVoices() { return new Promise((resolve) => { if (window.speechSynthesis.getVoices().length > 0) { selectMaleEnglishVoice(); resolve(); } else { window.speechSynthesis.onvoiceschanged = () => { selectMaleEnglishVoice(); resolve(); }; } }); }
         function selectMaleEnglishVoice() { const voices = window.speechSynthesis.getVoices(); let selected = voices.find(v => v.name === "Google UK English Male") || voices.find(v => v.name === "Microsoft David Desktop") || voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('male')) || voices.find(v => v.lang === 'en-US'); maleEnglishVoice = selected; const statusSpan = document.getElementById('voiceStatus'); if(statusSpan) statusSpan.innerHTML = maleEnglishVoice ? `✅ Voice Ready: ${maleEnglishVoice.name}` : "⚠️ Default English voice"; }
         function speakEnglish(text) { if (!window.speechSynthesis) return; window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.9; utterance.pitch = 1.0; if (maleEnglishVoice) utterance.voice = maleEnglishVoice; window.speechSynthesis.speak(utterance); }
         function testVoice() { speakEnglish("Voice announcement is working. Token system ready."); showToast("🔊 Testing male English voice"); }
         function enableVoicePermission() { const utterance = new SpeechSynthesisUtterance(" "); utterance.volume = 0; window.speechSynthesis.speak(utterance); testVoice(); }
         
-        // Multi-device blink & white ended box effects
-        function triggerBlinkEffectGlobally(counterId) { database.ref('blink_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => { database.ref('blink_effect').remove(); }, 1800); }); }
-        function triggerCallEndedWhiteBox(counterId) { database.ref('call_ended_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => { database.ref('call_ended_effect').remove(); }, 2000); }); }
+        function triggerBlinkEffectGlobally(counterId) { database.ref('blink_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => database.ref('blink_effect').remove(), 1800); }); }
+        function triggerCallEndedWhiteBox(counterId) { database.ref('call_ended_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => database.ref('call_ended_effect').remove(), 2000); }); }
         
         function initGlobalEffects() {
             database.ref('blink_effect').on('value', (snap) => { if(snap.exists() && snap.val().counterId) { const cid = snap.val().counterId; const card = document.querySelector(`.counter-card[data-counter-id='${cid}']`); if(card) { card.classList.add('blink-global-card'); setTimeout(() => card.classList.remove('blink-global-card'), 1700); } document.querySelectorAll('.person-card').forEach(p => { if(p.innerText.includes(`Counter ${cid}`)) { p.classList.add('blink-person-sync'); setTimeout(() => p.classList.remove('blink-person-sync'), 1600); } }); } });
@@ -284,50 +276,25 @@
         auth.onAuthStateChanged((user) => { if (user) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('modeToggle').style.display = 'flex'; initData(); attachListeners(); initVoices(); initGlobalEffects(); } });
         function setMode(mode) { currentMode = mode; document.getElementById('adminMode').classList.toggle('active', mode === 'admin'); document.getElementById('displayMode').classList.toggle('active', mode === 'display'); document.body.classList.toggle('display-active', mode === 'display'); if(mode === 'display') updateDisplayClock(); }
         
-        function initData() { database.ref('counters').once('value', (snap) => { if (!snap.exists()) { let arr = []; for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false, visible: true }); database.ref('counters').set(arr); } else { // ensure visible property exists
-            let existing = snap.val();
-            let updated = false;
-            existing.forEach(c => { if (c.visible === undefined) { c.visible = true; updated = true; } });
-            if (updated) database.ref('counters').set(existing);
-        } }); database.ref('config').once('value', (snap) => { if (!snap.exists()) database.ref('config').set({ next_token_id: 1, last_announcement: '' }); }); }
+        function initData() { database.ref('counters').once('value', (snap) => { if (!snap.exists()) { let arr = []; for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false, visible: true }); database.ref('counters').set(arr); } }); database.ref('config').once('value', (snap) => { if (!snap.exists()) database.ref('config').set({ next_token_id: 1, last_announcement: '' }); }); }
+        function attachListeners() { database.ref('counters').on('value', (snap) => { if (snap.exists()) { counters = snap.val(); renderAdminUI(); renderDisplayUI(); updateStatsPanel(); } }); database.ref('config').on('value', (snap) => { if (snap.exists()) { config = snap.val(); document.getElementById('nextToken').innerHTML = config.next_token_id || 1; document.getElementById('nextTokenInput').value = config.next_token_id || 1; if (config.last_announcement && config.last_announcement !== lastAnnouncementText) { lastAnnouncementText = config.last_announcement; const annEl = document.getElementById('announcementText'); if (annEl) annEl.textContent = lastAnnouncementText; updateMalayalamAnnouncement(lastAnnouncementText); setTimeout(() => { if (annEl && annEl.textContent === lastAnnouncementText) { annEl.textContent = '✨ Welcome to Darunnajath UP School!'; updateMalayalamAnnouncement('✨ Welcome to Darunnajath UP School!'); } }, 9000); } } }); }
         
-        function attachListeners() { database.ref('counters').on('value', (snap) => { if (snap.exists()) { counters = snap.val(); renderAdminUI(); renderDisplayUI(); updateStatsPanel(); } }); database.ref('config').on('value', (snap) => { if (snap.exists()) { config = snap.val(); document.getElementById('nextToken').innerHTML = config.next_token_id || 1; document.getElementById('nextTokenInput').value = config.next_token_id || 1; if (config.last_announcement && config.last_announcement !== lastAnnouncementText) { lastAnnouncementText = config.last_announcement; const annEl = document.getElementById('announcementText'); if (annEl) annEl.textContent = lastAnnouncementText; setTimeout(() => { if (annEl && annEl.textContent === lastAnnouncementText) annEl.textContent = '✨ Welcome to Darunnajath UP School!'; }, 9000); } } }); }
-        
-        function updateNextToken() { const newVal = parseInt(document.getElementById('nextTokenInput').value); if (isNaN(newVal) || newVal < 1) { showToast("Enter valid number >=1"); return; } database.ref('config').update({ next_token_id: newVal }).then(() => { showToast(`Next token set to ${newVal}`); speakEnglish(`Next token number set to ${newVal}`); }); }
-        
-        async function toggleVisibility(counterId, currentVisible) { let idx = counters.findIndex(c => c.id === counterId); if (idx !== -1) { counters[idx].visible = !currentVisible; await database.ref('counters').set(counters); showToast(`Counter ${counterId} ${!currentVisible ? 'visible' : 'hidden'} on display`); } }
-        
+        function updateNextToken() { const newVal = parseInt(document.getElementById('nextTokenInput').value); if (isNaN(newVal) || newVal < 1) { showToast("Enter valid number >=1"); return; } database.ref('config').update({ next_token_id: newVal }).then(() => { showToast(`Next token set to ${newVal}`); speakEnglish(`Next token number set to ${newVal}`); const ann = `Next token number set to ${newVal}`; updateMalayalamAnnouncement(ann); }); }
+        async function toggleVisibility(counterId, currentVisible) { let idx = counters.findIndex(c => c.id === counterId); if (idx !== -1) { counters[idx].visible = !currentVisible; await database.ref('counters').set(counters); showToast(`Counter ${counterId} ${!currentVisible ? 'visible' : 'hidden'}`); } }
         function getShortestQueueCounter() { const openCounters = counters.filter(c => !c.isClosed); if (openCounters.length === 0) return null; return openCounters.reduce((prev, curr) => ((curr.queue?.length || 0) < (prev.queue?.length || 0) ? curr : prev), openCounters[0]); }
-        async function assignTokenToCounter(counterId) { try { const counterSnap = await database.ref('counters').once('value'); const configSnap = await database.ref('config').once('value'); if (!counterSnap.exists()) return; let currentCounters = counterSnap.val(); let currentConfig = configSnap.val(); const nextToken = currentConfig.next_token_id || 1; const targetIdx = currentCounters.findIndex(c => c.id === counterId); if (targetIdx === -1 || currentCounters[targetIdx].isClosed) { showToast("Counter closed"); return; } if (!currentCounters[targetIdx].queue) currentCounters[targetIdx].queue = []; currentCounters[targetIdx].queue.push(nextToken.toString()); await database.ref('counters').set(currentCounters); await database.ref('config').update({ next_token_id: nextToken + 1, last_used_token: nextToken }); const ann = `📢 New Token ${nextToken} assigned to Counter ${counterId}`; await database.ref('config').update({ last_announcement: ann }); showToast(`✅ Token ${nextToken} → Counter ${counterId}`); speakEnglish(`New token ${nextToken} assigned to counter ${counterId}`); } catch(e) { showToast("Error assign"); } }
+        async function assignTokenToCounter(counterId) { try { const counterSnap = await database.ref('counters').once('value'); const configSnap = await database.ref('config').once('value'); if (!counterSnap.exists()) return; let currentCounters = counterSnap.val(); let currentConfig = configSnap.val(); const nextToken = currentConfig.next_token_id || 1; const targetIdx = currentCounters.findIndex(c => c.id === counterId); if (targetIdx === -1 || currentCounters[targetIdx].isClosed) { showToast("Counter closed"); return; } if (!currentCounters[targetIdx].queue) currentCounters[targetIdx].queue = []; currentCounters[targetIdx].queue.push(nextToken.toString()); await database.ref('counters').set(currentCounters); await database.ref('config').update({ next_token_id: nextToken + 1 }); const ann = `📢 New Token ${nextToken} assigned to Counter ${counterId}`; await database.ref('config').update({ last_announcement: ann }); showToast(`✅ Token ${nextToken} → Counter ${counterId}`); speakEnglish(`New token ${nextToken} assigned to counter ${counterId}`); updateMalayalamAnnouncement(ann); } catch(e) { showToast("Error assign"); } }
         async function autoAssignToken() { const target = getShortestQueueCounter(); if (!target) { showToast("All counters closed!"); return; } await assignTokenToCounter(target.id); }
         function showManualPicker() { const openCounters = counters.filter(c => !c.isClosed); if (!openCounters.length) { showToast("No open counters"); return; } const modalDiv = document.createElement('div'); modalDiv.className = 'modal-overlay'; modalDiv.innerHTML = `<div class="modal-card"><h3>🎯 Select Counter</h3><div class="counter-options" id="counterOptionsModal"></div><button class="modal-close" id="closeModalBtn">Close</button></div>`; document.body.appendChild(modalDiv); const container = modalDiv.querySelector('#counterOptionsModal'); openCounters.forEach(c => { const btn = document.createElement('div'); btn.className = 'counter-option'; btn.textContent = `Counter ${c.id}  (Queue:${c.queue?.length||0})`; btn.onclick = () => { modalDiv.remove(); assignTokenToCounter(c.id); }; container.appendChild(btn); }); modalDiv.querySelector('#closeModalBtn').onclick = () => modalDiv.remove(); }
         document.getElementById('autoAssignBtn')?.addEventListener('click', autoAssignToken); document.getElementById('manualAssignBtn')?.addEventListener('click', showManualPicker);
         
-        async function callNext(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1 || counters[idx].isClosed) { showToast(`Counter ${counterId} closed`); return; } let counter = counters[idx]; if (!counter.queue || counter.queue.length === 0) { showToast(`Counter ${counterId} queue empty`); return; } try { let nextTok = counter.queue.shift(); if (counter.currentToken) counters[idx].servedCount = (counters[idx].servedCount || 0) + 1; counters[idx].currentToken = nextTok; await database.ref('counters').set(counters); let ann = `📢 Counter ${counterId}, Token number ${nextTok}, please come forward`; await database.ref('config').update({ last_announcement: ann }); showToast(`🔔 Counter ${counterId} → Token ${nextTok}`); speakEnglish(`Counter ${counterId}, token number ${nextTok}, please come forward`);
-            triggerBlinkEffectGlobally(counterId); triggerCallEndedWhiteBox(counterId);
-        } catch(e) { showToast("Call error"); } }
-        
+        async function callNext(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1 || counters[idx].isClosed) { showToast(`Counter ${counterId} closed`); return; } let counter = counters[idx]; if (!counter.queue || counter.queue.length === 0) { showToast(`Counter ${counterId} queue empty`); return; } try { let nextTok = counter.queue.shift(); if (counter.currentToken) counters[idx].servedCount = (counters[idx].servedCount || 0) + 1; counters[idx].currentToken = nextTok; await database.ref('counters').set(counters); let ann = `🔔 Counter ${counterId}, token number ${nextTok}, please come forward`; await database.ref('config').update({ last_announcement: ann }); showToast(`🔔 Counter ${counterId} → Token ${nextTok}`); speakEnglish(`Counter ${counterId}, token number ${nextTok}, please come forward`); triggerBlinkEffectGlobally(counterId); triggerCallEndedWhiteBox(counterId); updateMalayalamAnnouncement(ann); } catch(e) { showToast("Call error"); } }
         async function resetCounter(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1) return; let cur = counters[idx].currentToken; if (!cur) { showToast(`Counter ${counterId} no active token`); return; } try { if (!counters[idx].queue) counters[idx].queue = []; counters[idx].queue.unshift(cur); counters[idx].currentToken = null; await database.ref('counters').set(counters); showToast(`↩️ Token ${cur} back to queue`); } catch(e) { showToast("Reset error"); } }
         async function toggleCounterClose(counterId) { let idx = counters.findIndex(c => c.id === counterId); if (idx === -1) return; counters[idx].isClosed = !counters[idx].isClosed; if (counters[idx].isClosed && counters[idx].currentToken) { if (!counters[idx].queue) counters[idx].queue = []; counters[idx].queue.unshift(counters[idx].currentToken); counters[idx].currentToken = null; } await database.ref('counters').set(counters); showToast(counters[idx].isClosed ? `Counter ${counterId} closed` : `Opened`); }
-        async function resetAll() { if (!confirm('⚠️ RESET all data?')) return; let fresh = []; for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false, visible: true }); await database.ref('counters').set(fresh); await database.ref('config').update({ next_token_id: 1, last_announcement: '' }); showToast('System fully reset'); window.speechSynthesis.cancel(); }
+        async function resetAll() { if (!confirm('⚠️ RESET all data?')) return; let fresh = []; for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, queue: [], servedCount: 0, isClosed: false, visible: true }); await database.ref('counters').set(fresh); await database.ref('config').update({ next_token_id: 1, last_announcement: 'System Reset - All counters opened' }); showToast('System fully reset'); window.speechSynthesis.cancel(); updateMalayalamAnnouncement('System Reset - All counters opened'); }
         
         function renderAdminUI() { const badgesDiv = document.getElementById('badges'); if(badgesDiv) { badgesDiv.innerHTML = ''; counters.forEach(c => { let cls = 'badge-idle'; if(c.isClosed) cls = 'badge-closed'; else if(c.currentToken) cls = 'badge-active'; else if(c.queue?.length>0) cls = 'badge-waiting'; let b = document.createElement('div'); b.className = `badge ${cls}`; b.textContent = c.id; b.onclick = () => toggleCounterClose(c.id); badgesDiv.appendChild(b); }); } const listDiv = document.getElementById('countersList'); if(listDiv) { listDiv.innerHTML = ''; counters.forEach(c => { let div = document.createElement('div'); div.className = 'counter-item'; div.innerHTML = `<div class="counter-header"><strong>Counter ${c.id} ${c.isClosed ? '🔴 Closed' : '🟢 Open'}</strong><span class="counter-current">${c.currentToken || '---'}</span><div class="visibility-toggle" onclick="toggleVisibility(${c.id}, ${c.visible})">👁️ ${c.visible ? 'Visible' : 'Hidden'}</div></div><div>🟠 Queue: ${c.queue?.length || 0} &nbsp;| ✅ Served: ${c.servedCount || 0}</div>${c.queue?.length ? `<div style="font-size:0.75rem;">Next: ${c.queue[0]}</div>` : ''}<div class="counter-actions"><button class="action-btn btn-call" onclick="callNext(${c.id})" ${c.isClosed ? 'disabled' : ''}>Call Next Token</button><button class="action-btn btn-reset" onclick="resetCounter(${c.id})">Reset</button><button class="action-btn btn-close" onclick="toggleCounterClose(${c.id})">${c.isClosed ? 'Open' : 'Close'}</button></div>`; listDiv.appendChild(div); }); } }
         
-        function renderDisplayUI() { const grid = document.getElementById('displayCountersGrid'); if (grid) { grid.innerHTML = ''; const visibleCounters = counters.filter(c => c.visible === true); visibleCounters.forEach(c => { let cardClass = 'idle', statusText = '⚪ Idle'; if (c.isClosed) { cardClass = 'closed'; statusText = '🔴 Closed'; } else if (c.currentToken) { cardClass = 'active'; statusText = '🟢 Active'; } else if (c.queue?.length > 0) { cardClass = 'waiting'; statusText = '🟠 Waiting'; } const card = document.createElement('div'); card.className = `counter-card ${cardClass}`; card.setAttribute('data-counter-id', c.id); 
-            let tokenDisplayHtml = '';
-            const hasQueue = (c.queue && c.queue.length > 0);
-            const hasActiveToken = (c.currentToken !== null && c.currentToken !== undefined);
-            if (!hasActiveToken && !hasQueue && !c.isClosed) {
-                tokenDisplayHtml = `<div class="blank-token-display">—</div>`;
-            } else {
-                tokenDisplayHtml = `<div class="display-current-token">${c.currentToken || '---'}</div>`;
-            }
-            card.innerHTML = `<div class="counter-number">Counter ${c.id}</div>${tokenDisplayHtml}<div class="queue-badge">🟠 Queue: ${c.queue?.length || 0}</div><div class="status-text">${statusText}</div><div style="font-size:0.8rem; margin-top:8px; color:white;">✅ ${c.servedCount || 0} Served</div>${c.queue?.length && !c.isClosed ? `<div style="font-size:0.7rem; color:#ffeb99;">➡️ Next: ${c.queue[0]}</div>` : ''}<div class="call-ended-notice">✓ CALL ENDED</div>`; 
-            grid.appendChild(card); }); }
-            const activeCount = counters.filter(c => !c.isClosed && c.currentToken).length, waitingCount = counters.filter(c => !c.isClosed).reduce((s,c) => s + (c.queue?.length||0),0), completedCount = counters.reduce((s,c) => s + (c.servedCount||0),0), closedCount = counters.filter(c => c.isClosed).length;
-            document.getElementById('displayActiveCount').innerHTML = activeCount; document.getElementById('displayWaitingCount').innerHTML = waitingCount; document.getElementById('displayCompletedCount').innerHTML = completedCount; document.getElementById('displayClosedCount').innerHTML = closedCount;
-            const personsList = document.getElementById('allPersonsList'); if(personsList) { personsList.innerHTML = ''; let allEntries = []; counters.forEach(c => { if(c.currentToken) allEntries.push({ token: c.currentToken, counter: c.id, status: '🟢 Active' }); if(c.queue && Array.isArray(c.queue)) c.queue.forEach(tok => { allEntries.push({ token: tok, counter: c.id, status: '🟠 Waiting' }); }); }); allEntries.sort((a,b) => parseInt(a.token) - parseInt(b.token)); if(allEntries.length ===0) personsList.innerHTML = '<div style="padding:20px;text-align:center;color:#ccc;">✨ No tokens</div>'; else allEntries.forEach(p => { let card = document.createElement('div'); card.className = 'person-card'; card.setAttribute('data-related-counter', p.counter); card.innerHTML = `<div class="person-token">🎫 ${p.token}</div><div class="person-counter">Counter ${p.counter}</div><div class="person-status">${p.status}</div>`; personsList.appendChild(card); }); } }
-        
+        function renderDisplayUI() { const grid = document.getElementById('displayCountersGrid'); if (grid) { grid.innerHTML = ''; const visibleCounters = counters.filter(c => c.visible === true); visibleCounters.forEach(c => { let cardClass = 'idle', statusText = '⚪ Idle'; if (c.isClosed) { cardClass = 'closed'; statusText = '🔴 Closed'; } else if (c.currentToken) { cardClass = 'active'; statusText = '🟢 Active'; } else if (c.queue?.length > 0) { cardClass = 'waiting'; statusText = '🟠 Waiting'; } const card = document.createElement('div'); card.className = `counter-card ${cardClass}`; card.setAttribute('data-counter-id', c.id); let tokenDisplayHtml = ''; const hasQueue = (c.queue && c.queue.length > 0); const hasActiveToken = (c.currentToken !== null && c.currentToken !== undefined); if (!hasActiveToken && !hasQueue && !c.isClosed) { tokenDisplayHtml = `<div class="blank-token-display">—</div>`; } else { tokenDisplayHtml = `<div class="display-current-token">${c.currentToken || '---'}</div>`; } card.innerHTML = `<div class="counter-number">Counter ${c.id}</div>${tokenDisplayHtml}<div class="queue-badge">🟠 Queue: ${c.queue?.length || 0}</div><div class="status-text">${statusText}</div><div style="font-size:0.8rem; margin-top:8px; color:white;">✅ ${c.servedCount || 0} Served</div>${c.queue?.length && !c.isClosed ? `<div style="font-size:0.7rem; color:#ffeb99;">➡️ Next: ${c.queue[0]}</div>` : ''}<div class="call-ended-notice">✓ CALL ENDED</div>`; grid.appendChild(card); }); } updateStatsPanel(); const activeCount = counters.filter(c => !c.isClosed && c.currentToken).length, waitingCount = counters.filter(c => !c.isClosed).reduce((s,c) => s + (c.queue?.length||0),0), completedCount = counters.reduce((s,c) => s + (c.servedCount||0),0), closedCount = counters.filter(c => c.isClosed).length; document.getElementById('displayActiveCount').innerHTML = activeCount; document.getElementById('displayWaitingCount').innerHTML = waitingCount; document.getElementById('displayCompletedCount').innerHTML = completedCount; document.getElementById('displayClosedCount').innerHTML = closedCount; const personsList = document.getElementById('allPersonsList'); if(personsList) { personsList.innerHTML = ''; let allEntries = []; counters.forEach(c => { if(c.currentToken) allEntries.push({ token: c.currentToken, counter: c.id, status: '🟢 Active' }); if(c.queue && Array.isArray(c.queue)) c.queue.forEach(tok => { allEntries.push({ token: tok, counter: c.id, status: '🟠 Waiting' }); }); }); allEntries.sort((a,b) => parseInt(a.token) - parseInt(b.token)); if(allEntries.length ===0) personsList.innerHTML = '<div style="padding:20px;text-align:center;color:#ccc;">✨ No tokens</div>'; else allEntries.forEach(p => { let card = document.createElement('div'); card.className = 'person-card'; card.setAttribute('data-related-counter', p.counter); card.innerHTML = `<div class="person-token">🎫 ${p.token}</div><div class="person-counter">Counter ${p.counter}</div><div class="person-status">${p.status}</div>`; personsList.appendChild(card); }); } }
         function updateStatsPanel() { const total = counters.reduce((s,c) => s + (c.servedCount||0) + (c.queue?.length||0) + (c.currentToken?1:0),0); const activeAdmin = counters.filter(c => !c.isClosed && c.currentToken).length; const waitingAdmin = counters.filter(c => !c.isClosed).reduce((s,c)=> s+(c.queue?.length||0),0); const completedAdmin = counters.reduce((s,c)=> s+(c.servedCount||0),0); const closedAdmin = counters.filter(c=>c.isClosed).length; document.getElementById('totalTokens').innerHTML = total; document.getElementById('activeCount').innerHTML = activeAdmin; document.getElementById('waitingCount').innerHTML = waitingAdmin; document.getElementById('completedCount').innerHTML = completedAdmin; document.getElementById('closedCount').innerHTML = closedAdmin; }
         function updateDisplayClock() { const now = new Date(); document.getElementById('displayTime').innerHTML = now.toLocaleTimeString('en-US'); document.getElementById('displayDate').innerHTML = now.toLocaleDateString('en-US',{ weekday:'long', year:'numeric', month:'long', day:'numeric' }); }
         function showToast(msg) { let t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
