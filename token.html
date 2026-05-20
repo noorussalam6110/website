@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Token System Suhail Kerala</title>
+    <title>Token System | Suhail Kerala</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
@@ -399,7 +399,7 @@
         }
         
         async function toggleCounterClose(counterId) { let idx = counters.findIndex(c => c.id === counterId); if(idx === -1) return; counters[idx].isClosed = !counters[idx].isClosed; await database.ref('counters').set(counters); showToast(counters[idx].isClosed ? `Counter ${counterId} closed` : `Opened`); }
-        async function resetAll() { if (!confirm('⚠️ RESET all data?')) return; let fresh = []; for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true }); await database.ref('counters').set(fresh); await database.ref('config').update({ next_token_id: 1, last_called_token: null, last_announcement: 'System Reset - All counters opened', custom_announcement: null }); showToast('System fully reset'); updateAutoAnnouncement('System Reset - All counters opened'); updateLastTokenDisplayUI(null); }
+        async function resetAll() { if (!confirm('⚠️ RESET all data?')) return; let fresh = []; for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true }); await database.ref('counters').set(fresh); await database.ref('config').update({ next_token_id: 1, last_called_token: null, last_announcement: ' - All counters opened', custom_announcement: null }); showToast('System fully reset'); updateAutoAnnouncement('System Reset | കൗണ്ടറുകള്‍ ഉടന്‍ തുറക്കും...'); updateLastTokenDisplayUI(null); }
         function updateNextToken() { const newVal = parseInt(document.getElementById('nextTokenInput').value); if (isNaN(newVal) || newVal < 1) { showToast("Enter valid number"); return; } database.ref('config').update({ next_token_id: newVal }).then(() => { showToast(`Next token set to ${newVal}`); speakEnglish(`Next token number set to ${newVal}`); updateAutoAnnouncement(`Next token number set to ${newVal}`); }); }
         
         function initData() { database.ref('counters').once('value', (snap) => { if (!snap.exists()) { let arr = []; for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true }); database.ref('counters').set(arr); } }); database.ref('config').once('value', (snap) => { if (!snap.exists()) database.ref('config').set({ next_token_id: 1, last_called_token: null, last_announcement: '', custom_announcement: null }); }); }
