@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Token System | Suhail Kerala</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Token System Pro | Suhail kerala</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
@@ -13,459 +13,749 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%); 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        :root {
+            --bg-gradient-start: #0a0a1a;
+            --bg-gradient-end: #1a1a2e;
+            --card-bg: #1e293b;
+            --text-primary: #ffffff;
+            --text-secondary: #cbd5e1;
+            --border-light: rgba(255,255,255,0.12);
+            --announce-bg: linear-gradient(135deg, #0f172a, #020617);
+            --counter-idle: #334155;
+            --counter-idle-border: #475569;
+            --footer-color: rgba(255,255,255,0.7);
+            --ticker-bg: #000000aa;
+            --glow-color: #facc15;
+        }
+        
+        body.light-mode {
+            --bg-gradient-start: #f0f4f8;
+            --bg-gradient-end: #d9e2ec;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --border-light: rgba(0,0,0,0.1);
+            --announce-bg: linear-gradient(135deg, #fef9c3, #fde047);
+            --counter-idle: #f1f5f9;
+            --counter-idle-border: #cbd5e1;
+            --footer-color: #334155;
+            --ticker-bg: #000000aa;
+            --glow-color: #eab308;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
             min-height: 100vh;
+            transition: background 0.3s, color 0.2s;
+            color: var(--text-primary);
         }
-        .mode-toggle { 
-            background: #0f0f23; 
-            padding: 12px 16px; 
-            display: flex; 
-            justify-content: center; 
-            gap: 15px; 
-            border-bottom: 3px solid rgba(233,69,96,0.5); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            backdrop-filter: blur(8px); 
-            flex-wrap: wrap; 
+        
+        .mode-toggle {
+            background: #0f0f23;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            border-bottom: 3px solid rgba(233,69,96,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            flex-wrap: wrap;
         }
+        body.light-mode .mode-toggle { background: #e2e8f0; border-bottom-color: #e94560; }
         body.display-active .mode-toggle { display: none !important; }
-        .mode-btn { 
-            background: rgba(255,255,255,0.12); 
-            border: none; 
-            padding: 12px 28px; 
-            border-radius: 60px; 
-            color: white; 
-            font-weight: 800; 
-            font-size: 1rem; 
-            cursor: pointer; 
-            transition: all 0.3s ease; 
-            min-width: 120px; 
+        
+        .mode-btn {
+            background: rgba(255,255,255,0.12);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 60px;
+            color: white;
+            font-weight: 800;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 110px;
         }
-        .mode-btn.active { background: #e94560; box-shadow: 0 0 12px #e94560; }
-        .mode-btn:active { transform: scale(0.96); }
+        body.light-mode .mode-btn { background: rgba(0,0,0,0.1); color: #1e293b; }
+        .mode-btn.active { background: #e94560; box-shadow: 0 0 10px #e94560; color: white; }
         
         .admin-mode, .display-mode { display: none; padding: 16px 12px 32px; }
         .admin-mode.active, .display-mode.active { display: block; }
         .admin-container { max-width: 1000px; margin: 0 auto; width: 100%; }
-        .display-container { max-width: 1920px; margin: 0 auto; }
+        .display-container { max-width: 1920px; margin: 0 auto; padding: 0 24px; }  /* corrected outer padding */
         
-        /* Blink effect */
-        @keyframes globalCounterBlink {
-            0% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); background: inherit; }
-            20% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.06); box-shadow: 0 0 40px #ffdd44; color: #1f2937 !important; }
-            40% { transform: scale(1); }
-            60% { background: #facc15 !important; border: 4px solid #ffffff !important; transform: scale(1.06); box-shadow: 0 0 40px #ffdd44; }
-            100% { transform: scale(1); box-shadow: 0 12px 28px rgba(0,0,0,0.3); }
+        /* Blink Pulse */
+        @keyframes pulseBlink {
+            0% { transform: scale(1); background: inherit; box-shadow: 0 0 0 0 var(--glow-color); }
+            30% { transform: scale(1.05); background: #facc15; color: #0f172a; box-shadow: 0 0 0 12px rgba(250,204,21,0.5); }
+            70% { transform: scale(1.03); background: #facc15; color: #0f172a; box-shadow: 0 0 0 6px rgba(250,204,21,0.3); }
+            100% { transform: scale(1); background: inherit; box-shadow: 0 0 0 0 var(--glow-color); }
         }
-        .blink-global-card { animation: globalCounterBlink 0.75s ease-in-out 3; z-index: 20; }
+        .blink-global-card { animation: pulseBlink 0.8s ease-in-out 3; z-index: 20; }
         
         .call-ended-notice {
-            display: inline-flex; align-items: center; justify-content: center; background: transparent; color: transparent;
-            padding: 6px 16px; border-radius: 60px; font-weight: 800; font-size: 0.85rem; margin-top: 10px;
-            transition: all 0.1s ease; min-width: 100px; opacity: 0; visibility: hidden;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 4px 10px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.7rem;
+            margin-top: 6px;
+            opacity: 0;
+            visibility: hidden;
         }
         .call-ended-notice.visible-white {
-            background: white !important; color: #1e293b !important; opacity: 1; visibility: visible;
-            box-shadow: 0 0 8px rgba(255,255,255,0.6);
+            background: white !important;
+            color: #1e293b !important;
+            opacity: 1;
+            visibility: visible;
         }
         
-        /* ANNOUNCEMENT BOX - INCREASED FONT */
-        .announcement-malayalam { 
-            background: linear-gradient(135deg, #0f172a, #020617); 
-            border-radius: 48px; 
-            padding: 32px 36px; 
-            margin-bottom: 32px; 
-            border: 3px solid #facc15;
-            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
+        /* Announcement Box */
+        .announcement-malayalam {
+            background: var(--announce-bg);
+            border-radius: 48px;
+            padding: 22px 32px;
+            margin-bottom: 28px;
+            border: 3px solid var(--glow-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 24px;
+            gap: 20px;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.5);
         }
         @keyframes announcementFlash {
-            0% { background: linear-gradient(135deg, #0f172a, #020617); border-color: #facc15; }
-            30% { background: linear-gradient(135deg, #facc15, #ffea80); border-color: #ffffff; box-shadow: 0 0 0 6px rgba(250,204,21,0.5); }
-            100% { background: linear-gradient(135deg, #0f172a, #020617); border-color: #facc15; }
+            0% { border-color: var(--glow-color); transform: scale(1); }
+            30% { border-color: #ffffff; background: #facc15; transform: scale(1.01); }
+            100% { border-color: var(--glow-color); transform: scale(1); }
         }
-        .announcement-pulse { animation: announcementFlash 0.6s ease-in-out 2 !important; }
+        .announcement-pulse { animation: announcementFlash 0.6s ease-in-out 2; }
         
-        .announcement-text-area { flex: 3; min-width: 260px; }
-        .malayalam-label { 
-            font-size: 1.3rem; 
-            color: #facc15; 
-            margin-bottom: 12px; 
-            letter-spacing: 2px; 
+        .malayalam-label {
+            font-size: 1.3rem;
             font-weight: 800;
-            text-transform: uppercase;
-            background: rgba(0,0,0,0.3);
-            display: inline-block;
-            padding: 0 12px 0 0;
+            color: var(--glow-color);
+            margin-bottom: 6px;
+            letter-spacing: 1px;
         }
-        /* BIGGER ANNOUNCEMENT TEXT */
-        .malayalam-text { 
-            font-size: 3rem; 
-            font-weight: 800; 
-            color: #facc15; 
-            font-family: 'Anek Malayalam', 'Noto Sans Malayalam', sans-serif; 
-            letter-spacing: 1px; 
-            line-height: 1.3; 
-            word-break: break-word;
-            text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+        .malayalam-text {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            font-family: 'Anek Malayalam', sans-serif;
+            line-height: 1.3;
         }
         .last-token-square {
             background: #0f172a;
-            border: 4px solid #facc15;
-            border-radius: 32px;
-            padding: 20px 36px;
+            border: 3px solid var(--glow-color);
+            border-radius: 36px;
+            padding: 12px 24px;
             text-align: center;
             min-width: 220px;
-            box-shadow: 0 0 20px rgba(250,204,21,0.4);
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
         }
-        .last-token-label { font-size: 1.2rem; color: #cbd5e1; font-weight: 700; }
-        .last-token-number { font-size: 7rem; font-weight: 800; color: #facc15; font-family: monospace; line-height: 1.1; }
+        .last-token-label { font-size: 1rem; color: #cbd5e1; font-weight: 600; }
+        .last-token-number { font-size: 5rem; font-weight: 900; color: var(--glow-color); font-family: monospace; line-height: 1; }
         
-        /* TIME DISPLAY - INCREASED FONT */
-        .time-box { 
-            background: rgba(0,0,0,0.55); 
-            padding: 16px 32px; 
-            border-radius: 60px; 
+        .time-box {
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(12px);
+            padding: 10px 24px;
+            border-radius: 60px;
+            text-align: center;
+            min-width: 250px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .current-time { font-size: 2.8rem; font-weight: 800; color: white; font-family: monospace; letter-spacing: 2px; }
+        #displayDate { font-size: 1rem; font-weight: 600; color: #facc15; margin-top: 5px; }
+        
+        .ticker-container {
+            background: var(--ticker-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 50px;
+            padding: 12px 24px;
+            margin: 20px 0 25px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255,215,0,0.3);
+        }
+        .ticker-text {
+            display: inline-block;
+            white-space: nowrap;
+            animation: tickerScroll 25s linear infinite;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffd966;
+        }
+        @keyframes tickerScroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* ========== OPTIMIZED 7x2 GRID: LARGE NUMBERS, CORRECTED PADDING ========== */
+        @media (min-width: 1200px) {
+            .counters-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            .counter-card {
+                padding: 16px 8px;
+                min-height: 190px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .counter-number {
+                font-size: 1.5rem;
+                padding: 5px 14px;
+                margin-bottom: 10px;
+            }
+            .display-current-token {
+                font-size: 4rem;
+                margin: 6px 0;
+                padding: 6px;
+            }
+        }
+        @media (min-width: 768px) and (max-width: 1199px) {
+            .counters-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 18px;
+            }
+            .counter-card {
+                padding: 14px 8px;
+                min-height: 180px;
+            }
+            .display-current-token {
+                font-size: 3.5rem;
+            }
+        }
+        @media (max-width: 767px) {
+            .counters-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 14px;
+            }
+            .counter-card {
+                padding: 12px 6px;
+                min-height: 160px;
+            }
+            .display-current-token {
+                font-size: 2.8rem;
+            }
+        }
+        
+        .counter-card {
+            border-radius: 30px;
             text-align: center;
             backdrop-filter: blur(4px);
-            min-width: 240px;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+            background: rgba(30, 41, 59, 0.85);
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.4);
         }
-        .current-time { 
-            font-size: 3rem; 
-            font-weight: 800; 
-            color: #ffffff; 
-            font-family: 'Inter', monospace;
-            letter-spacing: 3px;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        .counter-card.idle { background: rgba(51, 65, 85, 0.9); border-color: #475569; }
+        .counter-card.active { background: linear-gradient(135deg, #15803d, #0f5c2f); transform: scale(1.01); box-shadow: 0 0 0 3px #ffd966; border-color: #facc15; }
+        .counter-card.closed { background: linear-gradient(135deg, #991b1b, #7f1a1a); opacity: 0.85; }
+        .counter-number {
+            font-weight: 800;
+            background: rgba(0,0,0,0.35);
+            display: inline-block;
+            border-radius: 50px;
+            color: white;
         }
-        #displayDate {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #facc15;
-            margin-top: 8px;
+        .display-current-token {
+            font-weight: 800;
+            font-family: monospace;
+            color: #ffd966;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.2);
+            border-radius: 40px;
         }
         
-        /* Admin custom announcement section */
-        .custom-announcement { background: #1e293b; border-radius: 28px; padding: 20px 22px; margin-bottom: 22px; }
-        .custom-announcement label { color: white; font-weight: 800; display: block; margin-bottom: 12px; font-size: 1.1rem; }
-        .custom-announcement textarea { width: 100%; padding: 14px; border-radius: 28px; border: none; background: #0f172a; color: white; font-size: 1rem; font-family: 'Anek Malayalam', sans-serif; resize: vertical; }
-        .custom-buttons { display: flex; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
-        .custom-buttons button { flex: 1; padding: 12px; border-radius: 50px; font-weight: 800; border: none; cursor: pointer; transition: 0.05s linear; }
-        .custom-buttons button:active { transform: scale(0.97); }
-        .btn-send { background: #10b981; color: white; font-size: 1rem; }
-        .btn-reset-ann { background: #f59e0b; color: #1e293b; font-size: 1rem; }
-        .announcement-feedback { margin-top: 12px; font-size: 0.9rem; color: #86efac; display: flex; align-items: center; gap: 8px; font-weight: 500; }
-        
-        /* Rest styles */
-        .blank-token-display { background: white !important; color: #94a3b8 !important; border-radius: 20px; padding: 16px; font-size: 1.8rem; font-weight: 500; box-shadow: inset 0 0 0 2px #cbd5e1; margin: 12px 0; }
-        .header { background: linear-gradient(135deg, #e94560, #c62a40); border-radius: 28px; padding: 14px 18px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-        .header h1 { color: white; font-size: 1.2rem; font-weight: 800; }
-        .logout-btn { background: rgba(255,255,255,0.2); border: none; padding: 8px 18px; border-radius: 40px; color: white; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
-        .voice-control { background: #1e1e3a; border-radius: 60px; padding: 8px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: space-between; }
-        .voice-status { font-size: 0.8rem; color: #a5f3c3; font-weight: 500; }
-        .voice-btn { background: #8b5cf6; border: none; padding: 8px 16px; border-radius: 40px; color: white; font-weight: 600; cursor: pointer; }
-        .token-customize { background: #1e293b; border-radius: 28px; padding: 14px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-        .token-customize label { color: white; font-weight: 600; }
-        .token-customize input { background: #0f172a; border: 1px solid #475569; padding: 12px 16px; border-radius: 40px; color: white; font-weight: 700; width: 110px; text-align: center; }
-        .stats { background: linear-gradient(135deg, #1a1a2e, #0f0c29); border-radius: 24px; padding: 12px; margin-bottom: 18px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
-        .stat-item { text-align: center; padding: 8px 10px; background: rgba(255,255,255,0.08); border-radius: 20px; flex: 1; }
-        .stat-label { font-size: 0.7rem; color: rgba(255,255,255,0.8); }
-        .stat-value { font-size: 1.3rem; font-weight: 800; color: #ffd966; }
-        .badges { background: #1a1a2e; border-radius: 28px; padding: 16px 10px; margin-bottom: 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(55px, auto)); gap: 10px; justify-content: center; }
-        .badge { width: 52px; height: 52px; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; cursor: pointer; margin: 0 auto; box-shadow: 0 2px 6px rgba(0,0,0,0.3); transition: 0.1s; }
-        .badge:active { transform: scale(0.94); }
-        .badge-active { background: #2e7d32; color: white; box-shadow: 0 0 10px #4caf50; }
-        .badge-idle { background: #f0f0f0; color: #1f2937; border: 1px solid #cbd5e1; }
-        .badge-closed { background: #c0392b; color: white; }
-        .token-card { background: rgba(255,255,255,0.95); border-radius: 32px; padding: 18px 16px; margin-bottom: 20px; text-align: center; }
-        .token-display { background: linear-gradient(135deg, #2c3e66, #1a2639); border-radius: 28px; padding: 16px; margin-bottom: 18px; }
-        .token-number { font-size: 2.8rem; font-weight: 800; color: #f9d56e; font-family: monospace; }
-        .btn-group { display: flex; gap: 14px; }
-        .btn { padding: 14px 12px; font-size: 1rem; font-weight: 800; border: none; border-radius: 60px; cursor: pointer; flex: 1; text-align: center; }
-        .btn-danger { background: #ef4444; color: white; }
-        .counters-list { display: flex; flex-direction: column; gap: 16px; max-height: 580px; overflow-y: auto; padding-right: 4px; }
-        .counter-item { background: #f8fafc; border-radius: 28px; padding: 16px; border-left: 6px solid #e94560; }
-        .counter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
-        .counter-current { font-size: 1.5rem; font-weight: 800; font-family: monospace; background: #eef2ff; padding: 4px 14px; border-radius: 40px; }
-        .visibility-toggle { display: flex; align-items: center; gap: 6px; background: #e2e8f0; padding: 5px 12px; border-radius: 40px; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-        .counter-actions { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
-        .action-btn { flex: 1; padding: 12px 6px; border: none; border-radius: 50px; font-weight: 800; cursor: pointer; font-size: 0.85rem; }
-        .btn-call { background: #059669; color: white; }
-        .btn-close { background: #dc2626; color: white; }
-        .action-btn:disabled { opacity: 0.5; }
-        
-        .display-header { background: linear-gradient(135deg, #e94560, #b91c3c); border-radius: 36px; padding: 20px 24px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-        .display-title h1 { font-size: 2rem; color: white; font-weight: 800; }
-        .display-title p { font-size: 1rem; color: rgba(255,255,255,0.9); }
-        .display-stats { display: flex; gap: 16px; flex-wrap: wrap; }
-        .display-stat { background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 28px; text-align: center; min-width: 80px; }
+        .display-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #e94560, #b91c3c);
+            padding: 16px 24px;
+            border-radius: 48px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .display-title h1 { font-size: 2rem; font-weight: 800; }
+        .display-title p { font-size: 0.85rem; }
+        .display-stats { display: flex; gap: 16px; background: rgba(0,0,0,0.3); padding: 6px 18px; border-radius: 50px; }
         .display-stat-number { font-size: 1.8rem; font-weight: 800; color: #ffd966; }
-        .display-stat-label { font-size: 0.75rem; font-weight: 600; color: white; }
-        .color-legend { background: rgba(0,0,0,0.55); border-radius: 50px; padding: 12px 20px; margin-bottom: 24px; display: flex; justify-content: center; flex-wrap: wrap; gap: 24px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; color: white; font-size: 0.9rem; font-weight: 600; }
-        .legend-color { width: 28px; height: 28px; border-radius: 10px; }
-        .counters-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 20px; margin-bottom: 35px; }
-        .counter-card { border-radius: 28px; padding: 22px 10px; text-align: center; transition: all 0.2s; box-shadow: 0 12px 28px rgba(0,0,0,0.3); border: 2px solid transparent; }
-        .counter-card.idle { background: #334155; color: white; border: 2px solid #94a3b8; }
-        .counter-card.active { background: linear-gradient(135deg, #15803d, #14532d); transform: scale(1.02); box-shadow: 0 0 0 4px #ffd966; }
-        .counter-card.closed { background: linear-gradient(135deg, #b91c1c, #7f1a1a); opacity: 0.9; }
-        .counter-number { font-size: 1.7rem; font-weight: 800; background: rgba(0,0,0,0.2); display: inline-block; padding: 5px 20px; border-radius: 60px; margin-bottom: 15px; color: white; }
-        .display-current-token { font-size: 6rem; font-weight: 800; font-family: monospace; margin: 12px 0; color: #ffd966; min-height: 85px; }
-        .footer { background: rgba(0,0,0,0.4); border-radius: 28px; padding: 18px; text-align: center; color: rgba(255,255,255,0.7); margin-top: 16px; font-size: 0.9rem; }
-        .toast { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #facc15; padding: 12px 24px; border-radius: 60px; font-weight: 700; z-index: 2000; box-shadow: 0 6px 20px black; text-align: center; max-width: 90%; }
-        .login-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a0a1a, #1a1a2e); display: flex; justify-content: center; align-items: center; z-index: 1100; }
-        .login-box { background: white; border-radius: 42px; padding: 40px 28px; width: 90%; max-width: 400px; text-align: center; }
+        .display-stat-label { font-size: 0.7rem; }
+        
+        /* Admin Panel Styles */
+        .custom-announcement, .token-customize, .header {
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .counters-list { display: flex; flex-direction: column; gap: 14px; max-height: 560px; overflow-y: auto; }
+        .counter-item {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 12px;
+            border-left: 5px solid #e94560;
+            color: #1e293b;
+        }
+        .counter-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 5px 8px;
+            border-radius: 40px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-call { background: #059669; color: white; }
+        .btn-skip { background: #f97316; color: white; }
+        .btn-repeat { background: #3b82f6; color: white; }
+        .btn-visibility {
+            background: #8b5cf6;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+        .btn-visibility.hidden-toggle { background: #475569; }
+        .btn-danger { background: #ef4444; color: white; padding: 12px; width: 100%; border-radius: 60px; border: none; font-weight: 800; cursor: pointer; }
+        .theme-toggle, .fullscreen-btn { background: #2d3748; border: none; border-radius: 40px; padding: 6px 16px; color: white; font-weight: 600; cursor: pointer; font-size: 0.8rem; }
+        .offline-banner { background: #ef4444; color: white; text-align: center; padding: 4px; border-radius: 20px; margin-bottom: 10px; display: none; font-weight: bold; font-size: 0.75rem; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #facc15; padding: 8px 18px; border-radius: 60px; z-index: 2000; font-weight: 700; font-size: 0.85rem; }
+        .login-container { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, #0a0a1a, #1a1a2e); display: flex; justify-content: center; align-items: center; z-index: 1100; }
+        .login-box { background: white; border-radius: 42px; padding: 35px 28px; width: 90%; max-width: 380px; text-align: center; }
         .login-box input { width: 100%; margin: 10px 0; padding: 12px; border-radius: 40px; border: 1px solid #ccc; }
         .login-box button { background: #e94560; border: none; padding: 12px; border-radius: 40px; color: white; font-weight: 800; width: 100%; margin-top: 8px; cursor: pointer; }
         
-        @media (max-width: 1100px) { .counters-grid { grid-template-columns: repeat(4, 1fr); } }
-        @media (max-width: 700px) { 
-            .counters-grid { grid-template-columns: repeat(2, 1fr); } 
-            .malayalam-text { font-size: 2.2rem !important; }
-            .current-time { font-size: 2rem !important; }
+        @media (max-width: 1000px) {
+            .malayalam-text { font-size: 2.5rem; }
+            .current-time { font-size: 2.2rem; }
             .last-token-number { font-size: 3.5rem; }
-            .time-box { padding: 10px 18px; min-width: 160px; }
-            .announcement-malayalam { padding: 20px 22px; }
+        }
+        @media (max-width: 700px) {
+            .display-header { flex-direction: column; text-align: center; }
+            .display-container { padding: 0 16px; }
+            .malayalam-text { font-size: 1.8rem; }
+            .current-time { font-size: 1.8rem; }
+            .last-token-number { font-size: 2.8rem; }
         }
     </style>
 </head>
 <body>
-    <div id="loginScreen" class="login-container">
-        <div class="login-box"><h1>🔐 Admin Login</h1><p>Token System Pro</p><input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com"><input type="password" id="loginPassword" placeholder="Password" value="admin123"><button onclick="login()">🔓 Admin Access</button><button onclick="createAdminAccount()" style="background:#3b82f6;">➕ Create Admin</button><div id="loginError" style="color:red; margin-top:10px;"></div><div id="createSuccess" style="color:green;"></div></div>
-    </div>
-    <div class="mode-toggle" id="modeToggle" style="display: none;"><button class="mode-btn active" onclick="setMode('admin')">📋 MANAGING</button><button class="mode-btn" onclick="setMode('display')">📺 DISPLAY</button></div>
-    
-    <div id="adminMode" class="admin-mode">
-        <div class="admin-container">
-            <div class="header"><h1>📱 Admin Panel</h1><button class="logout-btn" onclick="logout()">Logout</button></div>
-            <div class="voice-control"><span>🔊 Male English Voice</span><span class="voice-status" id="voiceStatus">🔄 Loading...</span><div class="voice-buttons"><button class="voice-btn" onclick="testVoice()">Test</button><button class="voice-btn" onclick="enableVoicePermission()">Allow</button></div></div>
-            
-            <!-- CUSTOM ANNOUNCEMENT (FULLY FUNCTIONAL) -->
-            <div class="custom-announcement">
-                <label>📢 LIVE CUSTOM ANNOUNCEMENT (Text & Voice)</label>
-                <textarea id="customAnnouncementInput" rows="2" placeholder="Type any message in English or Malayalam... e.g., 'Lunch break from 1:00 PM to 2:00 PM'"></textarea>
-                <div class="custom-buttons">
-                    <button class="btn-send" id="sendCustomAnnouncementBtn">📣 SEND & ANNOUNCE</button>
-                    <button class="btn-reset-ann" id="resetAnnouncementBtn">🔄 RESET TO WELCOME</button>
-                </div>
-                <div id="announceFeedback" class="announcement-feedback"></div>
-            </div>
-            
-            <div class="token-customize"><label>🎫 Set Next Token:</label><input type="number" id="nextTokenInput" min="1" value="1"><button onclick="updateNextToken()">Update</button></div>
-            <div class="stats"><div class="stat-item"><div class="stat-label">Total Served</div><div class="stat-value" id="totalServed">0</div></div><div class="stat-item"><div class="stat-label">Active</div><div class="stat-value" id="activeCount">0</div></div><div class="stat-item"><div class="stat-label">✅ Completed</div><div class="stat-value" id="completedCount">0</div></div><div class="stat-item"><div class="stat-label">🔴 Closed</div><div class="stat-value" id="closedCount">0</div></div></div>
-            <div class="badges" id="badges"></div>
-            <div class="token-card"><div class="token-display"><div>🎫 Next Token (to be called)</div><div class="token-number" id="nextToken">1</div></div><div class="btn-group"><button class="btn btn-danger" onclick="resetAll()">⚠️ Reset System</button></div></div>
-            <div class="counters-list" id="countersList"></div>
-        </div>
-    </div>
-    
-    <div id="displayMode" class="display-mode">
-        <div class="display-container">
-            <div class="display-header">
-                <div class="display-title"><h1>DARUNNAJATH UP SCHOOL</h1><p>LIVE TOKEN & COUNTER SYSTEM</p></div>
-                <div class="display-stats"><div class="display-stat"><div class="display-stat-number" id="displayActiveCount">0</div><div class="display-stat-label">🟢 Active</div></div><div class="display-stat"><div class="display-stat-number" id="displayCompletedCount">0</div><div class="display-stat-label">✅ Completed</div></div><div class="display-stat"><div class="display-stat-number" id="displayClosedCount">0</div><div class="display-stat-label">🔴 Closed</div></div></div>
-                <div class="time-box"><div class="current-time" id="displayTime">--:--:--</div><div id="displayDate"></div></div>
-            </div>
-            <div class="color-legend"><div class="legend-item"><div class="legend-color" style="background:#ffffff; border:1px solid #aaa;"></div><span>Idle</span></div><div class="legend-item"><div class="legend-color" style="background:#2e7d32;"></div><span>Active</span></div><div class="legend-item"><div class="legend-color" style="background:#c0392b;"></div><span>Closed</span></div><div class="legend-item"><div style="width:34px;height:34px;background:#facc15;border-radius:12px;animation:globalCounterBlink 0.8s infinite;"></div><span>New Call</span></div></div>
-            
-            <div class="announcement-malayalam" id="announcementBox">
-                <div class="announcement-text-area">
-                    <div class="malayalam-label">🎙️ LIVE ANNOUNCEMENT</div>
-                    <div class="malayalam-text" id="malayalamAnnouncementText">✨ ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക് സ്വാഗതം</div>
-                </div>
-                <div class="last-token-square">
-                    <div class="last-token-label">LAST CALLED</div>
-                    <div class="last-token-number" id="lastTokenDisplay">---</div>
-                </div>
-            </div>
-            
-            <div class="counters-grid" id="displayCountersGrid"></div>
-            <div class="footer">© All Right Reserved by SUHAIL KERALA | Complete Token Management</div>
-        </div>
-    </div>
+<div id="loginScreen" class="login-container">
+    <div class="login-box"><h1>🔐 Admin Login</h1><input type="email" id="loginEmail" placeholder="Admin Email" value="admin@token.com"><input type="password" id="loginPassword" placeholder="Password" value="admin123"><button onclick="login()">🔓 Admin Access</button><button onclick="createAdminAccount()" style="background:#3b82f6;">➕ Create Admin</button><div id="loginError" style="color:red;"></div></div>
+</div>
+<div class="mode-toggle" id="modeToggle" style="display: none;">
+    <button class="mode-btn active" onclick="setMode('admin')">📋 MANAGING</button>
+    <button class="mode-btn" onclick="setMode('display')">📺 DISPLAY</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Dark/Light</button>
+</div>
 
-    <script>
-        const firebaseConfig = { apiKey: "AIzaSyD-0CCGYVtfTGQBnOEvub5M3sPaZDdsaUY", authDomain: "school-token-system-b75c7.firebaseapp.com", databaseURL: "https://school-token-system-b75c7-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "school-token-system-b75c7", storageBucket: "school-token-system-b75c7.firebasestorage.app", appId: "1:511726803989:web:c6b51bdb63d28e7433c21c" };
-        firebase.initializeApp(firebaseConfig); const auth = firebase.auth(); const database = firebase.database();
-        let counters = [], config = { next_token_id: 1, last_called_token: null }; let currentMode = 'admin'; let maleEnglishVoice = null;
-        
-        function sanitizeCounters(raw) { return raw.map(c => ({ id: c.id, currentToken: c.currentToken || null, servedCount: c.servedCount || 0, isClosed: c.isClosed || false, visible: c.visible !== false })); }
-        
-        function getMalayalamAnnouncement(englishText) {
-            if (englishText.includes('Token') && englishText.includes('Counter')) {
-                const match = englishText.match(/Token (\d+) at Counter (\d+)/);
-                if (match) return `🔔 ടോക്കൺ ${match[1]} കൗണ്ടർ ${match[2]} ലേക്ക് വിളിക്കുന്നു. ദയവായി എത്തിച്ചേരുക.`;
+<!-- Admin Panel -->
+<div id="adminMode" class="admin-mode">
+    <div class="admin-container">
+        <div class="header"><h1>📱 Admin Panel</h1><button class="logout-btn" onclick="logout()" style="background:rgba(0,0,0,0.2); border:none; padding:6px 16px; border-radius:40px;">Logout</button></div>
+        <div id="offlineIndicatorAdmin" class="offline-banner">⚠️ OFFLINE MODE - Changes will sync when back online</div>
+        <div class="custom-announcement">
+            <label style="font-weight:800;">📢 CUSTOM ANNOUNCEMENT (Voice + Ticker)</label>
+            <textarea id="customAnnouncementInput" rows="2" placeholder="Type message..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="sendCustomAnnouncementBtn" style="background:#10b981; color:white; padding:8px; border-radius:40px; border:none; font-weight:800; flex:1;">📣 SEND</button>
+                <button id="resetAnnouncementBtn" style="background:#f59e0b; padding:8px; border-radius:40px; border:none; font-weight:800; flex:1;">🔄 RESET</button>
+            </div>
+            <div id="announceFeedback" style="margin-top: 6px; color: #86efac;"></div>
+        </div>
+        <div class="token-customize">
+            <label>🎫 Set Next Token:</label>
+            <input type="number" id="nextTokenInput" min="1" value="1" style="background:#0f172a; color:white; padding:6px; border-radius:40px; width:80px;">
+            <button onclick="updateNextToken()" style="background:#3b82f6; padding:6px 14px; border-radius:40px; border:none; font-weight:800;">Update</button>
+            <label>📢 Ticker:</label>
+            <input type="text" id="tickerInput" placeholder="Scrolling text" style="flex:1; background:#0f172a; color:white; padding:6px; border-radius:40px;">
+            <button onclick="updateTicker()" style="background:#8b5cf6; padding:6px 14px; border-radius:40px;">Set</button>
+        </div>
+        <div class="counters-list" id="countersList"></div>
+        <div style="margin-top: 20px;"><button class="btn-danger" onclick="resetAll()">⚠️ RESET FULL SYSTEM</button></div>
+    </div>
+</div>
+
+<!-- Public Display - Corrected Padding -->
+<div id="displayMode" class="display-mode">
+    <div class="display-container">
+        <div class="display-header">
+            <div class="display-title"><h1>DARUNNAJATH UP SCHOOL</h1><p>LIVE TOKEN SYSTEM</p></div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <div class="display-stats" id="displayStats"></div>
+                <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ FULL</button>
+            </div>
+            <div class="time-box"><div class="current-time" id="displayTime">--:--:--</div><div id="displayDate"></div></div>
+        </div>
+        <div id="offlineIndicatorDisplay" class="offline-banner">📡 OFFLINE - RECONNECTING...</div>
+        <div class="announcement-malayalam" id="announcementBox">
+            <div style="flex:2;">
+                <div class="malayalam-label">🎙️ LIVE ANNOUNCEMENT</div>
+                <div class="malayalam-text" id="malayalamAnnouncementText">✨ ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക് സ്വാഗതം</div>
+            </div>
+            <div class="last-token-square">
+                <div class="last-token-label">LAST CALLED</div>
+                <div class="last-token-number" id="lastTokenDisplay">---</div>
+            </div>
+        </div>
+        <div class="ticker-container"><div class="ticker-text" id="tickerText">✨ Welcome to Darunnajath UP School ✨</div></div>
+        <div class="counters-grid" id="displayCountersGrid"></div>
+        <div class="footer" style="text-align: center; margin-top: 20px; color: var(--footer-color); padding: 10px;">© SUHAIL KERALA</div>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = { apiKey: "AIzaSyD-0CCGYVtfTGQBnOEvub5M3sPaZDdsaUY", authDomain: "school-token-system-b75c7.firebaseapp.com", databaseURL: "https://school-token-system-b75c7-default-rtdb.asia-southeast1.firebasedatabase.app", projectId: "school-token-system-b75c7", storageBucket: "school-token-system-b75c7.firebasestorage.app", appId: "1:511726803989:web:c6b51bdb63d28e7433c21c" };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    
+    let counters = [];
+    let config = { next_token_id: 1, last_called_token: null, tickerMessage: "✨ Welcome to Darunnajath UP School ✨" };
+    let currentMode = 'admin';
+    let maleEnglishVoice = null;
+    let malayalamVoice = null;
+    
+    let speechQueue = [];
+    let isSpeaking = false;
+    let lastProcessedTs = 0;
+    
+    function playChime() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.frequency.value = 880;
+            gainNode.gain.value = 0.12;
+            oscillator.start();
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+            oscillator.stop(audioCtx.currentTime + 0.5);
+            audioCtx.resume();
+        } catch(e) { console.warn("Chime error", e); }
+    }
+    
+    function selectVoices() {
+        const voices = window.speechSynthesis.getVoices();
+        maleEnglishVoice = voices.find(v => v.name === "Google UK English Male") || voices.find(v => v.lang === 'en-US');
+        malayalamVoice = voices.find(v => v.lang.includes('ml'));
+    }
+    
+    function speakSmart(text) {
+        if (!text) return;
+        speechQueue.push(text);
+        processSpeechQueue();
+    }
+    
+    function processSpeechQueue() {
+        if (isSpeaking || speechQueue.length === 0) return;
+        isSpeaking = true;
+        const text = speechQueue.shift();
+        playChime();
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (/[\u0D00-\u0D7F]/.test(text)) {
+                utterance.lang = 'ml-IN';
+                if (malayalamVoice) utterance.voice = malayalamVoice;
+            } else {
+                utterance.lang = 'en-US';
+                if (maleEnglishVoice) utterance.voice = maleEnglishVoice;
             }
-            if (englishText.toLowerCase().includes('welcome')) return '✨ ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക് സ്വാഗതം';
-            if (englishText.includes('reset')) return '⚠️ സിസ്റ്റം പുനഃസജ്ജമാക്കി. എല്ലാ കൗണ്ടറുകളും തുറന്നിരിക്കുന്നു.';
-            if (englishText.includes('Next token number set to')) {
-                const match = englishText.match(/set to (\d+)/);
-                if (match) return `🎫 അടുത്ത ടോക്കൺ നമ്പർ ${match[1]} ആയി സജ്ജമാക്കി.`;
-            }
-            return englishText;
+            utterance.rate = 0.85;
+            utterance.onend = () => { isSpeaking = false; processSpeechQueue(); };
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(utterance);
+        }, 180);
+    }
+    
+    function setDisplayAnnouncement(text, isCustom = false) {
+        const el = document.getElementById('malayalamAnnouncementText');
+        if (el) {
+            let displayText = text;
+            if (!isCustom && text.includes('Token')) displayText = `🔔 ${text}`;
+            el.textContent = displayText;
         }
-        
-        function setDisplayAnnouncement(text, isCustom = false) {
-            const malayalamDiv = document.getElementById('malayalamAnnouncementText');
-            if (malayalamDiv) {
-                let displayText = text;
-                if (!isCustom) displayText = getMalayalamAnnouncement(text);
-                malayalamDiv.textContent = displayText;
-                const annBox = document.getElementById('announcementBox');
-                if (annBox) {
-                    annBox.classList.remove('announcement-pulse');
-                    void annBox.offsetWidth;
-                    annBox.classList.add('announcement-pulse');
-                    setTimeout(() => annBox.classList.remove('announcement-pulse'), 1300);
-                }
-                malayalamDiv.style.textShadow = '0 0 8px #ffd966';
-                setTimeout(() => { malayalamDiv.style.textShadow = '0 3px 8px rgba(0,0,0,0.5)'; }, 500);
-            }
+        const box = document.getElementById('announcementBox');
+        if (box) {
+            box.classList.remove('announcement-pulse');
+            void box.offsetWidth;
+            box.classList.add('announcement-pulse');
+            setTimeout(() => box.classList.remove('announcement-pulse'), 1000);
         }
-        
-        function updateAutoAnnouncement(englishText) { setDisplayAnnouncement(englishText, false); }
-        
-        // ========== CUSTOM ANNOUNCEMENT - FULLY WORKING ==========
-        async function sendCustomAnnouncement() {
-            const input = document.getElementById('customAnnouncementInput');
-            const customText = input.value.trim();
-            const feedbackDiv = document.getElementById('announceFeedback');
-            if (customText === "") {
-                feedbackDiv.innerHTML = "⚠️ Please enter announcement text.";
-                setTimeout(() => feedbackDiv.innerHTML = "", 2500);
-                showToast("Please enter text");
-                return;
-            }
-            feedbackDiv.innerHTML = "🔄 Sending announcement...";
-            try {
-                await database.ref('config').update({ 
-                    custom_announcement: customText, 
-                    last_announcement: customText,
-                    announcement_timestamp: Date.now()
-                });
-                setDisplayAnnouncement(customText, true);
-                speakEnglish(customText);
-                feedbackDiv.innerHTML = "✅ Announcement sent & spoken!";
-                setTimeout(() => feedbackDiv.innerHTML = "", 3000);
-                showToast("✅ Announcement delivered with voice");
-                input.value = "";
-            } catch (error) {
-                console.error(error);
-                feedbackDiv.innerHTML = "❌ Firebase error: " + error.message;
-                showToast("Error: " + error.message);
-            }
+    }
+    
+    function updateLastTokenUI(token) { document.getElementById('lastTokenDisplay').innerText = token || '---'; }
+    function updateTickerMessage(msg) { document.getElementById('tickerText').innerText = msg; }
+    
+    async function sendCustomAnnouncement() {
+        const input = document.getElementById('customAnnouncementInput');
+        const txt = input.value.trim();
+        if (!txt) { showToast("Please enter text"); return; }
+        try {
+            await db.ref('config').update({ custom_announcement: txt, last_announcement: txt, tickerMessage: txt, voice_ts: Date.now() });
+            setDisplayAnnouncement(txt, true);
+            speakSmart(txt);
+            document.getElementById('announceFeedback').innerHTML = "✅ Sent!";
+            setTimeout(() => document.getElementById('announceFeedback').innerHTML = "", 2000);
+            input.value = "";
+        } catch(e) { showToast("Error: " + e.message); }
+    }
+    
+    async function resetAnnouncementToWelcome() {
+        const welcomeMalayalam = "✨ ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക് സ്വാഗതം";
+        const welcomeEng = "Welcome to Darunnajath UP School";
+        await db.ref('config').update({ custom_announcement: null, last_announcement: welcomeEng, tickerMessage: welcomeEng, voice_ts: Date.now() });
+        setDisplayAnnouncement(welcomeMalayalam, false);
+        speakSmart(welcomeEng);
+        showToast("Reset to welcome");
+    }
+    
+    async function callNewToken(cid) {
+        const snapCounters = await db.ref('counters').once('value');
+        const snapConfig = await db.ref('config').once('value');
+        let countersArr = snapCounters.val();
+        let cfg = snapConfig.val();
+        let nextToken = cfg.next_token_id || 1;
+        let idx = countersArr.findIndex(c => c.id === cid);
+        if (idx === -1 || countersArr[idx].isClosed) { showToast(`Counter ${cid} closed`); return; }
+        if (countersArr[idx].currentToken !== null) countersArr[idx].servedCount = (countersArr[idx].servedCount || 0) + 1;
+        countersArr[idx].currentToken = nextToken;
+        const malayalamAnn = `ടോക്കൺ ${nextToken}, കൗണ്ടർ ${cid} ലേക്ക്`;
+        const englishAnn = `Token ${nextToken} at Counter ${cid}, please come forward`;
+        await db.ref('counters').set(countersArr);
+        await db.ref('config').update({ 
+            next_token_id: nextToken + 1, 
+            last_called_token: nextToken, 
+            last_announcement: englishAnn,
+            custom_announcement: malayalamAnn,
+            voice_ts: Date.now()
+        });
+        speakSmart(englishAnn);
+        setDisplayAnnouncement(malayalamAnn, true);
+        updateLastTokenUI(nextToken);
+        triggerBlink(cid);
+        triggerCallEnded(cid);
+        showToast(`🔔 C${cid} → T${nextToken}`);
+    }
+    
+    async function skipToken(cid) {
+        let idx = counters.findIndex(c => c.id === cid);
+        if (idx !== -1 && counters[idx].currentToken) {
+            counters[idx].currentToken = null;
+            await db.ref('counters').set(counters);
+            showToast(`Token skipped for C${cid}`);
+        } else showToast("No active token");
+    }
+    
+    async function repeatToken(cid) {
+        let idx = counters.findIndex(c => c.id === cid);
+        if (idx !== -1 && counters[idx].currentToken) {
+            let tokenNum = counters[idx].currentToken;
+            let ann = `Token ${tokenNum} at Counter ${cid}, please come forward`;
+            speakSmart(ann);
+            triggerBlink(cid);
+            showToast(`Repeating T${tokenNum}`);
+        } else showToast("No token to repeat");
+    }
+    
+    async function toggleCounterClose(cid) {
+        let idx = counters.findIndex(c => c.id === cid);
+        if (idx !== -1) {
+            counters[idx].isClosed = !counters[idx].isClosed;
+            await db.ref('counters').set(counters);
+            showToast(counters[idx].isClosed ? `C${cid} closed` : `C${cid} opened`);
         }
-        
-        async function resetAnnouncementToWelcome() {
-            const welcomeText = "✨ ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക് സ്വാഗതം";
-            const englishWelcome = "Welcome to Darunnajath UP School";
-            try {
-                await database.ref('config').update({ custom_announcement: null, last_announcement: englishWelcome });
-                setDisplayAnnouncement(welcomeText, false);
-                speakEnglish(englishWelcome);
-                showToast("Announcement reset to welcome");
-                const feedbackDiv = document.getElementById('announceFeedback');
-                if (feedbackDiv) { feedbackDiv.innerHTML = "✅ Reset to welcome message"; setTimeout(() => feedbackDiv.innerHTML = "", 2000); }
-            } catch(e) { showToast("Reset failed: "+e.message); }
+    }
+    
+    async function toggleVisibility(cid) {
+        let idx = counters.findIndex(c => c.id === cid);
+        if (idx !== -1) {
+            counters[idx].visible = !counters[idx].visible;
+            await db.ref('counters').set(counters);
+            showToast(`C${cid} is now ${counters[idx].visible ? 'Visible' : 'Hidden'}`);
         }
-        // =========================================================
-        
-        function updateLastTokenDisplayUI(token) { const span = document.getElementById('lastTokenDisplay'); if(span) span.textContent = (token !== null && token !== undefined) ? token : '---'; }
-        
-        function initVoices() { return new Promise((resolve) => { if (window.speechSynthesis.getVoices().length > 0) { selectMaleEnglishVoice(); resolve(); } else { window.speechSynthesis.onvoiceschanged = () => { selectMaleEnglishVoice(); resolve(); }; } }); }
-        function selectMaleEnglishVoice() { const voices = window.speechSynthesis.getVoices(); let selected = voices.find(v => v.name === "Google UK English Male") || voices.find(v => v.name === "Microsoft David Desktop") || voices.find(v => v.lang === 'en-US'); maleEnglishVoice = selected; const statusSpan = document.getElementById('voiceStatus'); if(statusSpan) statusSpan.innerHTML = maleEnglishVoice ? `✅ Voice: ${maleEnglishVoice.name}` : "⚠️ Default voice active"; }
-        function speakEnglish(text) { if (!window.speechSynthesis) return; try { window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'en-US'; utterance.rate = 0.9; if (maleEnglishVoice) utterance.voice = maleEnglishVoice; window.speechSynthesis.speak(utterance); } catch(e) { console.warn(e); } }
-        function testVoice() { speakEnglish("Voice announcement is working perfectly"); showToast("🔊 Testing voice"); }
-        function enableVoicePermission() { const utterance = new SpeechSynthesisUtterance(" "); utterance.volume = 0; window.speechSynthesis.speak(utterance); testVoice(); }
-        
-        function triggerBlinkEffectGlobally(counterId) { database.ref('blink_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => database.ref('blink_effect').remove(), 1800); }); }
-        function triggerCallEndedWhiteBox(counterId) { database.ref('call_ended_effect').set({ counterId, timestamp: Date.now() }).then(() => { setTimeout(() => database.ref('call_ended_effect').remove(), 2000); }); }
-        function initGlobalEffects() {
-            database.ref('blink_effect').on('value', (snap) => { if(snap.exists() && snap.val().counterId) { const cid = snap.val().counterId; const card = document.querySelector(`.counter-card[data-counter-id='${cid}']`); if(card) { card.classList.add('blink-global-card'); setTimeout(() => card.classList.remove('blink-global-card'), 1700); } } });
-            database.ref('call_ended_effect').on('value', (snap) => { if(snap.exists() && snap.val().counterId) { const cid = snap.val().counterId; const cardDiv = document.querySelector(`.counter-card[data-counter-id='${cid}']`); if(cardDiv) { const endedBox = cardDiv.querySelector('.call-ended-notice'); if(endedBox) { endedBox.classList.add('visible-white'); setTimeout(() => endedBox.classList.remove('visible-white'), 1900); } } } });
-        }
-        
-        async function callNewToken(counterId) {
-            try {
-                const countersSnap = await database.ref('counters').once('value');
-                const configSnap = await database.ref('config').once('value');
-                if (!countersSnap.exists()) return;
-                let currentCounters = countersSnap.val();
-                let currentConfig = configSnap.val();
-                let nextToken = currentConfig.next_token_id || 1;
-                const idx = currentCounters.findIndex(c => c.id === counterId);
-                if (idx === -1 || currentCounters[idx].isClosed) { showToast(`Counter ${counterId} closed`); return; }
-                if (currentCounters[idx].currentToken !== null) { currentCounters[idx].servedCount = (currentCounters[idx].servedCount || 0) + 1; }
-                const newToken = nextToken;
-                currentCounters[idx].currentToken = newToken;
-                await database.ref('counters').set(currentCounters);
-                await database.ref('config').update({ next_token_id: nextToken + 1, last_called_token: newToken });
-                const announcement = `Token ${newToken} at Counter ${counterId}, please come forward`;
-                await database.ref('config').update({ last_announcement: announcement, custom_announcement: null });
-                showToast(`🔔 Counter ${counterId} → Token ${newToken}`);
-                speakEnglish(announcement);
-                triggerBlinkEffectGlobally(counterId);
-                triggerCallEndedWhiteBox(counterId);
-                updateAutoAnnouncement(announcement);
-                updateLastTokenDisplayUI(newToken);
-            } catch(e) { showToast("Call error: " + e.message); }
-        }
-        
-        async function toggleCounterClose(counterId) { let idx = counters.findIndex(c => c.id === counterId); if(idx === -1) return; counters[idx].isClosed = !counters[idx].isClosed; await database.ref('counters').set(counters); showToast(counters[idx].isClosed ? `Counter ${counterId} closed` : `Counter ${counterId} opened`); }
-        async function resetAll() { if (!confirm('⚠️ RESET all data? This will clear all tokens and counters.')) return; let fresh = []; for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true }); await database.ref('counters').set(fresh); await database.ref('config').update({ next_token_id: 1, last_called_token: null, last_announcement: 'System reset - All counters reopened', custom_announcement: null }); showToast('System fully reset'); updateAutoAnnouncement('System Reset | All counters reopened'); updateLastTokenDisplayUI(null); }
-        function updateNextToken() { const newVal = parseInt(document.getElementById('nextTokenInput').value); if (isNaN(newVal) || newVal < 1) { showToast("Enter valid number"); return; } database.ref('config').update({ next_token_id: newVal }).then(() => { showToast(`Next token set to ${newVal}`); speakEnglish(`Next token number set to ${newVal}`); updateAutoAnnouncement(`Next token number set to ${newVal}`); }).catch(e=>showToast("Update failed")); }
-        
-        function initData() { database.ref('counters').once('value', (snap) => { if (!snap.exists()) { let arr = []; for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true }); database.ref('counters').set(arr); } }); database.ref('config').once('value', (snap) => { if (!snap.exists()) database.ref('config').set({ next_token_id: 1, last_called_token: null, last_announcement: '', custom_announcement: null }); }); }
-        
-        function attachListeners() { 
-            database.ref('counters').on('value', (snap) => { if (snap.exists()) { counters = sanitizeCounters(snap.val()); renderAdminUI(); renderDisplayUI(); updateStatsPanel(); } }); 
-            database.ref('config').on('value', (snap) => { if (snap.exists()) { config = snap.val(); document.getElementById('nextToken').innerHTML = config.next_token_id || 1; document.getElementById('nextTokenInput').value = config.next_token_id || 1; 
+    }
+    
+    async function resetAll() {
+        if (!confirm('⚠️ RESET ALL DATA?')) return;
+        let fresh = [];
+        for (let i = 1; i <= 14; i++) fresh.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true });
+        await db.ref('counters').set(fresh);
+        await db.ref('config').update({ next_token_id: 1, last_called_token: null, last_announcement: 'System Reset', custom_announcement: null, voice_ts: Date.now() });
+        showToast('System fully reset');
+        setDisplayAnnouncement("System Reset - All counters ready", false);
+        updateLastTokenUI(null);
+    }
+    
+    function updateNextToken() {
+        let val = parseInt(document.getElementById('nextTokenInput').value);
+        if (val > 0) db.ref('config').update({ next_token_id: val }).then(() => showToast(`Next token set to ${val}`));
+    }
+    
+    function updateTicker() {
+        let val = document.getElementById('tickerInput').value;
+        if (val) db.ref('config').update({ tickerMessage: val });
+    }
+    
+    function triggerBlink(cid) { db.ref('blink_effect').set({ counterId: cid, ts: Date.now() }); setTimeout(() => db.ref('blink_effect').remove(), 2400); }
+    function triggerCallEnded(cid) { db.ref('call_ended_effect').set({ counterId: cid, ts: Date.now() }); setTimeout(() => db.ref('call_ended_effect').remove(), 1600); }
+    
+    function renderAdminUI() {
+        const listDiv = document.getElementById('countersList');
+        if (!listDiv) return;
+        listDiv.innerHTML = '';
+        counters.forEach(c => {
+            const div = document.createElement('div');
+            div.className = 'counter-item';
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                    <strong>Counter ${c.id} ${c.isClosed ? '🔴 Closed' : '🟢 Open'}</strong>
+                    <span style="background:#eef2ff; padding:2px 10px; border-radius:40px;">${c.currentToken || '---'}</span>
+                </div>
+                <div style="margin:6px 0;">✅ Served: ${c.servedCount || 0}</div>
+                <div class="counter-actions">
+                    <button class="action-btn btn-call" onclick="callNewToken(${c.id})" ${c.isClosed ? 'disabled' : ''}>📞 Call</button>
+                    <button class="action-btn btn-skip" onclick="skipToken(${c.id})" ${!c.currentToken ? 'disabled' : ''}>⏭ Skip</button>
+                    <button class="action-btn btn-repeat" onclick="repeatToken(${c.id})" ${!c.currentToken ? 'disabled' : ''}>🔁 Repeat</button>
+                    <button class="action-btn" onclick="toggleCounterClose(${c.id})" style="background:#64748b;">${c.isClosed ? 'Open' : 'Close'}</button>
+                    <button class="btn-visibility ${c.visible ? '' : 'hidden-toggle'}" onclick="toggleVisibility(${c.id})">👁️ ${c.visible ? 'Visible' : 'Hidden'}</button>
+                </div>
+            `;
+            listDiv.appendChild(div);
+        });
+    }
+    
+    function renderDisplayUI() {
+        const grid = document.getElementById('displayCountersGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+        const visibleCounters = counters.filter(c => c.visible !== false);
+        visibleCounters.forEach(c => {
+            let cardClass = 'idle';
+            if (c.isClosed) cardClass = 'closed';
+            else if (c.currentToken) cardClass = 'active';
+            const card = document.createElement('div');
+            card.className = `counter-card ${cardClass}`;
+            card.setAttribute('data-counter-id', c.id);
+            card.innerHTML = `
+                <div class="counter-number">Counter ${c.id}</div>
+                <div class="display-current-token">${c.currentToken || '—'}</div>
+                <div style="font-size:0.75rem; opacity:0.9;">✅ ${c.servedCount || 0}</div>
+                <div class="call-ended-notice">✓ CALL ENDED</div>
+            `;
+            grid.appendChild(card);
+        });
+        const activeCount = counters.filter(c => !c.isClosed && c.currentToken).length;
+        const totalServed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
+        const closedCount = counters.filter(c => c.isClosed).length;
+        document.getElementById('displayStats').innerHTML = `
+            <div class="display-stat"><div class="display-stat-number">${activeCount}</div><div class="display-stat-label">🟢 Active</div></div>
+            <div class="display-stat"><div class="display-stat-number">${totalServed}</div><div class="display-stat-label">✅ Completed</div></div>
+            <div class="display-stat"><div class="display-stat-number">${closedCount}</div><div class="display-stat-label">🔴 Closed</div></div>
+        `;
+    }
+    
+    function initOfflineDetection() {
+        const connectedRef = db.ref('.info/connected');
+        connectedRef.on('value', (snap) => {
+            const online = snap.val();
+            document.getElementById('offlineIndicatorAdmin').style.display = online ? 'none' : 'block';
+            document.getElementById('offlineIndicatorDisplay').style.display = online ? 'none' : 'block';
+        });
+    }
+    
+    function initVoices() {
+        return new Promise(resolve => {
+            if (window.speechSynthesis.getVoices().length) { selectVoices(); resolve(); }
+            else window.speechSynthesis.onvoiceschanged = () => { selectVoices(); resolve(); };
+        });
+    }
+    
+    function toggleTheme() { document.body.classList.toggle('light-mode'); }
+    function toggleFullscreen() { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen(); }
+    function updateDisplayClock() { const now = new Date(); document.getElementById('displayTime').innerHTML = now.toLocaleTimeString(); document.getElementById('displayDate').innerHTML = now.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' }); }
+    function showToast(msg) { let t = document.createElement('div'); t.className = 'toast'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2200); }
+    
+    function attachFirebase() {
+        db.ref('counters').on('value', (snap) => { if (snap.exists()) { counters = snap.val().map(c => ({ ...c, visible: c.visible !== false })); renderAdminUI(); renderDisplayUI(); } });
+        db.ref('config').on('value', (snap) => {
+            if (snap.exists()) {
+                config = snap.val();
+                document.getElementById('nextTokenInput').value = config.next_token_id || 1;
                 if (config.custom_announcement) setDisplayAnnouncement(config.custom_announcement, true);
-                else if (config.last_announcement) updateAutoAnnouncement(config.last_announcement);
+                else if (config.last_announcement) setDisplayAnnouncement(config.last_announcement, false);
                 else setDisplayAnnouncement("✨ ദാറുന്നജാത്ത് യു പി സ്കൂളിലേക്ക് സ്വാഗതം", false);
-                updateLastTokenDisplayUI(config.last_called_token);
-            } });
-        }
-        
-        function renderAdminUI() {
-            const badgesDiv = document.getElementById('badges');
-            if(badgesDiv) { badgesDiv.innerHTML = ''; counters.forEach(c => { let cls = c.isClosed ? 'badge-closed' : (c.currentToken ? 'badge-active' : 'badge-idle'); let b = document.createElement('div'); b.className = `badge ${cls}`; b.textContent = c.id; b.onclick = () => toggleCounterClose(c.id); badgesDiv.appendChild(b); }); }
-            const listDiv = document.getElementById('countersList');
-            if(listDiv) { listDiv.innerHTML = ''; counters.forEach(c => { let div = document.createElement('div'); div.className = 'counter-item'; div.innerHTML = `<div class="counter-header"><strong>Counter ${c.id} ${c.isClosed ? '🔴 Closed' : '🟢 Open'}</strong><span class="counter-current">${c.currentToken || '---'}</span><div class="visibility-toggle" onclick="toggleVisibility(${c.id}, ${c.visible})">👁️ ${c.visible ? 'Visible' : 'Hidden'}</div></div><div>✅ Served: ${c.servedCount || 0}</div><div class="counter-actions"><button class="action-btn btn-call" onclick="callNewToken(${c.id})" ${c.isClosed ? 'disabled' : ''}>📞 Call New Token</button><button class="action-btn btn-close" onclick="toggleCounterClose(${c.id})">${c.isClosed ? 'Open' : 'Close'}</button></div>`; listDiv.appendChild(div); }); }
-        }
-        
-        function renderDisplayUI() {
-            const grid = document.getElementById('displayCountersGrid');
-            if (grid) { grid.innerHTML = ''; const visibleCounters = counters.filter(c => c.visible === true); visibleCounters.forEach(c => { let cardClass = 'idle'; if (c.isClosed) cardClass = 'closed'; else if (c.currentToken) cardClass = 'active'; const card = document.createElement('div'); card.className = `counter-card ${cardClass}`; card.setAttribute('data-counter-id', c.id); let tokenDisplayHtml = (!c.currentToken && !c.isClosed) ? `<div class="blank-token-display">—</div>` : `<div class="display-current-token">${c.currentToken || '---'}</div>`; card.innerHTML = `<div class="counter-number">Counter ${c.id}</div>${tokenDisplayHtml}<div style="font-size:0.9rem; margin-top:8px; color:white;">✅ ${c.servedCount || 0} Served</div><div class="call-ended-notice">✓ CALL ENDED</div>`; grid.appendChild(card); }); }
-            const activeCount = counters.filter(c => !c.isClosed && c.currentToken).length;
-            const completedCount = counters.reduce((s,c) => s + (c.servedCount||0),0);
-            const closedCount = counters.filter(c => c.isClosed).length;
-            document.getElementById('displayActiveCount').innerHTML = activeCount; document.getElementById('displayCompletedCount').innerHTML = completedCount; document.getElementById('displayClosedCount').innerHTML = closedCount;
-        }
-        
-        function updateStatsPanel() { const totalServed = counters.reduce((s,c)=> s+(c.servedCount||0),0); const activeAdmin = counters.filter(c=>!c.isClosed && c.currentToken).length; const comp = counters.reduce((s,c)=> s+(c.servedCount||0),0); const closedAdmin = counters.filter(c=>c.isClosed).length; document.getElementById('totalServed').innerHTML = totalServed; document.getElementById('activeCount').innerHTML = activeAdmin; document.getElementById('completedCount').innerHTML = comp; document.getElementById('closedCount').innerHTML = closedAdmin; }
-        
-        function updateDisplayClock() { const now = new Date(); const timeEl = document.getElementById('displayTime'); if(timeEl) timeEl.innerHTML = now.toLocaleTimeString('en-US'); const dateEl = document.getElementById('displayDate'); if(dateEl) dateEl.innerHTML = now.toLocaleDateString('en-US',{ weekday:'long', year:'numeric', month:'long', day:'numeric' }); }
-        function showToast(msg) { let t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
-        function login() { const email = document.getElementById('loginEmail').value, pw = document.getElementById('loginPassword').value, errDiv = document.getElementById('loginError'); auth.signInWithEmailAndPassword(email, pw).then(() => { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('modeToggle').style.display = 'flex'; initData(); attachListeners(); initVoices(); initGlobalEffects(); }).catch((error) => { errDiv.textContent = '❌ '+error.message; }); }
-        function createAdminAccount() { const email = document.getElementById('loginEmail').value, pw = document.getElementById('loginPassword').value, successDiv = document.getElementById('createSuccess'), errorDiv = document.getElementById('loginError'); if(pw.length<6){ errorDiv.textContent='⚠️ 6+ chars'; return; } auth.createUserWithEmailAndPassword(email, pw).then(()=>{ successDiv.textContent='✅ Created! Login now.'; errorDiv.textContent=''; setTimeout(()=>successDiv.textContent='',4000); }).catch(err=>{ errorDiv.textContent=err.message; }); }
-        function logout() { auth.signOut().then(()=> location.reload()); }
-        auth.onAuthStateChanged((user) => { if (user) { document.getElementById('loginScreen').style.display='none'; document.getElementById('modeToggle').style.display='flex'; initData(); attachListeners(); initVoices(); initGlobalEffects(); } });
-        function setMode(mode) { currentMode=mode; document.getElementById('adminMode').classList.toggle('active', mode==='admin'); document.getElementById('displayMode').classList.toggle('active', mode==='display'); document.body.classList.toggle('display-active', mode==='display'); if(mode==='display') updateDisplayClock(); }
-        
-        document.getElementById('sendCustomAnnouncementBtn')?.addEventListener('click', sendCustomAnnouncement);
-        document.getElementById('resetAnnouncementBtn')?.addEventListener('click', resetAnnouncementToWelcome);
-        
-        window.setMode=setMode; window.login=login; window.logout=logout; window.resetAll=resetAll; window.toggleCounterClose=toggleCounterClose; window.createAdminAccount=createAdminAccount; window.testVoice=testVoice; window.enableVoicePermission=enableVoicePermission; window.updateNextToken=updateNextToken; window.callNewToken=callNewToken; window.toggleVisibility=(id,vis)=>{ let idx=counters.findIndex(c=>c.id===id); if(idx!==-1){ counters[idx].visible=!vis; database.ref('counters').set(counters); } };
-        setInterval(()=>{ if(currentMode==='display') updateDisplayClock(); },1000);
-    </script>
+                updateLastTokenUI(config.last_called_token);
+                if (config.tickerMessage) updateTickerMessage(config.tickerMessage);
+                if (config.voice_ts && config.voice_ts > lastProcessedTs) {
+                    lastProcessedTs = config.voice_ts;
+                    if (config.custom_announcement && !config.custom_announcement.includes("സ്വാഗതം")) {
+                        speakSmart(config.custom_announcement);
+                    } else if (config.last_announcement && !config.last_announcement.includes("Welcome")) {
+                        speakSmart(config.last_announcement);
+                    }
+                }
+            }
+        });
+        db.ref('blink_effect').on('value', (snap) => { if (snap.exists()) { let cid = snap.val().counterId; let card = document.querySelector(`.counter-card[data-counter-id='${cid}']`); if (card) { card.classList.add('blink-global-card'); setTimeout(() => card.classList.remove('blink-global-card'), 2400); } } });
+        db.ref('call_ended_effect').on('value', (snap) => { if (snap.exists()) { let cid = snap.val().counterId; let card = document.querySelector(`.counter-card[data-counter-id='${cid}']`); let notice = card?.querySelector('.call-ended-notice'); if (notice) { notice.classList.add('visible-white'); setTimeout(() => notice.classList.remove('visible-white'), 1600); } } });
+    }
+    
+    function initData() {
+        db.ref('counters').once('value', snap => { if (!snap.exists()) { let arr = []; for (let i = 1; i <= 14; i++) arr.push({ id: i, currentToken: null, servedCount: 0, isClosed: false, visible: true }); db.ref('counters').set(arr); } });
+        db.ref('config').once('value', snap => { if (!snap.exists()) db.ref('config').set({ next_token_id: 1, last_called_token: null, last_announcement: '', tickerMessage: "✨ Welcome to Darunnajath UP School ✨" }); });
+    }
+    
+    function login() { const email = document.getElementById('loginEmail').value, pw = document.getElementById('loginPassword').value; auth.signInWithEmailAndPassword(email, pw).then(() => { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('modeToggle').style.display = 'flex'; initData(); attachFirebase(); initVoices(); initOfflineDetection(); setMode('admin'); }).catch(e => document.getElementById('loginError').innerText = e.message); }
+    function createAdminAccount() { const email = document.getElementById('loginEmail').value, pw = document.getElementById('loginPassword').value; auth.createUserWithEmailAndPassword(email, pw).then(() => alert("Admin created! Login now.")).catch(e => alert(e.message)); }
+    function logout() { auth.signOut().then(() => location.reload()); }
+    function setMode(mode) { currentMode = mode; document.getElementById('adminMode').classList.toggle('active', mode === 'admin'); document.getElementById('displayMode').classList.toggle('active', mode === 'display'); document.body.classList.toggle('display-active', mode === 'display'); if (mode === 'display') updateDisplayClock(); }
+    
+    auth.onAuthStateChanged(user => { if (user) { document.getElementById('loginScreen').style.display = 'none'; document.getElementById('modeToggle').style.display = 'flex'; initData(); attachFirebase(); initVoices(); initOfflineDetection(); setMode('admin'); } });
+    setInterval(() => { if (currentMode === 'display') updateDisplayClock(); }, 1000);
+    
+    document.getElementById('sendCustomAnnouncementBtn')?.addEventListener('click', sendCustomAnnouncement);
+    document.getElementById('resetAnnouncementBtn')?.addEventListener('click', resetAnnouncementToWelcome);
+    
+    window.callNewToken = callNewToken; window.skipToken = skipToken; window.repeatToken = repeatToken; window.toggleCounterClose = toggleCounterClose; window.toggleVisibility = toggleVisibility;
+    window.resetAll = resetAll; window.updateNextToken = updateNextToken; window.updateTicker = updateTicker;
+    window.toggleTheme = toggleTheme; window.toggleFullscreen = toggleFullscreen; window.setMode = setMode;
+    window.login = login; window.logout = logout; window.createAdminAccount = createAdminAccount;
+</script>
 </body>
 </html>
