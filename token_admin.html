@@ -2,489 +2,352 @@
 <html lang="ml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>📱 അഡ്മിൻ പാനൽ | Token System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DNOUP SCHOOL KARUVARAKUNDU | Admission Poster</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Anek Malayalam', 'Segoe UI', system-ui, sans-serif;
+        }
         body {
-            font-family: 'Anek Malayalam', sans-serif;
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
-            padding: 15px;
-        }
-        .container { max-width: 550px; margin: 0 auto; }
-        
-        .header {
-            background: linear-gradient(135deg, #e94560, #c62a40);
-            border-radius: 20px;
-            padding: 15px 20px;
-            margin-bottom: 15px;
+            padding: 30px 20px;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
         }
-        .header h1 { color: white; font-size: 1.3rem; }
-        .sync-status {
-            background: rgba(255,255,255,0.2);
-            padding: 5px 12px;
-            border-radius: 20px;
-            color: white;
-            font-size: 0.7rem;
-        }
-        
-        .url-section {
-            background: white;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .url-label { font-size: 0.75rem; font-weight: 600; margin-bottom: 5px; color: #333; }
-        .url-input {
+        .poster-studio {
+            max-width: 1400px;
             width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            font-family: monospace;
-            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 48px;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
         }
-        .test-btn {
-            background: #17a2b8;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 0.75rem;
-        }
-        
-        .error-panel {
-            background: #ffebee;
-            border-left: 4px solid #f44336;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 15px;
-            display: none;
-        }
-        .error-panel.show { display: block; }
-        .error-message { color: #d32f2f; font-size: 0.7rem; word-break: break-all; }
-        
-        .stats {
-            background: linear-gradient(135deg, #1a1a2e, #0f0c29);
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .stat-item { text-align: center; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 10px; min-width: 70px; }
-        .stat-label { font-size: 0.6rem; color: rgba(255,255,255,0.7); }
-        .stat-value { font-size: 1.2rem; font-weight: 800; color: #ffd700; }
-        
-        .badges {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 12px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-        }
-        .badge {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-        .badge-active { background: #4CAF50; color: white; }
-        .badge-waiting { background: #FF9800; color: white; }
-        .badge-idle { background: #6c757d; color: white; }
-        
-        .token-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 15px;
+        .web-heading {
             text-align: center;
+            padding: 20px 20px 0 20px;
+            background: #fef9f0;
         }
-        .token-display {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
+        .web-heading h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e2f5e, #f7b32b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
-        .token-number { font-size: 3rem; font-weight: 800; color: #ffd700; font-family: monospace; }
-        
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
-        .btn {
-            padding: 12px 20px;
-            font-size: 0.9rem;
+        .studio-grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .controls-panel {
+            flex: 1.2;
+            min-width: 320px;
+            background: #fef9f0;
+            padding: 28px 24px;
+            border-right: 1px solid #ffe0b5;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .preview-panel {
+            flex: 1.8;
+            background: #eef2fa;
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .input-group label {
             font-weight: 700;
-            border: none;
-            border-radius: 40px;
-            cursor: pointer;
+            color: #1e2f5e;
+            font-size: 1.1rem;
         }
-        .btn-primary { background: #28a745; color: white; flex: 2; }
-        .btn-danger { background: #dc3545; color: white; flex: 1; }
-        
-        .token-settings {
-            background: #f8f9fa;
-            border-radius: 16px;
-            padding: 12px;
-            margin-top: 10px;
+        input, .file-label {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 60px;
+            border: 1.5px solid #e2dccd;
+            background: white;
+            font-size: 1rem;
+            outline: none;
         }
-        .settings-buttons { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        .setting-btn {
-            padding: 6px 14px;
-            font-size: 0.75rem;
-            border: none;
-            border-radius: 20px;
+        .file-label {
+            background: #f0e7d6;
+            text-align: center;
             cursor: pointer;
             font-weight: 600;
         }
-        .btn-first { background: #17a2b8; color: white; }
-        .btn-last { background: #6c757d; color: white; }
-        .custom-input { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
-        .custom-input input { width: 90px; padding: 6px; border: 1px solid #ddd; border-radius: 20px; text-align: center; }
-        .custom-input button { padding: 6px 15px; background: #e94560; color: white; border: none; border-radius: 20px; cursor: pointer; }
-        
-        .counters-list { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
-        .counter-item {
-            background: #f8f9fa;
-            border-radius: 14px;
-            padding: 12px;
-            border-left: 4px solid #e94560;
+        #photoInput { display: none; }
+        .cropper-area {
+            background: #fff6ea;
+            border-radius: 32px;
+            padding: 16px;
+            border: 1px solid #ffdead;
         }
-        .counter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .counter-title { font-size: 1rem; font-weight: 800; }
-        .counter-current { font-size: 1.6rem; font-weight: 800; font-family: monospace; }
-        .counter-actions { display: flex; gap: 8px; margin-top: 8px; }
-        .action-btn { flex: 1; padding: 8px; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; }
-        .btn-call { background: #28a745; color: white; }
-        .btn-reset { background: #ffc107; color: #333; }
-        
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #ffd700;
-            padding: 10px 20px;
-            border-radius: 30px;
+        .btn {
+            border: none;
+            background: #2c3e66;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-primary { background: #f7b32b; color: #1e2f5e; }
+        .poster-wrapper {
+            background: #fff;
+            border-radius: 24px;
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 16px;
+        }
+        .download-btn {
+            background: #1f8a4c;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .info-badge {
             font-size: 0.8rem;
-            z-index: 1000;
+            background: #e9ecf3;
+            border-radius: 40px;
+            padding: 8px 16px;
+            text-align: center;
         }
-        .footer { text-align: center; padding: 15px; color: rgba(255,255,255,0.4); font-size: 0.65rem; }
+        @media (max-width: 850px) {
+            .studio-grid { flex-direction: column; }
+            .web-heading h1 { font-size: 1.6rem; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="header">
-        <h1>🎛️ അഡ്മിൻ പാനൽ</h1>
-        <div class="sync-status" id="syncStatus">⚙️ Setup Required</div>
+<div class="poster-studio">
+    <div class="web-heading">
+        <h1>DNOUP SCHOOL KARUVARAKUNDU</h1>
+        <p>അഡ്മിഷൻ ക്യാമ്പയിൻ പോസ്റ്റർ ജനറേറ്റർ</p>
     </div>
-    
-    <div class="url-section">
-        <div class="url-label">🔗 Google Apps Script URL</div>
-        <input type="text" class="url-input" id="gasUrlInput" placeholder="Paste your Apps Script URL here">
-        <button class="test-btn" onclick="testConnection()">🔍 Test & Save</button>
-    </div>
-    
-    <div class="error-panel" id="errorPanel">
-        <div class="error-message" id="errorMessage"></div>
-    </div>
-    
-    <div class="stats">
-        <div class="stat-item"><div class="stat-label">📋 ആകെ</div><div class="stat-value" id="totalTokens">0</div></div>
-        <div class="stat-item"><div class="stat-label">🟢 Active</div><div class="stat-value" id="activeCount">0</div></div>
-        <div class="stat-item"><div class="stat-label">🟠 ക്യൂ</div><div class="stat-value" id="waitingCount">0</div></div>
-        <div class="stat-item"><div class="stat-label">✅ Completed</div><div class="stat-value" id="completedCount">0</div></div>
-    </div>
-    
-    <div class="badges" id="badges"></div>
-    
-    <div class="token-card">
-        <div class="token-display">
-            <div>🎫 അടുത്ത ടോക്കൺ</div>
-            <div class="token-number" id="nextToken">1</div>
-        </div>
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="addNewToken()">➕ പുതിയ ടോക്കൺ</button>
-            <button class="btn btn-danger" onclick="resetAll()">🔁 Reset</button>
-        </div>
-        
-        <div class="token-settings">
-            <div class="settings-buttons">
-                <button class="setting-btn btn-first" onclick="setFirstToken()">🔢 ആദ്യ ടോക്കൺ (1)</button>
-                <button class="setting-btn btn-last" onclick="setLastToken()">📌 അവസാന ടോക്കൺ</button>
+    <div class="studio-grid">
+        <div class="controls-panel">
+            <div class="input-group">
+                <label>🎓 വിദ്യാർത്ഥിയുടെ പേര് / Student Name</label>
+                <input type="text" id="studentNameInput" placeholder="e.g. സുഹൈൽ/SUHAIL" autocomplete="off">
             </div>
-            <div class="custom-input">
-                <input type="number" id="customToken" placeholder="നമ്പർ">
-                <button onclick="setCustomToken()">✅ സെറ്റ്</button>
+            <div class="input-group">
+                <label>📸 ഫോട്ടോ അപ്ലോഡ് ചെയ്യുക</label>
+                <div class="file-label" onclick="document.getElementById('photoInput').click()">📁 തിരഞ്ഞെടുക്കുക</div>
+                <input type="file" id="photoInput" accept="image/*">
             </div>
+            <div class="cropper-area" id="cropperSection" style="display: none;">
+                <div class="cropper-title">✂️ ക്രോപ്പ് ചെയ്യുക (Square)</div>
+                <div id="cropImageContainer"><img id="cropImage" style="max-width:100%"></div>
+                <div class="crop-actions">
+                    <button class="btn btn-primary" id="applyCropBtn">✔️ Crop & Set</button>
+                    <button class="btn" id="cancelCropBtn">Cancel</button>
+                </div>
+            </div>
+            <div class="info-badge">©️SUHAIL KERALA</div>
+        </div>
+        <div class="preview-panel">
+            <div class="poster-wrapper"><canvas id="posterCanvas" width="1200" height="1500"></canvas></div>
+            <button id="downloadPosterBtn" class="download-btn">⬇️ പോസ്റ്റർ ഡൗൺലോഡ് ചെയ്യുക</button>
         </div>
     </div>
-    
-    <div class="counters-list" id="countersList"></div>
-    <div class="footer">☁️ Cloud Sync | Auto-refresh</div>
 </div>
 
 <script>
-let GAS_URL = localStorage.getItem('gas_url') || '';
-let counters = [];
-let config = { next_token_id: 1, last_used_token: null };
-
-// Load saved URL
-if (GAS_URL) {
-    document.getElementById('gasUrlInput').value = GAS_URL;
-    fetchData();
-}
-
-async function testConnection() {
-    const url = document.getElementById('gasUrlInput').value.trim();
-    if (!url) { showError('Please enter URL'); return; }
-    GAS_URL = url;
-    localStorage.setItem('gas_url', url);
-    await fetchData();
-}
-
-async function fetchData() {
-    if (!GAS_URL) { updateSyncStatus('⚠️ Setup', 'Enter URL'); return; }
+    const bgImageURL = 'https://i.ibb.co/sJtQ56z6/f2e8ca9e-a173-4d02-8beb-1181e00cde99.jpg';
+    const canvas = document.getElementById('posterCanvas');
+    const ctx = canvas.getContext('2d');
+    const nameInput = document.getElementById('studentNameInput');
+    const photoInput = document.getElementById('photoInput');
+    const cropperSection = document.getElementById('cropperSection');
+    const cropImage = document.getElementById('cropImage');
+    const applyCrop = document.getElementById('applyCropBtn');
+    const cancelCrop = document.getElementById('cancelCropBtn');
     
-    try {
-        const response = await fetch(`${GAS_URL}?action=get_all`);
-        const result = await response.json();
-        
-        if (result.success) {
-            counters = result.data.counters || [];
-            config = result.data.config || {};
-            hideError();
-            updateSyncStatus('🟢 Online', 'Connected');
-            renderAll();
-        } else {
-            throw new Error(result.data);
-        }
-    } catch (error) {
-        showError(error.message);
-        updateSyncStatus('🔴 Offline', 'Error');
+    let cropper = null;
+    let currentPhoto = null; // HTMLImageElement
+    let background = new Image();
+    let bgReady = false;
+    
+    // Rounded rect helper
+    function roundedRect(ctx, x, y, w, h, r) {
+        if (w < 2*r) r = w/2;
+        if (h < 2*r) r = h/2;
+        ctx.moveTo(x+r, y);
+        ctx.lineTo(x+w-r, y);
+        ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+        ctx.lineTo(x+w, y+h-r);
+        ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+        ctx.lineTo(x+r, y+h);
+        ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+        ctx.lineTo(x, y+r);
+        ctx.quadraticCurveTo(x, y, x+r, y);
+        ctx.closePath();
     }
-}
-
-async function addNewToken() {
-    if (!GAS_URL) { showError('Configure URL first'); return; }
     
-    const tokenNumber = config.next_token_id?.toString() || '1';
-    const targetCounter = getShortestQueue();
-    
-    try {
-        const response = await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'add_token', token_number: tokenNumber, counter: targetCounter.id })
-        });
-        const result = await response.json();
+    // Draw poster: only background + photo + name
+    function drawPoster() {
+        if (!ctx) return;
+        const w = canvas.width, h = canvas.height;
         
-        if (result.success) {
-            showToast(`✅ ടോക്കൺ ${tokenNumber} → കൗണ്ടർ ${targetCounter.id}`);
-            speak(`പുതിയ ടോക്കൺ ${tokenNumber}, കൗണ്ടർ ${targetCounter.id} ലേക്ക്`);
-            await fetchData();
+        // Background
+        if (bgReady && background.complete && background.naturalWidth) {
+            ctx.drawImage(background, 0, 0, w, h);
         } else {
-            throw new Error(result.data);
+            ctx.fillStyle = '#1e3c72';
+            ctx.fillRect(0, 0, w, h);
         }
-    } catch (error) { showError(error.message); }
-}
-
-async function callNext(counterId) {
-    try {
-        const response = await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'call_next', counter_id: counterId })
-        });
-        const result = await response.json();
         
-        if (result.success) {
-            showToast(`🔔 കൗണ്ടർ ${counterId}: ടോക്കൺ ${result.data.token}`);
-            speak(`കൗണ്ടർ ${counterId} ലേക്ക്, ടോക്കൺ ${result.data.token} ദയവായി എത്തുക`);
-            await fetchData();
+        // Photo (square, rounded, larger)
+        const photoSize = 520;
+        const photoX = (w - photoSize) / 2;
+        const photoY = 300;
+        const radius = 60;
+        
+        if (currentPhoto && currentPhoto.complete && currentPhoto.naturalWidth) {
+            ctx.save();
+            ctx.beginPath();
+            roundedRect(ctx, photoX, photoY, photoSize, photoSize, radius);
+            ctx.clip();
+            ctx.drawImage(currentPhoto, photoX, photoY, photoSize, photoSize);
+            ctx.restore();
+            // Borders
+            ctx.beginPath();
+            roundedRect(ctx, photoX, photoY, photoSize, photoSize, radius);
+            ctx.strokeStyle = "#FFD966";
+            ctx.lineWidth = 6;
+            ctx.stroke();
+            ctx.beginPath();
+            roundedRect(ctx, photoX, photoY, photoSize, photoSize, radius);
+            ctx.strokeStyle = "#FFFFFF";
+            ctx.lineWidth = 3;
+            ctx.stroke();
         } else {
-            showToast(`⚠️ കൗണ്ടർ ${counterId} ൽ ടോക്കൺ ഇല്ല`);
+            ctx.fillStyle = "rgba(255,248,225,0.85)";
+            ctx.beginPath();
+            roundedRect(ctx, photoX, photoY, photoSize, photoSize, radius);
+            ctx.fill();
+            ctx.fillStyle = "#8b6946";
+            ctx.font = "36px 'Anek Malayalam'";
+            ctx.textAlign = "center";
+            ctx.fillText("📷 PHOTO", photoX+photoSize/2, photoY+photoSize/2);
+            ctx.font = "26px 'Anek Malayalam'";
+            ctx.fillText("Upload & crop", photoX+photoSize/2, photoY+photoSize/2+55);
+            ctx.textAlign = "left";
         }
-    } catch (error) { showError(error.message); }
-}
-
-async function resetCounter(counterId) {
-    try {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'reset_counter', counter_id: counterId })
-        });
-        await fetchData();
-        showToast(`↩️ Reset complete`);
-    } catch (error) { showError(error.message); }
-}
-
-async function setFirstToken() {
-    if (!confirm('ആദ്യ ടോക്കൺ (1) ആക്കണോ?')) return;
-    try {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'set_next_token', next_token: 1 })
-        });
-        showToast('✅ ടോക്കൺ 1 ആക്കി');
-        await fetchData();
-    } catch (error) { showError(error.message); }
-}
-
-async function setLastToken() {
-    const lastUsed = config.last_used_token;
-    if (!lastUsed) { showToast('⚠️ അവസാന ടോക്കൺ ഒന്നുമില്ല'); return; }
-    const newNext = parseInt(lastUsed) + 1;
-    if (!confirm(`അടുത്ത ടോക്കൺ ${newNext} ആക്കണോ?`)) return;
-    try {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'set_next_token', next_token: newNext })
-        });
-        showToast(`✅ അടുത്ത ടോക്കൺ ${newNext} ആക്കി`);
-        await fetchData();
-    } catch (error) { showError(error.message); }
-}
-
-async function setCustomToken() {
-    const input = document.getElementById('customToken');
-    const value = parseInt(input.value.trim());
-    if (isNaN(value) || value < 1) { showToast('⚠️ ശരിയായ നമ്പർ നൽകുക'); return; }
-    if (!confirm(`അടുത്ത ടോക്കൺ ${value} ആക്കണോ?`)) return;
-    try {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'set_next_token', next_token: value })
-        });
-        showToast(`✅ അടുത്ത ടോക്കൺ ${value} ആക്കി`);
-        input.value = '';
-        await fetchData();
-    } catch (error) { showError(error.message); }
-}
-
-async function resetAll() {
-    if (!confirm('⚠️ എല്ലാം റീസെറ്റ് ചെയ്യണോ?')) return;
-    try {
-        await fetch(GAS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'reset_all' })
-        });
-        showToast('🔄 എല്ലാം റീസെറ്റ് ചെയ്തു');
-        await fetchData();
-    } catch (error) { showError(error.message); }
-}
-
-function getShortestQueue() {
-    if (!counters.length) return { id: 1 };
-    return counters.reduce((a, b) => (a.queue?.length || 0) < (b.queue?.length || 0) ? a : b, counters[0]);
-}
-
-function updateSyncStatus(status, message) {
-    const el = document.getElementById('syncStatus');
-    if (el) el.innerHTML = `${status} ${message}`;
-}
-
-function showError(msg) {
-    const panel = document.getElementById('errorPanel');
-    const msgDiv = document.getElementById('errorMessage');
-    msgDiv.innerHTML = `⚠️ ${msg}`;
-    panel.classList.add('show');
-    setTimeout(() => panel.classList.remove('show'), 5000);
-}
-
-function hideError() {
-    document.getElementById('errorPanel').classList.remove('show');
-}
-
-function speak(msg) {
-    if ('speechSynthesis' in window) {
-        let u = new SpeechSynthesisUtterance(msg);
-        u.lang = 'ml-IN'; u.rate = 0.85;
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(u);
+        
+        // Name - black, auto-scaled to fit width
+        let name = nameInput.value.trim();
+        if (name === "") name = "______";
+        const maxWidth = w - 100; // 1100px available
+        let fontSize = 64;
+        ctx.font = `bold ${fontSize}px 'Anek Malayalam'`;
+        while (ctx.measureText(name).width > maxWidth && fontSize > 24) {
+            fontSize -= 2;
+            ctx.font = `bold ${fontSize}px 'Anek Malayalam'`;
+        }
+        const nameY = photoY + photoSize + 100; // 300+520+100 = 920 (safe)
+        ctx.fillStyle = "#000000";
+        ctx.textAlign = "center";
+        ctx.fillText(name, w/2, nameY);
+        ctx.textAlign = "left";
     }
-}
-
-function showToast(msg) {
-    let t = document.createElement('div');
-    t.className = 'toast';
-    t.textContent = msg;
-    document.body.appendChild(t);
-    setTimeout(() => t.remove(), 2000);
-}
-
-function renderAll() {
-    document.getElementById('nextToken').innerHTML = config.next_token_id || 1;
     
-    // Badges
-    const badgesDiv = document.getElementById('badges');
-    badgesDiv.innerHTML = '';
-    counters.forEach(c => {
-        let cls = 'badge-idle';
-        if (c.currentToken) cls = 'badge-active';
-        else if (c.queue?.length > 0) cls = 'badge-waiting';
-        let badge = document.createElement('div');
-        badge.className = `badge ${cls}`;
-        badge.textContent = c.id;
-        badge.onclick = () => document.getElementById(`counter_${c.id}`)?.scrollIntoView({ behavior: 'smooth' });
-        badgesDiv.appendChild(badge);
+    // Update photo after crop
+    function setPhotoFromDataURL(dataURL) {
+        const img = new Image();
+        img.onload = () => {
+            currentPhoto = img;
+            drawPoster();
+        };
+        img.src = dataURL;
+    }
+    
+    // Cropper logic
+    photoInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            cropImage.src = ev.target.result;
+            if (cropper) cropper.destroy();
+            cropperSection.style.display = "block";
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 2,
+                autoCropArea: 0.9,
+                cropBoxMovable: true,
+                cropBoxResizable: true,
+                zoomable: true
+            });
+        };
+        reader.readAsDataURL(file);
     });
     
-    // Counters List
-    const listDiv = document.getElementById('countersList');
-    listDiv.innerHTML = '';
-    counters.forEach(c => {
-        let div = document.createElement('div');
-        div.className = 'counter-item';
-        div.id = `counter_${c.id}`;
-        div.innerHTML = `
-            <div class="counter-header">
-                <span class="counter-title">🏪 കൗണ്ടർ ${c.id}</span>
-                <span class="counter-current">${c.currentToken || '---'}</span>
-            </div>
-            <div>🟠 ക്യൂ: ${c.queue?.length || 0} | ✅ ${c.servedCount || 0}</div>
-            <div class="counter-actions">
-                <button class="action-btn btn-call" onclick="callNext(${c.id})">⏩ നെക്സ്റ്റ്</button>
-                <button class="action-btn btn-reset" onclick="resetCounter(${c.id})">🔄 റീസെറ്റ്</button>
-            </div>
-        `;
-        listDiv.appendChild(div);
+    applyCrop.addEventListener('click', () => {
+        if (!cropper) return;
+        const croppedCanvas = cropper.getCroppedCanvas({ width: 600, height: 600 });
+        if (croppedCanvas) {
+            setPhotoFromDataURL(croppedCanvas.toDataURL());
+        }
+        cropperSection.style.display = "none";
+        cropper.destroy();
+        cropper = null;
+        photoInput.value = '';
     });
     
-    // Stats
-    let total = counters.reduce((s, c) => s + (c.servedCount || 0) + (c.queue?.length || 0) + (c.currentToken ? 1 : 0), 0);
-    let active = counters.filter(c => c.currentToken).length;
-    let waiting = counters.reduce((s, c) => s + (c.queue?.length || 0), 0);
-    let completed = counters.reduce((s, c) => s + (c.servedCount || 0), 0);
-    document.getElementById('totalTokens').innerHTML = total;
-    document.getElementById('activeCount').innerHTML = active;
-    document.getElementById('waitingCount').innerHTML = waiting;
-    document.getElementById('completedCount').innerHTML = completed;
-}
-
-setInterval(() => { if (GAS_URL) fetchData(); }, 5000);
+    cancelCrop.addEventListener('click', () => {
+        cropperSection.style.display = "none";
+        if (cropper) cropper.destroy();
+        cropper = null;
+        photoInput.value = '';
+    });
+    
+    nameInput.addEventListener('input', () => drawPoster());
+    
+    // Download HD
+    document.getElementById('downloadPosterBtn').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = `admission_${nameInput.value.trim() || 'poster'}.png`;
+        canvas.toBlob(blob => {
+            link.href = URL.createObjectURL(blob);
+            link.click();
+            URL.revokeObjectURL(link.href);
+        });
+    });
+    
+    // Load background
+    background.crossOrigin = "Anonymous";
+    background.onload = () => { bgReady = true; drawPoster(); };
+    background.onerror = () => { bgReady = true; drawPoster(); };
+    background.src = bgImageURL;
+    drawPoster();
 </script>
 </body>
 </html>
