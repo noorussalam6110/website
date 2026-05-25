@@ -231,10 +231,9 @@
 
 <script>
     // =======================
-    // CORE REQUIREMENTS:
-    // 1. PHOTO SIZE REDUCED (420px instead of original 520)
-    // 2. NAME IN WHITE COLOUR with elegant shadow for readability
-    // 3. CLEAN POSTER : only background + photo + white name (no extra text, no underline)
+    // FIXED: NAME REPEATING ISSUE (removed duplicate text rendering)
+    // Poster design: Background + Photo (reduced size 420px) + White Name (single clean layer)
+    // No extra text, no underline, no duplicate drawing.
     // =======================
 
     const bgImageURL = 'https://i.ibb.co/0yXsZWnm/KERALA.jpg';
@@ -252,12 +251,12 @@
     let background = new Image();
     let bgReady = false;
     
-    // 🎨 PHOTO SIZE: REDUCED (was 520, now smaller = 420px square)
-    const PHOTO_SIZE = 420;            // photo size reduced as requested
-    const PHOTO_Y = 470;              // perfectly centered after reduction (old was 440, adjusted)
-    // photo X is dynamic (center horizontally)
+    // 🎨 PHOTO SIZE: REDUCED to 420px (as requested)
+    const PHOTO_SIZE = 420;            
+    const PHOTO_Y = 470;              // vertically balanced after reduction
+    // X will be centered dynamically
     
-    // Helper: rounded rectangle (smooth corners for photo)
+    // Helper: rounded rectangle for photo frame
     function roundedRect(ctx, x, y, w, h, r) {
         if (w < 2 * r) r = w / 2;
         if (h < 2 * r) r = h / 2;
@@ -273,7 +272,7 @@
         ctx.closePath();
     }
     
-    // 🖼️ MAIN DRAW FUNCTION - exactly: Background + Photo (reduced size) + WHITE NAME (no underline, no extra text)
+    // 🖼️ MAIN DRAW FUNCTION - renders exactly: Background + Photo (reduced) + WHITE NAME (single call, no duplication)
     function drawPoster() {
         if (!ctx) return;
         const w = canvas.width;    // 1200
@@ -283,7 +282,7 @@
         if (bgReady && background.complete && background.naturalWidth) {
             ctx.drawImage(background, 0, 0, w, h);
         } else {
-            // beautiful fallback gradient (if bg fails to load)
+            // fallback gradient (rich and festive)
             const grad = ctx.createLinearGradient(0, 0, 0, h);
             grad.addColorStop(0, '#1e2f5e');
             grad.addColorStop(1, '#f7b32b');
@@ -291,7 +290,7 @@
             ctx.fillRect(0, 0, w, h);
         }
         
-        // 2. 📸 PHOTO SECTION - size REDUCED (PHOTO_SIZE = 420px)
+        // 2. 📸 PHOTO SECTION - size REDUCED (420px)
         const photoX = (w - PHOTO_SIZE) / 2;
         const photoY = PHOTO_Y;
         const cornerRadius = 48;          // elegant rounded corners
@@ -304,7 +303,7 @@
             ctx.drawImage(currentPhoto, photoX, photoY, PHOTO_SIZE, PHOTO_SIZE);
             ctx.restore();
             
-            // ✨ Double border (gold + white) for premium look, doesn't add text
+            // ✨ Double border (gold + white) for premium look - only decorative, does NOT add text
             ctx.beginPath();
             roundedRect(ctx, photoX, photoY, PHOTO_SIZE, PHOTO_SIZE, cornerRadius);
             ctx.strokeStyle = "#FFD966";
@@ -316,7 +315,7 @@
             ctx.lineWidth = 2.5;
             ctx.stroke();
         } else {
-            // Placeholder when no photo uploaded (still reduced size area)
+            // Empty photo placeholder (still uses reduced size area)
             ctx.fillStyle = "rgba(255,248,225,0.92)";
             ctx.beginPath();
             roundedRect(ctx, photoX, photoY, PHOTO_SIZE, PHOTO_SIZE, cornerRadius);
@@ -331,11 +330,12 @@
             ctx.textAlign = "left";
         }
         
-        // 3. 🏷️ STUDENT NAME - IN WHITE COLOUR (exact requirement) with subtle dark shadow for contrast
+        // 3. 🏷️ STUDENT NAME - IN WHITE COLOUR (exact requirement) with clean shadow for contrast
+        //    FIX: Only ONE fillText call to prevent repeating/ghosting effect.
         let studentName = nameInput.value.trim();
         if (studentName === "") studentName = "__________";
         
-        // Dynamic font size to avoid overflow (max width 1000px, margins 100px each side)
+        // Dynamic font size to avoid overflow (max width approx 1000px)
         const maxNameWidth = w - 180;
         let fontSize = 74;
         ctx.font = `bold ${fontSize}px 'Anek Malayalam'`;
@@ -344,35 +344,29 @@
             ctx.font = `bold ${fontSize}px 'Anek Malayalam'`;
         }
         
-        // Position name below the reduced photo (photoY + PHOTO_SIZE + comfortable margin)
-        const nameY = photoY + PHOTO_SIZE + 98;   // perfect spacing after reduction
+        // Position name below the reduced photo (perfect spacing after reduction)
+        const nameY = photoY + PHOTO_SIZE + 98;   
         
-        // === WHITE TEXT WITH READABLE SHADOW (no underline, no extra text) ===
+        // === WHITE TEXT WITH READABLE DARK SHADOW (single layer, no repetition) ===
         ctx.save();
+        // Strong dark shadow ensures white text pops on any background
         ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
         ctx.shadowBlur = 10;
         ctx.shadowOffsetX = 3;
         ctx.shadowOffsetY = 3;
-        ctx.fillStyle = "#FFFFFF";               // ⭐ NAME IN WHITE COLOUR ⭐
+        ctx.fillStyle = "#FFFFFF";               // ⭐ NAME IN PURE WHITE ⭐
         ctx.textAlign = "center";
         ctx.font = `bold ${fontSize}px 'Anek Malayalam'`;
+        // ONE AND ONLY ONE fillText call - fixes the "NAME REPEATING IN TWO TIMES" issue
         ctx.fillText(studentName, w / 2, nameY);
         ctx.restore();
         
-        // Optional: extra delicate "glow" effect to ensure white stands out
-        ctx.save();
-        ctx.shadowColor = "rgba(255,215,0,0.4)";  // faint gold glow for elegance
-        ctx.shadowBlur = 4;
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = `bold ${fontSize}px 'Anek Malayalam'`;
-        ctx.fillText(studentName, w / 2, nameY);
-        ctx.restore();
-        
-        // ❌ NO UNDERLINE, NO EXTRA TEXT, NO SCHOOL FOOTER, NO DECORATIVE TEXT - only minimal poster magic.
+        // ❌ NO SECOND fillText, NO UNDERLINE, NO EXTRA TEXT, NO SCHOOL FOOTER
+        // Poster stays minimal and elegant as requested.
         ctx.textAlign = "left";
     }
     
-    // Helper: load image from dataURL and refresh poster
+    // Helper: load cropped image and refresh poster
     function setPhotoFromDataURL(dataURL) {
         const img = new Image();
         img.onload = () => {
@@ -382,7 +376,7 @@
         img.src = dataURL;
     }
     
-    // ---------- CROP LOGIC (Square crop 1:1) ----------
+    // ---------- CROP LOGIC (Square 1:1) ----------
     photoInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -404,17 +398,17 @@
         reader.readAsDataURL(file);
     });
     
-    // Apply crop and update photo (cropped to square, high-res, will be drawn at REDUCED 420px)
+    // Apply crop and update photo (high quality source, will be drawn at REDUCED 420px)
     applyCrop.addEventListener('click', () => {
         if (!cropper) return;
-        const croppedCanvas = cropper.getCroppedCanvas({ width: 700, height: 700 }); // high quality source
+        const croppedCanvas = cropper.getCroppedCanvas({ width: 700, height: 700 }); // sharp source
         if (croppedCanvas) {
             setPhotoFromDataURL(croppedCanvas.toDataURL('image/png'));
         }
         cropperSection.style.display = "none";
         if (cropper) cropper.destroy();
         cropper = null;
-        photoInput.value = '';   // reset file input, allows re-upload
+        photoInput.value = '';   // reset file input to allow re-upload
     });
     
     cancelCrop.addEventListener('click', () => {
@@ -424,7 +418,7 @@
         photoInput.value = '';
     });
     
-    // Real-time name update (white colour draws immediately)
+    // Real-time name update (white colour draws instantly, no duplicate)
     nameInput.addEventListener('input', () => drawPoster());
     
     // 🖨️ Download high-quality poster PNG
@@ -447,22 +441,22 @@
         drawPoster();
     };
     background.onerror = () => {
-        console.warn("Using gradient fallback");
+        console.warn("Using gradient fallback (bg image not loaded)");
         bgReady = true;
         drawPoster();
     };
     background.src = bgImageURL;
     
-    // initial draw (empty photo, white name if any)
+    // initial draw (empty photo, default name)
     drawPoster();
     
-    // Redraw if needed on resize (canvas dimensions fixed but preview scales)
+    // Redraw if needed on resize (canvas dimensions fixed, preview scales via CSS)
     window.addEventListener('resize', () => {
         drawPoster();
     });
     
-    // Optional: small clear indication that photo size is reduced + white name success message in console
-    console.log("✅ Poster Ready | PHOTO SIZE REDUCED to 420px | NAME in WHITE color | No Underline/Extra text");
+    // console confirmation (silent success)
+    console.log("✅ Poster Engine: PHOTO SIZE REDUCED to 420px | NAME in WHITE | FIXED: No duplicate text rendering");
 </script>
 </body>
 </html>
