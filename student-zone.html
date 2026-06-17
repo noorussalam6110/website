@@ -1,1758 +1,2106 @@
 <!DOCTYPE html>
 <html lang="ml">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Zone | Noorussalam Madrasa</title>
-
-  <!-- Bootstrap & Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
-
-  <style>
-    /* ========== ROOT VARIABLES ========== */
-    :root {
-      --primary: #0a194f;
-      --secondary: #122f7a;
-      --accent: #3a8df3;
-      --accent-light: #5c9dff;
-      --accent-glow: rgba(58, 141, 243, 0.3);
-      --light: #f8f9fa;
-      --gradient-1: linear-gradient(135deg, #0a194f 0%, #1a3b8f 50%, #3a8df3 100%);
-      --gradient-2: linear-gradient(135deg, #3a8df3 0%, #5c9dff 50%, #7bb3ff 100%);
-      --glass-bg: rgba(255, 255, 255, 0.08);
-      --glass-border: rgba(255, 255, 255, 0.15);
-      --shadow-glow: 0 8px 32px rgba(58, 141, 243, 0.25);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      font-family: 'Poppins', 'Segoe UI', sans-serif;
-      background: var(--primary);
-      color: var(--light);
-      overflow-x: hidden;
-      padding-top: 80px;
-      min-height: 100vh;
-    }
-
-    /* ===== ANIMATED BACKGROUND ===== */
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(ellipse at 10% 20%, rgba(58, 141, 243, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 80%, rgba(58, 141, 243, 0.05) 0%, transparent 50%),
-        radial-gradient(ellipse at 50% 50%, rgba(10, 25, 79, 1) 0%, var(--primary) 100%);
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .particles {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: -1;
-      overflow: hidden;
-    }
-
-    .particle {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      background: rgba(58, 141, 243, 0.3);
-      border-radius: 50%;
-      animation: float-particle linear infinite;
-    }
-
-    .particle:nth-child(1) { left: 10%; animation-duration: 20s; animation-delay: 0s; width: 3px; height: 3px; }
-    .particle:nth-child(2) { left: 20%; animation-duration: 25s; animation-delay: 2s; width: 5px; height: 5px; }
-    .particle:nth-child(3) { left: 35%; animation-duration: 18s; animation-delay: 4s; width: 4px; height: 4px; }
-    .particle:nth-child(4) { left: 50%; animation-duration: 22s; animation-delay: 1s; width: 6px; height: 6px; }
-    .particle:nth-child(5) { left: 65%; animation-duration: 28s; animation-delay: 3s; width: 3px; height: 3px; }
-    .particle:nth-child(6) { left: 75%; animation-duration: 19s; animation-delay: 5s; width: 5px; height: 5px; }
-    .particle:nth-child(7) { left: 85%; animation-duration: 24s; animation-delay: 2s; width: 4px; height: 4px; }
-    .particle:nth-child(8) { left: 45%; animation-duration: 30s; animation-delay: 6s; width: 7px; height: 7px; }
-    .particle:nth-child(9) { left: 15%; animation-duration: 21s; animation-delay: 4s; width: 4px; height: 4px; }
-    .particle:nth-child(10) { left: 55%; animation-duration: 26s; animation-delay: 1s; width: 5px; height: 5px; }
-
-    @keyframes float-particle {
-      0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
-    }
-
-    /* ===== ORIGINAL NAVBAR (abbreviated – same as before) ===== */
-    .navbar {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-      transition: all 0.4s ease;
-      padding: 12px 0;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    }
-    .navbar.scrolled {
-      background: rgba(10, 25, 79, 0.98);
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-      padding: 8px 0;
-    }
-    .logo-container {
-      position: relative;
-      display: inline-block;
-    }
-    .logo-img {
-      border-radius: 10px;
-      transition: all 0.3s ease;
-      position: relative;
-      z-index: 2;
-      border: 2px solid var(--accent);
-    }
-    .logo-glow {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 60px;
-      height: 60px;
-      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      border-radius: 50%;
-      z-index: 1;
-    }
-    .navbar-brand:hover .logo-img {
-      transform: scale(1.1) rotate(5deg);
-    }
-    .navbar-brand:hover .logo-glow {
-      opacity: 0.3;
-    }
-    .navbar-toggler {
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      padding: 6px 12px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      background: transparent !important;
-    }
-    .navbar-toggler:focus {
-      box-shadow: 0 0 0 3px rgba(58, 141, 243, 0.3);
-    }
-    .toggler-text {
-      font-size: 0.85rem;
-      margin-left: 8px;
-      color: white;
-      font-weight: 500;
-    }
-    .nav-icon {
-      position: relative;
-      display: flex;
-      align-items: center;
-      padding: 10px 16px !important;
-      margin: 0 4px;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      overflow: hidden;
-      color: white !important;
-      text-decoration: none !important;
-    }
-    .nav-icon i {
-      margin-right: 10px;
-      font-size: 1.1rem;
-      width: 24px;
-      text-align: center;
-      transition: all 0.3s ease;
-    }
-    .nav-icon span {
-      position: relative;
-      z-index: 2;
-      font-weight: 500;
-    }
-    .nav-hover-effect {
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(58, 141, 243, 0.1), transparent);
-      transition: left 0.6s ease;
-      z-index: 1;
-    }
-    .nav-icon:hover {
-      background: rgba(255, 255, 255, 0.05);
-      transform: translateY(-2px);
-    }
-    .nav-icon:hover .nav-hover-effect {
-      left: 100%;
-    }
-    .nav-icon:hover i {
-      color: var(--accent) !important;
-      transform: scale(1.2);
-    }
-    .nav-icon.active {
-      background: rgba(58, 141, 243, 0.15);
-      color: var(--accent) !important;
-    }
-    .nav-icon.active i {
-      color: var(--accent) !important;
-    }
-    .nav-icon.active::before {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 30px;
-      height: 3px;
-      background: var(--accent);
-      border-radius: 2px;
-      animation: pulseLine 2s infinite;
-    }
-    @keyframes pulseLine {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* Dropdown styles (abbreviated – same as previous) */
-    .dropdown-menu {
-      background: rgba(10, 25, 79, 0.98);
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(58, 141, 243, 0.3);
-      border-radius: 12px;
-      padding: 8px 0;
-      margin-top: 10px;
-      min-width: 280px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-      animation: dropdownSlide 0.3s ease;
-    }
-    @keyframes dropdownSlide {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .dropdown-item {
-      color: #f8f9fa !important;
-      padding: 12px 20px;
-      border-radius: 8px;
-      margin: 4px 8px;
-      transition: all 0.3s ease;
-      text-decoration: none !important;
-    }
-    .dropdown-item:hover {
-      background: rgba(58, 141, 243, 0.15) !important;
-      transform: translateX(5px);
-    }
-    .dropdown-item-content {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    .dropdown-item-content i {
-      font-size: 1.2rem;
-      color: var(--accent);
-      width: 30px;
-      text-align: center;
-      transition: transform 0.3s ease;
-    }
-    .dropdown-item:hover .dropdown-item-content i {
-      transform: scale(1.2);
-    }
-    .dropdown-title {
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: white;
-    }
-    .dropdown-sub {
-      font-size: 0.8rem;
-      color: rgba(255, 255, 255, 0.7);
-      margin-top: 2px;
-    }
-    .dropdown-divider {
-      border-color: rgba(58, 141, 243, 0.2);
-      margin: 6px 20px;
-    }
-    .student-dropdown-normalized {
-      width: 320px;
-      padding: 0;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-    }
-    .dropdown-header {
-      padding: 20px;
-      background: rgba(58, 141, 243, 0.05);
-      border-bottom: 1px solid rgba(58, 141, 243, 0.1);
-    }
-    .dropdown-header h6 {
-      color: var(--accent);
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-    .dropdown-header small {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.85rem;
-    }
-    .primary-action {
-      background: linear-gradient(135deg, rgba(10, 25, 79, 0.9), rgba(18, 47, 122, 0.9));
-      margin: 0;
-      padding: 16px 20px;
-      border-radius: 0;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      display: block !important;
-      text-decoration: none !important;
-    }
-    .primary-action::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: var(--accent);
-    }
-    .primary-action:hover {
-      background: linear-gradient(135deg, rgba(18, 47, 122, 0.9), rgba(10, 25, 79, 0.9));
-      transform: none;
-      padding-left: 25px;
-    }
-    .result-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--accent), #5c9dff);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary);
-      font-size: 1.2rem;
-    }
-    .action-title {
-      font-weight: 600;
-      color: white;
-      font-size: 1rem;
-      margin-bottom: 2px;
-    }
-    .action-desc {
-      color: rgba(255, 255, 255, 0.7);
-      font-size: 0.85rem;
-    }
-    .dropdown-actions {
-      padding: 15px 20px;
-    }
-    .dropdown-action-item {
-      display: flex;
-      align-items: center;
-      padding: 12px 15px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      text-decoration: none !important;
-      transition: all 0.3s ease;
-      background: transparent;
-      color: white !important;
-    }
-    .dropdown-action-item:hover {
-      background: rgba(58, 141, 243, 0.1);
-      transform: translateX(5px);
-    }
-    .dropdown-action-item .action-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: rgba(58, 141, 243, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-      font-size: 1rem;
-    }
-    .action-arrow {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.9rem;
-      transition: all 0.3s ease;
-    }
-    .dropdown-action-item:hover .action-arrow {
-      color: var(--accent);
-      transform: translateX(3px);
-    }
-    .enter-badge {
-      background: linear-gradient(135deg, var(--accent), #5c9dff);
-      color: var(--primary);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(58, 141, 243, 0.3);
-      transition: all 0.3s ease;
-    }
-    .dropdown-action-item:hover .enter-badge {
-      transform: scale(1.1);
-      box-shadow: 0 4px 12px rgba(58, 141, 243, 0.4);
-    }
-    .notification-badge {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: linear-gradient(135deg, #ff4757, #ff3838);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 700;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: badgePulse 2s infinite;
-    }
-    @keyframes badgePulse {
-      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
-      50% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(255, 71, 87, 0); }
-    }
-    .student-zone-btn {
-      position: relative;
-      background: rgba(58, 141, 243, 0.1);
-      border-radius: 8px;
-      margin-left: 5px;
-      transition: all 0.3s ease;
-    }
-    .student-zone-btn:hover {
-      background: rgba(58, 141, 243, 0.2);
-      transform: translateY(-2px);
-    }
-    .student-zone-nav .nav-icon i {
-      color: var(--accent) !important;
-    }
-    .badge.bg-success {
-      background: linear-gradient(135deg, #2ed573, #1dd1a1) !important;
-      font-size: 0.7rem;
-      padding: 3px 8px;
-      border-radius: 10px;
-      animation: livePulse 1.5s infinite;
-    }
-    @keyframes livePulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    @media (max-width: 992px) {
-      body { padding-top: 70px; }
-      .navbar-nav { padding: 10px 0 !important; max-height: 70vh; overflow-y: auto; }
-      .nav-item { width: 100%; margin: 0 !important; }
-      .nav-icon { margin: 2px 0 !important; padding: 14px 20px !important; justify-content: flex-start; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); }
-      .navbar-collapse { background: rgba(10,25,79,0.99); border-radius: 0 0 12px 12px; position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; }
-      .dropdown-menu { position: static !important; width: 100% !important; background: rgba(18,47,122,0.95) !important; }
-      .student-dropdown-normalized { width: 100% !important; }
-      .notification-badge { position: relative !important; margin-left: 10px; }
-    }
-
-    /* ===== HEADER ===== */
-    .student-zone-header {
-      background: var(--gradient-1);
-      color: #fff;
-      padding: 120px 0 80px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 50px;
-    }
-
-    .student-zone-header::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle at 30% 50%, rgba(58, 141, 243, 0.15) 0%, transparent 60%),
-                  radial-gradient(circle at 70% 50%, rgba(92, 157, 255, 0.1) 0%, transparent 50%);
-      animation: headerGlow 8s ease-in-out infinite alternate;
-    }
-
-    @keyframes headerGlow {
-      0% { transform: translate(0, 0) scale(1); }
-      100% { transform: translate(5%, 5%) scale(1.1); }
-    }
-
-    .student-zone-header .container {
-      position: relative;
-      z-index: 1;
-    }
-
-    .student-zone-header h1 {
-      font-weight: 900;
-      font-size: 4rem;
-      background: linear-gradient(135deg, #ffffff 0%, #7bb3ff 40%, #3a8df3 70%, #ffffff 100%);
-      background-size: 300% 300%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 0 40px rgba(58, 141, 243, 0.3),
-                   0 0 80px rgba(58, 141, 243, 0.2),
-                   0 0 120px rgba(58, 141, 243, 0.1);
-      animation: gradientShift 4s ease-in-out infinite, fadeDown 1s ease;
-      letter-spacing: 2px;
-      position: relative;
-      display: inline-block;
-    }
-
-    .student-zone-header h1::after {
-      content: '';
-      position: absolute;
-      top: -20%;
-      left: -10%;
-      width: 120%;
-      height: 140%;
-      background: radial-gradient(ellipse at center, rgba(58, 141, 243, 0.15) 0%, transparent 70%);
-      filter: blur(30px);
-      z-index: -1;
-      animation: glowPulse 3s ease-in-out infinite;
-    }
-
-    @keyframes glowPulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.2); opacity: 1; }
-    }
-
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
-    .student-zone-header .lead {
-      font-size: 1.25rem;
-      opacity: 0.9;
-      font-weight: 300;
-      animation: fadeDown 1s ease 0.2s both;
-      color: rgba(255,255,255,0.85);
-    }
-
-    .header-decoration {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 20px;
-      animation: fadeDown 1s ease 0.4s both;
-    }
-
-    .header-decoration span {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      opacity: 0.6;
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-
-    .header-decoration span:nth-child(2) { animation-delay: 0.3s; background: #5c9dff; }
-    .header-decoration span:nth-child(3) { animation-delay: 0.6s; background: #7bb3ff; }
-    .header-decoration span:nth-child(4) { animation-delay: 0.9s; background: #5c9dff; }
-    .header-decoration span:nth-child(5) { animation-delay: 1.2s; background: var(--accent); }
-
-    @keyframes pulse-dot {
-      0%, 100% { transform: scale(0.8); opacity: 0.4; }
-      50% { transform: scale(1.3); opacity: 1; }
-    }
-
-    @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ===== CLASS SELECTOR ===== */
-    .class-selector {
-      background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-radius: 60px;
-      padding: 12px 28px;
-      display: inline-flex;
-      align-items: center;
-      gap: 18px;
-      margin-bottom: 40px;
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--shadow-glow);
-      transition: all 0.3s ease;
-    }
-
-    .class-selector:hover {
-      border-color: var(--accent);
-      box-shadow: 0 8px 40px rgba(58, 141, 243, 0.35);
-      transform: translateY(-2px);
-    }
-
-    .class-selector label {
-      font-weight: 600;
-      color: var(--accent);
-      margin: 0;
-      font-size: 1rem;
-    }
-
-    .class-selector label i {
-      margin-right: 8px;
-    }
-
-    .class-selector select {
-      background: rgba(10, 25, 79, 0.9);
-      border: 1px solid var(--accent);
-      color: white;
-      padding: 10px 24px;
-      border-radius: 40px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 0.95rem;
-      min-width: 140px;
-    }
-
-    .class-selector select:hover {
-      border-color: #5c9dff;
-      box-shadow: 0 0 20px rgba(58, 141, 243, 0.2);
-    }
-
-    .class-selector select:focus {
-      outline: none;
-      border-color: #5c9dff;
-      box-shadow: 0 0 25px rgba(58, 141, 243, 0.3);
-    }
-
-    /* ===== CLASS CARDS ===== */
-    .class-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: 20px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-      text-align: center;
-      padding: 35px 20px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      opacity: 0;
-      transform: translateY(40px) scale(0.95);
-      border: 1px solid var(--glass-border);
-      height: 100%;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .class-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(135deg, rgba(58, 141, 243, 0.1), transparent);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-      border-radius: 20px;
-    }
-
-    .class-card:hover::before {
-      opacity: 1;
-    }
-
-    .class-card.show {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-
-    .class-card:hover {
-      transform: translateY(-12px) scale(1.02);
-      box-shadow: 0 20px 50px rgba(58, 141, 243, 0.25);
-      border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.12);
-    }
-
-    .class-card .card-icon {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, rgba(58, 141, 243, 0.2), rgba(92, 157, 255, 0.1));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 15px;
-      transition: all 0.4s ease;
-    }
-
-    .class-card:hover .card-icon {
-      background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
-      transform: scale(1.1) rotate(-5deg);
-    }
-
-    .class-card i {
-      font-size: 32px;
-      color: var(--accent);
-      transition: all 0.4s ease;
-    }
-
-    .class-card:hover i {
-      transform: scale(1.15);
-      color: #5c9dff;
-    }
-
-    .class-card h5 {
-      color: white;
-      margin-bottom: 6px;
-      font-weight: 700;
-      font-size: 1.2rem;
-    }
-
-    .class-card p {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.85rem;
-      margin-bottom: 0;
-    }
-
-    .class-card .subject-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--accent), #5c9dff);
-      color: var(--primary);
-      padding: 4px 16px;
-      border-radius: 30px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      margin-top: 10px;
-      letter-spacing: 0.5px;
-    }
-
-    .class-card .card-number {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.15);
-      letter-spacing: 1px;
-    }
-
-    /* ===== DETAIL PANEL ===== */
-    .class-detail-panel {
-      background: rgba(15, 30, 75, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: 28px;
-      padding: 2rem;
-      margin: 2rem 0;
-      border: 1px solid rgba(58, 141, 243, 0.3);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-      animation: slideUp 0.5s ease;
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .btn-back {
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 40px;
-      padding: 8px 22px;
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.3s ease;
-      font-weight: 500;
-      backdrop-filter: blur(8px);
-    }
-
-    .btn-back:hover {
-      background: var(--accent);
-      color: #0a194f;
-      border-color: var(--accent);
-      transform: translateX(-4px);
-      box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
-    }
-
-    .btn-back i {
-      transition: transform 0.3s ease;
-    }
-
-    .btn-back:hover i {
-      transform: translateX(-4px);
-    }
-
-    /* ===== TABS ===== */
-    .nav-tabs-resources {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      border-bottom: none;
-      margin-bottom: 25px;
-      padding-bottom: 4px;
-    }
-
-    .nav-tabs-resources .nav-link {
-      color: rgba(255, 255, 255, 0.7);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      font-weight: 600;
-      padding: 10px 22px;
-      border-radius: 60px;
-      transition: all 0.3s ease;
-      font-size: 0.9rem;
-      position: relative;
-    }
-
-    .nav-tabs-resources .nav-link:hover {
-      background: rgba(58, 141, 243, 0.15);
-      color: white;
-      border-color: rgba(58, 141, 243, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .nav-tabs-resources .nav-link.active {
-      background: linear-gradient(135deg, var(--accent), #5c9dff);
-      color: #0a194f;
-      border-color: var(--accent);
-      box-shadow: 0 6px 25px rgba(58, 141, 243, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .nav-tabs-resources .nav-link i {
-      margin-right: 8px;
-    }
-
-    .coming-soon-badge {
-      font-size: 0.55rem;
-      background: #ffc107;
-      color: #0a194f;
-      padding: 1px 8px;
-      border-radius: 20px;
-      margin-left: 6px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    /* ===== RESOURCE SECTIONS ===== */
-    .zone-section {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 18px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-      padding: 28px 30px;
-      margin-bottom: 24px;
-      animation: fadeInUp 0.5s ease;
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .zone-section h4 {
-      color: #0a194f;
-      font-weight: 700;
-      margin-bottom: 20px;
-      font-size: 1.15rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .zone-section h4 i {
-      color: var(--accent);
-      font-size: 1.3rem;
-    }
-
-    .resource-item {
-      background: #f0f7ff;
-      border-left: 4px solid var(--accent);
-      padding: 14px 18px;
-      margin-bottom: 10px;
-      border-radius: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.3s ease;
-    }
-
-    .resource-item:hover {
-      background: #e5f0ff;
-      transform: translateX(6px);
-      box-shadow: 0 2px 12px rgba(58, 141, 243, 0.12);
-    }
-
-    .resource-item i {
-      color: var(--accent);
-      margin-right: 10px;
-      width: 20px;
-      text-align: center;
-    }
-
-    .resource-item .resource-info {
-      flex: 1;
-    }
-
-    .resource-item .resource-info strong {
-      color: #0a194f;
-      font-weight: 600;
-    }
-
-    .resource-item .resource-info .text-muted {
-      color: #6c757d !important;
-      font-size: 0.85rem;
-    }
-
-    .download-btn {
-      background: linear-gradient(135deg, var(--accent), #5c9dff);
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-      box-shadow: 0 2px 10px rgba(58, 141, 243, 0.3);
-    }
-
-    .download-btn:hover {
-      background: linear-gradient(135deg, #2c7be0, var(--accent));
-      transform: scale(1.05);
-      color: white;
-      box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
-    }
-
-    .download-btn i {
-      margin-right: 4px;
-    }
-
-    .subject-name {
-      color: #0b5ed7;
-      font-family: 'Anek Malayalam', sans-serif;
-      font-weight: 600;
-      font-size: 1.05rem;
-    }
-
-    .exam-name {
-      font-family: 'Anek Malayalam', sans-serif;
-      font-weight: 600;
-      font-size: 1rem;
-      color: #0a194f;
-    }
-
-    .no-data {
-      font-family: 'Anek Malayalam', sans-serif;
-      text-align: center;
-      padding: 20px;
-      background: #fff8e1;
-      border-radius: 12px;
-      color: #856404;
-      font-weight: 500;
-      border: 1px solid #ffecb3;
-    }
-
-    .coming-soon-box {
-      font-family: 'Anek Malayalam', sans-serif;
-      text-align: center;
-      padding: 50px 20px;
-      background: linear-gradient(135deg, rgba(11, 94, 215, 0.04), rgba(11, 94, 215, 0.12));
-      border-radius: 16px;
-      border: 2px dashed #0b5ed7;
-      color: #0b5ed7;
-      font-weight: 600;
-      font-size: 1.2rem;
-      letter-spacing: 0.5px;
-    }
-
-    .coming-soon-box i {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 15px;
-      color: var(--accent);
-      animation: pulse-icon 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse-icon {
-      0%, 100% { transform: scale(1); opacity: 0.7; }
-      50% { transform: scale(1.1); opacity: 1; }
-    }
-
-    .coming-soon-box small {
-      font-size: 0.9rem;
-      color: #6c757d;
-      display: block;
-      margin-top: 6px;
-      font-weight: 400;
-    }
-
-    .loader {
-      text-align: center;
-      padding: 60px 20px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    .loader .spinner-border {
-      color: var(--accent);
-      width: 3rem;
-      height: 3rem;
-    }
-
-    /* ===== TIME TABLE ===== */
-    .timetable-wrapper {
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin: 0 -10px;
-    }
-
-    .timetable-wrapper table {
-      width: 100%;
-      min-width: 320px;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
-
-    .timetable-wrapper table th {
-      background: var(--accent);
-      color: white;
-      font-weight: 600;
-      padding: 12px 16px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .timetable-wrapper table td {
-      padding: 12px 16px;
-      border: 1px solid #e2e8f0;
-      text-align: center;
-      color: #0a194f;
-      font-family: 'Anek Malayalam', sans-serif;
-      font-weight: 500;
-      background: #f8faff;
-    }
-
-    .timetable-wrapper table td:first-child {
-      font-weight: 600;
-      background: #e8f0fe;
-      font-family: 'Anek Malayalam', sans-serif;
-    }
-
-    .timetable-wrapper table tr:nth-child(even) td:not(:first-child) {
-      background: #f0f4ff;
-    }
-
-    .timetable-wrapper table td.empty {
-      color: #adb5bd;
-      font-style: italic;
-    }
-
-    /* ===== STUDENT RESOURCES ===== */
-    .resources-section {
-      background: var(--glass-bg);
-      backdrop-filter: blur(12px);
-      border-radius: 24px;
-      padding: 50px 40px;
-      margin: 50px 0;
-      border: 1px solid var(--glass-border);
-      box-shadow: var(--shadow-glow);
-    }
-
-    .resources-section h2 {
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), #7bb3ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .resource-card {
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 16px;
-      padding: 28px 24px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      transition: all 0.4s ease;
-      height: 100%;
-      text-align: center;
-    }
-
-    .resource-card:hover {
-      transform: translateY(-6px);
-      border-color: var(--accent);
-      background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 12px 40px rgba(58, 141, 243, 0.15);
-    }
-
-    .resource-icon {
-      width: 60px;
-      height: 60px;
-      background: linear-gradient(135deg, rgba(58, 141, 243, 0.2), rgba(92, 157, 255, 0.1));
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-      font-size: 1.6rem;
-      margin: 0 auto 16px;
-      transition: all 0.4s ease;
-    }
-
-    .resource-card:hover .resource-icon {
-      background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
-      transform: scale(1.05) rotate(-3deg);
-    }
-
-    .resource-card h5 {
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
-
-    .resource-card p {
-      color: rgba(255, 255, 255, 0.6);
-      font-size: 0.9rem;
-    }
-
-    .btn-student-zone {
-      background: linear-gradient(135deg, var(--accent), #5c9dff);
-      color: white;
-      border: none;
-      border-radius: 30px;
-      padding: 10px 28px;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-block;
-      font-weight: 600;
-      font-size: 0.9rem;
-      box-shadow: 0 4px 15px rgba(58, 141, 243, 0.3);
-    }
-
-    .btn-student-zone:hover {
-      background: linear-gradient(135deg, #5c9dff, var(--accent));
-      color: white;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(58, 141, 243, 0.4);
-    }
-
-    /* ===== EXAM ACCORDION ===== */
-    .exam-accordion {
-      border: 1px solid rgba(58, 141, 243, 0.2);
-      border-radius: 10px;
-      background: rgba(255,255,255,0.03);
-      margin-bottom: 12px;
-    }
-    .exam-header {
-      padding: 12px 16px;
-      cursor: pointer;
-      background: rgba(58, 141, 243, 0.05);
-      border-radius: 10px;
-      transition: background 0.3s ease;
-      display: flex;
-      align-items: center;
-      color: #0a194f;
-      font-weight: 600;
-    }
-    .exam-header:hover {
-      background: rgba(58, 141, 243, 0.15);
-    }
-    .exam-header .fa-chevron-right {
-      transition: transform 0.3s ease;
-    }
-    .exam-body {
-      padding: 8px 16px 16px 16px;
-    }
-    .exam-body .resource-item {
-      margin-left: 10px;
-      margin-bottom: 8px;
-    }
-    .badge-coming-soon {
-      background: #ffc107;
-      color: #0a194f;
-      font-size: 0.75rem;
-      padding: 4px 12px;
-      border-radius: 30px;
-      font-weight: 700;
-    }
-
-    /* ===== FOOTER ===== */
-    .modern-footer {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      padding: 60px 0 20px;
-    }
-    .modern-footer h4, .modern-footer h5 {
-      color: var(--accent);
-      font-weight: 700;
-    }
-    .modern-footer ul {
-      list-style: none;
-      padding-left: 0;
-    }
-    .modern-footer ul li {
-      margin-bottom: 10px;
-    }
-    .modern-footer a {
-      color: #d1d5db;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-    .modern-footer a:hover {
-      color: var(--accent);
-    }
-    .social-icons {
-      display: flex;
-      gap: 15px;
-      margin-top: 20px;
-    }
-    .social-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      transition: all 0.3s ease;
-    }
-    .social-icon:hover {
-      background: var(--accent);
-      color: var(--primary);
-      transform: translateY(-3px);
-    }
-    .newsletter-form {
-      display: flex;
-      margin-top: 10px;
-    }
-    .newsletter-form input {
-      flex: 1;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 5px 0 0 5px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-    }
-    .newsletter-form input::placeholder {
-      color: rgba(255, 255, 255, 0.7);
-    }
-    .newsletter-form button {
-      background: var(--accent);
-      color: var(--primary);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 0 5px 5px 0;
-      cursor: pointer;
-      font-weight: 600;
-      transition: background 0.3s ease;
-    }
-    .newsletter-form button:hover {
-      background: #5c9dff;
-    }
-    .footer-bottom {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .whatsapp-float {
-      position: fixed;
-      width: 48px;
-      height: 48px;
-      bottom: 20px;
-      right: 20px;
-      background-color: #25d366;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.3s ease;
-      z-index: 1000;
-      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-    }
-    .whatsapp-float:hover {
-      transform: scale(1.1);
-    }
-
-    .hide-on-detail {
-      transition: opacity 0.4s ease;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .student-zone-header h1 { font-size: 2.5rem; }
-      .student-zone-header { padding: 80px 0 50px; }
-      .class-selector { flex-direction: column; padding: 16px 20px; border-radius: 30px; gap: 10px; width: 100%; max-width: 320px; }
-      .class-selector select { width: 100%; min-width: unset; }
-      .zone-section { padding: 20px; }
-      .resource-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .download-btn { align-self: flex-start; }
-      .nav-tabs-resources .nav-link { font-size: 0.75rem; padding: 6px 14px; }
-      .coming-soon-badge { font-size: 0.45rem; padding: 1px 5px; }
-      .resources-section { padding: 30px 20px; }
-      .class-detail-panel { padding: 1.2rem; }
-    }
-
-    @media (max-width: 576px) {
-      .student-zone-header h1 { font-size: 2rem; }
-      .class-card { padding: 25px 15px; }
-      .class-card .card-icon { width: 55px; height: 55px; }
-      .class-card i { font-size: 26px; }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Zone | Noorussalam Madrasa</title>
+
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+    <style>
+        /* ========== ROOT VARIABLES ========== */
+        :root {
+            --primary: #0a194f;
+            --secondary: #122f7a;
+            --accent: #3a8df3;
+            --accent-light: #5c9dff;
+            --accent-glow: rgba(58, 141, 243, 0.3);
+            --light: #f8f9fa;
+            --gradient-1: linear-gradient(135deg, #0a194f 0%, #1a3b8f 50%, #3a8df3 100%);
+            --gradient-2: linear-gradient(135deg, #3a8df3 0%, #5c9dff 50%, #7bb3ff 100%);
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --shadow-glow: 0 8px 32px rgba(58, 141, 243, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            background: var(--primary);
+            color: var(--light);
+            overflow-x: hidden;
+            padding-top: 80px;
+            min-height: 100vh;
+        }
+
+        /* ===== ANIMATED BACKGROUND ===== */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(58, 141, 243, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(58, 141, 243, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(10, 25, 79, 1) 0%, var(--primary) 100%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(58, 141, 243, 0.3);
+            border-radius: 50%;
+            animation: float-particle linear infinite;
+        }
+
+        .particle:nth-child(1) {
+            left: 10%;
+            animation-duration: 20s;
+            animation-delay: 0s;
+            width: 3px;
+            height: 3px;
+        }
+        .particle:nth-child(2) {
+            left: 20%;
+            animation-duration: 25s;
+            animation-delay: 2s;
+            width: 5px;
+            height: 5px;
+        }
+        .particle:nth-child(3) {
+            left: 35%;
+            animation-duration: 18s;
+            animation-delay: 4s;
+            width: 4px;
+            height: 4px;
+        }
+        .particle:nth-child(4) {
+            left: 50%;
+            animation-duration: 22s;
+            animation-delay: 1s;
+            width: 6px;
+            height: 6px;
+        }
+        .particle:nth-child(5) {
+            left: 65%;
+            animation-duration: 28s;
+            animation-delay: 3s;
+            width: 3px;
+            height: 3px;
+        }
+        .particle:nth-child(6) {
+            left: 75%;
+            animation-duration: 19s;
+            animation-delay: 5s;
+            width: 5px;
+            height: 5px;
+        }
+        .particle:nth-child(7) {
+            left: 85%;
+            animation-duration: 24s;
+            animation-delay: 2s;
+            width: 4px;
+            height: 4px;
+        }
+        .particle:nth-child(8) {
+            left: 45%;
+            animation-duration: 30s;
+            animation-delay: 6s;
+            width: 7px;
+            height: 7px;
+        }
+        .particle:nth-child(9) {
+            left: 15%;
+            animation-duration: 21s;
+            animation-delay: 4s;
+            width: 4px;
+            height: 4px;
+        }
+        .particle:nth-child(10) {
+            left: 55%;
+            animation-duration: 26s;
+            animation-delay: 1s;
+            width: 5px;
+            height: 5px;
+        }
+
+        @keyframes float-particle {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* ===== ORIGINAL NAVBAR (abbreviated – same as before) ===== */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            transition: all 0.4s ease;
+            padding: 12px 0;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        .navbar.scrolled {
+            background: rgba(10, 25, 79, 0.98);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+            padding: 8px 0;
+        }
+        .logo-container {
+            position: relative;
+            display: inline-block;
+        }
+        .logo-img {
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            border: 2px solid var(--accent);
+        }
+        .logo-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .navbar-brand:hover .logo-img {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .navbar-brand:hover .logo-glow {
+            opacity: 0.3;
+        }
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background: transparent !important;
+        }
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(58, 141, 243, 0.3);
+        }
+        .toggler-text {
+            font-size: 0.85rem;
+            margin-left: 8px;
+            color: white;
+            font-weight: 500;
+        }
+        .nav-icon {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 10px 16px !important;
+            margin: 0 4px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            color: white !important;
+            text-decoration: none !important;
+        }
+        .nav-icon i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .nav-icon span {
+            position: relative;
+            z-index: 2;
+            font-weight: 500;
+        }
+        .nav-hover-effect {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(58, 141, 243, 0.1), transparent);
+            transition: left 0.6s ease;
+            z-index: 1;
+        }
+        .nav-icon:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+        .nav-icon:hover .nav-hover-effect {
+            left: 100%;
+        }
+        .nav-icon:hover i {
+            color: var(--accent) !important;
+            transform: scale(1.2);
+        }
+        .nav-icon.active {
+            background: rgba(58, 141, 243, 0.15);
+            color: var(--accent) !important;
+        }
+        .nav-icon.active i {
+            color: var(--accent) !important;
+        }
+        .nav-icon.active::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: pulseLine 2s infinite;
+        }
+        @keyframes pulseLine {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Dropdown styles (abbreviated – same as previous) */
+        .dropdown-menu {
+            background: rgba(10, 25, 79, 0.98);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(58, 141, 243, 0.3);
+            border-radius: 12px;
+            padding: 8px 0;
+            margin-top: 10px;
+            min-width: 280px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: dropdownSlide 0.3s ease;
+        }
+        @keyframes dropdownSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .dropdown-item {
+            color: #f8f9fa !important;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 8px;
+            transition: all 0.3s ease;
+            text-decoration: none !important;
+        }
+        .dropdown-item:hover {
+            background: rgba(58, 141, 243, 0.15) !important;
+            transform: translateX(5px);
+        }
+        .dropdown-item-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .dropdown-item-content i {
+            font-size: 1.2rem;
+            color: var(--accent);
+            width: 30px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .dropdown-item:hover .dropdown-item-content i {
+            transform: scale(1.2);
+        }
+        .dropdown-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: white;
+        }
+        .dropdown-sub {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 2px;
+        }
+        .dropdown-divider {
+            border-color: rgba(58, 141, 243, 0.2);
+            margin: 6px 20px;
+        }
+        .student-dropdown-normalized {
+            width: 320px;
+            padding: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+        .dropdown-header {
+            padding: 20px;
+            background: rgba(58, 141, 243, 0.05);
+            border-bottom: 1px solid rgba(58, 141, 243, 0.1);
+        }
+        .dropdown-header h6 {
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .dropdown-header small {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+        .primary-action {
+            background: linear-gradient(135deg, rgba(10, 25, 79, 0.9), rgba(18, 47, 122, 0.9));
+            margin: 0;
+            padding: 16px 20px;
+            border-radius: 0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: block !important;
+            text-decoration: none !important;
+        }
+        .primary-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+        }
+        .primary-action:hover {
+            background: linear-gradient(135deg, rgba(18, 47, 122, 0.9), rgba(10, 25, 79, 0.9));
+            transform: none;
+            padding-left: 25px;
+        }
+        .result-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+        .action-title {
+            font-weight: 600;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+        .action-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+        }
+        .dropdown-actions {
+            padding: 15px 20px;
+        }
+        .dropdown-action-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            text-decoration: none !important;
+            transition: all 0.3s ease;
+            background: transparent;
+            color: white !important;
+        }
+        .dropdown-action-item:hover {
+            background: rgba(58, 141, 243, 0.1);
+            transform: translateX(5px);
+        }
+        .dropdown-action-item .action-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: rgba(58, 141, 243, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        .action-arrow {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        .dropdown-action-item:hover .action-arrow {
+            color: var(--accent);
+            transform: translateX(3px);
+        }
+        .enter-badge {
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(58, 141, 243, 0.3);
+            transition: all 0.3s ease;
+        }
+        .dropdown-action-item:hover .enter-badge {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(58, 141, 243, 0.4);
+        }
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: badgePulse 2s infinite;
+        }
+        @keyframes badgePulse {
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 5px rgba(255, 71, 87, 0);
+            }
+        }
+        .student-zone-btn {
+            position: relative;
+            background: rgba(58, 141, 243, 0.1);
+            border-radius: 8px;
+            margin-left: 5px;
+            transition: all 0.3s ease;
+        }
+        .student-zone-btn:hover {
+            background: rgba(58, 141, 243, 0.2);
+            transform: translateY(-2px);
+        }
+        .student-zone-nav .nav-icon i {
+            color: var(--accent) !important;
+        }
+        .badge.bg-success {
+            background: linear-gradient(135deg, #2ed573, #1dd1a1) !important;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            animation: livePulse 1.5s infinite;
+        }
+        @keyframes livePulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        @media (max-width: 992px) {
+            body {
+                padding-top: 70px;
+            }
+            .navbar-nav {
+                padding: 10px 0 !important;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            .nav-item {
+                width: 100%;
+                margin: 0 !important;
+            }
+            .nav-icon {
+                margin: 2px 0 !important;
+                padding: 14px 20px !important;
+                justify-content: flex-start;
+                width: 100%;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .navbar-collapse {
+                background: rgba(10, 25, 79, 0.99);
+                border-radius: 0 0 12px 12px;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1050;
+            }
+            .dropdown-menu {
+                position: static !important;
+                width: 100% !important;
+                background: rgba(18, 47, 122, 0.95) !important;
+            }
+            .student-dropdown-normalized {
+                width: 100% !important;
+            }
+            .notification-badge {
+                position: relative !important;
+                margin-left: 10px;
+            }
+        }
+
+        /* ===== HEADER ===== */
+        .student-zone-header {
+            background: var(--gradient-1);
+            color: #fff;
+            padding: 120px 0 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 50px;
+        }
+
+        .student-zone-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(58, 141, 243, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(92, 157, 255, 0.1) 0%, transparent 50%);
+            animation: headerGlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes headerGlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(5%, 5%) scale(1.1);
+            }
+        }
+
+        .student-zone-header .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .student-zone-header h1 {
+            font-weight: 900;
+            font-size: 4rem;
+            background: linear-gradient(135deg, #ffffff 0%, #7bb3ff 40%, #3a8df3 70%, #ffffff 100%);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(58, 141, 243, 0.3),
+                0 0 80px rgba(58, 141, 243, 0.2),
+                0 0 120px rgba(58, 141, 243, 0.1);
+            animation: gradientShift 4s ease-in-out infinite, fadeDown 1s ease;
+            letter-spacing: 2px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .student-zone-header h1::after {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 120%;
+            height: 140%;
+            background: radial-gradient(ellipse at center, rgba(58, 141, 243, 0.15) 0%, transparent 70%);
+            filter: blur(30px);
+            z-index: -1;
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .student-zone-header .lead {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            font-weight: 300;
+            animation: fadeDown 1s ease 0.2s both;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .header-decoration {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
+            animation: fadeDown 1s ease 0.4s both;
+        }
+
+        .header-decoration span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.6;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        .header-decoration span:nth-child(2) {
+            animation-delay: 0.3s;
+            background: #5c9dff;
+        }
+        .header-decoration span:nth-child(3) {
+            animation-delay: 0.6s;
+            background: #7bb3ff;
+        }
+        .header-decoration span:nth-child(4) {
+            animation-delay: 0.9s;
+            background: #5c9dff;
+        }
+        .header-decoration span:nth-child(5) {
+            animation-delay: 1.2s;
+            background: var(--accent);
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(0.8);
+                opacity: 0.4;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== CLASS SELECTOR ===== */
+        .class-selector {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 60px;
+            padding: 12px 28px;
+            display: inline-flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 40px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-glow);
+            transition: all 0.3s ease;
+        }
+
+        .class-selector:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 40px rgba(58, 141, 243, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .class-selector label {
+            font-weight: 600;
+            color: var(--accent);
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .class-selector label i {
+            margin-right: 8px;
+        }
+
+        .class-selector select {
+            background: rgba(10, 25, 79, 0.9);
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            min-width: 140px;
+        }
+
+        .class-selector select:hover {
+            border-color: #5c9dff;
+            box-shadow: 0 0 20px rgba(58, 141, 243, 0.2);
+        }
+
+        .class-selector select:focus {
+            outline: none;
+            border-color: #5c9dff;
+            box-shadow: 0 0 25px rgba(58, 141, 243, 0.3);
+        }
+
+        /* ===== CLASS CARDS ===== */
+        .class-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            padding: 35px 20px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            border: 1px solid var(--glass-border);
+            height: 100%;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            border-radius: 20px;
+        }
+
+        .class-card:hover::before {
+            opacity: 1;
+        }
+
+        .class-card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .class-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(58, 141, 243, 0.25);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .class-card .card-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.2), rgba(92, 157, 255, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            transition: all 0.4s ease;
+        }
+
+        .class-card:hover .card-icon {
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .class-card i {
+            font-size: 32px;
+            color: var(--accent);
+            transition: all 0.4s ease;
+        }
+
+        .class-card:hover i {
+            transform: scale(1.15);
+            color: #5c9dff;
+        }
+
+        .class-card h5 {
+            color: white;
+            margin-bottom: 6px;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .class-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .class-card .subject-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: var(--primary);
+            padding: 4px 16px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .class-card .card-number {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.15);
+            letter-spacing: 1px;
+        }
+
+        /* ===== DETAIL PANEL ===== */
+        .class-detail-panel {
+            background: rgba(15, 30, 75, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 28px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(58, 141, 243, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 40px;
+            padding: 8px 22px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+        }
+
+        .btn-back:hover {
+            background: var(--accent);
+            color: #0a194f;
+            border-color: var(--accent);
+            transform: translateX(-4px);
+            box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
+        }
+
+        .btn-back i {
+            transition: transform 0.3s ease;
+        }
+
+        .btn-back:hover i {
+            transform: translateX(-4px);
+        }
+
+        /* ===== TABS ===== */
+        .nav-tabs-resources {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: none;
+            margin-bottom: 25px;
+            padding-bottom: 4px;
+        }
+
+        .nav-tabs-resources .nav-link {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            font-weight: 600;
+            padding: 10px 22px;
+            border-radius: 60px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .nav-tabs-resources .nav-link:hover {
+            background: rgba(58, 141, 243, 0.15);
+            color: white;
+            border-color: rgba(58, 141, 243, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .nav-tabs-resources .nav-link.active {
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: #0a194f;
+            border-color: var(--accent);
+            box-shadow: 0 6px 25px rgba(58, 141, 243, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .nav-tabs-resources .nav-link i {
+            margin-right: 8px;
+        }
+
+        .coming-soon-badge {
+            font-size: 0.55rem;
+            background: #ffc107;
+            color: #0a194f;
+            padding: 1px 8px;
+            border-radius: 20px;
+            margin-left: 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== RESOURCE SECTIONS ===== */
+        .zone-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 28px 30px;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .zone-section h4 {
+            color: #0a194f;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .zone-section h4 i {
+            color: var(--accent);
+            font-size: 1.3rem;
+        }
+
+        .resource-item {
+            background: #f0f7ff;
+            border-left: 4px solid var(--accent);
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .resource-item:hover {
+            background: #e5f0ff;
+            transform: translateX(6px);
+            box-shadow: 0 2px 12px rgba(58, 141, 243, 0.12);
+        }
+
+        .resource-item i {
+            color: var(--accent);
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .resource-item .resource-info {
+            flex: 1;
+        }
+
+        .resource-item .resource-info strong {
+            color: #0a194f;
+            font-weight: 600;
+        }
+
+        .resource-item .resource-info .text-muted {
+            color: #6c757d !important;
+            font-size: 0.85rem;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(58, 141, 243, 0.3);
+        }
+
+        .download-btn:hover {
+            background: linear-gradient(135deg, #2c7be0, var(--accent));
+            transform: scale(1.05);
+            color: white;
+            box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
+        }
+
+        .download-btn i {
+            margin-right: 4px;
+        }
+
+        .subject-name {
+            color: #0b5ed7;
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        .exam-name {
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #0a194f;
+        }
+
+        .no-data {
+            font-family: 'Anek Malayalam', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #fff8e1;
+            border-radius: 12px;
+            color: #856404;
+            font-weight: 500;
+            border: 1px solid #ffecb3;
+        }
+
+        .coming-soon-box {
+            font-family: 'Anek Malayalam', sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, rgba(11, 94, 215, 0.04), rgba(11, 94, 215, 0.12));
+            border-radius: 16px;
+            border: 2px dashed #0b5ed7;
+            color: #0b5ed7;
+            font-weight: 600;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+
+        .coming-soon-box i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 15px;
+            color: var(--accent);
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-icon {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
+
+        .coming-soon-box small {
+            font-size: 0.9rem;
+            color: #6c757d;
+            display: block;
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .loader .spinner-border {
+            color: var(--accent);
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* ===== TIME TABLE ===== */
+        .timetable-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -10px;
+        }
+
+        .timetable-wrapper table {
+            width: 100%;
+            min-width: 320px;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .timetable-wrapper table th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            padding: 12px 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .timetable-wrapper table td {
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            color: #0a194f;
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 500;
+            background: #f8faff;
+        }
+
+        .timetable-wrapper table td:first-child {
+            font-weight: 600;
+            background: #e8f0fe;
+            font-family: 'Anek Malayalam', sans-serif;
+        }
+
+        .timetable-wrapper table tr:nth-child(even) td:not(:first-child) {
+            background: #f0f4ff;
+        }
+
+        .timetable-wrapper table td.empty {
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+       /* ===== VERIFIED BADGE ===== */
+.verified-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 18px;
+    margin-top: 14px;
+    background: linear-gradient(135deg, rgba(46, 213, 115, 0.12), rgba(29, 209, 161, 0.08));
+    border: 1px solid rgba(46, 213, 115, 0.35);
+    border-radius: 40px;
+    box-shadow: 0 2px 12px rgba(46, 213, 115, 0.12);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.verified-badge:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 20px rgba(46, 213, 115, 0.2);
+    border-color: rgba(46, 213, 115, 0.6);
+}
+
+.verified-badge .verify-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #2ed573, #1dd1a1);
+    border-radius: 50%;
+    color: #0a194f;
+    font-size: 0.9rem;
+    box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.2);
+    animation: verifyPulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes verifyPulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(46, 213, 115, 0.05);
+    }
+}
+
+.verified-badge .verify-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: #1dd1a1;
+    letter-spacing: 0.2px;
+}
+
+.verified-badge .verify-text strong {
+    font-weight: 700;
+    color: #2ed573;
+}
+
+.verified-badge .verify-sub {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 400;
+    margin-left: 2px;
+}
+
+.verified-badge .verify-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(46, 213, 115, 0.2);
+}
+
+@media (max-width: 576px) {
+    .verified-badge {
+        flex-wrap: wrap;
+        padding: 6px 14px;
+        gap: 4px;
+        border-radius: 30px;
+    }
+    .verified-badge .verify-text {
+        font-size: 0.7rem;
+        text-align: center;
+    }
+    .verified-badge .verify-divider {
+        display: none;
+    }
+}
+
+        /* ===== STUDENT RESOURCES ===== */
+        .resources-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            padding: 50px 40px;
+            margin: 50px 0;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .resources-section h2 {
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), #7bb3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .resource-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 28px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.4s ease;
+            height: 100%;
+            text-align: center;
+        }
+
+        .resource-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 40px rgba(58, 141, 243, 0.15);
+        }
+
+        .resource-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.2), rgba(92, 157, 255, 0.1));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.6rem;
+            margin: 0 auto 16px;
+            transition: all 0.4s ease;
+        }
+
+        .resource-card:hover .resource-icon {
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
+            transform: scale(1.05) rotate(-3deg);
+        }
+
+        .resource-card h5 {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .resource-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .btn-student-zone {
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 28px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(58, 141, 243, 0.3);
+        }
+
+        .btn-student-zone:hover {
+            background: linear-gradient(135deg, #5c9dff, var(--accent));
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(58, 141, 243, 0.4);
+        }
+
+        /* ===== EXAM ACCORDION ===== */
+        .exam-accordion {
+            border: 1px solid rgba(58, 141, 243, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 12px;
+        }
+        .exam-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            background: rgba(58, 141, 243, 0.05);
+            border-radius: 10px;
+            transition: background 0.3s ease;
+            display: flex;
+            align-items: center;
+            color: #0a194f;
+            font-weight: 600;
+        }
+        .exam-header:hover {
+            background: rgba(58, 141, 243, 0.15);
+        }
+        .exam-header .fa-chevron-right {
+            transition: transform 0.3s ease;
+        }
+        .exam-body {
+            padding: 8px 16px 16px 16px;
+        }
+        .exam-body .resource-item {
+            margin-left: 10px;
+            margin-bottom: 8px;
+        }
+        .badge-coming-soon {
+            background: #ffc107;
+            color: #0a194f;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-weight: 700;
+        }
+
+        /* ===== FOOTER ===== */
+        .modern-footer {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 0 20px;
+        }
+        .modern-footer h4,
+        .modern-footer h5 {
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .modern-footer ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .modern-footer ul li {
+            margin-bottom: 10px;
+        }
+        .modern-footer a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .modern-footer a:hover {
+            color: var(--accent);
+        }
+        .social-icons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .social-icon:hover {
+            background: var(--accent);
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+        .newsletter-form {
+            display: flex;
+            margin-top: 10px;
+        }
+        .newsletter-form input {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .newsletter-form input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .newsletter-form button {
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        .newsletter-form button:hover {
+            background: #5c9dff;
+        }
+        .footer-bottom {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .whatsapp-float {
+            position: fixed;
+            width: 48px;
+            height: 48px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
+        }
+
+        .hide-on-detail {
+            transition: opacity 0.4s ease;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .student-zone-header h1 {
+                font-size: 2.5rem;
+            }
+            .student-zone-header {
+                padding: 80px 0 50px;
+            }
+            .class-selector {
+                flex-direction: column;
+                padding: 16px 20px;
+                border-radius: 30px;
+                gap: 10px;
+                width: 100%;
+                max-width: 320px;
+            }
+            .class-selector select {
+                width: 100%;
+                min-width: unset;
+            }
+            .zone-section {
+                padding: 20px;
+            }
+            .resource-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .download-btn {
+                align-self: flex-start;
+            }
+            .nav-tabs-resources .nav-link {
+                font-size: 0.75rem;
+                padding: 6px 14px;
+            }
+            .coming-soon-badge {
+                font-size: 0.45rem;
+                padding: 1px 5px;
+            }
+            .resources-section {
+                padding: 30px 20px;
+            }
+            .class-detail-panel {
+                padding: 1.2rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .student-zone-header h1 {
+                font-size: 2rem;
+            }
+            .class-card {
+                padding: 25px 15px;
+            }
+            .class-card .card-icon {
+                width: 55px;
+                height: 55px;
+            }
+            .class-card i {
+                font-size: 26px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<!-- Floating Particles -->
-<div class="particles">
-  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-  <div class="particle"></div><div class="particle"></div><div class="particle"></div>
-  <div class="particle"></div>
-</div>
-
-<!-- ==================== ORIGINAL NAVBAR ==================== -->
-<nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top hide-on-detail">
-  <div class="container">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-      <div class="logo-container">
-        <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="50" class="logo-img">
-        <div class="logo-glow"></div>
-      </div>
-      <div>
-        <span class="fw-bold" style="font-size: 1.1rem;">NSM</span>
-        <small class="d-block" style="font-size: 0.75rem; opacity: 0.8;">Kambippalam</small>
-      </div>
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-      <span class="toggler-text">Menu</span>
-    </button>
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-        <!-- Home -->
-        <li class="nav-item"><a class="nav-link nav-icon active" href="index.html"><i class="fas fa-home"></i><span>Home</span><div class="nav-hover-effect"></div></a></li>
-        <!-- Board Dropdown -->
-        <li class="nav-item dropdown">
-          <a class="nav-link nav-icon dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-users"></i><span>Board</span><div class="nav-hover-effect"></div></a>
-          <ul class="dropdown-menu dropdown-menu-dark">
-            <li><a class="dropdown-item" href="faculties.html"><div class="dropdown-item-content"><i class="fas fa-chalkboard-teacher"></i><div><div class="dropdown-title">Staff</div><div class="dropdown-sub">Faculty & Administration</div></div></div></a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="pta.html"><div class="dropdown-item-content"><i class="fas fa-handshake"></i><div><div class="dropdown-title">PTA</div><div class="dropdown-sub">Parent Teacher Association</div></div></div></a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-graduation-cap"></i><div><div class="dropdown-title">Alumni</div><div class="dropdown-sub">Former Students Network</div></div></div></a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-users"></i><div><div class="dropdown-title">SKSBV</div><div class="dropdown-sub">Samastha Kerala Sunni Bala vedhi Unit</div></div></div></a></li>
-          </ul>
-        </li>
-        <!-- Student Zone Dropdown -->
-        <li class="nav-item dropdown student-zone-nav">
-          <a class="nav-link nav-icon student-zone-btn dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-graduate"></i><span>Student Zone</span><div class="nav-hover-effect"></div><span class="notification-badge">3</span></a>
-          <div class="dropdown-menu dropdown-menu-dark student-dropdown-normalized">
-            <div class="dropdown-header"><h6 class="mb-0">Student Portal</h6><small>Access student resources and services</small></div>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item primary-action" href="result.html"><div class="d-flex align-items-center justify-content-between"><div class="d-flex align-items-center"><div class="action-icon result-icon"><i class="fas fa-chart-line"></i></div><div class="ms-3"><div class="action-title">Check Results</div><div class="action-desc">View academic performance</div></div></div><span class="badge bg-success ms-2">Live</span></div></a>
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-actions">
-              <a class="dropdown-action-item" href="idcard.html"><div class="action-icon"><i class="fas fa-id-card"></i></div><div class="ms-3"><div class="action-title">ID Card</div><div class="action-desc">Digital identity card</div></div><div class="ms-auto"><i class="fas fa-external-link-alt action-arrow"></i></div></a>
-              <a class="dropdown-action-item" href="login.html"><div class="action-icon"><i class="fas fa-sign-in-alt"></i></div><div class="ms-3"><div class="action-title">Login</div><div class="action-desc">Student portal access</div></div><div class="ms-auto"><span class="enter-badge">Enter</span></div></a>
-              <a class="dropdown-action-item" href="student-zone.html"><div class="action-icon"><i class="fas fa-door-open"></i></div><div class="ms-3"><div class="action-title">Student Zone</div><div class="action-desc">Full access dashboard</div></div><div class="ms-auto"><i class="fas fa-arrow-right action-arrow"></i></div></a>
-            </div>
-          </div>
-        </li>
-        <li class="nav-item"><a class="nav-link nav-icon" href="https://samastha.info/"><i class="fas fa-university"></i><span>Samastha</span><div class="nav-hover-effect"></div></a></li>
-        <li class="nav-item"><a class="nav-link nav-icon" href="downloads.html"><i class="fas fa-download"></i><span>Downloads</span><div class="nav-hover-effect"></div></a></li>
-        <li class="nav-item"><a class="nav-link nav-icon" href="gallery.html"><i class="fas fa-images"></i><span>Gallery</span><div class="nav-hover-effect"></div></a></li>
-        <li class="nav-item"><a class="nav-link nav-icon" href="library.html"><i class="fas fa-book"></i><span>Library</span><div class="nav-hover-effect"></div></a></li>
-        <li class="nav-item"><a class="nav-link nav-icon" href="contact.html"><i class="fas fa-envelope"></i><span>Contact</span><div class="nav-hover-effect"></div></a></li>
-      </ul>
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
-  </div>
-</nav>
 
-<!-- ==================== HEADER & CLASS SELECTOR ==================== -->
-<div id="topHeaderSection" class="hide-on-detail">
-  <header class="student-zone-header">
-    <div class="container">
-      <h1>🎓 Student Zone</h1>
-      <p class="lead">Access study materials, notes, and exam resources</p>
-      <div class="header-decoration">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
-    </div>
-  </header>
-  <div class="container text-center">
-    <div class="class-selector">
-      <label><i class="fas fa-chalkboard-user"></i> Quick jump:</label>
-      <select id="classSelect">
-        <option value="">-- Select Class --</option>
-        <option value="1">Class 1</option>
-        <option value="2">Class 2</option>
-        <option value="3">Class 3</option>
-        <option value="4">Class 4</option>
-        <option value="5">Class 5</option>
-        <option value="6">Class 6</option>
-        <option value="7">Class 7</option>
-        <option value="8">Class 8</option>
-        <option value="9">Class 9</option>
-        <option value="10">Class 10</option>
-      </select>
-    </div>
-  </div>
-</div>
-
-<!-- ==================== CLASS GRID + DETAIL PANEL ==================== -->
-<section class="py-4 class-grid">
-  <div class="container">
-    <div id="classGridSection">
-      <div class="row g-4" id="classCardsContainer"></div>
-    </div>
-    <div id="classDetailSection" style="display: none;">
-      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <button class="btn-back" id="backToClassesBtn"><i class="fas fa-arrow-left me-2"></i>Back to Classes</button>
-        <h3 class="mb-0" style="color: white; font-weight: 700;"><i class="fas fa-chalkboard-user me-2" style="color: var(--accent);"></i>Class <span id="selectedClassNum"></span> Resources</h3>
-      </div>
-      <div class="class-detail-panel">
-        <ul class="nav nav-tabs-resources" id="resourceTab" role="tablist">
-          <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studyContent"><i class="fas fa-book-open"></i> Study Materials</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#papersContent"><i class="fas fa-file-alt"></i> Previous Papers</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#timetableContent"><i class="fa-solid fa-calendar"></i>Class Time Table</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#othersContent"><i class="fas fa-ellipsis-h"></i> Others</button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#infographicsContent"><i class="fas fa-chart-pie"></i> Infographics <span class="coming-soon-badge">Soon</span></button></li>
-          <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#animatedContent"><i class="fas fa-play-circle"></i> Animated <span class="coming-soon-badge">Soon</span></button></li>
-        </ul>
-        <div class="tab-content">
-          <div class="tab-pane fade show active" id="studyContent"><div id="studyMaterialsList"></div></div>
-          <div class="tab-pane fade" id="papersContent"><div id="previousPapersList"></div></div>
-          <div class="tab-pane fade" id="othersContent"><div id="othersList"></div></div>
-          <div class="tab-pane fade" id="infographicsContent"><div id="infographicsList"></div></div>
-          <div class="tab-pane fade" id="animatedContent"><div id="animatedList"></div></div>
-          <div class="tab-pane fade" id="timetableContent"><div id="timetableList"></div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== STUDENT RESOURCES ==================== -->
-<div id="resourcesFooterSection" class="hide-on-detail">
-  <section class="resources-section" data-aos="fade-up">
-    <div class="container">
-      <h2 class="text-center mb-5">📚 Student Resources</h2>
-      <div class="row g-4">
-        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
-          <div class="resource-card">
-            <div class="resource-icon"><i class="fas fa-download"></i></div>
-            <h5>Downloads</h5>
-            <p>Get syllabus, notes, and study materials</p>
-            <a href="downloads.html" class="btn-student-zone btn-sm">Access Downloads</a>
-          </div>
-        </div>
-        <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
-          <div class="resource-card">
-            <div class="resource-icon"><i class="fas fa-chart-line"></i></div>
-            <h5>Results</h5>
-            <p>Check your examination results</p>
-            <a href="result.html" class="btn-student-zone btn-sm">View Results</a>
-          </div>
-        </div>
-        <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
-          <div class="resource-card">
-            <div class="resource-icon"><i class="fas fa-book"></i></div>
-            <h5>Digital Library</h5>
-            <p>Access Islamic and academic books</p>
-            <a href="library.html" class="btn-student-zone btn-sm">Visit Library</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <div class="container text-center mt-4"><a href="index.html" class="btn-student-zone"><i class="fas fa-home me-2"></i>Back to Home</a></div>
-</div>
-
-<!-- ==================== ORIGINAL FOOTER ==================== -->
-<footer id="mainFooter" class="modern-footer hide-on-detail">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-4 mb-4 mb-lg-0">
-        <div class="d-flex align-items-center mb-4">
-          <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="60" class="me-3 rounded" style="border: 2px solid var(--accent);">
-          <div><h4 class="fw-bold mb-0">Noorussalam Madrasa</h4><small class="text-muted">Kambippalam, Kerala Estate</small></div>
-        </div>
-        <p class="mb-4" style="color: #d1d5db;">Providing quality Islamic education integrated with modern curriculum since 1989. Registered under SKIMVB Reg No: 6110.</p>
-        <div class="social-icons"><a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-icon"><i class="fab fa-twitter"></i></a><a href="#" class="social-icon"><i class="fab fa-instagram"></i></a><a href="#" class="social-icon"><i class="fab fa-youtube"></i></a><a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a></div>
-      </div>
-      <div class="col-lg-2 col-md-4 mb-4 mb-md-0"><h5>Quick Links</h5><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="faculties.html">Our Staff</a></li><li><a href="admissions.html">Admissions</a></li><li><a href="gallery.html">Gallery</a></li></ul></div>
-      <div class="col-lg-2 col-md-4 mb-4 mb-md-0"><h5>Academics</h5><ul><li><a href="courses.html">Courses</a></li><li><a href="schedule.html">Schedule</a></li><li><a href="library.html">Library</a></li><li><a href="result.html">Results</a></li><li><a href="pta.html">PTA</a></li></ul></div>
-      <div class="col-lg-4 col-md-4"><h5>Contact Info</h5><ul class="list-unstyled" style="color: #d1d5db;"><li class="mb-3"><i class="fas fa-map-marker-alt me-2" style="color: var(--accent);"></i> Noorussalam Madrasa, Kambippalam, Kerala Estate</li><li class="mb-3"><i class="fas fa-phone me-2" style="color: var(--accent);"></i> +91 70346 78818</li><li class="mb-3"><i class="fas fa-envelope me-2" style="color: var(--accent);"></i> noorussalam6110@gmail.com</li><li class="mb-3"><i class="fas fa-clock me-2" style="color: var(--accent);"></i> Sat - Thu: 6:00 AM - 10:00 AM</li></ul><h5 class="mt-4">Newsletter</h5><p style="color: #d1d5db; font-size: 0.9rem;">Subscribe for updates</p><div class="newsletter-form"><input type="email" placeholder="Your email"><button type="submit"><i class="fas fa-paper-plane"></i></button></div></div>
-    </div>
-    <div class="footer-bottom"><div class="row align-items-center"><div class="col-md-6"><p class="mb-0" style="color: #9ca3af;">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div><div class="col-md-6 text-md-end"><p class="mb-0" style="color: #9ca3af;">Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a></p></div></div></div>
-  </div>
-</footer>
-
-<!-- WhatsApp Float -->
-<a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" class="whatsapp-float" target="_blank">
-  <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" width="26">
-</a>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-<script>
-  // ========== CONFIGURATION ==========
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyjyteM7STmUCoBVcl4APcbEZ0HJ4LkQXgt5Ng8MAeBfYZwteytndyln4sAu6ZR963x/exec";
-
-  let globalSubjects = [];
-  let globalPapers = [];
-  let globalOthers = [];
-  let globalExamPapers = [];
-  let globalTimeTable = [];
-
-  function setGlobalUIVisible(visible) {
-    document.querySelectorAll('.hide-on-detail').forEach(el => el.style.display = visible ? '' : 'none');
-  }
-
-  async function fetchData() {
-    try {
-      const res = await fetch(WEB_APP_URL);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      globalSubjects = data.subjects || [];
-      globalPapers = data.previousPapers || [];
-      globalOthers = data.others || [];
-      globalExamPapers = data.examPapers || [];
-      globalTimeTable = data.timeTable || [];
-      console.log("Data loaded", { subjects: globalSubjects.length, papers: globalPapers.length, others: globalOthers.length, examPapers: globalExamPapers.length, timeTable: globalTimeTable.length });
-      return true;
-    } catch (err) {
-      console.error(err);
-      alert("Could not load data from Google Sheets.\nPlease check the Apps Script URL.");
-      return false;
-    }
-  }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-  }
-
-  function buildSection(title, items, renderFn, emptyMsg) {
-    let html = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> ${title}</h4>`;
-    if (items.length === 0) {
-      html += `<div class="no-data">${emptyMsg}</div>`;
-    } else {
-      items.forEach(item => { html += renderFn(item); });
-    }
-    html += `</div>`;
-    return html;
-  }
-
-  function renderClassCards() {
-    const container = document.getElementById('classCardsContainer');
-    const classMap = new Map();
-    globalSubjects.forEach(sub => classMap.set(sub.class, (classMap.get(sub.class) || 0) + 1));
-    const classes = Array.from(classMap.keys()).sort((a,b)=>a-b);
-    if (classes.length === 0) {
-      container.innerHTML = `<div class="col-12 alert alert-warning">No class data found. Please check your Google Sheet.</div>`;
-      return;
-    }
-    const icons = ['fa-book-reader','fa-graduation-cap','fa-user-graduate','fa-book-open','fa-pencil-alt','fa-chalkboard-teacher','fa-school','fa-laptop-code','fa-brain','fa-lightbulb'];
-    container.innerHTML = classes.map((cls, idx) => `
-      <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="${idx * 50}">
-        <div class="class-card" data-class="${cls}">
-          <span class="card-number">#${cls}</span>
-          <div class="card-icon"><i class="fas ${icons[idx % icons.length]}"></i></div>
-          <h5>Class ${cls}</h5>
-          <p>${classMap.get(cls)} Subjects</p>
-          <span class="subject-badge">📖 ${classMap.get(cls)} Materials</span>
-        </div>
-      </div>
-    `).join('');
-    document.querySelectorAll('.class-card').forEach(card => {
-      card.addEventListener('click', () => {
-        const cls = parseInt(card.dataset.class);
-        showClassDetail(cls);
-        document.getElementById('classSelect').value = cls;
-      });
-    });
-    setTimeout(() => document.querySelectorAll('.class-card').forEach(c => c.classList.add('show')), 100);
-  }
-
-  function toggleExamSubjects(el) {
-    const body = el.nextElementSibling;
-    if (body.style.display === 'none' || body.style.display === '') {
-      body.style.display = 'block';
-      el.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)';
-    } else {
-      body.style.display = 'none';
-      el.querySelector('.fa-chevron-right').style.transform = 'rotate(0deg)';
-    }
-  }
-  window.toggleExamSubjects = toggleExamSubjects;
-
-  function renderDetailPanel(classNum) {
-    const subjects = globalSubjects.filter(s => s.class == classNum);
-    const papers = globalPapers.filter(p => p.class == classNum);
-    const others = globalOthers.filter(o => o.class == classNum);
-    const examPapers = globalExamPapers.filter(e => e.class == classNum);
-    const timeTable = globalTimeTable.filter(t => t.class == classNum);
-
-    // Study Materials
-    const studyHTML = buildSection('Study Materials', subjects, sub => `
-      <div class="resource-item">
-        <div class="resource-info">
-          <i class="fa-solid fa-file-alt"></i>
-          <span class="subject-name">${escapeHtml(sub.name)}</span>
-          ${sub.description ? `<br><small class="text-muted">${escapeHtml(sub.description)}</small>` : ''}
-        </div>
-        <a href="${sub.materialLink || '#'}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Access</a>
-      </div>
-    `, 'നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക');
-
-    // Previous Papers (Accordion)
-    let examTypes = examPapers.length > 0 ? [...new Set(examPapers.map(e => e.examType))] : ['പാദ വാർഷിക പരീക്ഷ', 'അർദ്ധ വാർഷിക പരീക്ഷ', 'വാർഷിക പരീക്ഷ'];
-    let papersHTML = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> Previous Year Papers</h4>`;
-    if (examTypes.length === 0) {
-      papersHTML += `<div class="no-data">നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക</div>`;
-    } else {
-      examTypes.forEach(exam => {
-        const examSubjects = examPapers.filter(e => e.examType === exam);
-        const hasSubjects = examSubjects.length > 0;
-        papersHTML += `
-          <div class="exam-accordion">
-            <div class="exam-header" onclick="toggleExamSubjects(this)">
-              <i class="fas fa-chevron-right me-2"></i>
-              <strong class="exam-name">${escapeHtml(exam)}</strong>
-              <span class="badge bg-info text-dark ms-2">${hasSubjects ? examSubjects.length : 0} subjects</span>
-            </div>
-            <div class="exam-body" style="display: none;">
-        `;
-        if (hasSubjects) {
-          examSubjects.forEach(item => {
-            const link = item.link && item.link !== '#' ? item.link : null;
-            papersHTML += `
-              <div class="resource-item">
-                <div class="resource-info">
-                  <i class="fa-regular fa-file-pdf"></i>
-                  <strong class="subject-name">${escapeHtml(item.subject)}</strong>
+    <!-- ==================== ORIGINAL NAVBAR ==================== -->
+    <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top hide-on-detail">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
+                <div class="logo-container">
+                    <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="50" class="logo-img">
+                    <div class="logo-glow"></div>
                 </div>
-                ${link ? `<a href="${link}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Download</a>` 
-                       : `<span class="badge-coming-soon"><i class="fas fa-clock me-1"></i>Coming soon</span>`}
+                <div>
+                    <span class="fw-bold" style="font-size: 1.1rem;">NSM</span>
+                    <small class="d-block" style="font-size: 0.75rem; opacity: 0.8;">Kambippalam</small>
+                </div>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+                <span class="toggler-text">Menu</span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <!-- Home -->
+                    <li class="nav-item"><a class="nav-link nav-icon active" href="index.html"><i class="fas fa-home"></i><span>Home</span><div class="nav-hover-effect"></div></a></li>
+                    <!-- Board Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-icon dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-users"></i><span>Board</span><div class="nav-hover-effect"></div></a>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li><a class="dropdown-item" href="faculties.html"><div class="dropdown-item-content"><i class="fas fa-chalkboard-teacher"></i><div><div class="dropdown-title">Staff</div><div class="dropdown-sub">Faculty & Administration</div></div></div></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="pta.html"><div class="dropdown-item-content"><i class="fas fa-handshake"></i><div><div class="dropdown-title">PTA</div><div class="dropdown-sub">Parent Teacher Association</div></div></div></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-graduation-cap"></i><div><div class="dropdown-title">Alumni</div><div class="dropdown-sub">Former Students Network</div></div></div></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-users"></i><div><div class="dropdown-title">SKSBV</div><div class="dropdown-sub">Samastha Kerala Sunni Bala vedhi Unit</div></div></div></a></li>
+                        </ul>
+                    </li>
+                    <!-- Student Zone Dropdown -->
+                    <li class="nav-item dropdown student-zone-nav">
+                        <a class="nav-link nav-icon student-zone-btn dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-graduate"></i><span>Student Zone</span><div class="nav-hover-effect"></div><span class="notification-badge">3</span></a>
+                        <div class="dropdown-menu dropdown-menu-dark student-dropdown-normalized">
+                            <div class="dropdown-header"><h6 class="mb-0">Student Portal</h6><small>Access student resources and services</small></div>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item primary-action" href="result.html"><div class="d-flex align-items-center justify-content-between"><div class="d-flex align-items-center"><div class="action-icon result-icon"><i class="fas fa-chart-line"></i></div><div class="ms-3"><div class="action-title">Check Results</div><div class="action-desc">View academic performance</div></div></div><span class="badge bg-success ms-2">Live</span></div></a>
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-actions">
+                                <a class="dropdown-action-item" href="idcard.html"><div class="action-icon"><i class="fas fa-id-card"></i></div><div class="ms-3"><div class="action-title">ID Card</div><div class="action-desc">Digital identity card</div></div><div class="ms-auto"><i class="fas fa-external-link-alt action-arrow"></i></div></a>
+                                <a class="dropdown-action-item" href="login.html"><div class="action-icon"><i class="fas fa-sign-in-alt"></i></div><div class="ms-3"><div class="action-title">Login</div><div class="action-desc">Student portal access</div></div><div class="ms-auto"><span class="enter-badge">Enter</span></div></a>
+                                <a class="dropdown-action-item" href="student-zone.html"><div class="action-icon"><i class="fas fa-door-open"></i></div><div class="ms-3"><div class="action-title">Student Zone</div><div class="action-desc">Full access dashboard</div></div><div class="ms-auto"><i class="fas fa-arrow-right action-arrow"></i></div></a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link nav-icon" href="https://samastha.info/"><i class="fas fa-university"></i><span>Samastha</span><div class="nav-hover-effect"></div></a></li>
+                    <li class="nav-item"><a class="nav-link nav-icon" href="downloads.html"><i class="fas fa-download"></i><span>Downloads</span><div class="nav-hover-effect"></div></a></li>
+                    <li class="nav-item"><a class="nav-link nav-icon" href="gallery.html"><i class="fas fa-images"></i><span>Gallery</span><div class="nav-hover-effect"></div></a></li>
+                    <li class="nav-item"><a class="nav-link nav-icon" href="library.html"><i class="fas fa-book"></i><span>Library</span><div class="nav-hover-effect"></div></a></li>
+                    <li class="nav-item"><a class="nav-link nav-icon" href="contact.html"><i class="fas fa-envelope"></i><span>Contact</span><div class="nav-hover-effect"></div></a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ==================== HEADER & CLASS SELECTOR ==================== -->
+    <div id="topHeaderSection" class="hide-on-detail">
+        <header class="student-zone-header">
+            <div class="container">
+                <h1>🎓 Student Zone</h1>
+                <p class="lead">Access study materials, notes, and exam resources</p>
+                <div class="header-decoration">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+        </header>
+        <div class="container text-center">
+            <div class="class-selector">
+                <label><i class="fas fa-chalkboard-user"></i> Quick jump:</label>
+                <select id="classSelect">
+                    <option value="">-- Select Class --</option>
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CLASS GRID + DETAIL PANEL ==================== -->
+    <section class="py-4 class-grid">
+        <div class="container">
+            <div id="classGridSection">
+                <div class="row g-4" id="classCardsContainer"></div>
+            </div>
+            <div id="classDetailSection" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+                    <button class="btn-back" id="backToClassesBtn"><i class="fas fa-arrow-left me-2"></i>Back to Classes</button>
+                    <h3 class="mb-0" style="color: white; font-weight: 700;"><i class="fas fa-chalkboard-user me-2" style="color: var(--accent);"></i>Class <span id="selectedClassNum"></span> Resources</h3>
+                </div>
+                <div class="class-detail-panel">
+                    <ul class="nav nav-tabs-resources" id="resourceTab" role="tablist">
+                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studyContent"><i class="fas fa-book-open"></i> Study Materials</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#papersContent"><i class="fas fa-file-alt"></i> Previous Papers</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#timetableContent"><i class="fa-solid fa-calendar"></i>Class Time Table</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#othersContent"><i class="fas fa-ellipsis-h"></i> Others</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#infographicsContent"><i class="fas fa-chart-pie"></i> Infographics <span class="coming-soon-badge">Soon</span></button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#animatedContent"><i class="fas fa-play-circle"></i> Animated <span class="coming-soon-badge">Soon</span></button></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="studyContent"><div id="studyMaterialsList"></div></div>
+                        <div class="tab-pane fade" id="papersContent"><div id="previousPapersList"></div></div>
+                        <div class="tab-pane fade" id="othersContent"><div id="othersList"></div></div>
+                        <div class="tab-pane fade" id="infographicsContent"><div id="infographicsList"></div></div>
+                        <div class="tab-pane fade" id="animatedContent"><div id="animatedList"></div></div>
+                        <div class="tab-pane fade" id="timetableContent"><div id="timetableList"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== STUDENT RESOURCES ==================== -->
+    <div id="resourcesFooterSection" class="hide-on-detail">
+        <section class="resources-section" data-aos="fade-up">
+            <div class="container">
+                <h2 class="text-center mb-5">📚 Student Resources</h2>
+                <div class="row g-4">
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="resource-card">
+                            <div class="resource-icon"><i class="fas fa-download"></i></div>
+                            <h5>Downloads</h5>
+                            <p>Get syllabus, notes, and study materials</p>
+                            <a href="downloads.html" class="btn-student-zone btn-sm">Access Downloads</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                        <div class="resource-card">
+                            <div class="resource-icon"><i class="fas fa-chart-line"></i></div>
+                            <h5>Results</h5>
+                            <p>Check your examination results</p>
+                            <a href="result.html" class="btn-student-zone btn-sm">View Results</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                        <div class="resource-card">
+                            <div class="resource-icon"><i class="fas fa-book"></i></div>
+                            <h5>Digital Library</h5>
+                            <p>Access Islamic and academic books</p>
+                            <a href="library.html" class="btn-student-zone btn-sm">Visit Library</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <div class="container text-center mt-4"><a href="index.html" class="btn-student-zone"><i class="fas fa-home me-2"></i>Back to Home</a></div>
+    </div>
+
+    <!-- ==================== ORIGINAL FOOTER ==================== -->
+    <footer id="mainFooter" class="modern-footer hide-on-detail">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="60" class="me-3 rounded" style="border: 2px solid var(--accent);">
+                        <div><h4 class="fw-bold mb-0">Noorussalam Madrasa</h4><small class="text-muted">Kambippalam, Kerala Estate</small></div>
+                    </div>
+                    <p class="mb-4" style="color: #d1d5db;">Providing quality Islamic education integrated with modern curriculum since 1989. Registered under SKIMVB Reg No: 6110.</p>
+                    <div class="social-icons"><a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-icon"><i class="fab fa-twitter"></i></a><a href="#" class="social-icon"><i class="fab fa-instagram"></i></a><a href="#" class="social-icon"><i class="fab fa-youtube"></i></a><a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a></div>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0"><h5>Quick Links</h5><ul><li><a href="index.html">Home</a></li><li><a href="about.html">About Us</a></li><li><a href="faculties.html">Our Staff</a></li><li><a href="admissions.html">Admissions</a></li><li><a href="gallery.html">Gallery</a></li></ul></div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0"><h5>Academics</h5><ul><li><a href="courses.html">Courses</a></li><li><a href="schedule.html">Schedule</a></li><li><a href="library.html">Library</a></li><li><a href="result.html">Results</a></li><li><a href="pta.html">PTA</a></li></ul></div>
+                <div class="col-lg-4 col-md-4"><h5>Contact Info</h5><ul class="list-unstyled" style="color: #d1d5db;"><li class="mb-3"><i class="fas fa-map-marker-alt me-2" style="color: var(--accent);"></i> Noorussalam Madrasa, Kambippalam, Kerala Estate</li><li class="mb-3"><i class="fas fa-phone me-2" style="color: var(--accent);"></i> +91 70346 78818</li><li class="mb-3"><i class="fas fa-envelope me-2" style="color: var(--accent);"></i> noorussalam6110@gmail.com</li><li class="mb-3"><i class="fas fa-clock me-2" style="color: var(--accent);"></i> Sat - Thu: 6:00 AM - 10:00 AM</li></ul><h5 class="mt-4">Newsletter</h5><p style="color: #d1d5db; font-size: 0.9rem;">Subscribe for updates</p><div class="newsletter-form"><input type="email" placeholder="Your email"><button type="submit"><i class="fas fa-paper-plane"></i></button></div></div>
+            </div>
+            <div class="footer-bottom"><div class="row align-items-center"><div class="col-md-6"><p class="mb-0" style="color: #9ca3af;">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div><div class="col-md-6 text-md-end"><p class="mb-0" style="color: #9ca3af;">Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a></p></div></div></div>
+        </div>
+    </footer>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" class="whatsapp-float" target="_blank">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" width="26">
+    </a>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js">
+    </script>
+    <script>
+        // ========== CONFIGURATION ==========
+        const WEB_APP_URL =
+            "https://script.google.com/macros/s/AKfycbyjyteM7STmUCoBVcl4APcbEZ0HJ4LkQXgt5Ng8MAeBfYZwteytndyln4sAu6ZR963x/exec";
+
+        let globalSubjects = [];
+        let globalPapers = [];
+        let globalOthers = [];
+        let globalExamPapers = [];
+        let globalTimeTable = [];
+
+        function setGlobalUIVisible(visible) {
+            document.querySelectorAll('.hide-on-detail').forEach(el => el.style.display = visible ? '' : 'none');
+        }
+
+        async function fetchData() {
+            try {
+                const res = await fetch(WEB_APP_URL);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                globalSubjects = data.subjects || [];
+                globalPapers = data.previousPapers || [];
+                globalOthers = data.others || [];
+                globalExamPapers = data.examPapers || [];
+                globalTimeTable = data.timeTable || [];
+                console.log("Data loaded", { subjects: globalSubjects.length, papers: globalPapers.length, others: globalOthers
+                        .length, examPapers: globalExamPapers.length, timeTable: globalTimeTable.length });
+                return true;
+            } catch (err) {
+                console.error(err);
+                alert("Could not load data from Google Sheets.\nPlease check the Apps Script URL.");
+                return false;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } [m]));
+        }
+
+        function buildSection(title, items, renderFn, emptyMsg) {
+            let html = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> ${title}</h4>`;
+            if (items.length === 0) {
+                html += `<div class="no-data">${emptyMsg}</div>`;
+            } else {
+                items.forEach(item => { html += renderFn(item); });
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        function renderClassCards() {
+            const container = document.getElementById('classCardsContainer');
+            const classMap = new Map();
+            globalSubjects.forEach(sub => classMap.set(sub.class, (classMap.get(sub.class) || 0) + 1));
+            const classes = Array.from(classMap.keys()).sort((a, b) => a - b);
+            if (classes.length === 0) {
+                container.innerHTML =
+                    `<div class="col-12 alert alert-warning">No class data found. Please check your Google Sheet.</div>`;
+                return;
+            }
+            const icons = ['fa-book-reader', 'fa-graduation-cap', 'fa-user-graduate', 'fa-book-open', 'fa-pencil-alt',
+                'fa-chalkboard-teacher', 'fa-school', 'fa-laptop-code', 'fa-brain', 'fa-lightbulb'
+            ];
+            container.innerHTML = classes.map((cls, idx) => `
+            <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="${idx * 50}">
+              <div class="class-card" data-class="${cls}">
+                <span class="card-number">#${cls}</span>
+                <div class="card-icon"><i class="fas ${icons[idx % icons.length]}"></i></div>
+                <h5>Class ${cls}</h5>
+                <p>${classMap.get(cls)} Subjects</p>
+                <span class="subject-badge">📖 ${classMap.get(cls)} Materials</span>
+              </div>
+            </div>
+          `).join('');
+            document.querySelectorAll('.class-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const cls = parseInt(card.dataset.class);
+                    showClassDetail(cls);
+                    document.getElementById('classSelect').value = cls;
+                });
+            });
+            setTimeout(() => document.querySelectorAll('.class-card').forEach(c => c.classList.add('show')), 100);
+        }
+
+        function toggleExamSubjects(el) {
+            const body = el.nextElementSibling;
+            if (body.style.display === 'none' || body.style.display === '') {
+                body.style.display = 'block';
+                el.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)';
+            } else {
+                body.style.display = 'none';
+                el.querySelector('.fa-chevron-right').style.transform = 'rotate(0deg)';
+            }
+        }
+        window.toggleExamSubjects = toggleExamSubjects;
+
+        function renderDetailPanel(classNum) {
+            const subjects = globalSubjects.filter(s => s.class == classNum);
+            const papers = globalPapers.filter(p => p.class == classNum);
+            const others = globalOthers.filter(o => o.class == classNum);
+            const examPapers = globalExamPapers.filter(e => e.class == classNum);
+            const timeTable = globalTimeTable.filter(t => t.class == classNum);
+
+            // Study Materials
+            const studyHTML = buildSection('Study Materials', subjects, sub => `
+            <div class="resource-item">
+              <div class="resource-info">
+                <i class="fa-solid fa-file-alt"></i>
+                <span class="subject-name">${escapeHtml(sub.name)}</span>
+                ${sub.description ? `<br><small class="text-muted">${escapeHtml(sub.description)}</small>` : ''}
+              </div>
+              <a href="${sub.materialLink || '#'}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Access</a>
+            </div>
+          `, 'നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക');
+
+            // Previous Papers (Accordion)
+            let examTypes = examPapers.length > 0 ? [...new Set(examPapers.map(e => e.examType))] : ['പാദ വാർഷിക പരീക്ഷ',
+                'അർദ്ധ വാർഷിക പരീക്ഷ', 'വാർഷിക പരീക്ഷ'
+            ];
+            let papersHTML = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> Previous Year Papers</h4>`;
+            if (examTypes.length === 0) {
+                papersHTML += `<div class="no-data">നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക</div>`;
+            } else {
+                examTypes.forEach(exam => {
+                    const examSubjects = examPapers.filter(e => e.examType === exam);
+                    const hasSubjects = examSubjects.length > 0;
+                    papersHTML += `
+                <div class="exam-accordion">
+                  <div class="exam-header" onclick="toggleExamSubjects(this)">
+                    <i class="fas fa-chevron-right me-2"></i>
+                    <strong class="exam-name">${escapeHtml(exam)}</strong>
+                    <span class="badge bg-info text-dark ms-2">${hasSubjects ? examSubjects.length : 0} subjects</span>
+                  </div>
+                  <div class="exam-body" style="display: none;">
+              `;
+                    if (hasSubjects) {
+                        examSubjects.forEach(item => {
+                            const link = item.link && item.link !== '#' ? item.link : null;
+                            papersHTML += `
+                    <div class="resource-item">
+                      <div class="resource-info">
+                        <i class="fa-regular fa-file-pdf"></i>
+                        <strong class="subject-name">${escapeHtml(item.subject)}</strong>
+                      </div>
+                      ${link ? `<a href="${link}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Download</a>` 
+                             : `<span class="badge-coming-soon"><i class="fas fa-clock me-1"></i>Coming soon</span>`}
+                    </div>
+                  `;
+                        });
+                    } else {
+                        papersHTML += `<div class="text-muted" style="padding: 8px 0;">വിഷയങ്ങൾ ലഭ്യമല്ല</div>`;
+                    }
+                    papersHTML += `</div></div>`;
+                });
+            }
+            papersHTML += `</div>`;
+
+            // Others
+            const othersHTML = buildSection('Others (Notes / Guides)', others, other => `
+            <div class="resource-item">
+              <div class="resource-info">
+                <i class="fa-solid fa-paperclip"></i>
+                <strong>${escapeHtml(other.title)}</strong>
+              </div>
+              <a href="${other.link || '#'}" target="_blank" class="download-btn"><i class="fa fa-external-link-alt"></i> Open</a>
+            </div>
+          `, 'നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക');
+
+            // Infographics & Animated
+            const infographicsHTML =
+                `<div class="zone-section"><h4><i class="fa-solid fa-chart-pie"></i> Infographics</h4><div class="coming-soon-box"><i class="fas fa-clock"></i>ഉടൻ ലഭ്യമാകും.. കാത്തിരിക്കുക<small>Coming soon</small></div></div>`;
+            const animatedHTML =
+                `<div class="zone-section"><h4><i class="fa-solid fa-play-circle"></i> Animated Contents</h4><div class="coming-soon-box"><i class="fas fa-clock"></i>ഉടൻ ലഭ്യമാകും.. കാത്തിരിക്കുക<small>Coming soon</small></div></div>`;
+
+            // ===== TIME TABLE (with dynamic column hiding + VERIFIED BADGE) =====
+            let timetableHTML = `<div class="zone-section"><h4><i class="fa-solid fa-clock"></i>Class Time Table- NOORUSSALAM MADRASA</h4>`;
+            if (timeTable.length === 0) {
+                timetableHTML += `<div class="no-data">തയ്യാറാക്കുന്നു.. കാത്തിരിക്കുക</div>`;
+            } else {
+                // Check if any row has a non-empty subject3 (ignore '-', empty)
+                const hasSubject3 = timeTable.some(row => {
+                    const s3 = (row.subject3 || '').trim();
+                    return s3 !== '' && s3 !== '-';
+                });
+
+                timetableHTML += `<div class="timetable-wrapper"><table>`;
+                // Header
+                timetableHTML += `<thead><tr><th>DAYS</th><th>SUBJECT 1</th><th>SUBJECT 2</th>`;
+                if (hasSubject3) {
+                    timetableHTML += `<th>SUBJECT 3</th>`;
+                }
+                timetableHTML += `</tr></thead><tbody>`;
+
+                timeTable.forEach(row => {
+                    const subjects = [row.subject1, row.subject2, row.subject3]
+                        .map(s => (s || '').trim())
+                        .filter(s => s !== '' && s !== '-');
+                    // Pad with empty cells if needed, but only up to 3
+                    while (subjects.length < 3) subjects.push('');
+                    // If no subject3, use only first two
+                    const displaySubjects = hasSubject3 ? subjects : subjects.slice(0, 2);
+                    timetableHTML += `<tr><td>${escapeHtml(row.day)}</td>`;
+                    displaySubjects.forEach(sub => {
+                        timetableHTML += `<td>${sub ? escapeHtml(sub) : '<span class="empty">-</span>'}</td>`;
+                    });
+                    timetableHTML += `</tr>`;
+                });
+                timetableHTML += `</tbody></table></div>`;
+
+                // --- VERIFIED BADGE ---
+                timetableHTML += `
+              <div class="verified-badge">
+                <span class="verify-icon"><i class="fas fa-check"></i></span>
+                <span class="verify-text">Verified by <strong>Swadar Muallim</strong></span>
+                <span class="verify-divider"></span>
+                <span class="verify-text" style="font-weight:300; font-size:0.85rem; color:rgba(255,255,255,0.6);">
+                  <i class="fas fa-shield-alt me-1" style="color:#2ed573;"></i>Authorized
+                </span>
               </div>
             `;
-          });
-        } else {
-          papersHTML += `<div class="text-muted" style="padding: 8px 0;">വിഷയങ്ങൾ ലഭ്യമല്ല</div>`;
+            }
+            timetableHTML += `</div>`;
+
+            // Set content
+            document.getElementById('studyMaterialsList').innerHTML = studyHTML;
+            document.getElementById('previousPapersList').innerHTML = papersHTML;
+            document.getElementById('othersList').innerHTML = othersHTML;
+            document.getElementById('infographicsList').innerHTML = infographicsHTML;
+            document.getElementById('animatedList').innerHTML = animatedHTML;
+            document.getElementById('timetableList').innerHTML = timetableHTML;
         }
-        papersHTML += `</div></div>`;
-      });
-    }
-    papersHTML += `</div>`;
 
-    // Others
-    const othersHTML = buildSection('Others (Notes / Guides)', others, other => `
-      <div class="resource-item">
-        <div class="resource-info">
-          <i class="fa-solid fa-paperclip"></i>
-          <strong>${escapeHtml(other.title)}</strong>
-        </div>
-        <a href="${other.link || '#'}" target="_blank" class="download-btn"><i class="fa fa-external-link-alt"></i> Open</a>
-      </div>
-    `, 'നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക');
+        function showClassDetail(classNum) {
+            document.getElementById('classGridSection').style.display = 'none';
+            document.getElementById('classDetailSection').style.display = 'block';
+            document.getElementById('selectedClassNum').innerText = classNum;
+            renderDetailPanel(classNum);
+            setGlobalUIVisible(false);
+            document.getElementById('classDetailSection').scrollIntoView({ behavior: 'smooth' });
+        }
 
-    // Infographics & Animated
-    const infographicsHTML = `<div class="zone-section"><h4><i class="fa-solid fa-chart-pie"></i> Infographics</h4><div class="coming-soon-box"><i class="fas fa-clock"></i>ഉടൻ ലഭ്യമാകും.. കാത്തിരിക്കുക<small>Coming soon</small></div></div>`;
-    const animatedHTML = `<div class="zone-section"><h4><i class="fa-solid fa-play-circle"></i> Animated Contents</h4><div class="coming-soon-box"><i class="fas fa-clock"></i>ഉടൻ ലഭ്യമാകും.. കാത്തിരിക്കുക<small>Coming soon</small></div></div>`;
+        function backToClasses() {
+            document.getElementById('classGridSection').style.display = 'block';
+            document.getElementById('classDetailSection').style.display = 'none';
+            setGlobalUIVisible(true);
+            window.scrollTo({ top: document.getElementById('classGridSection').offsetTop - 100, behavior: 'smooth' });
+        }
 
-    // ===== TIME TABLE (with dynamic column hiding) =====
-    let timetableHTML = `<div class="zone-section"><h4><i class="fa-solid fa-clock"></i>Class Time Table- NOORUSSALAM MADRASA</h4>`;
-    if (timeTable.length === 0) {
-      timetableHTML += `<div class="no-data">തയ്യാറാക്കുന്നു.. കാത്തിരിക്കുക</div>`;
-    } else {
-      // Check if any row has a non-empty subject3 (ignore '-', empty)
-      const hasSubject3 = timeTable.some(row => {
-        const s3 = (row.subject3 || '').trim();
-        return s3 !== '' && s3 !== '-';
-      });
-
-      timetableHTML += `<div class="timetable-wrapper"><table>`;
-      // Header
-      timetableHTML += `<thead><tr><th>DAYS</th><th>SUBJECT 1</th><th>SUBJECT 2</th>`;
-      if (hasSubject3) {
-        timetableHTML += `<th>SUBJECT 3</th>`;
-      }
-      timetableHTML += `</tr></thead><tbody>`;
-
-      timeTable.forEach(row => {
-        const subjects = [row.subject1, row.subject2, row.subject3]
-          .map(s => (s || '').trim())
-          .filter(s => s !== '' && s !== '-');
-        // Pad with empty cells if needed, but only up to 3
-        while (subjects.length < 3) subjects.push('');
-        // If no subject3, use only first two
-        const displaySubjects = hasSubject3 ? subjects : subjects.slice(0, 2);
-        timetableHTML += `<tr><td>${escapeHtml(row.day)}</td>`;
-        displaySubjects.forEach(sub => {
-          timetableHTML += `<td>${sub ? escapeHtml(sub) : '<span class="empty">-</span>'}</td>`;
+        document.getElementById('backToClassesBtn').addEventListener('click', backToClasses);
+        document.getElementById('classSelect').addEventListener('change', async (e) => {
+            const cls = e.target.value;
+            if (!cls) return;
+            if (globalSubjects.length === 0) await fetchData();
+            showClassDetail(parseInt(cls));
         });
-        timetableHTML += `</tr>`;
-      });
-      timetableHTML += `</tbody></table></div>`;
-    }
-    timetableHTML += `</div>`;
 
-    // Set content
-    document.getElementById('studyMaterialsList').innerHTML = studyHTML;
-    document.getElementById('previousPapersList').innerHTML = papersHTML;
-    document.getElementById('othersList').innerHTML = othersHTML;
-    document.getElementById('infographicsList').innerHTML = infographicsHTML;
-    document.getElementById('animatedList').innerHTML = animatedHTML;
-    document.getElementById('timetableList').innerHTML = timetableHTML;
-  }
-
-  function showClassDetail(classNum) {
-    document.getElementById('classGridSection').style.display = 'none';
-    document.getElementById('classDetailSection').style.display = 'block';
-    document.getElementById('selectedClassNum').innerText = classNum;
-    renderDetailPanel(classNum);
-    setGlobalUIVisible(false);
-    document.getElementById('classDetailSection').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  function backToClasses() {
-    document.getElementById('classGridSection').style.display = 'block';
-    document.getElementById('classDetailSection').style.display = 'none';
-    setGlobalUIVisible(true);
-    window.scrollTo({ top: document.getElementById('classGridSection').offsetTop - 100, behavior: 'smooth' });
-  }
-
-  document.getElementById('backToClassesBtn').addEventListener('click', backToClasses);
-  document.getElementById('classSelect').addEventListener('change', async (e) => {
-    const cls = e.target.value;
-    if (!cls) return;
-    if (globalSubjects.length === 0) await fetchData();
-    showClassDetail(parseInt(cls));
-  });
-
-  (async function init() {
-    await fetchData();
-    renderClassCards();
-    document.getElementById("year").textContent = new Date().getFullYear();
-    AOS.init({ duration: 800, once: true, easing: 'ease-out' });
-    window.addEventListener('scroll', () => document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 20));
-    document.querySelector('.newsletter-form button')?.addEventListener('click', () => {
-      const email = document.querySelector('.newsletter-form input')?.value;
-      if (email) { alert('Thank you for subscribing!'); document.querySelector('.newsletter-form input').value = ''; }
-    });
-  })();
-</script>
+        (async function init() {
+            await fetchData();
+            renderClassCards();
+            document.getElementById("year").textContent = new Date().getFullYear();
+            AOS.init({ duration: 800, once: true, easing: 'ease-out' });
+            window.addEventListener('scroll', () => document.querySelector('.navbar')?.classList.toggle('scrolled', window
+                .scrollY > 20));
+            document.querySelector('.newsletter-form button')?.addEventListener('click', () => {
+                const email = document.querySelector('.newsletter-form input')?.value;
+                if (email) { alert('Thank you for subscribing!');
+                    document.querySelector('.newsletter-form input').value = ''; }
+            });
+        })();
+    </script>
 </body>
 </html>
