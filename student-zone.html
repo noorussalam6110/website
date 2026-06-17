@@ -1551,15 +1551,9 @@
 
     <!-- Floating Particles -->
     <div class="particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
+        <div class="particle"></div><div class="particle"></div><div class="particle"></div>
         <div class="particle"></div>
     </div>
 
@@ -1582,7 +1576,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navMenu">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <!-- Home -->
                     <li class="nav-item"><a class="nav-link nav-icon active" href="index.html"><i class="fas fa-home"></i><span>Home</span><div class="nav-hover-effect"></div></a></li>
+                    <!-- Board Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link nav-icon dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-users"></i><span>Board</span><div class="nav-hover-effect"></div></a>
                         <ul class="dropdown-menu dropdown-menu-dark">
@@ -1595,6 +1591,7 @@
                             <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-users"></i><div><div class="dropdown-title">SKSBV</div><div class="dropdown-sub">Samastha Kerala Sunni Bala vedhi Unit</div></div></div></a></li>
                         </ul>
                     </li>
+                    <!-- Student Zone Dropdown -->
                     <li class="nav-item dropdown student-zone-nav">
                         <a class="nav-link nav-icon student-zone-btn dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-graduate"></i><span>Student Zone</span><div class="nav-hover-effect"></div><span class="notification-badge">3</span></a>
                         <div class="dropdown-menu dropdown-menu-dark student-dropdown-normalized">
@@ -1753,14 +1750,27 @@
     <script>
         // ========== CONFIGURATION ==========
         const WEB_APP_URL =
-            "https://script.google.com/macros/s/AKfycbykplQJIDhchy9C9XytZHhiNqDRf94Y6JcZaRn8mKUvTr6bYO09uMJbO8U1_vl0qQ-C/exec";
+            "https://script.google.com/macros/s/AKfycbyhXIGHy3Y0SHtT8Cg9dWLERc_VwKqx0VCXoUUz7peP0b1bKgzSOj7Ht6OxCKtXXeCO/exec";
 
         let globalSubjects = [];
         let globalPapers = [];
         let globalOthers = [];
         let globalExamPapers = [];
         let globalTimeTable = [];
-        let globalNotices = []; // NEW
+        let globalNotices = [];
+
+        // ---------- Date formatting function ----------
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date)) return dateStr;
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('en-US', options); // e.g., "Oct 10, 2026"
+            } catch (e) {
+                return dateStr;
+            }
+        }
 
         function setGlobalUIVisible(visible) {
             document.querySelectorAll('.hide-on-detail').forEach(el => el.style.display = visible ? '' : 'none');
@@ -1970,7 +1980,7 @@
             }
             timetableHTML += `</div>`;
 
-            // ===== NOTICE BOARD =====
+            // ===== NOTICE BOARD (with formatted date) =====
             let noticeHTML = `<div class="zone-section"><h4><i class="fa-solid fa-bullhorn"></i> Notice Board</h4>`;
             if (notices.length === 0) {
                 noticeHTML += `<div class="no-data">നിലവിൽ അറിയിപ്പുകളൊന്നുമില്ല.. കാത്തിരിക്കുക</div>`;
@@ -1979,7 +1989,6 @@
                 const sortedNotices = [...notices].sort((a, b) => {
                     if (a.class === 0 && b.class !== 0) return -1;
                     if (a.class !== 0 && b.class === 0) return 1;
-                    // If both have dates, sort by date (newest first)
                     if (a.date && b.date) {
                         return new Date(b.date) - new Date(a.date);
                     }
@@ -1996,6 +2005,7 @@
                     const badgeText = isGlobal ? '📢 Global' : `Class ${notice.class}`;
                     const badgeClass = isGlobal ? 'global' : 'class-specific';
                     const priorityBadge = priority ? `<span class="notice-badge ${priority}">${priority}</span>` : '';
+                    const formattedDate = notice.date ? formatDate(notice.date) : 'Date not specified';
 
                     noticeHTML += `
                 <div class="notice-card ${priorityClass} ${globalClass}">
@@ -2007,7 +2017,7 @@
                   <div class="notice-footer">
                     <div class="notice-date">
                       <i class="fas fa-calendar-alt"></i>
-                      ${notice.date ? escapeHtml(notice.date) : 'Date not specified'}
+                      ${escapeHtml(formattedDate)}
                     </div>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                       <span class="notice-badge ${badgeClass}">${badgeText}</span>
