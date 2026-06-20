@@ -40,7 +40,7 @@
         .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.8rem; margin-bottom:2.5rem; }
         .stat-card-neon { background:rgba(20,30,55,0.6); backdrop-filter:blur(12px); border-radius:1.8rem; padding:1.5rem; transition:all 0.3s; border:1px solid rgba(255,255,255,0.08); }
         .stat-value-xl { font-size:3rem; font-weight:800; background:linear-gradient(120deg, #fff, #94a3b8); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .action-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:1.5rem; margin:2rem 0; }
+        .action-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1.5rem; margin:2rem 0; }
         .action-tile { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border-radius:1.5rem; padding:1.5rem; text-align:center; cursor:pointer; transition:all 0.25s; border:1px solid rgba(255,255,255,0.05); }
         .action-tile:hover { background:rgba(59,130,246,0.2); transform:translateY(-8px); border-color:#3b82f6; }
         .activity-timeline { background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); border-radius:1.5rem; padding:1.5rem; }
@@ -90,6 +90,9 @@
         @media (max-width:680px) { .photo-container { width:140px; height:140px; } .poster-preview-buttons { flex-direction:column; width:90%; bottom:20px; } .poster-preview-buttons button { width:100%; justify-content:center; } }
         #forgotModal .form-control-glass { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:1rem; padding:0.9rem 1.2rem; width:100%; outline:none; }
         #forgotModal .form-control-glass:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
+        #editProfileModal .form-control-glass { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:1rem; padding:0.7rem 1rem; width:100%; outline:none; margin-top:4px; }
+        #editProfileModal .form-control-glass:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
+        #editProfileModal label { font-size:0.8rem; color:rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
@@ -99,7 +102,7 @@
     <p style="color:white; font-weight:600;">Loading smart portal...</p>
 </div>
 
-<!-- Login Section -->
+<!-- ===================== LOGIN SECTION ===================== -->
 <div id="loginSection" class="login-wrapper">
     <div class="login-panel">
         <div class="logo-circle">
@@ -133,9 +136,10 @@
     </div>
 </div>
 
-<!-- Dashboard Section -->
+<!-- ===================== DASHBOARD ===================== -->
 <div id="dashboardSection" style="display:none;">
     <div class="container">
+        <!-- Header -->
         <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <div class="avatar-neon" id="avatarInitials">SK</div>
@@ -150,7 +154,7 @@
             </div>
         </div>
 
-        <!-- STATS GRID -->
+        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card-neon">
                 <div class="d-flex justify-content-between align-items-start">
@@ -168,7 +172,6 @@
                 <div><span class="stat-value-xl" id="rankNumber">3rd</span><div class="text-white-50">Class Rank</div></div>
                 <div class="mt-2"><span id="rankBadge" class="badge-rank"><i class="fas fa-arrow-up me-1"></i> Improved +1</span></div>
             </div>
-            <!-- MORAL VALUES -->
             <div class="stat-card-neon">
                 <div><span class="stat-value-xl" id="moralValuesDisplay">A+</span><div class="text-white-50">Moral Values</div></div>
                 <div class="mt-2 d-flex align-items-center gap-2"><i class="fas fa-heart text-danger"></i><span class="text-white-50" id="moralValuesSub">Honesty, Respect</span></div>
@@ -176,22 +179,21 @@
             </div>
         </div>
 
-        <!-- Quick Actions (6 tiles now) -->
+        <!-- Action Grid (NO separate Edit Profile tile) -->
         <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
             <h4 class="text-white fw-semibold"><i class="fas fa-bolt text-warning me-2"></i>Neuro Actions</h4>
         </div>
         <div class="action-grid">
-            <div class="action-tile" onclick="showResultsModal()"><div class="bg-primary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-chart-simple fa-2x text-primary"></i></div><h6 class="text-white">Results</h6><small class="text-white-50">Exam analysis</small></div>
+            <div class="action-tile" onclick="showResultsModal()"><div class="bg-primary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-chart-simple fa-2x text-primary"></i></div><h6 class="text-white">Results</h6><small class="text-white-50">Overall Grade</small></div>
             <div class="action-tile" onclick="showAttendanceReport()"><div class="bg-success bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-calendar-week fa-2x text-success"></i></div><h6 class="text-white">Attendance</h6><small class="text-white-50">Monthly report</small></div>
             <div class="action-tile" onclick="showMoralValuesModal()"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-hand-holding-heart fa-2x text-warning"></i></div><h6 class="text-white">Moral Values</h6><small class="text-white-50">Character report</small></div>
             <div class="action-tile" onclick="showProfileCard()"><div class="bg-secondary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-user-astronaut fa-2x text-secondary"></i></div><h6 class="text-white">Profile</h6><small class="text-white-50">Personal info</small></div>
             <!-- Topper Poster -->
             <div class="action-tile" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-trophy fa-2x text-warning"></i></div><h6 class="text-white">🏆 Topper Poster</h6><small class="text-white-50">Download certificate</small></div>
-            <!-- NEW: Student Zone -->
             <div class="action-tile" onclick="window.location.href='student_zone.html'"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">📚 Study Zone</h6><small class="text-white-50">Notes & Resources</small></div>
         </div>
 
-        <!-- Activity & Events (Dynamic) -->
+        <!-- Activity & Events -->
         <div class="row g-4 mt-2">
             <div class="col-lg-6">
                 <div class="activity-timeline">
@@ -216,7 +218,7 @@
     </div>
 </div>
 
-<!-- Global Modal -->
+<!-- ===================== GLOBAL MODAL ===================== -->
 <div id="globalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1050; align-items:center; justify-content:center;">
     <div class="modal-glass rounded-4 p-4" style="max-width:500px; width:90%;">
         <div class="d-flex justify-content-between mb-3"><h3 id="modalTitle" class="text-white fw-bold">Title</h3><button id="closeModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
@@ -224,7 +226,7 @@
     </div>
 </div>
 
-<!-- Forgot Password Modal -->
+<!-- ===================== FORGOT PASSWORD MODAL ===================== -->
 <div id="forgotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
     <div class="modal-glass p-4" style="max-width:420px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
         <div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">🔑 Forgot Password</h3><button id="closeForgotModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
@@ -234,29 +236,66 @@
     </div>
 </div>
 
-<!-- Topper Poster Modal -->
+<!-- ===================== EDIT PROFILE MODAL ===================== -->
+<div id="editProfileModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1070; align-items:center; justify-content:center;">
+    <div class="modal-glass p-4" style="max-width:450px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
+        <div class="d-flex justify-content-between mb-3">
+            <h3 class="text-white fw-bold"><i class="fas fa-user-edit text-info"></i> Edit Profile</h3>
+            <button onclick="closeEditProfile()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
+            <div class="mb-3">
+                <label>Full Name</label>
+                <input type="text" id="editName" class="form-control-glass" required>
+            </div>
+            <div class="mb-3">
+                <label>Father's Name</label>
+                <input type="text" id="editFatherName" class="form-control-glass">
+            </div>
+            <div class="mb-3">
+                <label>Date of Birth</label>
+                <input type="date" id="editDob" class="form-control-glass">
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <input type="email" id="editEmail" class="form-control-glass">
+            </div>
+            <div class="mb-3">
+                <label>Phone</label>
+                <input type="tel" id="editPhone" class="form-control-glass">
+            </div>
+            <div class="mb-3">
+                <label>New Password (leave blank to keep current)</label>
+                <input type="password" id="editPassword" class="form-control-glass" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-gradient w-100 text-white"><i class="fas fa-save me-2"></i> Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<!-- ===================== TOPPER POSTER MODALS ===================== -->
 <div id="topperModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); z-index:1051; align-items:center; justify-content:center; padding:20px;">
     <div class="topper-modal-glass"><div class="modal-header"><h3><i class="fas fa-crown" style="color:#D4AF37;"></i> 🏆 Topper Poster</h3><button class="modal-close" onclick="closeTopperModal()">×</button></div><div class="topper-info"><h4 id="topperNameDisplay">Student Name</h4><p id="topperClassRank">Class X - Rank 1</p></div><div class="photo-section text-center"><div class="photo-container" style="margin:0 auto 15px;"><img id="topperPhotoPreview" src="" alt="Photo"></div><input type="file" id="topperPhotoUpload" accept="image/*" style="display:none"><button class="upload-btn" onclick="openTopperCrop()"><i class="fas fa-crop-alt"></i> Upload & Crop Photo</button><p style="color:rgba(255,255,255,0.4); font-size:0.8rem; margin-top:8px;">Optional – upload a square photo</p></div><div class="text-center"><button class="preview-btn" onclick="previewTopperPoster()"><i class="fas fa-certificate"></i> Preview Poster</button></div><p style="color:rgba(255,255,255,0.3); font-size:0.7rem; text-align:center; margin-top:15px;">Download as PNG or PDF from preview</p></div>
 </div>
 
-<!-- Topper Crop Modal -->
 <div id="topperCropModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
     <div class="modal-glass rounded-4 p-4" style="max-width:600px; width:95%;"><div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">✂️ Crop Photo</h3><button onclick="closeTopperCrop()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div><div class="crop-container"><img id="topperCropImage" style="max-width:100%; display:block;"></div><div class="crop-actions"><button class="btn-cancel-crop" onclick="closeTopperCrop()">❌ Cancel</button><button class="btn-crop-save" onclick="saveTopperCrop()">✔️ Crop & Save</button></div></div>
 </div>
 
-<!-- Poster Preview -->
 <div id="posterPreviewOverlay" class="poster-preview-container"><div class="close-preview" onclick="closePosterPreview()">×</div><canvas id="posterPreviewCanvas" class="certificate-canvas"></canvas><div class="poster-preview-buttons"><button onclick="downloadTopperPoster('png')"><i class="fas fa-download"></i> PNG</button><button onclick="downloadTopperPoster('pdf')"><i class="fas fa-file-pdf"></i> PDF</button></div></div>
 <div class="topper-loading" id="topperLoading"><div class="spinner"></div><p id="topperLoadingText">Generating poster...</p></div>
 <div class="success-animation" id="topperSuccess"><svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none"/><path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
 
+<!-- ===================== JAVASCRIPT ===================== -->
 <script>
 // ==================== CONFIG ====================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwyJwnp1y1Pt1shdzn8EJAQC94FdQV2hmv6okODaTR-1Yo81CAhg6Ty2T11FDObMnsh/exec'; // <-- REPLACE
+// 🔽 REPLACE WITH YOUR DEPLOYED APPS SCRIPT URL
+const SCRIPT_URL = 'https://script.google.com/macros/s/YOUR_DEPLOYED_URL_HERE/exec';
 
 // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
 const STUDENT_DATA = {
-    "NSM2025001": { password: "welcome123", name: "Suhail Kerala", class: "Grade 9 - STEM", roll: "15", overallGrade: "A+", attendance: 94, rank: 3, rankChange: "+1", moralValuesGrade: "A+", moralValuesSub: "Honesty:A+, Respect:A", performance: 92, avatar: "SK", email: "suhail@noor.edu", phone: "+91 9876543210", trendAttendance: "+2%" },
-    "NSM2025002": { password: "welcome123", name: "Aisha Rahman", class: "Grade 8 - Arts", roll: "08", overallGrade: "A", attendance: 96, rank: 2, rankChange: "0", moralValuesGrade: "A", moralValuesSub: "Honesty:A, Respect:A+", performance: 88, avatar: "AR", email: "aisha@noor.edu", phone: "+91 9876543211", trendAttendance: "+1%" }
+    "NSM2025001": { password: "welcome123", name: "Suhail Kerala", class: "Grade 9 - STEM", roll: "15", overallGrade: "A+", attendance: 94, rank: 3, rankChange: "+1", moralValuesGrade: "A+", moralValuesSub: "Honesty:A+, Respect:A", performance: 92, avatar: "SK", email: "suhail@noor.edu", phone: "+91 9876543210", trendAttendance: "+2%", fatherName: "Abdul Rahman", dob: "2006-05-15" },
+    "NSM2025002": { password: "welcome123", name: "Aisha Rahman", class: "Grade 8 - Arts", roll: "08", overallGrade: "A", attendance: 96, rank: 2, rankChange: "0", moralValuesGrade: "A", moralValuesSub: "Honesty:A, Respect:A+", performance: 88, avatar: "AR", email: "aisha@noor.edu", phone: "+91 9876543211", trendAttendance: "+1%", fatherName: "Rahman Khan", dob: "2007-08-22" }
 };
 
 let currentUser = null;
@@ -268,7 +307,9 @@ const closeModalBtn = document.getElementById('closeModalBtn');
 const modalTitleSpan = document.getElementById('modalTitle');
 const modalBodyDiv = document.getElementById('modalContentBody');
 
+// ==================== UTILITY FUNCTIONS ====================
 function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
+
 function showToast(message, type = 'success') {
     let toastDiv = document.createElement('div');
     toastDiv.className = 'position-fixed bottom-0 end-0 m-3 p-3 rounded-4 text-white d-flex align-items-center gap-3 glass-toast';
@@ -281,6 +322,7 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toastDiv.style.opacity = '0'; setTimeout(() => toastDiv.remove(), 500); }, 3000);
 }
 
+// ==================== UPDATE DASHBOARD UI ====================
 function updateDashboardUI() {
     if (!currentUser) return;
     document.getElementById('studentFullName').innerText = currentUser.name;
@@ -295,27 +337,22 @@ function updateDashboardUI() {
     document.getElementById('rankNumber').innerHTML = rankDisplay;
     let rankChangeHtml = currentUser.rankChange === '+1' ? '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser.rankChange === '-1' ? '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable');
     document.getElementById('rankBadge').innerHTML = rankChangeHtml;
-    // Moral Values
     document.getElementById('moralValuesDisplay').innerText = currentUser.moralValuesGrade || 'B+';
     document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',').slice(0,2).join(', ') : 'N/A';
     const gradeMap = { 'A+':95, 'A':85, 'B+':75, 'B':65, 'C+':55, 'C':45, 'D':35, 'F':25 };
     const grade = currentUser.moralValuesGrade || 'B';
     document.getElementById('moralValuesProgressFill').style.width = (gradeMap[grade] || 70) + '%';
-    // Topper Poster tile
     const topperTile = document.getElementById('topperPosterTile');
     if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block'; else topperTile.style.display = 'none';
 }
 
-// ==================== LOAD ACTIVITIES & EVENTS (DYNAMIC) ====================
+// ==================== LOAD ACTIVITIES & EVENTS ====================
 async function loadActivitiesAndCalendar() {
-    // Live Feed (static/dynamic mock)
     document.getElementById('activityFeedList').innerHTML = `
         <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-book text-primary mt-1"></i><div><div class="text-white">📘 Submitted Mathematics Project</div><small class="text-white-50">2 hours ago</small></div></li>
         <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-trophy text-primary mt-1"></i><div><div class="text-white">🏆 Ranked 3rd in Monthly Test</div><small class="text-white-50">Yesterday</small></div></li>
         <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-calendar-check text-primary mt-1"></i><div><div class="text-white">✅ Attendance: 100% this week</div><small class="text-white-50">2 days ago</small></div></li>
     `;
-
-    // Fetch events from backend
     try {
         const url = `${SCRIPT_URL}?action=events&t=${Date.now()}`;
         const resp = await fetch(url);
@@ -326,11 +363,9 @@ async function loadActivitiesAndCalendar() {
             ).join('');
             document.getElementById('calendarEventsList').innerHTML = calHtml;
         } else {
-            // Fallback if no events returned
             loadDefaultEvents();
         }
     } catch (e) {
-        console.log('Events fetch error, using default:', e);
         loadDefaultEvents();
     }
 }
@@ -346,68 +381,478 @@ function loadDefaultEvents() {
     ).join('');
 }
 
-// ---- Modal View Functions ----
-function showResultsModal() { modalTitleSpan.innerText = "📊 Academic Excellence"; modalBodyDiv.innerHTML = `<div class="mb-3"><div class="d-flex justify-content-between"><span>Mathematics</span><span class="fw-bold text-white">95/100 (A+)</span></div><div class="progress mb-2"><div class="progress-bar bg-primary" style="width:95%"></div></div><div class="d-flex justify-content-between"><span>Science</span><span class="fw-bold text-white">88/100 (A)</span></div><div class="progress mb-2"><div class="progress-bar bg-success" style="width:88%"></div></div><div class="d-flex justify-content-between"><span>English</span><span class="fw-bold text-white">92/100 (A+)</span></div><div class="progress mb-2"><div class="progress-bar bg-info" style="width:92%"></div></div><div class="d-flex justify-content-between"><span>Arabic</span><span class="fw-bold text-white">85/100 (B+)</span></div><div class="progress mb-2"><div class="progress-bar bg-warning" style="width:85%"></div></div><div class="alert alert-dark mt-3">✨ Overall Percentage: ${currentUser.performance}% | Grade: ${currentUser.overallGrade}</div></div>`; modal.style.display = 'flex'; }
-function showAttendanceReport() { modalTitleSpan.innerText = "📆 Attendance Analytics"; modalBodyDiv.innerHTML = `<div><div class="text-center mb-3"><span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span><p>Overall Attendance</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div><h6 class="text-white">Monthly Breakdown</h6><ul class="list-unstyled"><li class="d-flex justify-content-between"><span>March 2025</span><span>Present: 18/18 (100%)</span></li><li class="d-flex justify-content-between mt-2"><span>February 2025</span><span>Present: 20/22 (91%)</span></li></ul></div>`; modal.style.display = 'flex'; }
-function showMoralValuesModal() { modalTitleSpan.innerText = "🌟 Moral Values Report"; const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+']; let subHtml = subValues.map(item => { const parts = item.split(':'); const trait = parts[0]?.trim() || 'N/A'; const grade = parts[1]?.trim() || 'B'; const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b'; return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`; }).join(''); modalBodyDiv.innerHTML = `<div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div><h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div><div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>`; modal.style.display = 'flex'; }
-function showProfileCard() { modalTitleSpan.innerText = "👤 Student Profile"; modalBodyDiv.innerHTML = `<div class="text-center mb-3"><div class="avatar-neon mx-auto mb-2" style="width:80px;height:80px; font-size:32px;">${currentUser.avatar}</div><h4 class="text-white">${currentUser.name}</h4><p class="text-white-50">${currentUser.class}</p></div><div class="row"><div class="col-6"><small>Student ID</small><p class="text-white fw-bold">${currentUser.studentId}</p></div><div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll}</p></div><div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div><div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div></div>`; modal.style.display = 'flex'; }
-
-// ---- Login Logic ----
-async function handleLogin(e) {
-    e.preventDefault(); const id = document.getElementById('studentId').value.trim(); const pwd = document.getElementById('password').value.trim();
-    if(!id || !pwd) { showToast("Enter credentials", "error"); return; } showLoading(true); await new Promise(r => setTimeout(r, 800));
-    try {
-        const url = `${SCRIPT_URL}?action=login&studentId=${encodeURIComponent(id)}&password=${encodeURIComponent(pwd)}&t=${Date.now()}`;
-        const response = await fetch(url); const data = await response.json();
-        if (data.result === 'success') { currentUser = { studentId: data.studentId, name: data.name, class: data.class, roll: data.roll || '', overallGrade: data.overallGrade || 'A+', attendance: data.attendance || 94, rank: data.rank || 3, rankChange: data.rankChange || '+1', moralValuesGrade: data.moralValuesGrade || 'B+', moralValuesSub: data.moralValuesSub || 'Honesty:A, Respect:A+', performance: data.performance || 90, avatar: data.name?.charAt(0).toUpperCase() || 'S', email: data.email || '', phone: data.phone || '', trendAttendance: data.trendAttendance || '+2%' }; localStorage.setItem('noor_session', JSON.stringify(currentUser)); updateDashboardUI(); await loadActivitiesAndCalendar(); loginSection.style.display = 'none'; dashboardSection.style.display = 'block'; showToast(`Welcome back, ${currentUser.name} ✨`, "success"); }
-        else { showToast(data.message || "Invalid credentials", "error"); }
-    } catch(err) {
-        if(STUDENT_DATA[id] && STUDENT_DATA[id].password === pwd) { currentUser = { ...STUDENT_DATA[id], studentId: id }; localStorage.setItem('noor_session', JSON.stringify(currentUser)); updateDashboardUI(); await loadActivitiesAndCalendar(); loginSection.style.display = 'none'; dashboardSection.style.display = 'block'; showToast(`Welcome back, ${currentUser.name} ✨ (offline)`, "success"); } else { showToast("Invalid credentials", "error"); }
-    } showLoading(false);
+// ==================== CLOSE MODAL HELPER ====================
+function closeModal() {
+    modal.style.display = 'none';
 }
 
-function logout() { currentUser = null; localStorage.removeItem('noor_session'); dashboardSection.style.display = 'none'; loginSection.style.display = 'flex'; document.getElementById('loginForm').reset(); showToast("Logged out securely", "success"); }
-function restoreSession() { const saved = localStorage.getItem('noor_session'); if(saved) { try { currentUser = JSON.parse(saved); updateDashboardUI(); loadActivitiesAndCalendar(); loginSection.style.display = 'none'; dashboardSection.style.display = 'block'; } catch(e) {} } }
+// ==================== MODAL VIEWS ====================
+// ---- RESULTS (with link to full results page) ----
+function showResultsModal() {
+    modalTitleSpan.innerText = "📊 Overall Grade";
+    modalBodyDiv.innerHTML = `
+        <div class="text-center py-3">
+            <div style="font-size:4rem; font-weight:800; background:linear-gradient(135deg,#3b82f6,#a855f7); -webkit-background-clip:text; background-clip:text; color:transparent;">
+                ${currentUser.overallGrade}
+            </div>
+            <p class="text-white-50">Overall Grade</p>
+            <div class="mt-3">
+                <div class="d-flex justify-content-between">
+                    <span class="text-white">Performance</span>
+                    <span class="text-white fw-bold">${currentUser.performance}%</span>
+                </div>
+                <div class="progress" style="height:12px;">
+                    <div class="progress-bar bg-primary" style="width:${currentUser.performance}%"></div>
+                </div>
+            </div>
+            <div class="mt-4">
+                <a href="results.html" target="_blank" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color: #3b82f6; color: #3b82f6; font-weight:600; text-decoration:none;">
+                    <i class="fas fa-external-link-alt me-2"></i> Access Full Results Page
+                </a>
+            </div>
+        </div>
+    `;
+    modal.style.display = 'flex';
+}
 
-// Event Bindings
+// ---- ATTENDANCE ----
+function showAttendanceReport() {
+    modalTitleSpan.innerText = "📆 Attendance Analytics";
+    modalBodyDiv.innerHTML = `
+        <div><div class="text-center mb-3"><span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span><p>Overall Attendance</p></div>
+        <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div>
+        <h6 class="text-white">Monthly Breakdown</h6>
+        <ul class="list-unstyled"><li class="d-flex justify-content-between"><span>March 2025</span><span>Present: 18/18 (100%)</span></li><li class="d-flex justify-content-between mt-2"><span>February 2025</span><span>Present: 20/22 (91%)</span></li></ul>
+    `;
+    modal.style.display = 'flex';
+}
+
+// ---- MORAL VALUES ----
+function showMoralValuesModal() {
+    modalTitleSpan.innerText = "🌟 Moral Values Report";
+    const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
+    let subHtml = subValues.map(item => {
+        const parts = item.split(':');
+        const trait = parts[0]?.trim() || 'N/A';
+        const grade = parts[1]?.trim() || 'B';
+        const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b';
+        return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`;
+    }).join('');
+    modalBodyDiv.innerHTML = `
+        <div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div>
+        <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div>
+        <h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div>
+        <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
+    `;
+    modal.style.display = 'flex';
+}
+
+// ---- PROFILE (with Edit Profile button INSIDE) ----
+function showProfileCard() {
+    modalTitleSpan.innerText = "👤 Student Profile";
+    modalBodyDiv.innerHTML = `
+        <div class="text-center mb-3">
+            <div class="avatar-neon mx-auto mb-2" style="width:80px;height:80px; font-size:32px;">${currentUser.avatar}</div>
+            <h4 class="text-white">${currentUser.name}</h4>
+            <p class="text-white-50">${currentUser.class}</p>
+        </div>
+        <div class="row">
+            <div class="col-6"><small>Student ID</small><p class="text-white fw-bold">${currentUser.studentId}</p></div>
+            <div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll}</p></div>
+            <div class="col-12"><small>Father's Name</small><p class="text-white">${currentUser.fatherName || 'N/A'}</p></div>
+            <div class="col-12"><small>Date of Birth</small><p class="text-white">${currentUser.dob || 'N/A'}</p></div>
+            <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div>
+            <div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div>
+        </div>
+        <!-- 🔽 EDIT BUTTON INSIDE PROFILE MODAL -->
+        <div class="mt-4 text-center">
+            <button class="btn btn-outline-info rounded-pill px-4 py-2" 
+                    onclick="closeModal(); openEditProfile();" 
+                    style="border-color: #3b82f6; color: #3b82f6; font-weight:600; background:rgba(59,130,246,0.08);">
+                <i class="fas fa-edit me-2"></i> Edit Profile
+            </button>
+        </div>
+    `;
+    modal.style.display = 'flex';
+}
+
+// ==================== EDIT PROFILE ====================
+function openEditProfile() {
+    if (!currentUser) return;
+    document.getElementById('editName').value = currentUser.name || '';
+    document.getElementById('editFatherName').value = currentUser.fatherName || '';
+    document.getElementById('editDob').value = currentUser.dob || '';
+    document.getElementById('editEmail').value = currentUser.email || '';
+    document.getElementById('editPhone').value = currentUser.phone || '';
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editProfileModal').style.display = 'flex';
+}
+
+function closeEditProfile() {
+    document.getElementById('editProfileModal').style.display = 'none';
+}
+
+async function saveProfileChanges(e) {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    const name = document.getElementById('editName').value.trim();
+    const fatherName = document.getElementById('editFatherName').value.trim();
+    const dob = document.getElementById('editDob').value.trim();
+    const email = document.getElementById('editEmail').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const password = document.getElementById('editPassword').value.trim();
+
+    if (!name) { showToast("Name is required", "error"); return; }
+
+    showLoading(true);
+    try {
+        let url = `${SCRIPT_URL}?action=updateProfile&studentId=${encodeURIComponent(currentUser.studentId)}&name=${encodeURIComponent(name)}&fatherName=${encodeURIComponent(fatherName)}&dob=${encodeURIComponent(dob)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
+        if (password) url += `&password=${encodeURIComponent(password)}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.result === 'success') {
+            currentUser = { ...currentUser, ...data };
+            localStorage.setItem('noor_session', JSON.stringify(currentUser));
+            updateDashboardUI();
+            closeEditProfile();
+            showToast("Profile updated successfully! ✅", "success");
+        } else {
+            showToast(data.message || "Update failed", "error");
+        }
+    } catch (err) {
+        showToast("Network error – please try again", "error");
+    }
+    showLoading(false);
+}
+
+// ==================== LOGIN / LOGOUT ====================
+async function handleLogin(e) {
+    e.preventDefault();
+    const id = document.getElementById('studentId').value.trim();
+    const pwd = document.getElementById('password').value.trim();
+    if (!id || !pwd) { showToast("Enter credentials", "error"); return; }
+    showLoading(true);
+    await new Promise(r => setTimeout(r, 800));
+    try {
+        const url = `${SCRIPT_URL}?action=login&studentId=${encodeURIComponent(id)}&password=${encodeURIComponent(pwd)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.result === 'success') {
+            currentUser = {
+                studentId: data.studentId,
+                name: data.name,
+                class: data.class,
+                roll: data.roll || '',
+                overallGrade: data.overallGrade || 'A+',
+                attendance: data.attendance || 94,
+                rank: data.rank || 3,
+                rankChange: data.rankChange || '+1',
+                moralValuesGrade: data.moralValuesGrade || 'B+',
+                moralValuesSub: data.moralValuesSub || 'Honesty:A, Respect:A+',
+                performance: data.performance || 90,
+                avatar: data.name?.charAt(0).toUpperCase() || 'S',
+                email: data.email || '',
+                phone: data.phone || '',
+                trendAttendance: data.trendAttendance || '+2%',
+                fatherName: data.fatherName || '',
+                dob: data.dob || ''
+            };
+            localStorage.setItem('noor_session', JSON.stringify(currentUser));
+            updateDashboardUI();
+            await loadActivitiesAndCalendar();
+            loginSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            showToast(`Welcome back, ${currentUser.name} ✨`, "success");
+        } else {
+            showToast(data.message || "Invalid credentials", "error");
+        }
+    } catch (err) {
+        // Offline fallback
+        if (STUDENT_DATA[id] && STUDENT_DATA[id].password === pwd) {
+            currentUser = { ...STUDENT_DATA[id], studentId: id };
+            localStorage.setItem('noor_session', JSON.stringify(currentUser));
+            updateDashboardUI();
+            await loadActivitiesAndCalendar();
+            loginSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            showToast(`Welcome back, ${currentUser.name} ✨ (offline)`, "success");
+        } else {
+            showToast("Invalid credentials", "error");
+        }
+    }
+    showLoading(false);
+}
+
+function logout() {
+    currentUser = null;
+    localStorage.removeItem('noor_session');
+    dashboardSection.style.display = 'none';
+    loginSection.style.display = 'flex';
+    document.getElementById('loginForm').reset();
+    showToast("Logged out securely", "success");
+}
+
+function restoreSession() {
+    const saved = localStorage.getItem('noor_session');
+    if (saved) {
+        try {
+            currentUser = JSON.parse(saved);
+            updateDashboardUI();
+            loadActivitiesAndCalendar();
+            loginSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+        } catch (e) {}
+    }
+}
+
+// ==================== EVENT BINDINGS ====================
 document.getElementById('loginForm').addEventListener('submit', handleLogin);
 document.getElementById('logoutBtn').addEventListener('click', logout);
-document.getElementById('globalRefreshBtn').addEventListener('click', async function() { if (!currentUser) return; showLoading(true); await new Promise(r => setTimeout(r, 700)); updateDashboardUI(); await loadActivitiesAndCalendar(); showToast("Synced", "success"); showLoading(false); });
-document.getElementById('togglePwd').addEventListener('click', function() { const pwd = document.getElementById('password'); const type = pwd.getAttribute('type') === 'password' ? 'text' : 'password'; pwd.setAttribute('type', type); this.querySelector('i').classList.toggle('fa-eye-slash'); });
+document.getElementById('globalRefreshBtn').addEventListener('click', async function() {
+    if (!currentUser) return;
+    showLoading(true);
+    await new Promise(r => setTimeout(r, 700));
+    updateDashboardUI();
+    await loadActivitiesAndCalendar();
+    showToast("Synced", "success");
+    showLoading(false);
+});
+document.getElementById('togglePwd').addEventListener('click', function() {
+    const pwd = document.getElementById('password');
+    const type = pwd.getAttribute('type') === 'password' ? 'text' : 'password';
+    pwd.setAttribute('type', type);
+    this.querySelector('i').classList.toggle('fa-eye-slash');
+});
 closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
-window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
-window.showResultsModal = showResultsModal; window.showAttendanceReport = showAttendanceReport; window.showMoralValuesModal = showMoralValuesModal; window.showProfileCard = showProfileCard;
+window.showResultsModal = showResultsModal;
+window.showAttendanceReport = showAttendanceReport;
+window.showMoralValuesModal = showMoralValuesModal;
+window.showProfileCard = showProfileCard;
+window.closeModal = closeModal;
+window.openEditProfile = openEditProfile;
+window.closeEditProfile = closeEditProfile;
+window.saveProfileChanges = saveProfileChanges;
 restoreSession();
 
 // ==================== FORGOT PASSWORD ====================
 const forgotModal = document.getElementById('forgotModal');
-document.getElementById('forgotPasswordLink').addEventListener('click', function(e) { e.preventDefault(); forgotModal.style.display = 'flex'; document.getElementById('forgotStep1').style.display = 'block'; document.getElementById('forgotStep2').style.display = 'none'; document.getElementById('forgotLoading').style.display = 'none'; document.getElementById('forgotStudentId').value = ''; document.getElementById('forgotResult').innerHTML = ''; document.getElementById('forgotStudentId').focus(); });
+document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    forgotModal.style.display = 'flex';
+    document.getElementById('forgotStep1').style.display = 'block';
+    document.getElementById('forgotStep2').style.display = 'none';
+    document.getElementById('forgotLoading').style.display = 'none';
+    document.getElementById('forgotStudentId').value = '';
+    document.getElementById('forgotResult').innerHTML = '';
+    document.getElementById('forgotStudentId').focus();
+});
 document.getElementById('closeForgotModalBtn').addEventListener('click', function() { forgotModal.style.display = 'none'; });
 document.getElementById('forgotCloseBtn').addEventListener('click', function() { forgotModal.style.display = 'none'; });
 window.addEventListener('click', function(e) { if (e.target === forgotModal) forgotModal.style.display = 'none'; });
 document.getElementById('forgotSubmitBtn').addEventListener('click', async function() {
-    const studentId = document.getElementById('forgotStudentId').value.trim(); if (!studentId) { alert('Please enter your Student ID.'); return; }
-    document.getElementById('forgotStep1').style.display = 'none'; document.getElementById('forgotLoading').style.display = 'block'; this.disabled = true;
-    try { const url = `${SCRIPT_URL}?action=forgot&studentId=${encodeURIComponent(studentId)}&t=${Date.now()}`; const resp = await fetch(url); const data = await resp.json(); document.getElementById('forgotLoading').style.display = 'none'; this.disabled = false; document.getElementById('forgotStep2').style.display = 'block'; if (data.result === 'success') { document.getElementById('forgotResult').innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i> Password found!</div><div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; margin:15px 0;"><p class="text-white-50 mb-1">Student: <strong class="text-white">${data.name}</strong></p><p class="text-white-50 mb-0">Your password: <strong class="text-warning" style="font-size:1.4rem; letter-spacing:2px;">${data.password}</strong></p></div><p class="text-white-50 small">You can now close this window and log in.</p>`; } else { document.getElementById('forgotResult').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> ${data.message}</div>`; } } catch(error) { document.getElementById('forgotLoading').style.display = 'none'; this.disabled = false; document.getElementById('forgotStep2').style.display = 'block'; document.getElementById('forgotResult').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> Network error. Please try again.</div>`; }
+    const studentId = document.getElementById('forgotStudentId').value.trim();
+    if (!studentId) { alert('Please enter your Student ID.'); return; }
+    document.getElementById('forgotStep1').style.display = 'none';
+    document.getElementById('forgotLoading').style.display = 'block';
+    this.disabled = true;
+    try {
+        const url = `${SCRIPT_URL}?action=forgot&studentId=${encodeURIComponent(studentId)}&t=${Date.now()}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        document.getElementById('forgotLoading').style.display = 'none';
+        this.disabled = false;
+        document.getElementById('forgotStep2').style.display = 'block';
+        if (data.result === 'success') {
+            document.getElementById('forgotResult').innerHTML = `
+                <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i> Password found!</div>
+                <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; margin:15px 0;">
+                    <p class="text-white-50 mb-1">Student: <strong class="text-white">${data.name}</strong></p>
+                    <p class="text-white-50 mb-0">Your password: <strong class="text-warning" style="font-size:1.4rem; letter-spacing:2px;">${data.password}</strong></p>
+                </div>
+                <p class="text-white-50 small">You can now close this window and log in.</p>
+            `;
+        } else {
+            document.getElementById('forgotResult').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> ${data.message}</div>`;
+        }
+    } catch (error) {
+        document.getElementById('forgotLoading').style.display = 'none';
+        this.disabled = false;
+        document.getElementById('forgotStep2').style.display = 'block';
+        document.getElementById('forgotResult').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> Network error. Please try again.</div>`;
+    }
 });
 
 // ==================== TOPPER POSTER ====================
-let topperPhotoData = null; let cropperInstance = null; const CERT_BG = "https://i.postimg.cc/vBJs8jT4/topper.jpg";
-function showTopperPoster() { if (!currentUser) return; document.getElementById('topperNameDisplay').textContent = currentUser.name; const rankText = currentUser.rank === 1 ? 'First' : 'Second'; document.getElementById('topperClassRank').textContent = `Class ${currentUser.class} - ${rankText} (Rank ${currentUser.rank})`; const saved = localStorage.getItem(`topper_photo_${currentUser.studentId}`); if (saved) { topperPhotoData = saved; document.getElementById('topperPhotoPreview').src = saved; } else { topperPhotoData = null; document.getElementById('topperPhotoPreview').src = ''; } document.getElementById('topperModal').style.display = 'flex'; }
+let topperPhotoData = null;
+let cropperInstance = null;
+const CERT_BG = "https://i.postimg.cc/vBJs8jT4/topper.jpg";
+
+function showTopperPoster() {
+    if (!currentUser) return;
+    document.getElementById('topperNameDisplay').textContent = currentUser.name;
+    const rankText = currentUser.rank === 1 ? 'First' : 'Second';
+    document.getElementById('topperClassRank').textContent = `Class ${currentUser.class} - ${rankText} (Rank ${currentUser.rank})`;
+    const saved = localStorage.getItem(`topper_photo_${currentUser.studentId}`);
+    if (saved) { topperPhotoData = saved; document.getElementById('topperPhotoPreview').src = saved; }
+    else { topperPhotoData = null; document.getElementById('topperPhotoPreview').src = ''; }
+    document.getElementById('topperModal').style.display = 'flex';
+}
+
 function closeTopperModal() { document.getElementById('topperModal').style.display = 'none'; }
-function openTopperCrop() { const fileInput = document.getElementById('topperPhotoUpload'); fileInput.click(); fileInput.onchange = (e) => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = (ev) => { document.getElementById('topperCropImage').src = ev.target.result; document.getElementById('topperCropModal').style.display = 'flex'; document.getElementById('topperCropImage').onload = () => { if (cropperInstance) cropperInstance.destroy(); cropperInstance = new Cropper(document.getElementById('topperCropImage'), { aspectRatio: 1, viewMode: 2, dragMode: 'move', autoCropArea: 0.9, cropBoxMovable: true, cropBoxResizable: true, zoomable: true, background: true, responsive: true, center: true, }); }; }; reader.readAsDataURL(file); }; }
-function closeTopperCrop() { if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; } document.getElementById('topperCropModal').style.display = 'none'; document.getElementById('topperCropImage').src = ''; }
-function saveTopperCrop() { if (!cropperInstance) { alert('Crop tool not ready'); return; } const croppedCanvas = cropperInstance.getCroppedCanvas({ width: 800, height: 800 }); if (!croppedCanvas) { alert('Crop failed'); return; } const croppedData = croppedCanvas.toDataURL('image/png'); topperPhotoData = croppedData; document.getElementById('topperPhotoPreview').src = croppedData; localStorage.setItem(`topper_photo_${currentUser.studentId}`, croppedData); closeTopperCrop(); showToast('Photo cropped & saved!', 'success'); }
-function loadImage(src) { return new Promise((resolve, reject) => { let img = new Image(); img.crossOrigin = 'anonymous'; img.onload = () => resolve(img); img.onerror = () => reject(); img.src = src; }); }
-async function renderTopperCanvas(name, cls, rank, photo) { const w = 2400, h = 3200; const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h; const ctx = canvas.getContext('2d'); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high'; try { const bg = await loadImage(CERT_BG); ctx.drawImage(bg, 0, 0, w, h); const cx = w/2, cy = 1600, r = 400; if(photo) { try { let img = await loadImage(photo); ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip(); let dw, dh; if(img.width > img.height) { dh = r*2; dw = img.width * (dh / img.height); } else { dw = r*2; dh = img.height * (dw / img.width); } ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh); ctx.restore(); } catch(e) { drawPlaceholder(ctx, cx, cy, r); } } else { drawPlaceholder(ctx, cx, cy, r); } ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3; ctx.fillStyle = '#000000'; ctx.font = 'bold 95px "Anek Malayalam", "Inter", sans-serif'; ctx.textAlign = 'center'; ctx.fillText(name, cx, 2180); ctx.fillStyle = '#000000'; ctx.font = 'bold 70px "Anek Malayalam", "Inter", sans-serif'; const positionText = rank === 1 ? 'TOPPER' : 'SECOND PLACE'; ctx.fillText(`Class ${cls} - ${positionText}`, cx, 2360); ctx.shadowBlur = 0; ctx.shadowColor = 'transparent'; return canvas; } catch(e) { console.error("Render error:", e); throw new Error("Background failed"); } }
-function drawPlaceholder(ctx, cx, cy, r) { ctx.fillStyle = '#F4E8D1'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = '#000000'; ctx.font = 'bold 85px "Anek Malayalam"'; ctx.fillText('📸', cx, cy + 25); }
-async function previewTopperPoster() { if (!currentUser) return; showTopperLoading('Generating poster...'); try { const rank = currentUser.rank; const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData); hideTopperLoading(); const previewCanvas = document.getElementById('posterPreviewCanvas'); previewCanvas.width = 1600; previewCanvas.height = 2134; const pctx = previewCanvas.getContext('2d'); pctx.drawImage(canvas, 0, 0, 2400, 3200, 0, 0, 1600, 2134); document.getElementById('posterPreviewOverlay').style.display = 'block'; } catch(e) { hideTopperLoading(); alert('Error generating poster. Please try again.'); } }
+
+function openTopperCrop() {
+    const fileInput = document.getElementById('topperPhotoUpload');
+    fileInput.click();
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            document.getElementById('topperCropImage').src = ev.target.result;
+            document.getElementById('topperCropModal').style.display = 'flex';
+            document.getElementById('topperCropImage').onload = () => {
+                if (cropperInstance) cropperInstance.destroy();
+                cropperInstance = new Cropper(document.getElementById('topperCropImage'), {
+                    aspectRatio: 1, viewMode: 2, dragMode: 'move', autoCropArea: 0.9,
+                    cropBoxMovable: true, cropBoxResizable: true, zoomable: true,
+                    background: true, responsive: true, center: true,
+                });
+            };
+        };
+        reader.readAsDataURL(file);
+    };
+}
+
+function closeTopperCrop() {
+    if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+    document.getElementById('topperCropModal').style.display = 'none';
+    document.getElementById('topperCropImage').src = '';
+}
+
+function saveTopperCrop() {
+    if (!cropperInstance) { alert('Crop tool not ready'); return; }
+    const croppedCanvas = cropperInstance.getCroppedCanvas({ width: 800, height: 800 });
+    if (!croppedCanvas) { alert('Crop failed'); return; }
+    const croppedData = croppedCanvas.toDataURL('image/png');
+    topperPhotoData = croppedData;
+    document.getElementById('topperPhotoPreview').src = croppedData;
+    localStorage.setItem(`topper_photo_${currentUser.studentId}`, croppedData);
+    closeTopperCrop();
+    showToast('Photo cropped & saved!', 'success');
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        let img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = () => reject();
+        img.src = src;
+    });
+}
+
+async function renderTopperCanvas(name, cls, rank, photo) {
+    const w = 2400, h = 3200;
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    try {
+        const bg = await loadImage(CERT_BG);
+        ctx.drawImage(bg, 0, 0, w, h);
+        const cx = w/2, cy = 1600, r = 400;
+        if (photo) {
+            try {
+                let img = await loadImage(photo);
+                ctx.save();
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+                let dw, dh;
+                if (img.width > img.height) { dh = r*2; dw = img.width * (dh / img.height); }
+                else { dw = r*2; dh = img.height * (dw / img.width); }
+                ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
+                ctx.restore();
+            } catch(e) { drawPlaceholder(ctx, cx, cy, r); }
+        } else { drawPlaceholder(ctx, cx, cy, r); }
+        ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 95px "Anek Malayalam", "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(name, cx, 2180);
+        ctx.fillStyle = '#000000';
+        ctx.font = 'bold 70px "Anek Malayalam", "Inter", sans-serif';
+        const positionText = rank === 1 ? 'TOPPER' : 'SECOND PLACE';
+        ctx.fillText(`Class ${cls} - ${positionText}`, cx, 2360);
+        ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
+        return canvas;
+    } catch(e) { console.error("Render error:", e); throw new Error("Background failed"); }
+}
+
+function drawPlaceholder(ctx, cx, cy, r) {
+    ctx.fillStyle = '#F4E8D1'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#000000'; ctx.font = 'bold 85px "Anek Malayalam"'; ctx.fillText('📸', cx, cy + 25);
+}
+
+async function previewTopperPoster() {
+    if (!currentUser) return;
+    showTopperLoading('Generating poster...');
+    try {
+        const rank = currentUser.rank;
+        const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
+        hideTopperLoading();
+        const previewCanvas = document.getElementById('posterPreviewCanvas');
+        previewCanvas.width = 1600; previewCanvas.height = 2134;
+        const pctx = previewCanvas.getContext('2d');
+        pctx.drawImage(canvas, 0, 0, 2400, 3200, 0, 0, 1600, 2134);
+        document.getElementById('posterPreviewOverlay').style.display = 'block';
+    } catch(e) { hideTopperLoading(); alert('Error generating poster. Please try again.'); }
+}
+
 function closePosterPreview() { document.getElementById('posterPreviewOverlay').style.display = 'none'; }
-async function downloadTopperPoster(type) { if (!currentUser) return; showTopperLoading('Creating file...'); try { const rank = currentUser.rank; const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData); const finalCanvas = document.createElement('canvas'); finalCanvas.width = canvas.width; finalCanvas.height = canvas.height; const fctx = finalCanvas.getContext('2d'); fctx.fillStyle = '#fff'; fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height); fctx.drawImage(canvas, 0, 0); const img = finalCanvas.toDataURL('image/png'); const fileName = `Noorussalam_Class${currentUser.class}_Rank${rank}_${currentUser.name.replace(/\s/g, '_')}`; if (type === 'png') { let a = document.createElement('a'); a.href = img; a.download = `${fileName}.png`; a.click(); } else if (type === 'pdf') { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [2400, 3200] }); pdf.addImage(img, 'PNG', 0, 0, 2400, 3200); pdf.save(`${fileName}.pdf`); } if (typeof confetti !== 'undefined') confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#D4AF37', '#0A1C3A'] }); hideTopperLoading(); showToast('✅ Poster Downloaded!', 'success'); } catch(e) { hideTopperLoading(); alert('Download failed'); } }
+
+async function downloadTopperPoster(type) {
+    if (!currentUser) return;
+    showTopperLoading('Creating file...');
+    try {
+        const rank = currentUser.rank;
+        const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
+        const finalCanvas = document.createElement('canvas');
+        finalCanvas.width = canvas.width; finalCanvas.height = canvas.height;
+        const fctx = finalCanvas.getContext('2d');
+        fctx.fillStyle = '#fff'; fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        fctx.drawImage(canvas, 0, 0);
+        const img = finalCanvas.toDataURL('image/png');
+        const fileName = `Noorussalam_Class${currentUser.class}_Rank${currentUser.rank}_${currentUser.name.replace(/\s/g, '_')}`;
+        if (type === 'png') {
+            let a = document.createElement('a');
+            a.href = img; a.download = `${fileName}.png`; a.click();
+        } else if (type === 'pdf') {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [2400, 3200] });
+            pdf.addImage(img, 'PNG', 0, 0, 2400, 3200);
+            pdf.save(`${fileName}.pdf`);
+        }
+        if (typeof confetti !== 'undefined') confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#D4AF37', '#0A1C3A'] });
+        hideTopperLoading();
+        showToast('✅ Poster Downloaded!', 'success');
+    } catch(e) { hideTopperLoading(); alert('Download failed'); }
+}
+
 function showTopperLoading(text) { document.getElementById('topperLoadingText').textContent = text; document.getElementById('topperLoading').style.display = 'flex'; }
 function hideTopperLoading() { document.getElementById('topperLoading').style.display = 'none'; }
-window.showTopperPoster = showTopperPoster; window.closeTopperModal = closeTopperModal; window.openTopperCrop = openTopperCrop; window.closeTopperCrop = closeTopperCrop; window.saveTopperCrop = saveTopperCrop; window.previewTopperPoster = previewTopperPoster; window.closePosterPreview = closePosterPreview; window.downloadTopperPoster = downloadTopperPoster;
+
+window.showTopperPoster = showTopperPoster;
+window.closeTopperModal = closeTopperModal;
+window.openTopperCrop = openTopperCrop;
+window.closeTopperCrop = closeTopperCrop;
+window.saveTopperCrop = saveTopperCrop;
+window.previewTopperPoster = previewTopperPoster;
+window.closePosterPreview = closePosterPreview;
+window.downloadTopperPoster = downloadTopperPoster;
 </script>
 </body>
 </html>
