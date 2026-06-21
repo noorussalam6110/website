@@ -8,11 +8,13 @@
     <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
 
     <style>
-        /* ========== ROOT VARIABLES ========== */
+        /* ============================================================
+               ROOT VARIABLES (Light & Dark themes)
+               ============================================================ */
         :root {
             --primary: #0a194f;
             --secondary: #122f7a;
@@ -20,13 +22,36 @@
             --accent-light: #5c9dff;
             --accent-glow: rgba(58, 141, 243, 0.3);
             --light: #f8f9fa;
-            --gradient-1: linear-gradient(135deg, #0a194f 0%, #1a3b8f 50%, #3a8df3 100%);
-            --gradient-2: linear-gradient(135deg, #3a8df3 0%, #5c9dff 50%, #7bb3ff 100%);
-            --glass-bg: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --shadow-glow: 0 8px 32px rgba(58, 141, 243, 0.25);
+            --bg-body: var(--primary);
+            --text-body: #f8f9fa;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --shadow: 0 8px 32px rgba(58, 141, 243, 0.25);
+            --glass-blur: 16px;
+            --section-bg: rgba(255, 255, 255, 0.95);
+            --section-text: #0a194f;
+            --muted-text: rgba(255, 255, 255, 0.6);
+            --footer-bg: linear-gradient(135deg, var(--primary), var(--secondary));
+            --subject-color: #2563eb; /* Bright blue for subjects */
         }
 
+        /* Dark mode overrides */
+        [data-theme="dark"] {
+            --bg-body: #0a0f1f;
+            --text-body: #e2e8f0;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --section-bg: rgba(20, 30, 60, 0.95);
+            --section-text: #e2e8f0;
+            --muted-text: rgba(255, 255, 255, 0.5);
+            --footer-bg: linear-gradient(135deg, #050a1a, #0a194f);
+            --subject-color: #60a5fa; /* Lighter blue for dark mode */
+        }
+
+        /* ============================================================
+               GLOBAL RESET & BASE
+               ============================================================ */
         * {
             margin: 0;
             padding: 0;
@@ -39,14 +64,36 @@
 
         body {
             font-family: 'Poppins', 'Segoe UI', sans-serif;
-            background: var(--primary);
-            color: var(--light);
+            background: var(--bg-body);
+            color: var(--text-body);
             overflow-x: hidden;
             padding-top: 80px;
             min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* ===== ANIMATED BACKGROUND ===== */
+        /* ============================================================
+               CUSTOM SCROLLBAR
+               ============================================================ */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 12px;
+            border: 2px solid var(--bg-body);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+
+        /* ============================================================
+               ANIMATED BACKGROUND (enhanced)
+               ============================================================ */
         body::before {
             content: '';
             position: fixed;
@@ -55,11 +102,12 @@
             right: 0;
             bottom: 0;
             background:
-                radial-gradient(ellipse at 10% 20%, rgba(58, 141, 243, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 90% 80%, rgba(58, 141, 243, 0.05) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(10, 25, 79, 1) 0%, var(--primary) 100%);
-            z-index: -1;
+                radial-gradient(ellipse at 10% 20%, rgba(58, 141, 243, 0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(58, 141, 243, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, var(--bg-body) 0%, var(--bg-body) 100%);
+            z-index: -2;
             pointer-events: none;
+            transition: background 0.5s ease;
         }
 
         .particles {
@@ -72,41 +120,115 @@
             z-index: -1;
             overflow: hidden;
         }
-
         .particle {
             position: absolute;
             width: 4px;
             height: 4px;
-            background: rgba(58, 141, 243, 0.3);
+            background: rgba(58, 141, 243, 0.25);
             border-radius: 50%;
             animation: float-particle linear infinite;
         }
-
-        .particle:nth-child(1) { left: 10%; animation-duration: 20s; animation-delay: 0s; width: 3px; height: 3px; }
-        .particle:nth-child(2) { left: 20%; animation-duration: 25s; animation-delay: 2s; width: 5px; height: 5px; }
-        .particle:nth-child(3) { left: 35%; animation-duration: 18s; animation-delay: 4s; width: 4px; height: 4px; }
-        .particle:nth-child(4) { left: 50%; animation-duration: 22s; animation-delay: 1s; width: 6px; height: 6px; }
-        .particle:nth-child(5) { left: 65%; animation-duration: 28s; animation-delay: 3s; width: 3px; height: 3px; }
-        .particle:nth-child(6) { left: 75%; animation-duration: 19s; animation-delay: 5s; width: 5px; height: 5px; }
-        .particle:nth-child(7) { left: 85%; animation-duration: 24s; animation-delay: 2s; width: 4px; height: 4px; }
-        .particle:nth-child(8) { left: 45%; animation-duration: 30s; animation-delay: 6s; width: 7px; height: 7px; }
-        .particle:nth-child(9) { left: 15%; animation-duration: 21s; animation-delay: 4s; width: 4px; height: 4px; }
-        .particle:nth-child(10) { left: 55%; animation-duration: 26s; animation-delay: 1s; width: 5px; height: 5px; }
-
+        .particle:nth-child(1) {
+            left: 10%;
+            animation-duration: 20s;
+            animation-delay: 0s;
+            width: 3px;
+            height: 3px;
+        }
+        .particle:nth-child(2) {
+            left: 20%;
+            animation-duration: 25s;
+            animation-delay: 2s;
+            width: 5px;
+            height: 5px;
+        }
+        .particle:nth-child(3) {
+            left: 35%;
+            animation-duration: 18s;
+            animation-delay: 4s;
+            width: 4px;
+            height: 4px;
+        }
+        .particle:nth-child(4) {
+            left: 50%;
+            animation-duration: 22s;
+            animation-delay: 1s;
+            width: 6px;
+            height: 6px;
+        }
+        .particle:nth-child(5) {
+            left: 65%;
+            animation-duration: 28s;
+            animation-delay: 3s;
+            width: 3px;
+            height: 3px;
+        }
+        .particle:nth-child(6) {
+            left: 75%;
+            animation-duration: 19s;
+            animation-delay: 5s;
+            width: 5px;
+            height: 5px;
+        }
+        .particle:nth-child(7) {
+            left: 85%;
+            animation-duration: 24s;
+            animation-delay: 2s;
+            width: 4px;
+            height: 4px;
+        }
+        .particle:nth-child(8) {
+            left: 45%;
+            animation-duration: 30s;
+            animation-delay: 6s;
+            width: 7px;
+            height: 7px;
+        }
+        .particle:nth-child(9) {
+            left: 15%;
+            animation-duration: 21s;
+            animation-delay: 4s;
+            width: 4px;
+            height: 4px;
+        }
+        .particle:nth-child(10) {
+            left: 55%;
+            animation-duration: 26s;
+            animation-delay: 1s;
+            width: 5px;
+            height: 5px;
+        }
         @keyframes float-particle {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) rotate(720deg);
+                opacity: 0;
+            }
         }
 
-        /* ===== ORIGINAL NAVBAR (abbreviated – same as before) ===== */
+        /* ============================================================
+               NAVBAR (glass + dark mode toggle)
+               ============================================================ */
         .navbar {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: rgba(10, 25, 79, 0.85);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             transition: all 0.4s ease;
             padding: 12px 0;
-            backdrop-filter: blur(10px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        [data-theme="dark"] .navbar {
+            background: rgba(5, 10, 26, 0.92);
         }
         .navbar.scrolled {
             background: rgba(10, 25, 79, 0.98);
@@ -138,26 +260,10 @@
             z-index: 1;
         }
         .navbar-brand:hover .logo-img {
-            transform: scale(1.1) rotate(5deg);
+            transform: scale(1.08) rotate(3deg);
         }
         .navbar-brand:hover .logo-glow {
             opacity: 0.3;
-        }
-        .navbar-toggler {
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 6px 12px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            background: transparent !important;
-        }
-        .navbar-toggler:focus {
-            box-shadow: 0 0 0 3px rgba(58, 141, 243, 0.3);
-        }
-        .toggler-text {
-            font-size: 0.85rem;
-            margin-left: 8px;
-            color: white;
-            font-weight: 500;
         }
         .nav-icon {
             position: relative;
@@ -189,7 +295,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(58, 141, 243, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(58, 141, 243, 0.12), transparent);
             transition: left 0.6s ease;
             z-index: 1;
         }
@@ -204,31 +310,63 @@
             color: var(--accent) !important;
             transform: scale(1.2);
         }
-        .nav-icon.active {
-            background: rgba(58, 141, 243, 0.15);
-            color: var(--accent) !important;
+
+        /* Dark mode toggle button */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            border-radius: 40px;
+            padding: 6px 14px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .nav-icon.active i {
-            color: var(--accent) !important;
-        }
-        .nav-icon.active::before {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 3px;
+        .theme-toggle:hover {
             background: var(--accent);
-            border-radius: 2px;
-            animation: pulseLine 2s infinite;
+            color: var(--primary);
+            transform: scale(1.05);
         }
-        @keyframes pulseLine {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .theme-toggle .toggle-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Dropdown styles (abbreviated – same as previous) */
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: linear-gradient(135deg, #ff4757, #ff3838);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: badgePulse 2s infinite;
+        }
+        @keyframes badgePulse {
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 5px rgba(255, 71, 87, 0);
+            }
+        }
+
+        /* Dropdown styles (abbreviated – same as original) */
         .dropdown-menu {
             background: rgba(10, 25, 79, 0.98);
             backdrop-filter: blur(15px);
@@ -241,8 +379,14 @@
             animation: dropdownSlide 0.3s ease;
         }
         @keyframes dropdownSlide {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .dropdown-item {
             color: #f8f9fa !important;
@@ -404,64 +548,56 @@
             transform: scale(1.1);
             box-shadow: 0 4px 12px rgba(58, 141, 243, 0.4);
         }
-        .notification-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: linear-gradient(135deg, #ff4757, #ff3838);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 700;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: badgePulse 2s infinite;
-        }
-        @keyframes badgePulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
-            50% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(255, 71, 87, 0); }
-        }
-        .student-zone-btn {
-            position: relative;
-            background: rgba(58, 141, 243, 0.1);
-            border-radius: 8px;
-            margin-left: 5px;
-            transition: all 0.3s ease;
-        }
-        .student-zone-btn:hover {
-            background: rgba(58, 141, 243, 0.2);
-            transform: translateY(-2px);
-        }
-        .student-zone-nav .nav-icon i {
-            color: var(--accent) !important;
-        }
-        .badge.bg-success {
-            background: linear-gradient(135deg, #2ed573, #1dd1a1) !important;
-            font-size: 0.7rem;
-            padding: 3px 8px;
-            border-radius: 10px;
-            animation: livePulse 1.5s infinite;
-        }
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
 
         @media (max-width: 992px) {
-            body { padding-top: 70px; }
-            .navbar-nav { padding: 10px 0 !important; max-height: 70vh; overflow-y: auto; }
-            .nav-item { width: 100%; margin: 0 !important; }
-            .nav-icon { margin: 2px 0 !important; padding: 14px 20px !important; justify-content: flex-start; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); }
-            .navbar-collapse { background: rgba(10,25,79,0.99); border-radius: 0 0 12px 12px; position: absolute; top: 100%; left: 0; right: 0; z-index: 1050; }
-            .dropdown-menu { position: static !important; width: 100% !important; background: rgba(18,47,122,0.95) !important; }
-            .student-dropdown-normalized { width: 100% !important; }
-            .notification-badge { position: relative !important; margin-left: 10px; }
+            body {
+                padding-top: 70px;
+            }
+            .navbar-nav {
+                padding: 10px 0 !important;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            .nav-item {
+                width: 100%;
+                margin: 0 !important;
+            }
+            .nav-icon {
+                margin: 2px 0 !important;
+                padding: 14px 20px !important;
+                justify-content: flex-start;
+                width: 100%;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .navbar-collapse {
+                background: rgba(10, 25, 79, 0.99);
+                border-radius: 0 0 12px 12px;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                z-index: 1050;
+            }
+            .dropdown-menu {
+                position: static !important;
+                width: 100% !important;
+                background: rgba(18, 47, 122, 0.95) !important;
+            }
+            .student-dropdown-normalized {
+                width: 100% !important;
+            }
+            .notification-badge {
+                position: relative !important;
+                margin-left: 10px;
+            }
+            .theme-toggle .toggle-label {
+                display: none;
+            }
         }
 
-        /* ===== HEADER ===== */
+        /* ============================================================
+               HEADER (parallax + search)
+               ============================================================ */
         .student-zone-header {
             background: var(--gradient-1);
             color: #fff;
@@ -470,8 +606,8 @@
             position: relative;
             overflow: hidden;
             margin-bottom: 50px;
+            transition: background 0.3s ease;
         }
-
         .student-zone-header::before {
             content: '';
             position: absolute;
@@ -479,62 +615,47 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle at 30% 50%, rgba(58, 141, 243, 0.15) 0%, transparent 60%),
-                radial-gradient(circle at 70% 50%, rgba(92, 157, 255, 0.1) 0%, transparent 50%);
+            background: radial-gradient(circle at 30% 50%, rgba(58, 141, 243, 0.2) 0%, transparent 60%),
+                radial-gradient(circle at 70% 50%, rgba(92, 157, 255, 0.15) 0%, transparent 50%);
             animation: headerGlow 8s ease-in-out infinite alternate;
+            transition: transform 0.1s linear;
         }
-
         @keyframes headerGlow {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(5%, 5%) scale(1.1); }
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(5%, 5%) scale(1.1);
+            }
         }
-
         .student-zone-header .container {
             position: relative;
-            z-index: 1;
+            z-index: 2;
         }
-
         .student-zone-header h1 {
             font-weight: 900;
-            font-size: 4rem;
+            font-size: clamp(2.2rem, 6vw, 4rem);
             background: linear-gradient(135deg, #ffffff 0%, #7bb3ff 40%, #3a8df3 70%, #ffffff 100%);
             background-size: 300% 300%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 0 40px rgba(58, 141, 243, 0.3),
-                0 0 80px rgba(58, 141, 243, 0.2),
-                0 0 120px rgba(58, 141, 243, 0.1);
+            text-shadow: 0 0 40px rgba(58, 141, 243, 0.3);
             animation: gradientShift 4s ease-in-out infinite, fadeDown 1s ease;
             letter-spacing: 2px;
-            position: relative;
             display: inline-block;
         }
-
-        .student-zone-header h1::after {
-            content: '';
-            position: absolute;
-            top: -20%;
-            left: -10%;
-            width: 120%;
-            height: 140%;
-            background: radial-gradient(ellipse at center, rgba(58, 141, 243, 0.15) 0%, transparent 70%);
-            filter: blur(30px);
-            z-index: -1;
-            animation: glowPulse 3s ease-in-out infinite;
-        }
-
-        @keyframes glowPulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.2); opacity: 1; }
-        }
-
         @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
-
         .student-zone-header .lead {
             font-size: 1.25rem;
             opacity: 0.9;
@@ -542,72 +663,98 @@
             animation: fadeDown 1s ease 0.2s both;
             color: rgba(255, 255, 255, 0.85);
         }
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-        .header-decoration {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 20px;
+        /* Search bar in header */
+        .header-search {
+            max-width: 500px;
+            margin: 24px auto 0;
+            position: relative;
             animation: fadeDown 1s ease 0.4s both;
         }
-
-        .header-decoration span {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--accent);
-            opacity: 0.6;
-            animation: pulse-dot 2s ease-in-out infinite;
+        .header-search input {
+            width: 100%;
+            padding: 14px 20px 14px 50px;
+            border-radius: 60px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(8px);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .header-search input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .header-search input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(58, 141, 243, 0.25);
+            background: rgba(255, 255, 255, 0.18);
+        }
+        .header-search .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1rem;
+        }
+        .header-search .clear-search {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            display: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        .header-search .clear-search:hover {
+            color: white;
         }
 
-        .header-decoration span:nth-child(2) { animation-delay: 0.3s; background: #5c9dff; }
-        .header-decoration span:nth-child(3) { animation-delay: 0.6s; background: #7bb3ff; }
-        .header-decoration span:nth-child(4) { animation-delay: 0.9s; background: #5c9dff; }
-        .header-decoration span:nth-child(5) { animation-delay: 1.2s; background: var(--accent); }
-
-        @keyframes pulse-dot {
-            0%, 100% { transform: scale(0.8); opacity: 0.4; }
-            50% { transform: scale(1.3); opacity: 1; }
-        }
-
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== CLASS SELECTOR ===== */
+        /* ============================================================
+               CLASS SELECTOR
+               ============================================================ */
         .class-selector {
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
             border-radius: 60px;
             padding: 12px 28px;
             display: inline-flex;
             align-items: center;
             gap: 18px;
             margin-bottom: 40px;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-glow);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
             transition: all 0.3s ease;
         }
-
         .class-selector:hover {
             border-color: var(--accent);
             box-shadow: 0 8px 40px rgba(58, 141, 243, 0.35);
             transform: translateY(-2px);
         }
-
         .class-selector label {
             font-weight: 600;
             color: var(--accent);
             margin: 0;
             font-size: 1rem;
         }
-
         .class-selector label i {
             margin-right: 8px;
         }
-
         .class-selector select {
             background: rgba(10, 25, 79, 0.9);
             border: 1px solid var(--accent);
@@ -620,23 +767,23 @@
             font-size: 0.95rem;
             min-width: 140px;
         }
-
         .class-selector select:hover {
             border-color: #5c9dff;
             box-shadow: 0 0 20px rgba(58, 141, 243, 0.2);
         }
-
         .class-selector select:focus {
             outline: none;
             border-color: #5c9dff;
             box-shadow: 0 0 25px rgba(58, 141, 243, 0.3);
         }
 
-        /* ===== CLASS CARDS ===== */
+        /* ============================================================
+               CLASS CARDS (with tilt, progress, skeleton)
+               ============================================================ */
         .class-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
             border-radius: 20px;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             text-align: center;
@@ -644,13 +791,18 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             opacity: 0;
             transform: translateY(40px) scale(0.95);
-            border: 1px solid var(--glass-border);
+            border: 1px solid var(--card-border);
             height: 100%;
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            transform-style: preserve-3d;
+            perspective: 800px;
         }
-
+        .class-card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
         .class-card::before {
             content: '';
             position: absolute;
@@ -658,28 +810,20 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(58, 141, 243, 0.1), transparent);
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.10), transparent);
             opacity: 0;
             transition: opacity 0.4s ease;
             border-radius: 20px;
         }
-
         .class-card:hover::before {
             opacity: 1;
         }
-
-        .class-card.show {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-
         .class-card:hover {
-            transform: translateY(-12px) scale(1.02);
+            transform: translateY(-8px) scale(1.02);
             box-shadow: 0 20px 50px rgba(58, 141, 243, 0.25);
             border-color: var(--accent);
             background: rgba(255, 255, 255, 0.12);
         }
-
         .class-card .card-icon {
             width: 70px;
             height: 70px;
@@ -691,36 +835,30 @@
             margin: 0 auto 15px;
             transition: all 0.4s ease;
         }
-
         .class-card:hover .card-icon {
             background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
             transform: scale(1.1) rotate(-5deg);
         }
-
         .class-card i {
             font-size: 32px;
             color: var(--accent);
             transition: all 0.4s ease;
         }
-
         .class-card:hover i {
             transform: scale(1.15);
             color: #5c9dff;
         }
-
         .class-card h5 {
-            color: white;
+            color: var(--text-body);
             margin-bottom: 6px;
             font-weight: 700;
             font-size: 1.2rem;
         }
-
         .class-card p {
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--muted-text);
             font-size: 0.85rem;
             margin-bottom: 0;
         }
-
         .class-card .subject-badge {
             display: inline-block;
             background: linear-gradient(135deg, var(--accent), #5c9dff);
@@ -732,7 +870,6 @@
             margin-top: 10px;
             letter-spacing: 0.5px;
         }
-
         .class-card .card-number {
             position: absolute;
             top: 12px;
@@ -742,25 +879,98 @@
             color: rgba(255, 255, 255, 0.15);
             letter-spacing: 1px;
         }
+        /* Progress bar on cards */
+        .class-card .progress-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 14px;
+            overflow: hidden;
+        }
+        .class-card .progress-track .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #5c9dff);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.6s ease;
+        }
 
-        /* ===== DETAIL PANEL ===== */
+        /* Skeleton loading */
+        .skeleton-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 35px 20px;
+            height: 100%;
+            border: 1px solid var(--card-border);
+            animation: shimmer 1.8s infinite;
+            backdrop-filter: blur(var(--glass-blur));
+        }
+        .skeleton-card .skeleton-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            margin: 0 auto 15px;
+        }
+        .skeleton-card .skeleton-line {
+            height: 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            margin: 8px auto;
+            width: 70%;
+        }
+        .skeleton-card .skeleton-line.short {
+            width: 40%;
+        }
+        @keyframes shimmer {
+            0% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.6;
+            }
+        }
+
+        /* ============================================================
+               DETAIL PANEL (glass 2.0)
+               ============================================================ */
         .class-detail-panel {
             background: rgba(15, 30, 75, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-radius: 28px;
             padding: 2rem;
             margin: 2rem 0;
             border: 1px solid rgba(58, 141, 243, 0.3);
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
             animation: slideUp 0.5s ease;
+            position: relative;
+            overflow: hidden;
         }
-
+        .class-detail-panel::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(58, 141, 243, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-
         .btn-back {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 40px;
@@ -771,7 +981,6 @@
             font-weight: 500;
             backdrop-filter: blur(8px);
         }
-
         .btn-back:hover {
             background: var(--accent);
             color: #0a194f;
@@ -779,16 +988,16 @@
             transform: translateX(-4px);
             box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
         }
-
         .btn-back i {
             transition: transform 0.3s ease;
         }
-
         .btn-back:hover i {
             transform: translateX(-4px);
         }
 
-        /* ===== TABS ===== */
+        /* ============================================================
+               TABS (with swipe support)
+               ============================================================ */
         .nav-tabs-resources {
             display: flex;
             flex-wrap: wrap;
@@ -796,8 +1005,8 @@
             border-bottom: none;
             margin-bottom: 25px;
             padding-bottom: 4px;
+            touch-action: pan-y;
         }
-
         .nav-tabs-resources .nav-link {
             color: rgba(255, 255, 255, 0.7);
             background: rgba(255, 255, 255, 0.05);
@@ -808,15 +1017,14 @@
             transition: all 0.3s ease;
             font-size: 0.9rem;
             position: relative;
+            user-select: none;
         }
-
         .nav-tabs-resources .nav-link:hover {
             background: rgba(58, 141, 243, 0.15);
             color: white;
             border-color: rgba(58, 141, 243, 0.3);
             transform: translateY(-2px);
         }
-
         .nav-tabs-resources .nav-link.active {
             background: linear-gradient(135deg, var(--accent), #5c9dff);
             color: #0a194f;
@@ -824,11 +1032,9 @@
             box-shadow: 0 6px 25px rgba(58, 141, 243, 0.4);
             transform: translateY(-2px);
         }
-
         .nav-tabs-resources .nav-link i {
             margin-right: 8px;
         }
-
         .coming-soon-badge {
             font-size: 0.55rem;
             background: #ffc107;
@@ -841,23 +1047,33 @@
             letter-spacing: 0.5px;
         }
 
-        /* ===== RESOURCE SECTIONS ===== */
+        /* Tab panes with smooth fade */
+        .tab-pane {
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .tab-pane.fade:not(.show) {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        .tab-pane.fade.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ============================================================
+               RESOURCE SECTIONS (glass)
+               ============================================================ */
         .zone-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--section-bg);
             border-radius: 18px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             padding: 28px 30px;
             margin-bottom: 24px;
             animation: fadeInUp 0.5s ease;
+            transition: background 0.3s ease, color 0.3s ease;
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         .zone-section h4 {
-            color: #0a194f;
+            color: var(--section-text);
             font-weight: 700;
             margin-bottom: 20px;
             font-size: 1.15rem;
@@ -865,7 +1081,6 @@
             align-items: center;
             gap: 10px;
         }
-
         .zone-section h4 i {
             color: var(--accent);
             font-size: 1.3rem;
@@ -881,35 +1096,37 @@
             justify-content: space-between;
             align-items: center;
             transition: all 0.3s ease;
+            position: relative;
         }
-
+        [data-theme="dark"] .resource-item {
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+        }
         .resource-item:hover {
             background: #e5f0ff;
             transform: translateX(6px);
             box-shadow: 0 2px 12px rgba(58, 141, 243, 0.12);
         }
-
+        [data-theme="dark"] .resource-item:hover {
+            background: rgba(58, 141, 243, 0.15);
+        }
         .resource-item i {
             color: var(--accent);
             margin-right: 10px;
             width: 20px;
             text-align: center;
         }
-
         .resource-item .resource-info {
             flex: 1;
         }
-
         .resource-item .resource-info strong {
-            color: #0a194f;
+            color: var(--section-text);
             font-weight: 600;
         }
-
         .resource-item .resource-info .text-muted {
             color: #6c757d !important;
             font-size: 0.85rem;
         }
-
         .download-btn {
             background: linear-gradient(135deg, var(--accent), #5c9dff);
             color: white;
@@ -922,144 +1139,71 @@
             transition: all 0.3s ease;
             white-space: nowrap;
             box-shadow: 0 2px 10px rgba(58, 141, 243, 0.3);
+            position: relative;
+            overflow: hidden;
         }
-
         .download-btn:hover {
             background: linear-gradient(135deg, #2c7be0, var(--accent));
             transform: scale(1.05);
             color: white;
             box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
         }
-
         .download-btn i {
             margin-right: 4px;
         }
 
-        .subject-name {
-            color: #0b5ed7;
-            font-family: 'Anek Malayalam', sans-serif;
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
-
-        .exam-name {
-            font-family: 'Anek Malayalam', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            color: #0a194f;
-        }
-
-        .no-data {
-            font-family: 'Anek Malayalam', sans-serif;
-            text-align: center;
-            padding: 20px;
-            background: #fff8e1;
-            border-radius: 12px;
-            color: #856404;
-            font-weight: 500;
-            border: 1px solid #ffecb3;
-        }
-
-        .coming-soon-box {
-            font-family: 'Anek Malayalam', sans-serif;
-            text-align: center;
-            padding: 50px 20px;
-            background: linear-gradient(135deg, rgba(11, 94, 215, 0.04), rgba(11, 94, 215, 0.12));
-            border-radius: 16px;
-            border: 2px dashed #0b5ed7;
-            color: #0b5ed7;
-            font-weight: 600;
+        /* Bookmark star */
+        .bookmark-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.3);
             font-size: 1.2rem;
-            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .bookmark-btn:hover {
+            color: #f1c40f;
+            transform: scale(1.2);
+        }
+        .bookmark-btn.active {
+            color: #f1c40f;
+            text-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
+        }
+        [data-theme="dark"] .bookmark-btn {
+            color: rgba(255, 255, 255, 0.25);
         }
 
-        .coming-soon-box i {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 15px;
-            color: var(--accent);
-            animation: pulse-icon 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse-icon {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.1); opacity: 1; }
-        }
-
-        .coming-soon-box small {
-            font-size: 0.9rem;
-            color: #6c757d;
-            display: block;
-            margin-top: 6px;
-            font-weight: 400;
-        }
-
-        .loader {
-            text-align: center;
-            padding: 60px 20px;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        .loader .spinner-border {
-            color: var(--accent);
-            width: 3rem;
-            height: 3rem;
-        }
-
-        /* ===== TIME TABLE ===== */
-        .timetable-wrapper {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin: 0 -10px;
-        }
-
-        .timetable-wrapper table {
-            width: 100%;
-            min-width: 320px;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .timetable-wrapper table th {
-            background: var(--accent);
+        /* "New" badge on notices */
+        .badge-new {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
-            font-weight: 600;
-            padding: 12px 16px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.55rem;
+            font-weight: 800;
+            padding: 2px 10px;
+            border-radius: 30px;
+            letter-spacing: 0.5px;
+            animation: pulse-new 2s infinite;
+            margin-left: 8px;
+            text-transform: uppercase;
+        }
+        @keyframes pulse-new {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 12px rgba(238, 90, 36, 0.4);
+            }
         }
 
-        .timetable-wrapper table td {
-            padding: 12px 16px;
-            border: 1px solid #e2e8f0;
-            text-align: center;
-            color: #0a194f;
-            font-family: 'Anek Malayalam', sans-serif;
-            font-weight: 500;
-            background: #f8faff;
-        }
-
-        .timetable-wrapper table td:first-child {
-            font-weight: 600;
-            background: #e8f0fe;
-            font-family: 'Anek Malayalam', sans-serif;
-        }
-
-        .timetable-wrapper table tr:nth-child(even) td:not(:first-child) {
-            background: #f0f4ff;
-        }
-
-        .timetable-wrapper table td.empty {
-            color: #adb5bd;
-            font-style: italic;
-        }
-
-        /* ===== NOTICE BOARD STYLES ===== */
+        /* ============================================================
+               NOTICE BOARD (justified fonts)
+               ============================================================ */
         .notice-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--section-bg);
             border-radius: 16px;
             padding: 20px 24px;
             margin-bottom: 16px;
@@ -1069,45 +1213,35 @@
             position: relative;
             overflow: hidden;
         }
-
         .notice-card:hover {
             transform: translateX(6px);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
-
         .notice-card.priority-high {
             border-left-color: #dc3545;
         }
-
         .notice-card.priority-high .notice-title {
             color: #dc3545;
         }
-
         .notice-card.priority-medium {
             border-left-color: #ffc107;
         }
-
         .notice-card.priority-medium .notice-title {
             color: #d39e00;
         }
-
         .notice-card.priority-low {
             border-left-color: #28a745;
         }
-
         .notice-card.priority-low .notice-title {
             color: #28a745;
         }
-
         .notice-card.global-notice {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(58, 141, 243, 0.04));
+            background: linear-gradient(135deg, var(--section-bg), rgba(58, 141, 243, 0.04));
             border-left-color: #6f42c1;
         }
-
         .notice-card.global-notice .notice-title {
             color: #6f42c1;
         }
-
         .notice-card .notice-badge {
             position: absolute;
             top: 12px;
@@ -1119,54 +1253,50 @@
             letter-spacing: 0.5px;
             text-transform: uppercase;
         }
-
         .notice-card .notice-badge.global {
             background: #6f42c1;
             color: white;
         }
-
         .notice-card .notice-badge.class-specific {
             background: var(--accent);
             color: white;
         }
-
         .notice-card .notice-badge.high {
             background: #dc3545;
             color: white;
         }
-
         .notice-card .notice-badge.medium {
             background: #ffc107;
             color: #0a194f;
         }
-
         .notice-card .notice-badge.low {
             background: #28a745;
             color: white;
         }
-
         .notice-card .notice-title {
             font-family: 'Anek Malayalam', sans-serif;
             font-weight: 700;
             font-size: 1.1rem;
             margin-bottom: 8px;
-            color: #0a194f;
+            color: var(--section-text);
+            text-align: justify;
+            text-justify: inter-word;
         }
-
         .notice-card .notice-title i {
             margin-right: 8px;
             color: inherit;
         }
-
         .notice-card .notice-message {
             font-family: 'Anek Malayalam', sans-serif;
             font-weight: 400;
             font-size: 0.95rem;
-            color: #2d3748;
+            color: var(--section-text);
             line-height: 1.7;
             margin-bottom: 6px;
+            text-align: justify;
+            text-justify: inter-word;
+            opacity: 0.9;
         }
-
         .notice-card .notice-date {
             font-size: 0.75rem;
             color: #a0aec0;
@@ -1175,11 +1305,9 @@
             gap: 6px;
             margin-top: 4px;
         }
-
         .notice-card .notice-date i {
             font-size: 0.7rem;
         }
-
         .notice-card .notice-footer {
             display: flex;
             justify-content: space-between;
@@ -1189,22 +1317,9 @@
             gap: 8px;
         }
 
-        .notice-section-title {
-            font-family: 'Anek Malayalam', sans-serif;
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: #0a194f;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .notice-section-title i {
-            color: var(--accent);
-        }
-
-        /* ===== VERIFIED BADGE ===== */
+        /* ============================================================
+               VERIFIED BADGE
+               ============================================================ */
         .verified-badge {
             display: flex;
             align-items: center;
@@ -1219,13 +1334,11 @@
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
         }
-
         .verified-badge:hover {
             transform: scale(1.02);
             box-shadow: 0 4px 20px rgba(46, 213, 115, 0.2);
             border-color: rgba(46, 213, 115, 0.6);
         }
-
         .verified-badge .verify-icon {
             display: flex;
             align-items: center;
@@ -1240,12 +1353,15 @@
             animation: verifyPulse 2s ease-in-out infinite;
             flex-shrink: 0;
         }
-
         @keyframes verifyPulse {
-            0%, 100% { box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.2); }
-            50% { box-shadow: 0 0 0 8px rgba(46, 213, 115, 0.05); }
+            0%,
+            100% {
+                box-shadow: 0 0 0 3px rgba(46, 213, 115, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(46, 213, 115, 0.05);
+            }
         }
-
         .verified-badge .verify-text {
             font-family: 'Poppins', sans-serif;
             font-weight: 500;
@@ -1253,129 +1369,19 @@
             color: #1dd1a1;
             letter-spacing: 0.2px;
         }
-
         .verified-badge .verify-text strong {
             font-weight: 700;
             color: #2ed573;
         }
-
-        .verified-badge .verify-sub {
-            font-size: 0.65rem;
-            color: rgba(255, 255, 255, 0.4);
-            font-weight: 400;
-            margin-left: 2px;
-        }
-
         .verified-badge .verify-divider {
             width: 1px;
             height: 20px;
             background: rgba(46, 213, 115, 0.2);
         }
 
-        @media (max-width: 576px) {
-            .verified-badge {
-                flex-wrap: wrap;
-                padding: 6px 14px;
-                gap: 4px;
-                border-radius: 30px;
-            }
-            .verified-badge .verify-text {
-                font-size: 0.7rem;
-                text-align: center;
-            }
-            .verified-badge .verify-divider {
-                display: none;
-            }
-        }
-
-        /* ===== STUDENT RESOURCES ===== */
-        .resources-section {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            padding: 50px 40px;
-            margin: 50px 0;
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .resources-section h2 {
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--accent), #7bb3ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .resource-card {
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 16px;
-            padding: 28px 24px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            transition: all 0.4s ease;
-            height: 100%;
-            text-align: center;
-        }
-
-        .resource-card:hover {
-            transform: translateY(-6px);
-            border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.08);
-            box-shadow: 0 12px 40px rgba(58, 141, 243, 0.15);
-        }
-
-        .resource-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, rgba(58, 141, 243, 0.2), rgba(92, 157, 255, 0.1));
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent);
-            font-size: 1.6rem;
-            margin: 0 auto 16px;
-            transition: all 0.4s ease;
-        }
-
-        .resource-card:hover .resource-icon {
-            background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
-            transform: scale(1.05) rotate(-3deg);
-        }
-
-        .resource-card h5 {
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-
-        .resource-card p {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
-        }
-
-        .btn-student-zone {
-            background: linear-gradient(135deg, var(--accent), #5c9dff);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 28px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
-            font-weight: 600;
-            font-size: 0.9rem;
-            box-shadow: 0 4px 15px rgba(58, 141, 243, 0.3);
-        }
-
-        .btn-student-zone:hover {
-            background: linear-gradient(135deg, #5c9dff, var(--accent));
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 30px rgba(58, 141, 243, 0.4);
-        }
-
-        /* ===== EXAM ACCORDION ===== */
+        /* ============================================================
+               EXAM ACCORDION
+               ============================================================ */
         .exam-accordion {
             border: 1px solid rgba(58, 141, 243, 0.2);
             border-radius: 10px;
@@ -1390,7 +1396,7 @@
             transition: background 0.3s ease;
             display: flex;
             align-items: center;
-            color: #0a194f;
+            color: var(--section-text);
             font-weight: 600;
         }
         .exam-header:hover {
@@ -1414,12 +1420,286 @@
             border-radius: 30px;
             font-weight: 700;
         }
+        .no-data {
+            font-family: 'Anek Malayalam', sans-serif;
+            text-align: center;
+            padding: 20px;
+            background: #fff8e1;
+            border-radius: 12px;
+            color: #856404;
+            font-weight: 500;
+            border: 1px solid #ffecb3;
+        }
+        [data-theme="dark"] .no-data {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border-color: rgba(255, 193, 7, 0.2);
+        }
+        .coming-soon-box {
+            font-family: 'Anek Malayalam', sans-serif;
+            text-align: center;
+            padding: 50px 20px;
+            background: linear-gradient(135deg, rgba(11, 94, 215, 0.04), rgba(11, 94, 215, 0.12));
+            border-radius: 16px;
+            border: 2px dashed #0b5ed7;
+            color: #0b5ed7;
+            font-weight: 600;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+        }
+        .coming-soon-box i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 15px;
+            color: var(--accent);
+            animation: pulse-icon 2s ease-in-out infinite;
+        }
+        @keyframes pulse-icon {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 1;
+            }
+        }
 
-        /* ===== FOOTER ===== */
+        /* ============================================================
+               TIME TABLE
+               ============================================================ */
+        .timetable-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -10px;
+        }
+        .timetable-wrapper table {
+            width: 100%;
+            min-width: 320px;
+            border-collapse: collapse;
+            background: var(--section-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        .timetable-wrapper table th {
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            padding: 12px 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .timetable-wrapper table td {
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            color: var(--section-text);
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 500;
+            background: #f8faff;
+        }
+        [data-theme="dark"] .timetable-wrapper table td {
+            background: rgba(255, 255, 255, 0.04);
+            color: #e2e8f0;
+            border-color: rgba(255, 255, 255, 0.08);
+        }
+        .timetable-wrapper table td:first-child {
+            font-weight: 600;
+            background: #e8f0fe;
+        }
+        [data-theme="dark"] .timetable-wrapper table td:first-child {
+            background: rgba(58, 141, 243, 0.15);
+        }
+        .timetable-wrapper table td.empty {
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        /* ============================================================
+               STUDENT RESOURCES (footer section)
+               ============================================================ */
+        .resources-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border-radius: 24px;
+            padding: 50px 40px;
+            margin: 50px 0;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+        }
+        .resources-section h2 {
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent), #7bb3ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .resource-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 28px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.4s ease;
+            height: 100%;
+            text-align: center;
+        }
+        .resource-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 40px rgba(58, 141, 243, 0.15);
+        }
+        .resource-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.2), rgba(92, 157, 255, 0.1));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.6rem;
+            margin: 0 auto 16px;
+            transition: all 0.4s ease;
+        }
+        .resource-card:hover .resource-icon {
+            background: linear-gradient(135deg, rgba(58, 141, 243, 0.4), rgba(92, 157, 255, 0.2));
+            transform: scale(1.05) rotate(-3deg);
+        }
+        .resource-card h5 {
+            color: var(--text-body);
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .resource-card p {
+            color: var(--muted-text);
+            font-size: 0.9rem;
+        }
+        .btn-student-zone {
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 28px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 15px rgba(58, 141, 243, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-student-zone:hover {
+            background: linear-gradient(135deg, #5c9dff, var(--accent));
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(58, 141, 243, 0.4);
+        }
+
+        /* ============================================================
+               BACK TO TOP
+               ============================================================ */
+        .back-to-top {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #5c9dff);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(58, 141, 243, 0.4);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+            cursor: pointer;
+        }
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .back-to-top:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 8px 30px rgba(58, 141, 243, 0.6);
+        }
+
+        /* ============================================================
+               BOTTOM NAV (mobile)
+               ============================================================ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 25, 79, 0.95);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: none;
+            justify-content: space-around;
+            padding: 6px 0 env(safe-area-inset-bottom, 6px);
+            z-index: 1050;
+            transition: background 0.3s ease;
+        }
+        [data-theme="dark"] .bottom-nav {
+            background: rgba(5, 10, 26, 0.96);
+        }
+        .bottom-nav a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            text-align: center;
+            padding: 6px 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 0.7rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 56px;
+        }
+        .bottom-nav a i {
+            font-size: 1.3rem;
+        }
+        .bottom-nav a.active {
+            color: var(--accent);
+        }
+        .bottom-nav a:hover {
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .bottom-nav {
+                display: flex;
+            }
+            body {
+                padding-bottom: 70px;
+            }
+            .back-to-top {
+                bottom: 80px;
+                right: 16px;
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* ============================================================
+               FOOTER
+               ============================================================ */
         .modern-footer {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--footer-bg);
             color: white;
             padding: 60px 0 20px;
+            transition: background 0.3s ease;
         }
         .modern-footer h4,
         .modern-footer h5 {
@@ -1495,58 +1775,131 @@
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
+        .last-updated {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+        }
 
-        .whatsapp-float {
-            position: fixed;
-            width: 48px;
-            height: 48px;
-            bottom: 20px;
-            right: 20px;
-            background-color: #25d366;
+        /* ============================================================
+               SUBJECT FONT COLOR (Blue / Black adaptive)
+               ============================================================ */
+        .subject-name {
+            color: var(--subject-color);
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .exam-name {
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--subject-color);
+        }
+
+        /* ============================================================
+               RIPPLE EFFECT
+               ============================================================ */
+        .ripple {
+            position: absolute;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple-anim 0.6s linear;
+            pointer-events: none;
         }
-        .whatsapp-float:hover {
-            transform: scale(1.1);
-        }
-
-        .hide-on-detail {
-            transition: opacity 0.4s ease;
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
         }
 
-        /* ===== RESPONSIVE ===== */
+        /* ============================================================
+               RESPONSIVE TWEAKS
+               ============================================================ */
         @media (max-width: 768px) {
-            .student-zone-header h1 { font-size: 2.5rem; }
-            .student-zone-header { padding: 80px 0 50px; }
-            .class-selector { flex-direction: column; padding: 16px 20px; border-radius: 30px; gap: 10px; width: 100%; max-width: 320px; }
-            .class-selector select { width: 100%; min-width: unset; }
-            .zone-section { padding: 20px; }
-            .resource-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-            .download-btn { align-self: flex-start; }
-            .nav-tabs-resources .nav-link { font-size: 0.75rem; padding: 6px 14px; }
-            .coming-soon-badge { font-size: 0.45rem; padding: 1px 5px; }
-            .resources-section { padding: 30px 20px; }
-            .class-detail-panel { padding: 1.2rem; }
-            .notice-card { padding: 16px 18px; }
-            .notice-card .notice-title { font-size: 1rem; }
-            .notice-card .notice-message { font-size: 0.85rem; }
-            .notice-card .notice-badge { position: relative; top: auto; right: auto; margin-top: 8px; display: inline-block; }
-            .notice-card .notice-footer { flex-direction: column; align-items: flex-start; }
+            .student-zone-header {
+                padding: 80px 0 40px;
+            }
+            .student-zone-header h1 {
+                font-size: 2.2rem;
+            }
+            .class-selector {
+                flex-direction: column;
+                padding: 16px 20px;
+                border-radius: 30px;
+                gap: 10px;
+                width: 100%;
+                max-width: 320px;
+            }
+            .class-selector select {
+                width: 100%;
+                min-width: unset;
+            }
+            .zone-section {
+                padding: 20px;
+            }
+            .resource-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .download-btn {
+                align-self: flex-start;
+            }
+            .nav-tabs-resources .nav-link {
+                font-size: 0.75rem;
+                padding: 6px 14px;
+            }
+            .coming-soon-badge {
+                font-size: 0.45rem;
+                padding: 1px 5px;
+            }
+            .resources-section {
+                padding: 30px 20px;
+            }
+            .class-detail-panel {
+                padding: 1.2rem;
+            }
+            .notice-card {
+                padding: 16px 18px;
+            }
+            .notice-card .notice-title {
+                font-size: 1rem;
+            }
+            .notice-card .notice-message {
+                font-size: 0.85rem;
+            }
+            .notice-card .notice-badge {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 8px;
+                display: inline-block;
+            }
+            .notice-card .notice-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
-
         @media (max-width: 576px) {
-            .student-zone-header h1 { font-size: 2rem; }
-            .class-card { padding: 25px 15px; }
-            .class-card .card-icon { width: 55px; height: 55px; }
-            .class-card i { font-size: 26px; }
+            .student-zone-header h1 {
+                font-size: 1.8rem;
+            }
+            .class-card {
+                padding: 25px 15px;
+            }
+            .class-card .card-icon {
+                width: 55px;
+                height: 55px;
+            }
+            .class-card i {
+                font-size: 26px;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Floating Particles -->
@@ -1557,7 +1910,9 @@
         <div class="particle"></div>
     </div>
 
-    <!-- ==================== ORIGINAL NAVBAR ==================== -->
+    <!-- ============================================================
+    NAVBAR (with Dark Mode toggle & Search)
+    ============================================================ -->
     <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top hide-on-detail">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2" href="#">
@@ -1570,10 +1925,17 @@
                     <small class="d-block" style="font-size: 0.75rem; opacity: 0.8;">Kambippalam</small>
                 </div>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                <span class="navbar-toggler-icon"></span>
-                <span class="toggler-text">Menu</span>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Dark Mode Toggle -->
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                    <span class="toggle-label" id="themeLabel">Dark</span>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                    <span class="navbar-toggler-icon"></span>
+                    <span class="toggler-text">Menu</span>
+                </button>
+            </div>
             <div class="collapse navbar-collapse" id="navMenu">
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
                     <!-- Home -->
@@ -1616,12 +1978,20 @@
         </div>
     </nav>
 
-    <!-- ==================== HEADER & CLASS SELECTOR ==================== -->
+    <!-- ============================================================
+    HEADER with SEARCH
+    ============================================================ -->
     <div id="topHeaderSection" class="hide-on-detail">
-        <header class="student-zone-header">
+        <header class="student-zone-header" id="parallaxHeader">
             <div class="container">
                 <h1>🎓 Student Zone</h1>
                 <p class="lead">Access study materials, notes, and exam resources</p>
+                <!-- Global Search -->
+                <div class="header-search">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="globalSearch" placeholder="Search classes, subjects, notices..." autocomplete="off" />
+                    <span class="clear-search" id="clearSearch"><i class="fas fa-times-circle"></i></span>
+                </div>
                 <div class="header-decoration">
                     <span></span><span></span><span></span><span></span><span></span>
                 </div>
@@ -1647,28 +2017,38 @@
         </div>
     </div>
 
-    <!-- ==================== CLASS GRID + DETAIL PANEL ==================== -->
+    <!-- ============================================================
+    CLASS GRID + DETAIL PANEL
+    ============================================================ -->
     <section class="py-4 class-grid">
         <div class="container">
             <div id="classGridSection">
-                <div class="row g-4" id="classCardsContainer"></div>
+                <div class="row g-4" id="classCardsContainer">
+                    <!-- Skeleton placeholders will be injected by JS -->
+                </div>
             </div>
             <div id="classDetailSection" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
                     <button class="btn-back" id="backToClassesBtn"><i class="fas fa-arrow-left me-2"></i>Back to Classes</button>
-                    <h3 class="mb-0" style="color: white; font-weight: 700;"><i class="fas fa-chalkboard-user me-2" style="color: var(--accent);"></i>Class <span id="selectedClassNum"></span> Resources</h3>
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <h3 class="mb-0" style="color: white; font-weight: 700;"><i class="fas fa-chalkboard-user me-2" style="color: var(--accent);"></i>Class <span id="selectedClassNum"></span> Resources</h3>
+                        <button class="btn-back" id="shareClassBtn" style="background: rgba(255,255,255,0.06); padding: 6px 16px;" title="Copy link to this class"><i class="fas fa-link"></i></button>
+                    </div>
                 </div>
-                <div class="class-detail-panel">
+                <div class="class-detail-panel" id="detailPanel">
+                    <!-- Tab navigation -->
                     <ul class="nav nav-tabs-resources" id="resourceTab" role="tablist">
-                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studyContent"><i class="fas fa-book-open"></i> Study Materials</button></li>
-                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#papersContent"><i class="fas fa-file-alt"></i> Previous Papers</button></li>
+                        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studyContent"><i class="fas fa-book-open"></i> Study</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#papersContent"><i class="fas fa-file-alt"></i> Papers</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#timetableContent"><i class="fa-solid fa-calendar"></i> Time Table</button></li>
-                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#noticeContent"><i class="fas fa-bullhorn"></i> Notice Board</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#noticeContent"><i class="fas fa-bullhorn"></i> Notices</button></li>
+                        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#bookmarkContent"><i class="fas fa-star"></i> Bookmarks</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#othersContent"><i class="fas fa-ellipsis-h"></i> Others</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#infographicsContent"><i class="fas fa-chart-pie"></i> Infographics <span class="coming-soon-badge">Soon</span></button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#animatedContent"><i class="fas fa-play-circle"></i> Animated <span class="coming-soon-badge">Soon</span></button></li>
                     </ul>
-                    <div class="tab-content">
+                    <!-- Tab panes -->
+                    <div class="tab-content" id="tabContent">
                         <div class="tab-pane fade show active" id="studyContent"><div id="studyMaterialsList"></div></div>
                         <div class="tab-pane fade" id="papersContent"><div id="previousPapersList"></div></div>
                         <div class="tab-pane fade" id="othersContent"><div id="othersList"></div></div>
@@ -1676,13 +2056,16 @@
                         <div class="tab-pane fade" id="animatedContent"><div id="animatedList"></div></div>
                         <div class="tab-pane fade" id="timetableContent"><div id="timetableList"></div></div>
                         <div class="tab-pane fade" id="noticeContent"><div id="noticeList"></div></div>
+                        <div class="tab-pane fade" id="bookmarkContent"><div id="bookmarkList"></div></div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ==================== STUDENT RESOURCES ==================== -->
+    <!-- ============================================================
+    STUDENT RESOURCES (footer section)
+    ============================================================ -->
     <div id="resourcesFooterSection" class="hide-on-detail">
         <section class="resources-section" data-aos="fade-up">
             <div class="container">
@@ -1718,7 +2101,9 @@
         <div class="container text-center mt-4"><a href="index.html" class="btn-student-zone"><i class="fas fa-home me-2"></i>Back to Home</a></div>
     </div>
 
-    <!-- ==================== ORIGINAL FOOTER ==================== -->
+    <!-- ============================================================
+    FOOTER (with Last Updated)
+    ============================================================ -->
     <footer id="mainFooter" class="modern-footer hide-on-detail">
         <div class="container">
             <div class="row">
@@ -1734,21 +2119,43 @@
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0"><h5>Academics</h5><ul><li><a href="courses.html">Courses</a></li><li><a href="schedule.html">Schedule</a></li><li><a href="library.html">Library</a></li><li><a href="result.html">Results</a></li><li><a href="pta.html">PTA</a></li></ul></div>
                 <div class="col-lg-4 col-md-4"><h5>Contact Info</h5><ul class="list-unstyled" style="color: #d1d5db;"><li class="mb-3"><i class="fas fa-map-marker-alt me-2" style="color: var(--accent);"></i> Noorussalam Madrasa, Kambippalam, Kerala Estate</li><li class="mb-3"><i class="fas fa-phone me-2" style="color: var(--accent);"></i> +91 70346 78818</li><li class="mb-3"><i class="fas fa-envelope me-2" style="color: var(--accent);"></i> noorussalam6110@gmail.com</li><li class="mb-3"><i class="fas fa-clock me-2" style="color: var(--accent);"></i> Sat - Thu: 6:00 AM - 10:00 AM</li></ul><h5 class="mt-4">Newsletter</h5><p style="color: #d1d5db; font-size: 0.9rem;">Subscribe for updates</p><div class="newsletter-form"><input type="email" placeholder="Your email"><button type="submit"><i class="fas fa-paper-plane"></i></button></div></div>
             </div>
-            <div class="footer-bottom"><div class="row align-items-center"><div class="col-md-6"><p class="mb-0" style="color: #9ca3af;">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div><div class="col-md-6 text-md-end"><p class="mb-0" style="color: #9ca3af;">Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a></p></div></div></div>
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6"><p class="mb-0" style="color: #9ca3af;">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0" style="color: #9ca3af;">Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a></p>
+                        <p class="last-updated mb-0" id="lastUpdated">Last updated: --</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
 
-    <!-- WhatsApp Float -->
-    <a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" class="whatsapp-float" target="_blank">
-        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" width="26">
-    </a>
+    <!-- ============================================================
+    FLOATING ELEMENTS
+    ============================================================ -->
+    <!-- Back to Top -->
+    <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
 
+    <!-- Bottom Navigation (mobile) -->
+    <div class="bottom-nav" id="bottomNav">
+        <a href="#" class="active" data-target="home"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="#" data-target="classes"><i class="fas fa-th-large"></i><span>Classes</span></a>
+        <a href="#" data-target="notices"><i class="fas fa-bullhorn"></i><span>Notices</span></a>
+        <a href="#" data-target="bookmarks"><i class="fas fa-star"></i><span>Saved</span></a>
+    </div>
+
+    <!-- ============================================================
+    SCRIPTS
+    ============================================================ -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
     </script>
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js">
     </script>
     <script>
-        // ========== CONFIGURATION ==========
+        // =================================================================
+        // CONFIGURATION
+        // =================================================================
         const WEB_APP_URL =
             "https://script.google.com/macros/s/AKfycbyhXIGHy3Y0SHtT8Cg9dWLERc_VwKqx0VCXoUUz7peP0b1bKgzSOj7Ht6OxCKtXXeCO/exec";
 
@@ -1758,24 +2165,72 @@
         let globalExamPapers = [];
         let globalTimeTable = [];
         let globalNotices = [];
+        let dataLoaded = false;
+        let currentClass = null;
+        let bookmarkKeys = [];
 
-        // ---------- Date formatting function ----------
+        // =================================================================
+        // UTILITY FUNCTIONS
+        // =================================================================
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } [m]));
+        }
+
         function formatDate(dateStr) {
             if (!dateStr) return '';
             try {
                 const date = new Date(dateStr);
                 if (isNaN(date)) return dateStr;
-                const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                return date.toLocaleDateString('en-US', options); // e.g., "Oct 10, 2026"
-            } catch (e) {
-                return dateStr;
-            }
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            } catch (e) { return dateStr; }
+        }
+
+        function isNew(dateStr) {
+            if (!dateStr) return false;
+            try {
+                const d = new Date(dateStr);
+                if (isNaN(d)) return false;
+                const diff = (Date.now() - d.getTime()) / (1000 * 60 * 60 * 24);
+                return diff <= 7;
+            } catch (e) { return false; }
+        }
+
+        function getResourceId(type, index, classNum) {
+            return `${type}-${classNum}-${index}`;
+        }
+
+        function getBookmarks() {
+            try {
+                const data = localStorage.getItem('nsm_bookmarks');
+                return data ? JSON.parse(data) : [];
+            } catch { return []; }
+        }
+
+        function saveBookmarks(bookmarks) {
+            localStorage.setItem('nsm_bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function toggleBookmark(id) {
+            let bookmarks = getBookmarks();
+            const idx = bookmarks.indexOf(id);
+            if (idx > -1) bookmarks.splice(idx, 1);
+            else bookmarks.push(id);
+            saveBookmarks(bookmarks);
+            return bookmarks;
+        }
+
+        function isBookmarked(id) {
+            return getBookmarks().includes(id);
         }
 
         function setGlobalUIVisible(visible) {
             document.querySelectorAll('.hide-on-detail').forEach(el => el.style.display = visible ? '' : 'none');
         }
 
+        // =================================================================
+        // FETCH DATA
+        // =================================================================
         async function fetchData() {
             try {
                 const res = await fetch(WEB_APP_URL);
@@ -1787,80 +2242,130 @@
                 globalExamPapers = data.examPapers || [];
                 globalTimeTable = data.timeTable || [];
                 globalNotices = data.notices || [];
-                console.log("Data loaded", { subjects: globalSubjects.length, papers: globalPapers.length, others: globalOthers
-                        .length, examPapers: globalExamPapers.length, timeTable: globalTimeTable.length, notices: globalNotices
-                        .length });
+                dataLoaded = true;
+                // store last updated
+                localStorage.setItem('nsm_last_updated', new Date().toLocaleString());
+                document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleString();
                 return true;
             } catch (err) {
                 console.error(err);
-                alert("Could not load data from Google Sheets.\nPlease check the Apps Script URL.");
+                document.getElementById('classCardsContainer').innerHTML =
+                    `<div class="col-12 alert alert-danger">Could not load data. Please check your Google Sheet URL.</div>`;
                 return false;
             }
         }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' } [m]));
-        }
-
-        function buildSection(title, items, renderFn, emptyMsg) {
-            let html = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> ${title}</h4>`;
-            if (items.length === 0) {
-                html += `<div class="no-data">${emptyMsg}</div>`;
-            } else {
-                items.forEach(item => { html += renderFn(item); });
+        // =================================================================
+        // RENDER SKELETONS
+        // =================================================================
+        function renderSkeletons() {
+            const container = document.getElementById('classCardsContainer');
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                container.innerHTML += `
+              <div class="col-md-3 col-sm-6">
+                <div class="skeleton-card">
+                  <div class="skeleton-icon"></div>
+                  <div class="skeleton-line" style="width:60%;"></div>
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line" style="width:50%;"></div>
+                </div>
+              </div>
+            `;
             }
-            html += `</div>`;
-            return html;
         }
 
-        function renderClassCards() {
+        // =================================================================
+        // RENDER CLASS CARDS (with progress)
+        // =================================================================
+        function renderClassCards(filter = '') {
             const container = document.getElementById('classCardsContainer');
             const classMap = new Map();
             globalSubjects.forEach(sub => classMap.set(sub.class, (classMap.get(sub.class) || 0) + 1));
             const classes = Array.from(classMap.keys()).sort((a, b) => a - b);
+
             if (classes.length === 0) {
                 container.innerHTML =
                     `<div class="col-12 alert alert-warning">No class data found. Please check your Google Sheet.</div>`;
                 return;
             }
+
+            // Apply search filter
+            const filtered = classes.filter(cls => {
+                if (!filter) return true;
+                const search = filter.toLowerCase();
+                const subjects = globalSubjects.filter(s => s.class == cls).map(s => s.name.toLowerCase()).join(' ');
+                const notices = globalNotices.filter(n => n.class == cls || n.class === 0).map(n => n.title.toLowerCase())
+                    .join(' ');
+                return String(cls).includes(search) || subjects.includes(search) || notices.includes(search);
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML =
+                    `<div class="col-12"><div class="no-data" style="background:transparent;color:var(--text-body);">No classes match your search.</div></div>`;
+                return;
+            }
+
             const icons = ['fa-book-reader', 'fa-graduation-cap', 'fa-user-graduate', 'fa-book-open', 'fa-pencil-alt',
                 'fa-chalkboard-teacher', 'fa-school', 'fa-laptop-code', 'fa-brain', 'fa-lightbulb'
             ];
-            container.innerHTML = classes.map((cls, idx) => `
+
+            // Get progress from localStorage
+            const progressData = JSON.parse(localStorage.getItem('nsm_progress') || '{}');
+
+            container.innerHTML = filtered.map((cls, idx) => {
+                const total = classMap.get(cls);
+                const accessed = progressData[cls] || 0;
+                const pct = total > 0 ? Math.min(100, Math.round((accessed / total) * 100)) : 0;
+                return `
             <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="${idx * 50}">
-              <div class="class-card" data-class="${cls}">
+              <div class="class-card" data-class="${cls}" data-aos="fade-up" data-aos-delay="${idx * 50}">
                 <span class="card-number">#${cls}</span>
                 <div class="card-icon"><i class="fas ${icons[idx % icons.length]}"></i></div>
                 <h5>Class ${cls}</h5>
-                <p>${classMap.get(cls)} Subjects</p>
-                <span class="subject-badge">📖 ${classMap.get(cls)} Materials</span>
+                <p>${total} Subjects</p>
+                <span class="subject-badge">📖 ${total} Materials</span>
+                <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+                <small style="color:var(--muted-text);font-size:0.7rem;">${accessed}/${total} accessed</small>
               </div>
             </div>
-          `).join('');
+          `;
+            }).join('');
+
+            // Attach click & tilt events
             document.querySelectorAll('.class-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const cls = parseInt(card.dataset.class);
                     showClassDetail(cls);
                     document.getElementById('classSelect').value = cls;
+                    // Update hash
+                    window.location.hash = `class-${cls}`;
+                });
+                // Tilt effect
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = (y - centerY) / 20;
+                    const rotateY = (centerX - x) / 20;
+                    card.style.transform =
+                        `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = '';
                 });
             });
+
             setTimeout(() => document.querySelectorAll('.class-card').forEach(c => c.classList.add('show')), 100);
         }
 
-        function toggleExamSubjects(el) {
-            const body = el.nextElementSibling;
-            if (body.style.display === 'none' || body.style.display === '') {
-                body.style.display = 'block';
-                el.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)';
-            } else {
-                body.style.display = 'none';
-                el.querySelector('.fa-chevron-right').style.transform = 'rotate(0deg)';
-            }
-        }
-        window.toggleExamSubjects = toggleExamSubjects;
-
+        // =================================================================
+        // RENDER DETAIL PANEL
+        // =================================================================
         function renderDetailPanel(classNum) {
+            currentClass = classNum;
             const subjects = globalSubjects.filter(s => s.class == classNum);
             const papers = globalPapers.filter(p => p.class == classNum);
             const others = globalOthers.filter(o => o.class == classNum);
@@ -1868,19 +2373,31 @@
             const timeTable = globalTimeTable.filter(t => t.class == classNum);
             const notices = globalNotices.filter(n => n.class === 0 || n.class === classNum);
 
-            // Study Materials
-            const studyHTML = buildSection('Study Materials', subjects, sub => `
-            <div class="resource-item">
-              <div class="resource-info">
-                <i class="fa-solid fa-file-alt"></i>
-                <span class="subject-name">${escapeHtml(sub.name)}</span>
-                ${sub.description ? `<br><small class="text-muted">${escapeHtml(sub.description)}</small>` : ''}
-              </div>
-              <a href="${sub.materialLink || '#'}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Access</a>
-            </div>
-          `, 'നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക');
+            // ---- Study Materials ----
+            let studyHTML = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> Study Materials</h4>`;
+            if (subjects.length === 0) studyHTML += `<div class="no-data">നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക</div>`;
+            else {
+                subjects.forEach((sub, idx) => {
+                    const rid = getResourceId('study', idx, classNum);
+                    const bookmarked = isBookmarked(rid);
+                    studyHTML += `
+                <div class="resource-item" data-resource-id="${rid}">
+                  <div class="resource-info">
+                    <i class="fa-solid fa-file-alt"></i>
+                    <span class="subject-name">${escapeHtml(sub.name)}</span>
+                    ${sub.description ? `<br><small class="text-muted">${escapeHtml(sub.description)}</small>` : ''}
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <button class="bookmark-btn ${bookmarked ? 'active' : ''}" data-resource-id="${rid}" aria-label="Bookmark"><i class="fas fa-star"></i></button>
+                    <a href="${sub.materialLink || '#'}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Access</a>
+                  </div>
+                </div>
+              `;
+                });
+            }
+            studyHTML += `</div>`;
 
-            // Previous Papers (Accordion)
+            // ---- Previous Papers (accordion) ----
             let examTypes = examPapers.length > 0 ? [...new Set(examPapers.map(e => e.examType))] : ['പാദ വാർഷിക പരീക്ഷ',
                 'അർദ്ധ വാർഷിക പരീക്ഷ', 'വാർഷിക പരീക്ഷ'
             ];
@@ -1901,101 +2418,108 @@
                   <div class="exam-body" style="display: none;">
               `;
                     if (hasSubjects) {
-                        examSubjects.forEach(item => {
+                        examSubjects.forEach((item, idx) => {
                             const link = item.link && item.link !== '#' ? item.link : null;
+                            const rid = getResourceId('paper', idx, classNum);
+                            const bookmarked = isBookmarked(rid);
                             papersHTML += `
-                    <div class="resource-item">
+                    <div class="resource-item" data-resource-id="${rid}">
                       <div class="resource-info">
                         <i class="fa-regular fa-file-pdf"></i>
                         <strong class="subject-name">${escapeHtml(item.subject)}</strong>
                       </div>
-                      ${link ? `<a href="${link}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Download</a>` 
-                             : `<span class="badge-coming-soon"><i class="fas fa-clock me-1"></i>Coming soon</span>`}
+                      <div class="d-flex align-items-center gap-2">
+                        <button class="bookmark-btn ${bookmarked ? 'active' : ''}" data-resource-id="${rid}" aria-label="Bookmark"><i class="fas fa-star"></i></button>
+                        ${link ? `<a href="${link}" target="_blank" class="download-btn"><i class="fa fa-download"></i> Download</a>` 
+                               : `<span class="badge-coming-soon"><i class="fas fa-clock me-1"></i>Soon</span>`}
+                      </div>
                     </div>
                   `;
                         });
                     } else {
-                        papersHTML += `<div class="text-muted" style="padding: 8px 0;">വിഷയങ്ങൾ ലഭ്യമല്ല</div>`;
+                        papersHTML += `<div class="text-muted" style="padding:8px 0;">വിഷയങ്ങൾ ലഭ്യമല്ല</div>`;
                     }
                     papersHTML += `</div></div>`;
                 });
             }
             papersHTML += `</div>`;
 
-            // Others
-            const othersHTML = buildSection('Others (Notes / Guides)', others, other => `
-            <div class="resource-item">
-              <div class="resource-info">
-                <i class="fa-solid fa-paperclip"></i>
-                <strong>${escapeHtml(other.title)}</strong>
-              </div>
-              <a href="${other.link || '#'}" target="_blank" class="download-btn"><i class="fa fa-external-link-alt"></i> Open</a>
-            </div>
-          `, 'നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക');
+            // ---- Others ----
+            let othersHTML = `<div class="zone-section"><h4><i class="fa-solid fa-paperclip"></i> Others (Notes / Guides)</h4>`;
+            if (others.length === 0) othersHTML += `<div class="no-data">നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക</div>`;
+            else {
+                others.forEach((other, idx) => {
+                    const rid = getResourceId('other', idx, classNum);
+                    const bookmarked = isBookmarked(rid);
+                    othersHTML += `
+                <div class="resource-item" data-resource-id="${rid}">
+                  <div class="resource-info">
+                    <i class="fa-solid fa-paperclip"></i>
+                    <strong>${escapeHtml(other.title)}</strong>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <button class="bookmark-btn ${bookmarked ? 'active' : ''}" data-resource-id="${rid}" aria-label="Bookmark"><i class="fas fa-star"></i></button>
+                    <a href="${other.link || '#'}" target="_blank" class="download-btn"><i class="fa fa-external-link-alt"></i> Open</a>
+                  </div>
+                </div>
+              `;
+                });
+            }
+            othersHTML += `</div>`;
 
-            // Infographics & Animated
+            // ---- Infographics & Animated ----
             const infographicsHTML =
                 `<div class="zone-section"><h4><i class="fa-solid fa-chart-pie"></i> Infographics</h4><div class="coming-soon-box"><i class="fas fa-clock"></i>ഉടൻ ലഭ്യമാകും.. കാത്തിരിക്കുക<small>Coming soon</small></div></div>`;
             const animatedHTML =
                 `<div class="zone-section"><h4><i class="fa-solid fa-play-circle"></i> Animated Contents</h4><div class="coming-soon-box"><i class="fas fa-clock"></i>ഉടൻ ലഭ്യമാകും.. കാത്തിരിക്കുക<small>Coming soon</small></div></div>`;
 
-            // ===== TIME TABLE =====
-            let timetableHTML = `<div class="zone-section"><h4><i class="fa-solid fa-clock"></i> Class Time Table - NOORUSSALAM MADRASA</h4>`;
-            if (timeTable.length === 0) {
-                timetableHTML += `<div class="no-data">തയ്യാറാക്കുന്നു.. കാത്തിരിക്കുക</div>`;
-            } else {
-                const hasSubject3 = timeTable.some(row => {
-                    const s3 = (row.subject3 || '').trim();
-                    return s3 !== '' && s3 !== '-';
-                });
-                timetableHTML += `<div class="timetable-wrapper"><table>`;
-                timetableHTML += `<thead><tr><th>DAYS</th><th>SUBJECT 1</th><th>SUBJECT 2</th>`;
-                if (hasSubject3) {
-                    timetableHTML += `<th>SUBJECT 3</th>`;
-                }
+            // ---- Time Table ----
+            let timetableHTML =
+                `<div class="zone-section"><h4><i class="fa-solid fa-clock"></i> Class Time Table - NOORUSSALAM MADRASA</h4>`;
+            if (timeTable.length === 0) timetableHTML += `<div class="no-data">തയ്യാറാക്കുന്നു.. കാത്തിരിക്കുക</div>`;
+            else {
+                const hasSubject3 = timeTable.some(row => { const s3 = (row.subject3 || '').trim(); return s3 !== '' && s3 !==
+                        '-'; });
+                timetableHTML += `<div class="timetable-wrapper"><table><thead><tr><th>DAYS</th><th>SUBJECT 1</th><th>SUBJECT 2</th>`;
+                if (hasSubject3) timetableHTML += `<th>SUBJECT 3</th>`;
                 timetableHTML += `</tr></thead><tbody>`;
                 timeTable.forEach(row => {
                     const subjects = [row.subject1, row.subject2, row.subject3]
-                        .map(s => (s || '').trim())
-                        .filter(s => s !== '' && s !== '-');
+                        .map(s => (s || '').trim()).filter(s => s !== '' && s !== '-');
                     while (subjects.length < 3) subjects.push('');
                     const displaySubjects = hasSubject3 ? subjects : subjects.slice(0, 2);
                     timetableHTML += `<tr><td>${escapeHtml(row.day)}</td>`;
                     displaySubjects.forEach(sub => {
-                        timetableHTML += `<td>${sub ? escapeHtml(sub) : '<span class="empty">-</span>'}</td>`;
+                        timetableHTML +=
+                            `<td>${sub ? escapeHtml(sub) : '<span class="empty">-</span>'}</td>`;
                     });
                     timetableHTML += `</tr>`;
                 });
                 timetableHTML += `</tbody></table></div>`;
                 timetableHTML += `
-                 <div class="verified-badge">
-                   <span class="verify-icon"><i class="fas fa-check"></i></span>
-                   <span class="verify-text">Verified by <strong>Swadar Muallim</strong></span>
-                   <span class="verify-divider"></span>
-                   <span class="verify-text" style="font-weight:400; font-size:0.8rem; color:#000;">
-                     <i class="fas fa-shield-alt me-1" style="color:#2ed573;"></i>Authorized
-                  </span>
-               </div>
-              `;
+              <div class="verified-badge">
+                <span class="verify-icon"><i class="fas fa-check"></i></span>
+                <span class="verify-text">Verified by <strong>Swadar Muallim</strong></span>
+                <span class="verify-divider"></span>
+                <span class="verify-text" style="font-weight:400; font-size:0.8rem; color:#000;">
+                  <i class="fas fa-shield-alt me-1" style="color:#2ed573;"></i>Authorized
+                </span>
+              </div>
+            `;
             }
             timetableHTML += `</div>`;
 
-            // ===== NOTICE BOARD (with formatted date) =====
+            // ---- Notice Board (with "New" badge) ----
             let noticeHTML = `<div class="zone-section"><h4><i class="fa-solid fa-bullhorn"></i> Notice Board</h4>`;
-            if (notices.length === 0) {
-                noticeHTML += `<div class="no-data">നിലവിൽ അറിയിപ്പുകളൊന്നുമില്ല.. കാത്തിരിക്കുക</div>`;
-            } else {
-                // Sort: global notices first, then by date (if available)
-                const sortedNotices = [...notices].sort((a, b) => {
+            if (notices.length === 0) noticeHTML += `<div class="no-data">നിലവിൽ അറിയിപ്പുകളൊന്നുമില്ല.. കാത്തിരിക്കുക</div>`;
+            else {
+                const sorted = [...notices].sort((a, b) => {
                     if (a.class === 0 && b.class !== 0) return -1;
                     if (a.class !== 0 && b.class === 0) return 1;
-                    if (a.date && b.date) {
-                        return new Date(b.date) - new Date(a.date);
-                    }
+                    if (a.date && b.date) return new Date(b.date) - new Date(a.date);
                     return 0;
                 });
-
-                sortedNotices.forEach(notice => {
+                sorted.forEach((notice, idx) => {
                     const isGlobal = notice.class === 0;
                     const priority = (notice.priority || '').toLowerCase();
                     const priorityClass = priority === 'high' ? 'priority-high' :
@@ -2006,22 +2530,25 @@
                     const badgeClass = isGlobal ? 'global' : 'class-specific';
                     const priorityBadge = priority ? `<span class="notice-badge ${priority}">${priority}</span>` : '';
                     const formattedDate = notice.date ? formatDate(notice.date) : 'Date not specified';
+                    const newBadge = isNew(notice.date) ? `<span class="badge-new">New!</span>` : '';
+                    const rid = getResourceId('notice', idx, classNum);
+                    const bookmarked = isBookmarked(rid);
 
                     noticeHTML += `
-                <div class="notice-card ${priorityClass} ${globalClass}">
+                <div class="notice-card ${priorityClass} ${globalClass}" data-resource-id="${rid}">
                   <div class="notice-title">
                     <i class="fas ${isGlobal ? 'fa-globe' : 'fa-users'}"></i>
-                    ${escapeHtml(notice.title)}
+                    ${escapeHtml(notice.title)} ${newBadge}
                   </div>
                   <div class="notice-message">${escapeHtml(notice.message)}</div>
                   <div class="notice-footer">
                     <div class="notice-date">
-                      <i class="fas fa-calendar-alt"></i>
-                      ${escapeHtml(formattedDate)}
+                      <i class="fas fa-calendar-alt"></i> ${escapeHtml(formattedDate)}
                     </div>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items:center;">
                       <span class="notice-badge ${badgeClass}">${badgeText}</span>
                       ${priorityBadge}
+                      <button class="bookmark-btn ${bookmarked ? 'active' : ''}" data-resource-id="${rid}" aria-label="Bookmark" style="font-size:1rem;"><i class="fas fa-star"></i></button>
                     </div>
                   </div>
                 </div>
@@ -2030,7 +2557,49 @@
             }
             noticeHTML += `</div>`;
 
-            // Set content
+            // ---- Bookmarks tab ----
+            let bookmarkHTML =
+                `<div class="zone-section"><h4><i class="fas fa-star" style="color:#f1c40f;"></i> Your Bookmarks</h4>`;
+            const allBookmarks = getBookmarks();
+            if (allBookmarks.length === 0) {
+                bookmarkHTML += `<div class="no-data">No bookmarks yet. Star resources to save them here.</div>`;
+            } else {
+                // We need to render all bookmarks across all classes – we'll build a list
+                // Gather all resources from all classes
+                const allResources = [];
+                globalSubjects.forEach(s => allResources.push({ id: getResourceId('study', allResources.length, s.class),
+                        title: s.name, type: 'Study', class: s.class }));
+                globalPapers.forEach(p => allResources.push({ id: getResourceId('paper', allResources.length, p.class),
+                        title: p.subject, type: 'Paper', class: p.class }));
+                globalOthers.forEach(o => allResources.push({ id: getResourceId('other', allResources.length, o.class),
+                        title: o.title, type: 'Other', class: o.class }));
+                globalNotices.forEach((n, i) => {
+                    const cls = n.class || 0;
+                    allResources.push({ id: getResourceId('notice', i, cls), title: n.title, type: 'Notice',
+                    class: cls });
+                });
+
+                const bookmarkedItems = allResources.filter(r => allBookmarks.includes(r.id));
+                if (bookmarkedItems.length === 0) {
+                    bookmarkHTML += `<div class="no-data">No bookmarks match.</div>`;
+                } else {
+                    bookmarkedItems.forEach(item => {
+                        bookmarkHTML += `
+                  <div class="resource-item">
+                    <div class="resource-info">
+                      <i class="fas fa-${item.type === 'Study' ? 'book' : item.type === 'Paper' ? 'file-pdf' : item.type === 'Notice' ? 'bullhorn' : 'paperclip'}"></i>
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <span class="text-muted ms-2">(Class ${item.class === 0 ? 'Global' : item.class})</span>
+                    </div>
+                    <button class="bookmark-btn active" data-resource-id="${item.id}" aria-label="Remove bookmark"><i class="fas fa-star"></i></button>
+                  </div>
+                `;
+                    });
+                }
+            }
+            bookmarkHTML += `</div>`;
+
+            // Inject all
             document.getElementById('studyMaterialsList').innerHTML = studyHTML;
             document.getElementById('previousPapersList').innerHTML = papersHTML;
             document.getElementById('othersList').innerHTML = othersHTML;
@@ -2038,8 +2607,69 @@
             document.getElementById('animatedList').innerHTML = animatedHTML;
             document.getElementById('timetableList').innerHTML = timetableHTML;
             document.getElementById('noticeList').innerHTML = noticeHTML;
+            document.getElementById('bookmarkList').innerHTML = bookmarkHTML;
+
+            // Re-bind bookmark events
+            document.querySelectorAll('.bookmark-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const id = this.dataset.resourceId;
+                    toggleBookmark(id);
+                    this.classList.toggle('active');
+                    // Update progress for the current class
+                    updateProgress(currentClass);
+                    // If we're on the bookmarks tab, re-render it
+                    if (document.querySelector('#bookmarkContent.active')) {
+                        renderDetailPanel(currentClass);
+                        // Re-activate bookmark tab
+                        document.querySelector('[data-bs-target="#bookmarkContent"]')?.classList.add('active');
+                        document.querySelector('#bookmarkContent')?.classList.add('show', 'active');
+                    }
+                });
+            });
+
+            // Update progress for this class: count how many unique resources have been bookmarked OR clicked
+            // We'll count bookmarks as "accessed" for simplicity + clicks on download/access
+            updateProgress(classNum);
         }
 
+        // =================================================================
+        // PROGRESS TRACKING
+        // =================================================================
+        function updateProgress(classNum) {
+            const progressData = JSON.parse(localStorage.getItem('nsm_progress') || '{}');
+            // Count all resources for this class
+            const allRes = [];
+            globalSubjects.filter(s => s.class == classNum).forEach((s, i) => allRes.push(getResourceId('study', i,
+            classNum)));
+            globalPapers.filter(p => p.class == classNum).forEach((p, i) => allRes.push(getResourceId('paper', i,
+            classNum)));
+            globalOthers.filter(o => o.class == classNum).forEach((o, i) => allRes.push(getResourceId('other', i,
+            classNum)));
+            globalNotices.filter(n => n.class == classNum || n.class === 0).forEach((n, i) => allRes.push(getResourceId(
+                'notice', i, classNum)));
+
+            const bookmarks = getBookmarks();
+            let accessed = 0;
+            allRes.forEach(id => { if (bookmarks.includes(id)) accessed++; });
+            progressData[classNum] = accessed;
+            localStorage.setItem('nsm_progress', JSON.stringify(progressData));
+
+            // Update card progress if visible
+            const cards = document.querySelectorAll(`.class-card[data-class="${classNum}"]`);
+            cards.forEach(card => {
+                const total = allRes.length;
+                const pct = total > 0 ? Math.min(100, Math.round((accessed / total) * 100)) : 0;
+                const fill = card.querySelector('.progress-fill');
+                const label = card.querySelector('small');
+                if (fill) fill.style.width = pct + '%';
+                if (label) label.textContent = `${accessed}/${total} accessed`;
+            });
+        }
+
+        // =================================================================
+        // SHOW / HIDE CLASS DETAIL
+        // =================================================================
         function showClassDetail(classNum) {
             document.getElementById('classGridSection').style.display = 'none';
             document.getElementById('classDetailSection').style.display = 'block';
@@ -2047,36 +2677,318 @@
             renderDetailPanel(classNum);
             setGlobalUIVisible(false);
             document.getElementById('classDetailSection').scrollIntoView({ behavior: 'smooth' });
+            // Update hash
+            window.location.hash = `class-${classNum}`;
         }
 
         function backToClasses() {
             document.getElementById('classGridSection').style.display = 'block';
             document.getElementById('classDetailSection').style.display = 'none';
             setGlobalUIVisible(true);
+            window.location.hash = '';
             window.scrollTo({ top: document.getElementById('classGridSection').offsetTop - 100, behavior: 'smooth' });
+            // Re-filter cards with current search
+            const searchVal = document.getElementById('globalSearch').value;
+            renderClassCards(searchVal);
         }
 
-        document.getElementById('backToClassesBtn').addEventListener('click', backToClasses);
-        document.getElementById('classSelect').addEventListener('change', async (e) => {
-            const cls = e.target.value;
-            if (!cls) return;
-            if (globalSubjects.length === 0) await fetchData();
-            showClassDetail(parseInt(cls));
+        // =================================================================
+        // SWIPE SUPPORT FOR TABS
+        // =================================================================
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const tabContainer = document.getElementById('resourceTab');
+
+        tabContainer.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+        tabContainer.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) < 30) return;
+            const tabs = tabContainer.querySelectorAll('.nav-link:not(.disabled)');
+            let activeIdx = -1;
+            tabs.forEach((t, i) => { if (t.classList.contains('active')) activeIdx = i; });
+            if (activeIdx === -1) return;
+            let newIdx = diff > 0 ? activeIdx + 1 : activeIdx - 1;
+            if (newIdx < 0) newIdx = 0;
+            if (newIdx >= tabs.length) newIdx = tabs.length - 1;
+            if (newIdx !== activeIdx) {
+                tabs[newIdx].click();
+            }
+        }, { passive: true });
+
+        // =================================================================
+        // TOGGLE EXAM SUBJECTS (global)
+        // =================================================================
+        function toggleExamSubjects(el) {
+            const body = el.nextElementSibling;
+            if (body.style.display === 'none' || body.style.display === '') {
+                body.style.display = 'block';
+                el.querySelector('.fa-chevron-right').style.transform = 'rotate(90deg)';
+            } else {
+                body.style.display = 'none';
+                el.querySelector('.fa-chevron-right').style.transform = 'rotate(0deg)';
+            }
+        }
+        window.toggleExamSubjects = toggleExamSubjects;
+
+        // =================================================================
+        // RIPPLE EFFECT
+        // =================================================================
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.download-btn, .btn-student-zone, .btn-back, .theme-toggle, .back-to-top');
+            if (!target) return;
+            const rect = target.getBoundingClientRect();
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+            target.style.position = 'relative';
+            target.style.overflow = 'hidden';
+            target.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
         });
 
+        // =================================================================
+        // DARK MODE TOGGLE
+        // =================================================================
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
+
+        function setTheme(dark) {
+            if (dark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeIcon.className = 'fas fa-sun';
+                themeLabel.textContent = 'Light';
+                localStorage.setItem('nsm_theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                themeIcon.className = 'fas fa-moon';
+                themeLabel.textContent = 'Dark';
+                localStorage.setItem('nsm_theme', 'light');
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            setTheme(!isDark);
+        });
+
+        // Load saved theme
+        if (localStorage.getItem('nsm_theme') === 'dark') {
+            setTheme(true);
+        }
+
+        // =================================================================
+        // BACK TO TOP
+        // =================================================================
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) backToTop.classList.add('show');
+            else backToTop.classList.remove('show');
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // =================================================================
+        // SEARCH FUNCTIONALITY
+        // =================================================================
+        const searchInput = document.getElementById('globalSearch');
+        const clearSearch = document.getElementById('clearSearch');
+
+        searchInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if (val.length > 0) {
+                clearSearch.style.display = 'block';
+            } else {
+                clearSearch.style.display = 'none';
+            }
+            // If we are on the class grid, filter cards
+            if (document.getElementById('classGridSection').style.display !== 'none') {
+                renderClassCards(val);
+            } else {
+                // If in detail view, we can filter resources inside the current class
+                // For simplicity, we'll just re-render the detail panel with a filter (not implemented to keep it clean)
+                // But we can at least filter notices and materials via JS – we'll do a simple client-side filter
+                const items = document.querySelectorAll('.resource-item, .notice-card');
+                const search = val.toLowerCase();
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(search)) item.style.display = 'flex';
+                    else item.style.display = 'none';
+                });
+                // Also filter accordion headers
+                document.querySelectorAll('.exam-accordion').forEach(acc => {
+                    const header = acc.querySelector('.exam-header');
+                    const body = acc.querySelector('.exam-body');
+                    if (header && header.textContent.toLowerCase().includes(search)) {
+                        acc.style.display = 'block';
+                    } else if (body && body.textContent.toLowerCase().includes(search)) {
+                        acc.style.display = 'block';
+                    } else {
+                        acc.style.display = 'none';
+                    }
+                });
+            }
+        });
+
+        clearSearch.addEventListener('click', () => {
+            searchInput.value = '';
+            clearSearch.style.display = 'none';
+            searchInput.dispatchEvent(new Event('input'));
+        });
+
+        // =================================================================
+        // SHARE CLASS LINK
+        // =================================================================
+        document.getElementById('shareClassBtn').addEventListener('click', function() {
+            const url = window.location.href.split('#')[0] + '#class-' + currentClass;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    const orig = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => this.innerHTML = orig, 1500);
+                });
+            } else {
+                // fallback
+                const temp = document.createElement('input');
+                temp.value = url;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                temp.remove();
+                const orig = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => this.innerHTML = orig, 1500);
+            }
+        });
+
+        // =================================================================
+        // BOTTOM NAV
+        // =================================================================
+        document.querySelectorAll('.bottom-nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.bottom-nav a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                const target = this.dataset.target;
+                if (target === 'home') {
+                    window.location.href = 'index.html';
+                } else if (target === 'classes') {
+                    backToClasses();
+                } else if (target === 'notices') {
+                    // If in detail, switch to notices tab
+                    if (document.getElementById('classDetailSection').style.display !== 'none') {
+                        const noticeTab = document.querySelector('[data-bs-target="#noticeContent"]');
+                        if (noticeTab) noticeTab.click();
+                    } else {
+                        // If on grid, just scroll to top
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                } else if (target === 'bookmarks') {
+                    if (document.getElementById('classDetailSection').style.display !== 'none') {
+                        const bookmarkTab = document.querySelector('[data-bs-target="#bookmarkContent"]');
+                        if (bookmarkTab) bookmarkTab.click();
+                    } else {
+                        // If on grid, show a toast or alert
+                        alert('Please select a class first to view bookmarks.');
+                    }
+                }
+            });
+        });
+
+        // =================================================================
+        // HASH ROUTING (deep linking)
+        // =================================================================
+        function handleHash() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#class-')) {
+                const cls = parseInt(hash.replace('#class-', ''));
+                if (!isNaN(cls) && cls > 0 && cls <= 10) {
+                    // Wait for data to be loaded
+                    if (dataLoaded) {
+                        showClassDetail(cls);
+                        document.getElementById('classSelect').value = cls;
+                    } else {
+                        // If data not loaded yet, set a one-time listener
+                        const checkData = setInterval(() => {
+                            if (dataLoaded) {
+                                clearInterval(checkData);
+                                showClassDetail(cls);
+                                document.getElementById('classSelect').value = cls;
+                            }
+                        }, 200);
+                    }
+                }
+            }
+        }
+
+        window.addEventListener('hashchange', handleHash);
+
+        // =================================================================
+        // PARALLAX HEADER
+        // =================================================================
+        window.addEventListener('scroll', function() {
+            const header = document.getElementById('parallaxHeader');
+            const scroll = window.scrollY;
+            if (header) {
+                header.style.backgroundPositionY = (scroll * 0.2) + 'px';
+            }
+        });
+
+        // =================================================================
+        // INIT
+        // =================================================================
         (async function init() {
-            await fetchData();
-            renderClassCards();
+            renderSkeletons();
+            const loaded = await fetchData();
+            if (loaded) {
+                renderClassCards();
+                // Check hash after data is loaded
+                handleHash();
+                // Update last updated
+                const stored = localStorage.getItem('nsm_last_updated');
+                if (stored) document.getElementById('lastUpdated').textContent = 'Last updated: ' + stored;
+            }
             document.getElementById("year").textContent = new Date().getFullYear();
             AOS.init({ duration: 800, once: true, easing: 'ease-out' });
-            window.addEventListener('scroll', () => document.querySelector('.navbar')?.classList.toggle('scrolled', window
-                .scrollY > 20));
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 20);
+            });
+
+            // Newsletter
             document.querySelector('.newsletter-form button')?.addEventListener('click', () => {
                 const email = document.querySelector('.newsletter-form input')?.value;
-                if (email) { alert('Thank you for subscribing!');
-                    document.querySelector('.newsletter-form input').value = ''; }
+                if (email) {
+                    alert('Thank you for subscribing!');
+                    document.querySelector('.newsletter-form input').value = '';
+                }
             });
+
+            // Back to classes button
+            document.getElementById('backToClassesBtn').addEventListener('click', backToClasses);
+
+            // Class select dropdown
+            document.getElementById('classSelect').addEventListener('change', async (e) => {
+                const cls = e.target.value;
+                if (!cls) return;
+                if (!dataLoaded) await fetchData();
+                showClassDetail(parseInt(cls));
+                window.location.hash = `class-${cls}`;
+            });
+
+            // Re-render bookmarks when tab is shown
+            document.querySelector('[data-bs-target="#bookmarkContent"]')?.addEventListener('shown.bs.tab', function() {
+                if (currentClass) renderDetailPanel(currentClass);
+            });
+
         })();
     </script>
+
 </body>
 </html>
