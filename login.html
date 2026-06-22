@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* (All your existing CSS – keep as is – we reuse the same styles) */
+        /* Your existing CSS – unchanged (same as before) */
         * { font-family: 'Anek Malayalam', 'Inter', sans-serif; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Anek Malayalam', 'Inter', sans-serif; background:radial-gradient(circle at 10% 20%, rgba(15,25,55,0.95), rgba(5,10,30,0.98)); min-height:100vh; position:relative; overflow-x:hidden; }
@@ -185,7 +185,7 @@
             <div class="action-tile" onclick="showMoralValuesModal()"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-hand-holding-heart fa-2x text-warning"></i></div><h6 class="text-white">Moral Values</h6><small class="text-white-50">Character report</small></div>
             <div class="action-tile" onclick="showProfileCard()"><div class="bg-secondary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-user-astronaut fa-2x text-secondary"></i></div><h6 class="text-white">Profile</h6><small class="text-white-50">Personal info</small></div>
             <div class="action-tile" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-trophy fa-2x text-warning"></i></div><h6 class="text-white">🏆 Topper Poster</h6><small class="text-white-50">Download certificate</small></div>
-            <div class="action-tile" onclick="window.location.href='student_zone.html'"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">📚 Study Zone</h6><small class="text-white-50">Notes & Resources</small></div>
+            <div class="action-tile" onclick="window.location.href='student-zone.html'"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">📚 Study Zone</h6><small class="text-white-50">Notes & Resources</small></div>
         </div>
 
         <!-- Activity & Events -->
@@ -284,7 +284,7 @@
 <!-- ===================== JAVASCRIPT ===================== -->
 <script>
 // ==================== CONFIG ====================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMVCW63Aj9LKNaHSG7dgIR0gl5MJOeqpIt9-aQ7Lkb9iCn4qxXiQGMaqr4mZfqaFpD/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzqYar76spXD7uoKSUIYDvtEq2tOWAguQeodlnei7xbq6ukd-QtekJqSaKH7FwM8LNK/exec';
 
 // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
 const STUDENT_DATA = {
@@ -320,22 +320,33 @@ function showToast(message, type = 'success') {
 function formatDate(dateValue) {
     if (!dateValue) return '';
     try {
-        // Check if it looks like an ISO string or a date-only string
         let d = new Date(dateValue);
-        // If the date is invalid, return the original
         if (isNaN(d)) return dateValue;
-        // Check if the original string is a plain date like "2006-05-15" (no time)
-        // We want to show just the date for DOB, and date+time for live feed.
-        // We can decide based on whether the string contains 'T' or not.
         if (typeof dateValue === 'string' && !dateValue.includes('T')) {
-            // Plain date string – show only date
             const options = { year: 'numeric', month: 'short', day: 'numeric' };
             return d.toLocaleString('en-US', options);
         } else {
-            // Full ISO timestamp – show date + time
             const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
             return d.toLocaleString('en-US', options);
         }
+    } catch (e) {
+        return dateValue;
+    }
+}
+
+// ==================== MONTH/YEAR FORMATTER ====================
+function formatMonthYear(dateValue) {
+    if (!dateValue) return '';
+    try {
+        let d = new Date(dateValue);
+        if (isNaN(d)) {
+            // If it's already a string like "Mar 2025", try to parse
+            // If it contains a slash, maybe it's already formatted.
+            return dateValue;
+        }
+        const month = d.toLocaleString('en-US', { month: 'short' });
+        const year = d.getFullYear();
+        return `${month}/${year}`;
     } catch (e) {
         return dateValue;
     }
@@ -367,7 +378,6 @@ function updateDashboardUI() {
 
 // ==================== LOAD ACTIVITIES & EVENTS ====================
 async function loadActivitiesAndCalendar() {
-    // -------- Live Feed (student-specific) --------
     try {
         const feedUrl = `${SCRIPT_URL}?action=livefeed&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
         const resp = await fetch(feedUrl);
@@ -391,14 +401,13 @@ async function loadActivitiesAndCalendar() {
         loadDefaultFeed();
     }
 
-    // -------- Events --------
     try {
         const url = `${SCRIPT_URL}?action=events&t=${Date.now()}`;
         const resp = await fetch(url);
         const data = await resp.json();
         if (data.result === 'success' && data.events && data.events.length > 0) {
             const calHtml = data.events.map(ev => {
-                const displayDate = formatDate(ev.date); // format if ISO, else leave as is
+                const displayDate = formatDate(ev.date);
                 return `<div class="glass-card p-3"><div class="d-flex justify-content-between"><span class="text-warning fw-bold">${displayDate}</span><i class="fas fa-bell text-info"></i></div><div class="text-white fw-semibold mt-1">${ev.title}</div><small class="text-white-50">${ev.desc || ''}</small></div>`;
             }).join('');
             document.getElementById('calendarEventsList').innerHTML = calHtml;
@@ -453,7 +462,6 @@ function showResultsModal() {
                 </div>
             </div>
             <div class="mt-4">
-                <!-- ✅ Now opens in the same window (no target="_blank") -->
                 <a href="result.html" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color: #3b82f6; color: #3b82f6; font-weight:600; text-decoration:none;">
                     <i class="fas fa-external-link-alt me-2"></i> Access Full Results Page
                 </a>
@@ -484,8 +492,7 @@ async function fetchAttendanceRecords() {
 
         if (data.result === 'success' && data.records && data.records.length > 0) {
             let recordsHtml = data.records.map(rec => {
-                // ✅ Format the month/date using formatDate()
-                const displayMonth = formatDate(rec.month);
+                const displayMonth = formatMonthYear(rec.month);
                 return `<li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
                     <span class="text-white">${displayMonth}</span>
                     <span class="badge bg-success">${rec.percentage}%</span>
@@ -530,12 +537,12 @@ async function fetchAttendanceRecords() {
                 <h6 class="text-white">Monthly Breakdown (sample)</h6>
                 <ul class="list-unstyled">
                     <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
-                        <span class="text-white">March 2025</span>
+                        <span class="text-white">Mar/2025</span>
                         <span class="badge bg-success">100%</span>
                         <span class="text-white-50 small">18/18 days</span>
                     </li>
                     <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
-                        <span class="text-white">February 2025</span>
+                        <span class="text-white">Feb/2025</span>
                         <span class="badge bg-warning">91%</span>
                         <span class="text-white-50 small">20/22 days</span>
                     </li>
