@@ -6,15 +6,17 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>NOORUSSALAM MADRASA | Student Portal</title>
+    <!-- Anek Malayalam font -->
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Topper Poster Libraries -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- (All your existing CSS here – keep as is) -->
     <style>
+        /* (All your existing CSS – keep as is) */
         * { font-family: 'Anek Malayalam', 'Inter', sans-serif; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Anek Malayalam', 'Inter', sans-serif; background:radial-gradient(circle at 10% 20%, rgba(15,25,55,0.95), rgba(5,10,30,0.98)); min-height:100vh; position:relative; overflow-x:hidden; }
@@ -136,6 +138,7 @@
 <!-- ===================== DASHBOARD ===================== -->
 <div id="dashboardSection" style="display:none;">
     <div class="container">
+        <!-- Header -->
         <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <div class="avatar-neon" id="avatarInitials">SK</div>
@@ -316,6 +319,19 @@ function showToast(message, type = 'success') {
     setTimeout(() => { toastDiv.style.opacity = '0'; setTimeout(() => toastDiv.remove(), 500); }, 3000);
 }
 
+// ==================== DATE FORMATTER ====================
+function formatDate(isoString) {
+    if (!isoString) return '';
+    try {
+        const d = new Date(isoString);
+        if (isNaN(d)) return isoString;
+        const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+        return d.toLocaleString('en-US', options);
+    } catch (e) {
+        return isoString;
+    }
+}
+
 // ==================== UPDATE DASHBOARD UI ====================
 function updateDashboardUI() {
     if (!currentUser) return;
@@ -340,7 +356,7 @@ function updateDashboardUI() {
     if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block'; else topperTile.style.display = 'none';
 }
 
-// ==================== LOAD ACTIVITIES & EVENTS (with Live Feed) ====================
+// ==================== LOAD ACTIVITIES & EVENTS (with formatted dates) ====================
 async function loadActivitiesAndCalendar() {
     // -------- Live Feed (student-specific) --------
     try {
@@ -348,15 +364,16 @@ async function loadActivitiesAndCalendar() {
         const resp = await fetch(feedUrl);
         const data = await resp.json();
         if (data.result === 'success' && data.feed && data.feed.length > 0) {
-            const feedHtml = data.feed.map(item =>
-                `<li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3">
+            const feedHtml = data.feed.map(item => {
+                const displayTime = formatDate(item.timestamp);
+                return `<li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3">
                     <i class="fas fa-circle text-primary mt-1" style="font-size:0.6rem;"></i>
                     <div>
                         <div class="text-white">${item.activity}</div>
-                        <small class="text-white-50">${item.description} • ${item.timestamp}</small>
+                        <small class="text-white-50">${item.description} • ${displayTime}</small>
                     </div>
-                </li>`
-            ).join('');
+                </li>`;
+            }).join('');
             document.getElementById('activityFeedList').innerHTML = feedHtml;
         } else {
             loadDefaultFeed();
@@ -426,7 +443,7 @@ function showResultsModal() {
                 </div>
             </div>
             <div class="mt-4">
-                <a href="results.html" target="_blank" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color: #3b82f6; color: #3b82f6; font-weight:600; text-decoration:none;">
+                <a href="result.html" target="_blank" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color: #3b82f6; color: #3b82f6; font-weight:600; text-decoration:none;">
                     <i class="fas fa-external-link-alt me-2"></i> Access Full Results Page
                 </a>
             </div>
