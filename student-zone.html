@@ -13,7 +13,7 @@
 
     <style>
         /* ============================================================
-               ROOT VARIABLES (Light & Dark themes)
+               ROOT VARIABLES (Default Dark Theme)
                ============================================================ */
         :root {
             --primary: #0a194f;
@@ -32,25 +32,12 @@
             --section-text: #0a194f;
             --muted-text: rgba(255, 255, 255, 0.6);
             --footer-bg: linear-gradient(135deg, var(--primary), var(--secondary));
-            --subject-color: #2563eb; /* Bright blue for subjects */
-        }
-
-        /* Dark mode overrides */
-        [data-theme="dark"] {
-            --bg-body: #0a0f1f;
-            --text-body: #e2e8f0;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.08);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            --section-bg: rgba(20, 30, 60, 0.95);
-            --section-text: #e2e8f0;
-            --muted-text: rgba(255, 255, 255, 0.5);
-            --footer-bg: linear-gradient(135deg, #050a1a, #0a194f);
-            --subject-color: #60a5fa; /* Lighter blue for dark mode */
+            --subject-color: #2563eb;
+            --gradient-1: linear-gradient(135deg, #0a194f 0%, #1a3b8f 50%, #3a8df3 100%);
         }
 
         /* ============================================================
-               GLOBAL RESET & BASE
+               GLOBAL RESET
                ============================================================ */
         * {
             margin: 0;
@@ -67,13 +54,13 @@
             background: var(--bg-body);
             color: var(--text-body);
             overflow-x: hidden;
-            padding-top: 80px;
             min-height: 100vh;
+            padding-top: 0;
             transition: background 0.3s ease, color 0.3s ease;
         }
 
         /* ============================================================
-               CUSTOM SCROLLBAR
+               SCROLLBAR
                ============================================================ */
         ::-webkit-scrollbar {
             width: 8px;
@@ -92,7 +79,7 @@
         }
 
         /* ============================================================
-               ANIMATED BACKGROUND (enhanced)
+               ANIMATED BACKGROUND
                ============================================================ */
         body::before {
             content: '';
@@ -216,396 +203,16 @@
         }
 
         /* ============================================================
-               NAVBAR (glass + dark mode toggle)
-               ============================================================ */
-        .navbar {
-            background: rgba(10, 25, 79, 0.85);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            transition: all 0.4s ease;
-            padding: 12px 0;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-        }
-        [data-theme="dark"] .navbar {
-            background: rgba(5, 10, 26, 0.92);
-        }
-        .navbar.scrolled {
-            background: rgba(10, 25, 79, 0.98);
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-            padding: 8px 0;
-        }
-        .logo-container {
-            position: relative;
-            display: inline-block;
-        }
-        .logo-img {
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            z-index: 2;
-            border: 2px solid var(--accent);
-        }
-        .logo-glow {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border-radius: 50%;
-            z-index: 1;
-        }
-        .navbar-brand:hover .logo-img {
-            transform: scale(1.08) rotate(3deg);
-        }
-        .navbar-brand:hover .logo-glow {
-            opacity: 0.3;
-        }
-        .nav-icon {
-            position: relative;
-            display: flex;
-            align-items: center;
-            padding: 10px 16px !important;
-            margin: 0 4px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            overflow: hidden;
-            color: white !important;
-            text-decoration: none !important;
-        }
-        .nav-icon i {
-            margin-right: 10px;
-            font-size: 1.1rem;
-            width: 24px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        .nav-icon span {
-            position: relative;
-            z-index: 2;
-            font-weight: 500;
-        }
-        .nav-hover-effect {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(58, 141, 243, 0.12), transparent);
-            transition: left 0.6s ease;
-            z-index: 1;
-        }
-        .nav-icon:hover {
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-2px);
-        }
-        .nav-icon:hover .nav-hover-effect {
-            left: 100%;
-        }
-        .nav-icon:hover i {
-            color: var(--accent) !important;
-            transform: scale(1.2);
-        }
-
-        /* Dark mode toggle button */
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: white;
-            border-radius: 40px;
-            padding: 6px 14px;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .theme-toggle:hover {
-            background: var(--accent);
-            color: var(--primary);
-            transform: scale(1.05);
-        }
-        .theme-toggle .toggle-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Notification badge */
-        .notification-badge {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: linear-gradient(135deg, #ff4757, #ff3838);
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 700;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: badgePulse 2s infinite;
-        }
-        @keyframes badgePulse {
-            0%,
-            100% {
-                transform: scale(1);
-                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
-            }
-            50% {
-                transform: scale(1.1);
-                box-shadow: 0 0 0 5px rgba(255, 71, 87, 0);
-            }
-        }
-
-        /* Dropdown styles (abbreviated – same as original) */
-        .dropdown-menu {
-            background: rgba(10, 25, 79, 0.98);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(58, 141, 243, 0.3);
-            border-radius: 12px;
-            padding: 8px 0;
-            margin-top: 10px;
-            min-width: 280px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            animation: dropdownSlide 0.3s ease;
-        }
-        @keyframes dropdownSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        .dropdown-item {
-            color: #f8f9fa !important;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin: 4px 8px;
-            transition: all 0.3s ease;
-            text-decoration: none !important;
-        }
-        .dropdown-item:hover {
-            background: rgba(58, 141, 243, 0.15) !important;
-            transform: translateX(5px);
-        }
-        .dropdown-item-content {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .dropdown-item-content i {
-            font-size: 1.2rem;
-            color: var(--accent);
-            width: 30px;
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-        .dropdown-item:hover .dropdown-item-content i {
-            transform: scale(1.2);
-        }
-        .dropdown-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: white;
-        }
-        .dropdown-sub {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 2px;
-        }
-        .dropdown-divider {
-            border-color: rgba(58, 141, 243, 0.2);
-            margin: 6px 20px;
-        }
-        .student-dropdown-normalized {
-            width: 320px;
-            padding: 0;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-        }
-        .dropdown-header {
-            padding: 20px;
-            background: rgba(58, 141, 243, 0.05);
-            border-bottom: 1px solid rgba(58, 141, 243, 0.1);
-        }
-        .dropdown-header h6 {
-            color: var(--accent);
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        .dropdown-header small {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
-        }
-        .primary-action {
-            background: linear-gradient(135deg, rgba(10, 25, 79, 0.9), rgba(18, 47, 122, 0.9));
-            margin: 0;
-            padding: 16px 20px;
-            border-radius: 0;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            display: block !important;
-            text-decoration: none !important;
-        }
-        .primary-action::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--accent);
-        }
-        .primary-action:hover {
-            background: linear-gradient(135deg, rgba(18, 47, 122, 0.9), rgba(10, 25, 79, 0.9));
-            transform: none;
-            padding-left: 25px;
-        }
-        .result-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent), #5c9dff);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-            font-size: 1.2rem;
-        }
-        .action-title {
-            font-weight: 600;
-            color: white;
-            font-size: 1rem;
-            margin-bottom: 2px;
-        }
-        .action-desc {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
-        }
-        .dropdown-actions {
-            padding: 15px 20px;
-        }
-        .dropdown-action-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            text-decoration: none !important;
-            transition: all 0.3s ease;
-            background: transparent;
-            color: white !important;
-        }
-        .dropdown-action-item:hover {
-            background: rgba(58, 141, 243, 0.1);
-            transform: translateX(5px);
-        }
-        .dropdown-action-item .action-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background: rgba(58, 141, 243, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent);
-            font-size: 1rem;
-        }
-        .action-arrow {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-        }
-        .dropdown-action-item:hover .action-arrow {
-            color: var(--accent);
-            transform: translateX(3px);
-        }
-        .enter-badge {
-            background: linear-gradient(135deg, var(--accent), #5c9dff);
-            color: var(--primary);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            box-shadow: 0 2px 8px rgba(58, 141, 243, 0.3);
-            transition: all 0.3s ease;
-        }
-        .dropdown-action-item:hover .enter-badge {
-            transform: scale(1.1);
-            box-shadow: 0 4px 12px rgba(58, 141, 243, 0.4);
-        }
-
-        @media (max-width: 992px) {
-            body {
-                padding-top: 70px;
-            }
-            .navbar-nav {
-                padding: 10px 0 !important;
-                max-height: 70vh;
-                overflow-y: auto;
-            }
-            .nav-item {
-                width: 100%;
-                margin: 0 !important;
-            }
-            .nav-icon {
-                margin: 2px 0 !important;
-                padding: 14px 20px !important;
-                justify-content: flex-start;
-                width: 100%;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            .navbar-collapse {
-                background: rgba(10, 25, 79, 0.99);
-                border-radius: 0 0 12px 12px;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                z-index: 1050;
-            }
-            .dropdown-menu {
-                position: static !important;
-                width: 100% !important;
-                background: rgba(18, 47, 122, 0.95) !important;
-            }
-            .student-dropdown-normalized {
-                width: 100% !important;
-            }
-            .notification-badge {
-                position: relative !important;
-                margin-left: 10px;
-            }
-            .theme-toggle .toggle-label {
-                display: none;
-            }
-        }
-
-        /* ============================================================
-               HEADER (parallax + search)
+               HEADER
                ============================================================ */
         .student-zone-header {
             background: var(--gradient-1);
             color: #fff;
-            padding: 120px 0 80px;
+            padding: 80px 0 60px;
             text-align: center;
             position: relative;
             overflow: hidden;
-            margin-bottom: 50px;
+            margin-bottom: 40px;
             transition: background 0.3s ease;
         }
         .student-zone-header::before {
@@ -657,12 +264,45 @@
             }
         }
         .student-zone-header .lead {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            font-weight: 400;
             opacity: 0.9;
-            font-weight: 300;
             animation: fadeDown 1s ease 0.2s both;
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.9);
+            min-height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-family: 'Anek Malayalam', 'Poppins', sans-serif;
         }
+        /* English tagline specific styles (larger & bold) */
+        .student-zone-header .lead.is-english .typewriter-text {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: font-size 0.2s ease, font-weight 0.2s ease;
+        }
+        .student-zone-header .lead .typewriter-text {
+            display: inline-block;
+            white-space: pre-wrap;
+            word-break: break-word;
+            transition: font-size 0.2s ease, font-weight 0.2s ease;
+        }
+        .student-zone-header .lead .cursor {
+            display: inline-block;
+            width: 3px;
+            height: 1.2em;
+            background-color: rgba(255, 255, 255, 0.8);
+            margin-left: 2px;
+            animation: blink 0.7s step-end infinite;
+            vertical-align: text-bottom;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
         @keyframes fadeDown {
             from {
                 opacity: 0;
@@ -673,55 +313,47 @@
                 transform: translateY(0);
             }
         }
-
-        /* Search bar in header */
-        .header-search {
-            max-width: 500px;
-            margin: 24px auto 0;
-            position: relative;
+        .header-decoration {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
             animation: fadeDown 1s ease 0.4s both;
         }
-        .header-search input {
-            width: 100%;
-            padding: 14px 20px 14px 50px;
-            border-radius: 60px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            background: rgba(255, 255, 255, 0.10);
-            backdrop-filter: blur(8px);
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+        .header-decoration span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: 0.6;
+            animation: pulse-dot 2s ease-in-out infinite;
         }
-        .header-search input::placeholder {
-            color: rgba(255, 255, 255, 0.6);
+        .header-decoration span:nth-child(2) {
+            animation-delay: 0.3s;
+            background: #5c9dff;
         }
-        .header-search input:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 4px rgba(58, 141, 243, 0.25);
-            background: rgba(255, 255, 255, 0.18);
+        .header-decoration span:nth-child(3) {
+            animation-delay: 0.6s;
+            background: #7bb3ff;
         }
-        .header-search .search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 1.1rem;
+        .header-decoration span:nth-child(4) {
+            animation-delay: 0.9s;
+            background: #5c9dff;
         }
-        .header-search .clear-search {
-            position: absolute;
-            right: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            display: none;
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
+        .header-decoration span:nth-child(5) {
+            animation-delay: 1.2s;
+            background: var(--accent);
         }
-        .header-search .clear-search:hover {
-            color: white;
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                transform: scale(0.8);
+                opacity: 0.4;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
         }
 
         /* ============================================================
@@ -778,7 +410,7 @@
         }
 
         /* ============================================================
-               CLASS CARDS (with tilt, progress, skeleton)
+               CLASS CARDS
                ============================================================ */
         .class-card {
             background: var(--card-bg);
@@ -879,7 +511,6 @@
             color: rgba(255, 255, 255, 0.15);
             letter-spacing: 1px;
         }
-        /* Progress bar on cards */
         .class-card .progress-track {
             width: 100%;
             height: 4px;
@@ -895,8 +526,6 @@
             width: 0%;
             transition: width 0.6s ease;
         }
-
-        /* Skeleton loading */
         .skeleton-card {
             background: var(--card-bg);
             border-radius: 20px;
@@ -936,7 +565,7 @@
         }
 
         /* ============================================================
-               DETAIL PANEL (glass 2.0)
+               DETAIL PANEL
                ============================================================ */
         .class-detail-panel {
             background: rgba(15, 30, 75, 0.85);
@@ -996,7 +625,7 @@
         }
 
         /* ============================================================
-               TABS (with swipe support)
+               TABS
                ============================================================ */
         .nav-tabs-resources {
             display: flex;
@@ -1046,8 +675,6 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
-        /* Tab panes with smooth fade */
         .tab-pane {
             transition: opacity 0.25s ease, transform 0.25s ease;
         }
@@ -1061,7 +688,7 @@
         }
 
         /* ============================================================
-               RESOURCE SECTIONS (glass)
+               RESOURCE SECTIONS
                ============================================================ */
         .zone-section {
             background: var(--section-bg);
@@ -1085,7 +712,6 @@
             color: var(--accent);
             font-size: 1.3rem;
         }
-
         .resource-item {
             background: #f0f7ff;
             border-left: 4px solid var(--accent);
@@ -1098,17 +724,10 @@
             transition: all 0.3s ease;
             position: relative;
         }
-        [data-theme="dark"] .resource-item {
-            background: rgba(255, 255, 255, 0.06);
-            color: #e2e8f0;
-        }
         .resource-item:hover {
             background: #e5f0ff;
             transform: translateX(6px);
             box-shadow: 0 2px 12px rgba(58, 141, 243, 0.12);
-        }
-        [data-theme="dark"] .resource-item:hover {
-            background: rgba(58, 141, 243, 0.15);
         }
         .resource-item i {
             color: var(--accent);
@@ -1151,8 +770,6 @@
         .download-btn i {
             margin-right: 4px;
         }
-
-        /* Bookmark star */
         .bookmark-btn {
             background: none;
             border: none;
@@ -1171,11 +788,6 @@
             color: #f1c40f;
             text-shadow: 0 0 20px rgba(241, 196, 15, 0.4);
         }
-        [data-theme="dark"] .bookmark-btn {
-            color: rgba(255, 255, 255, 0.25);
-        }
-
-        /* "New" badge on notices */
         .badge-new {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
@@ -1200,7 +812,7 @@
         }
 
         /* ============================================================
-               NOTICE BOARD (justified fonts)
+               NOTICE BOARD
                ============================================================ */
         .notice-card {
             background: var(--section-bg);
@@ -1378,6 +990,12 @@
             height: 20px;
             background: rgba(46, 213, 115, 0.2);
         }
+        /* Override for Authorized text – ensure black */
+        .verified-badge .authorized-text {
+            font-weight: 400;
+            font-size: 0.8rem;
+            color: #000 !important;
+        }
 
         /* ============================================================
                EXAM ACCORDION
@@ -1429,11 +1047,6 @@
             color: #856404;
             font-weight: 500;
             border: 1px solid #ffecb3;
-        }
-        [data-theme="dark"] .no-data {
-            background: rgba(255, 193, 7, 0.1);
-            color: #ffc107;
-            border-color: rgba(255, 193, 7, 0.2);
         }
         .coming-soon-box {
             font-family: 'Anek Malayalam', sans-serif;
@@ -1500,17 +1113,9 @@
             font-weight: 500;
             background: #f8faff;
         }
-        [data-theme="dark"] .timetable-wrapper table td {
-            background: rgba(255, 255, 255, 0.04);
-            color: #e2e8f0;
-            border-color: rgba(255, 255, 255, 0.08);
-        }
         .timetable-wrapper table td:first-child {
             font-weight: 600;
             background: #e8f0fe;
-        }
-        [data-theme="dark"] .timetable-wrapper table td:first-child {
-            background: rgba(58, 141, 243, 0.15);
         }
         .timetable-wrapper table td.empty {
             color: #adb5bd;
@@ -1650,9 +1255,6 @@
             z-index: 1050;
             transition: background 0.3s ease;
         }
-        [data-theme="dark"] .bottom-nav {
-            background: rgba(5, 10, 26, 0.96);
-        }
         .bottom-nav a {
             color: rgba(255, 255, 255, 0.5);
             text-decoration: none;
@@ -1693,16 +1295,146 @@
         }
 
         /* ============================================================
+               SUBJECT FONT COLOR
+               ============================================================ */
+        .subject-name {
+            color: var(--subject-color);
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .exam-name {
+            font-family: 'Anek Malayalam', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--subject-color);
+        }
+
+        /* ============================================================
+               RIPPLE EFFECT
+               ============================================================ */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple-anim 0.6s linear;
+            pointer-events: none;
+        }
+        @keyframes ripple-anim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ============================================================
+               RESPONSIVE
+               ============================================================ */
+        @media (max-width: 768px) {
+            .student-zone-header {
+                padding: 60px 0 40px;
+            }
+            .student-zone-header h1 {
+                font-size: 2.2rem;
+            }
+            .student-zone-header .lead {
+                font-size: 1.15rem;
+                min-height: 2.8rem;
+            }
+            .student-zone-header .lead.is-english .typewriter-text {
+                font-size: 1.6rem;
+            }
+            .class-selector {
+                flex-direction: column;
+                padding: 16px 20px;
+                border-radius: 30px;
+                gap: 10px;
+                width: 100%;
+                max-width: 320px;
+            }
+            .class-selector select {
+                width: 100%;
+                min-width: unset;
+            }
+            .zone-section {
+                padding: 20px;
+            }
+            .resource-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            .download-btn {
+                align-self: flex-start;
+            }
+            .nav-tabs-resources .nav-link {
+                font-size: 0.75rem;
+                padding: 6px 14px;
+            }
+            .coming-soon-badge {
+                font-size: 0.45rem;
+                padding: 1px 5px;
+            }
+            .resources-section {
+                padding: 30px 20px;
+            }
+            .class-detail-panel {
+                padding: 1.2rem;
+            }
+            .notice-card {
+                padding: 16px 18px;
+            }
+            .notice-card .notice-title {
+                font-size: 1rem;
+            }
+            .notice-card .notice-message {
+                font-size: 0.85rem;
+            }
+            .notice-card .notice-badge {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-top: 8px;
+                display: inline-block;
+            }
+            .notice-card .notice-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+        @media (max-width: 576px) {
+            .student-zone-header h1 {
+                font-size: 1.8rem;
+            }
+            .student-zone-header .lead {
+                font-size: 1rem;
+                min-height: 2.5rem;
+            }
+            .student-zone-header .lead.is-english .typewriter-text {
+                font-size: 1.3rem;
+            }
+            .class-card {
+                padding: 25px 15px;
+            }
+            .class-card .card-icon {
+                width: 55px;
+                height: 55px;
+            }
+            .class-card i {
+                font-size: 26px;
+            }
+        }
+
+        /* ============================================================
                FOOTER
                ============================================================ */
         .modern-footer {
-            background: var(--footer-bg);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             padding: 60px 0 20px;
-            transition: background 0.3s ease;
         }
-        .modern-footer h4,
-        .modern-footer h5 {
+        .modern-footer h4, .modern-footer h5 {
             color: var(--accent);
             font-weight: 700;
         }
@@ -1775,127 +1507,28 @@
             padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .last-updated {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8rem;
-        }
 
-        /* ============================================================
-               SUBJECT FONT COLOR (Blue / Black adaptive)
-               ============================================================ */
-        .subject-name {
-            color: var(--subject-color);
-            font-family: 'Anek Malayalam', sans-serif;
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
-        .exam-name {
-            font-family: 'Anek Malayalam', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            color: var(--subject-color);
-        }
-
-        /* ============================================================
-               RIPPLE EFFECT
-               ============================================================ */
-        .ripple {
-            position: absolute;
+        .whatsapp-float {
+            position: fixed;
+            width: 48px;
+            height: 48px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #25d366;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(0);
-            animation: ripple-anim 0.6s linear;
-            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
         }
-        @keyframes ripple-anim {
-            to {
-                transform: scale(4);
-                opacity: 0;
-            }
+        .whatsapp-float:hover {
+            transform: scale(1.1);
         }
 
-        /* ============================================================
-               RESPONSIVE TWEAKS
-               ============================================================ */
-        @media (max-width: 768px) {
-            .student-zone-header {
-                padding: 80px 0 40px;
-            }
-            .student-zone-header h1 {
-                font-size: 2.2rem;
-            }
-            .class-selector {
-                flex-direction: column;
-                padding: 16px 20px;
-                border-radius: 30px;
-                gap: 10px;
-                width: 100%;
-                max-width: 320px;
-            }
-            .class-selector select {
-                width: 100%;
-                min-width: unset;
-            }
-            .zone-section {
-                padding: 20px;
-            }
-            .resource-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-            .download-btn {
-                align-self: flex-start;
-            }
-            .nav-tabs-resources .nav-link {
-                font-size: 0.75rem;
-                padding: 6px 14px;
-            }
-            .coming-soon-badge {
-                font-size: 0.45rem;
-                padding: 1px 5px;
-            }
-            .resources-section {
-                padding: 30px 20px;
-            }
-            .class-detail-panel {
-                padding: 1.2rem;
-            }
-            .notice-card {
-                padding: 16px 18px;
-            }
-            .notice-card .notice-title {
-                font-size: 1rem;
-            }
-            .notice-card .notice-message {
-                font-size: 0.85rem;
-            }
-            .notice-card .notice-badge {
-                position: relative;
-                top: auto;
-                right: auto;
-                margin-top: 8px;
-                display: inline-block;
-            }
-            .notice-card .notice-footer {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-        @media (max-width: 576px) {
-            .student-zone-header h1 {
-                font-size: 1.8rem;
-            }
-            .class-card {
-                padding: 25px 15px;
-            }
-            .class-card .card-icon {
-                width: 55px;
-                height: 55px;
-            }
-            .class-card i {
-                font-size: 26px;
-            }
+        .hide-on-detail {
+            transition: opacity 0.4s ease;
         }
     </style>
 </head>
@@ -1911,87 +1544,16 @@
     </div>
 
     <!-- ============================================================
-    NAVBAR (with Dark Mode toggle & Search)
-    ============================================================ -->
-    <nav id="mainNavbar" class="navbar navbar-expand-lg navbar-dark shadow-sm fixed-top hide-on-detail">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="#">
-                <div class="logo-container">
-                    <img src="https://i.ibb.co/GmW5YpC/LOGO-NSM-copy.png" alt="NSM Logo" width="50" class="logo-img">
-                    <div class="logo-glow"></div>
-                </div>
-                <div>
-                    <span class="fw-bold" style="font-size: 1.1rem;">NSM</span>
-                    <small class="d-block" style="font-size: 0.75rem; opacity: 0.8;">Kambippalam</small>
-                </div>
-            </a>
-            <div class="d-flex align-items-center gap-2">
-                <!-- Dark Mode Toggle -->
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-                    <i class="fas fa-moon" id="themeIcon"></i>
-                    <span class="toggle-label" id="themeLabel">Dark</span>
-                </button>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-                    <span class="navbar-toggler-icon"></span>
-                    <span class="toggler-text">Menu</span>
-                </button>
-            </div>
-            <div class="collapse navbar-collapse" id="navMenu">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-                    <!-- Home -->
-                    <li class="nav-item"><a class="nav-link nav-icon active" href="index.html"><i class="fas fa-home"></i><span>Home</span><div class="nav-hover-effect"></div></a></li>
-                    <!-- Board Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link nav-icon dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-users"></i><span>Board</span><div class="nav-hover-effect"></div></a>
-                        <ul class="dropdown-menu dropdown-menu-dark">
-                            <li><a class="dropdown-item" href="faculties.html"><div class="dropdown-item-content"><i class="fas fa-chalkboard-teacher"></i><div><div class="dropdown-title">Staff</div><div class="dropdown-sub">Faculty & Administration</div></div></div></a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="pta.html"><div class="dropdown-item-content"><i class="fas fa-handshake"></i><div><div class="dropdown-title">PTA</div><div class="dropdown-sub">Parent Teacher Association</div></div></div></a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-graduation-cap"></i><div><div class="dropdown-title">Alumni</div><div class="dropdown-sub">Former Students Network</div></div></div></a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="maintenance.html"><div class="dropdown-item-content"><i class="fas fa-users"></i><div><div class="dropdown-title">SKSBV</div><div class="dropdown-sub">Samastha Kerala Sunni Bala vedhi Unit</div></div></div></a></li>
-                        </ul>
-                    </li>
-                    <!-- Student Zone Dropdown -->
-                    <li class="nav-item dropdown student-zone-nav">
-                        <a class="nav-link nav-icon student-zone-btn dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user-graduate"></i><span>Student Zone</span><div class="nav-hover-effect"></div><span class="notification-badge">3</span></a>
-                        <div class="dropdown-menu dropdown-menu-dark student-dropdown-normalized">
-                            <div class="dropdown-header"><h6 class="mb-0">Student Portal</h6><small>Access student resources and services</small></div>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item primary-action" href="result.html"><div class="d-flex align-items-center justify-content-between"><div class="d-flex align-items-center"><div class="action-icon result-icon"><i class="fas fa-chart-line"></i></div><div class="ms-3"><div class="action-title">Check Results</div><div class="action-desc">View academic performance</div></div></div><span class="badge bg-success ms-2">Live</span></div></a>
-                            <div class="dropdown-divider"></div>
-                            <div class="dropdown-actions">
-                                <a class="dropdown-action-item" href="idcard.html"><div class="action-icon"><i class="fas fa-id-card"></i></div><div class="ms-3"><div class="action-title">ID Card</div><div class="action-desc">Digital identity card</div></div><div class="ms-auto"><i class="fas fa-external-link-alt action-arrow"></i></div></a>
-                                <a class="dropdown-action-item" href="login.html"><div class="action-icon"><i class="fas fa-sign-in-alt"></i></div><div class="ms-3"><div class="action-title">Login</div><div class="action-desc">Student portal access</div></div><div class="ms-auto"><span class="enter-badge">Enter</span></div></a>
-                                <a class="dropdown-action-item" href="student-zone.html"><div class="action-icon"><i class="fas fa-door-open"></i></div><div class="ms-3"><div class="action-title">Student Zone</div><div class="action-desc">Full access dashboard</div></div><div class="ms-auto"><i class="fas fa-arrow-right action-arrow"></i></div></a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item"><a class="nav-link nav-icon" href="https://samastha.info/"><i class="fas fa-university"></i><span>Samastha</span><div class="nav-hover-effect"></div></a></li>
-                    <li class="nav-item"><a class="nav-link nav-icon" href="downloads.html"><i class="fas fa-download"></i><span>Downloads</span><div class="nav-hover-effect"></div></a></li>
-                    <li class="nav-item"><a class="nav-link nav-icon" href="gallery.html"><i class="fas fa-images"></i><span>Gallery</span><div class="nav-hover-effect"></div></a></li>
-                    <li class="nav-item"><a class="nav-link nav-icon" href="library.html"><i class="fas fa-book"></i><span>Library</span><div class="nav-hover-effect"></div></a></li>
-                    <li class="nav-item"><a class="nav-link nav-icon" href="contact.html"><i class="fas fa-envelope"></i><span>Contact</span><div class="nav-hover-effect"></div></a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <!-- ============================================================
-    HEADER with SEARCH
+    TOP HEADER & CLASS SELECTOR (hidden on detail view via .hide-on-detail)
     ============================================================ -->
     <div id="topHeaderSection" class="hide-on-detail">
         <header class="student-zone-header" id="parallaxHeader">
             <div class="container">
                 <h1>🎓 Student Zone</h1>
-                <p class="lead">Access study materials, notes, and exam resources</p>
-                <!-- Global Search -->
-                <div class="header-search">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="globalSearch" placeholder="Search classes, subjects, notices..." autocomplete="off" />
-                    <span class="clear-search" id="clearSearch"><i class="fas fa-times-circle"></i></span>
-                </div>
+                <p class="lead">
+                    <span class="typewriter-text" id="typewriterText"></span>
+                    <span class="cursor" id="cursor"></span>
+                </p>
                 <div class="header-decoration">
                     <span></span><span></span><span></span><span></span><span></span>
                 </div>
@@ -2018,14 +1580,12 @@
     </div>
 
     <!-- ============================================================
-    CLASS GRID + DETAIL PANEL
+    CLASS GRID + DETAIL
     ============================================================ -->
     <section class="py-4 class-grid">
         <div class="container">
             <div id="classGridSection">
-                <div class="row g-4" id="classCardsContainer">
-                    <!-- Skeleton placeholders will be injected by JS -->
-                </div>
+                <div class="row g-4" id="classCardsContainer"></div>
             </div>
             <div id="classDetailSection" style="display: none;">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
@@ -2036,7 +1596,6 @@
                     </div>
                 </div>
                 <div class="class-detail-panel" id="detailPanel">
-                    <!-- Tab navigation -->
                     <ul class="nav nav-tabs-resources" id="resourceTab" role="tablist">
                         <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#studyContent"><i class="fas fa-book-open"></i> Study</button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#papersContent"><i class="fas fa-file-alt"></i> Papers</button></li>
@@ -2047,7 +1606,6 @@
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#infographicsContent"><i class="fas fa-chart-pie"></i> Infographics <span class="coming-soon-badge">Soon</span></button></li>
                         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#animatedContent"><i class="fas fa-play-circle"></i> Animated <span class="coming-soon-badge">Soon</span></button></li>
                     </ul>
-                    <!-- Tab panes -->
                     <div class="tab-content" id="tabContent">
                         <div class="tab-pane fade show active" id="studyContent"><div id="studyMaterialsList"></div></div>
                         <div class="tab-pane fade" id="papersContent"><div id="previousPapersList"></div></div>
@@ -2064,7 +1622,7 @@
     </section>
 
     <!-- ============================================================
-    STUDENT RESOURCES (footer section)
+    STUDENT RESOURCES & FOOTER (hidden on detail view via .hide-on-detail)
     ============================================================ -->
     <div id="resourcesFooterSection" class="hide-on-detail">
         <section class="resources-section" data-aos="fade-up">
@@ -2089,10 +1647,10 @@
                     </div>
                     <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
                         <div class="resource-card">
-                            <div class="resource-icon"><i class="fas fa-book"></i></div>
-                            <h5>Digital Library</h5>
-                            <p>Access Islamic and academic books</p>
-                            <a href="library.html" class="btn-student-zone btn-sm">Visit Library</a>
+                            <div class="resource-icon"><i class="fas fa-sign-in-alt"></i></div>
+                            <h5>Student Login</h5>
+                            <p>Access your personalized dashboard</p>
+                            <a href="login.html" class="btn-student-zone btn-sm">Login Now</a>
                         </div>
                     </div>
                 </div>
@@ -2102,7 +1660,7 @@
     </div>
 
     <!-- ============================================================
-    FOOTER (with Last Updated)
+    FOOTER
     ============================================================ -->
     <footer id="mainFooter" class="modern-footer hide-on-detail">
         <div class="container">
@@ -2119,31 +1677,26 @@
                 <div class="col-lg-2 col-md-4 mb-4 mb-md-0"><h5>Academics</h5><ul><li><a href="courses.html">Courses</a></li><li><a href="schedule.html">Schedule</a></li><li><a href="library.html">Library</a></li><li><a href="result.html">Results</a></li><li><a href="pta.html">PTA</a></li></ul></div>
                 <div class="col-lg-4 col-md-4"><h5>Contact Info</h5><ul class="list-unstyled" style="color: #d1d5db;"><li class="mb-3"><i class="fas fa-map-marker-alt me-2" style="color: var(--accent);"></i> Noorussalam Madrasa, Kambippalam, Kerala Estate</li><li class="mb-3"><i class="fas fa-phone me-2" style="color: var(--accent);"></i> +91 70346 78818</li><li class="mb-3"><i class="fas fa-envelope me-2" style="color: var(--accent);"></i> noorussalam6110@gmail.com</li><li class="mb-3"><i class="fas fa-clock me-2" style="color: var(--accent);"></i> Sat - Thu: 6:00 AM - 10:00 AM</li></ul><h5 class="mt-4">Newsletter</h5><p style="color: #d1d5db; font-size: 0.9rem;">Subscribe for updates</p><div class="newsletter-form"><input type="email" placeholder="Your email"><button type="submit"><i class="fas fa-paper-plane"></i></button></div></div>
             </div>
-            <div class="footer-bottom">
-                <div class="row align-items-center">
-                    <div class="col-md-6"><p class="mb-0" style="color: #9ca3af;">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div>
-                    <div class="col-md-6 text-md-end">
-                        <p class="mb-0" style="color: #9ca3af;">Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a></p>
-                        <p class="last-updated mb-0" id="lastUpdated">Last updated: --</p>
-                    </div>
-                </div>
-            </div>
+            <div class="footer-bottom"><div class="row align-items-center"><div class="col-md-6"><p class="mb-0" style="color: #9ca3af;">© <span id="year"></span> Noorussalam Madrasa. All rights reserved.</p></div><div class="col-md-6 text-md-end"><p class="mb-0" style="color: #9ca3af;">Developed by <a href="#" style="color: var(--accent); text-decoration: none;">Suhail Kerala</a></p></div></div></div>
         </div>
     </footer>
 
     <!-- ============================================================
     FLOATING ELEMENTS
     ============================================================ -->
-    <!-- Back to Top -->
     <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
 
-    <!-- Bottom Navigation (mobile) -->
     <div class="bottom-nav" id="bottomNav">
         <a href="#" class="active" data-target="home"><i class="fas fa-home"></i><span>Home</span></a>
         <a href="#" data-target="classes"><i class="fas fa-th-large"></i><span>Classes</span></a>
         <a href="#" data-target="notices"><i class="fas fa-bullhorn"></i><span>Notices</span></a>
         <a href="#" data-target="bookmarks"><i class="fas fa-star"></i><span>Saved</span></a>
     </div>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/917034678818?text=Hello%20Noorussalam%20Madrasa!" class="whatsapp-float" target="_blank">
+        <img src="https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/whatsapp.svg" alt="WhatsApp" width="26">
+    </a>
 
     <!-- ============================================================
     SCRIPTS
@@ -2153,6 +1706,57 @@
     <script src="https://unpkg.com/aos@2.3.4/dist/aos.js">
     </script>
     <script>
+        // =================================================================
+        // LOOPING TYPEWRITER EFFECT – English → Malayalam → repeat
+        // =================================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const texts = [
+                "Access study materials, notes, and exam resources",
+                "ഒരു മദ്റസയ്ക്ക് കീഴിൽ ഒരുങ്ങുന്ന പ്രഥമ ഡിജിറ്റൽ സ്റ്റഡി റിസോഴ്സ് പ്ലാറ്റ്‌ഫോം."
+            ];
+            const element = document.getElementById('typewriterText');
+            const leadElement = document.querySelector('.lead');
+            let textIndex = 0;
+            let charIndex = 0;
+            let isDeleting = false;
+
+            function typeWriter() {
+                // Update class based on current language (English = index 0)
+                if (textIndex === 0) {
+                    leadElement.classList.add('is-english');
+                } else {
+                    leadElement.classList.remove('is-english');
+                }
+
+                const currentText = texts[textIndex];
+
+                if (isDeleting) {
+                    if (charIndex > 0) {
+                        element.textContent = currentText.substring(0, charIndex - 1);
+                        charIndex--;
+                        setTimeout(typeWriter, 20);
+                    } else {
+                        isDeleting = false;
+                        textIndex = (textIndex + 1) % texts.length;
+                        setTimeout(typeWriter, 400);
+                    }
+                } else {
+                    if (charIndex < currentText.length) {
+                        element.textContent = currentText.substring(0, charIndex + 1);
+                        charIndex++;
+                        setTimeout(typeWriter, 45);
+                    } else {
+                        isDeleting = true;
+                        setTimeout(typeWriter, 1800);
+                    }
+                }
+            }
+
+            // Start after a short delay
+            setTimeout(typeWriter, 600);
+        });
+
+
         // =================================================================
         // CONFIGURATION
         // =================================================================
@@ -2167,10 +1771,9 @@
         let globalNotices = [];
         let dataLoaded = false;
         let currentClass = null;
-        let bookmarkKeys = [];
 
         // =================================================================
-        // UTILITY FUNCTIONS
+        // UTILITY – with debug logging
         // =================================================================
         function escapeHtml(str) {
             if (!str) return '';
@@ -2196,36 +1799,54 @@
             } catch (e) { return false; }
         }
 
-        function getResourceId(type, index, classNum) {
-            return `${type}-${classNum}-${index}`;
+        // ---- Stable ID generation ----
+        function getResourceId(type, classNum, name) {
+            const slug = String(name).toLowerCase()
+                .replace(/[^a-z0-9]/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '') || 'untitled';
+            return `${type}-${classNum}-${slug}`;
         }
 
+        // ---- Bookmark storage (with debug) ----
         function getBookmarks() {
             try {
                 const data = localStorage.getItem('nsm_bookmarks');
-                return data ? JSON.parse(data) : [];
-            } catch { return []; }
+                const bookmarks = data ? JSON.parse(data) : [];
+                console.log('[Bookmark] Loaded bookmarks:', bookmarks);
+                return bookmarks;
+            } catch (e) {
+                console.error('[Bookmark] Error loading bookmarks:', e);
+                return [];
+            }
         }
 
         function saveBookmarks(bookmarks) {
-            localStorage.setItem('nsm_bookmarks', JSON.stringify(bookmarks));
+            try {
+                localStorage.setItem('nsm_bookmarks', JSON.stringify(bookmarks));
+                console.log('[Bookmark] Saved bookmarks:', bookmarks);
+            } catch (e) {
+                console.error('[Bookmark] Error saving bookmarks:', e);
+            }
         }
 
         function toggleBookmark(id) {
             let bookmarks = getBookmarks();
             const idx = bookmarks.indexOf(id);
-            if (idx > -1) bookmarks.splice(idx, 1);
-            else bookmarks.push(id);
+            if (idx > -1) {
+                bookmarks.splice(idx, 1);
+                console.log('[Bookmark] Removed:', id);
+            } else {
+                bookmarks.push(id);
+                console.log('[Bookmark] Added:', id);
+            }
             saveBookmarks(bookmarks);
             return bookmarks;
         }
 
         function isBookmarked(id) {
-            return getBookmarks().includes(id);
-        }
-
-        function setGlobalUIVisible(visible) {
-            document.querySelectorAll('.hide-on-detail').forEach(el => el.style.display = visible ? '' : 'none');
+            const bookmarks = getBookmarks();
+            return bookmarks.includes(id);
         }
 
         // =================================================================
@@ -2243,12 +1864,10 @@
                 globalTimeTable = data.timeTable || [];
                 globalNotices = data.notices || [];
                 dataLoaded = true;
-                // store last updated
-                localStorage.setItem('nsm_last_updated', new Date().toLocaleString());
-                document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleString();
+                console.log('[Data] Loaded successfully');
                 return true;
             } catch (err) {
-                console.error(err);
+                console.error('[Data] Error:', err);
                 document.getElementById('classCardsContainer').innerHTML =
                     `<div class="col-12 alert alert-danger">Could not load data. Please check your Google Sheet URL.</div>`;
                 return false;
@@ -2276,7 +1895,7 @@
         }
 
         // =================================================================
-        // RENDER CLASS CARDS (with progress)
+        // RENDER CLASS CARDS
         // =================================================================
         function renderClassCards(filter = '') {
             const container = document.getElementById('classCardsContainer');
@@ -2290,7 +1909,6 @@
                 return;
             }
 
-            // Apply search filter
             const filtered = classes.filter(cls => {
                 if (!filter) return true;
                 const search = filter.toLowerCase();
@@ -2309,8 +1927,6 @@
             const icons = ['fa-book-reader', 'fa-graduation-cap', 'fa-user-graduate', 'fa-book-open', 'fa-pencil-alt',
                 'fa-chalkboard-teacher', 'fa-school', 'fa-laptop-code', 'fa-brain', 'fa-lightbulb'
             ];
-
-            // Get progress from localStorage
             const progressData = JSON.parse(localStorage.getItem('nsm_progress') || '{}');
 
             container.innerHTML = filtered.map((cls, idx) => {
@@ -2319,7 +1935,7 @@
                 const pct = total > 0 ? Math.min(100, Math.round((accessed / total) * 100)) : 0;
                 return `
             <div class="col-md-3 col-sm-6" data-aos="fade-up" data-aos-delay="${idx * 50}">
-              <div class="class-card" data-class="${cls}" data-aos="fade-up" data-aos-delay="${idx * 50}">
+              <div class="class-card" data-class="${cls}">
                 <span class="card-number">#${cls}</span>
                 <div class="card-icon"><i class="fas ${icons[idx % icons.length]}"></i></div>
                 <h5>Class ${cls}</h5>
@@ -2332,16 +1948,13 @@
           `;
             }).join('');
 
-            // Attach click & tilt events
             document.querySelectorAll('.class-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const cls = parseInt(card.dataset.class);
                     showClassDetail(cls);
                     document.getElementById('classSelect').value = cls;
-                    // Update hash
                     window.location.hash = `class-${cls}`;
                 });
-                // Tilt effect
                 card.addEventListener('mousemove', (e) => {
                     const rect = card.getBoundingClientRect();
                     const x = e.clientX - rect.left;
@@ -2362,7 +1975,7 @@
         }
 
         // =================================================================
-        // RENDER DETAIL PANEL
+        // RENDER DETAIL PANEL – with fixed bookmark event delegation
         // =================================================================
         function renderDetailPanel(classNum) {
             currentClass = classNum;
@@ -2377,8 +1990,8 @@
             let studyHTML = `<div class="zone-section"><h4><i class="fa-solid fa-folder-open"></i> Study Materials</h4>`;
             if (subjects.length === 0) studyHTML += `<div class="no-data">നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക</div>`;
             else {
-                subjects.forEach((sub, idx) => {
-                    const rid = getResourceId('study', idx, classNum);
+                subjects.forEach((sub) => {
+                    const rid = getResourceId('study', classNum, sub.name);
                     const bookmarked = isBookmarked(rid);
                     studyHTML += `
                 <div class="resource-item" data-resource-id="${rid}">
@@ -2397,7 +2010,7 @@
             }
             studyHTML += `</div>`;
 
-            // ---- Previous Papers (accordion) ----
+            // ---- Previous Papers ----
             let examTypes = examPapers.length > 0 ? [...new Set(examPapers.map(e => e.examType))] : ['പാദ വാർഷിക പരീക്ഷ',
                 'അർദ്ധ വാർഷിക പരീക്ഷ', 'വാർഷിക പരീക്ഷ'
             ];
@@ -2418,9 +2031,9 @@
                   <div class="exam-body" style="display: none;">
               `;
                     if (hasSubjects) {
-                        examSubjects.forEach((item, idx) => {
+                        examSubjects.forEach((item) => {
                             const link = item.link && item.link !== '#' ? item.link : null;
-                            const rid = getResourceId('paper', idx, classNum);
+                            const rid = getResourceId('paper', classNum, item.subject);
                             const bookmarked = isBookmarked(rid);
                             papersHTML += `
                     <div class="resource-item" data-resource-id="${rid}">
@@ -2448,8 +2061,8 @@
             let othersHTML = `<div class="zone-section"><h4><i class="fa-solid fa-paperclip"></i> Others (Notes / Guides)</h4>`;
             if (others.length === 0) othersHTML += `<div class="no-data">നിലവിൽ ലഭ്യമല്ല.. കാത്തിരിക്കുക</div>`;
             else {
-                others.forEach((other, idx) => {
-                    const rid = getResourceId('other', idx, classNum);
+                others.forEach((other) => {
+                    const rid = getResourceId('other', classNum, other.title);
                     const bookmarked = isBookmarked(rid);
                     othersHTML += `
                 <div class="resource-item" data-resource-id="${rid}">
@@ -2501,7 +2114,7 @@
                 <span class="verify-icon"><i class="fas fa-check"></i></span>
                 <span class="verify-text">Verified by <strong>Swadar Muallim</strong></span>
                 <span class="verify-divider"></span>
-                <span class="verify-text" style="font-weight:400; font-size:0.8rem; color:#000;">
+                <span class="verify-text authorized-text">
                   <i class="fas fa-shield-alt me-1" style="color:#2ed573;"></i>Authorized
                 </span>
               </div>
@@ -2509,7 +2122,7 @@
             }
             timetableHTML += `</div>`;
 
-            // ---- Notice Board (with "New" badge) ----
+            // ---- Notice Board ----
             let noticeHTML = `<div class="zone-section"><h4><i class="fa-solid fa-bullhorn"></i> Notice Board</h4>`;
             if (notices.length === 0) noticeHTML += `<div class="no-data">നിലവിൽ അറിയിപ്പുകളൊന്നുമില്ല.. കാത്തിരിക്കുക</div>`;
             else {
@@ -2519,7 +2132,7 @@
                     if (a.date && b.date) return new Date(b.date) - new Date(a.date);
                     return 0;
                 });
-                sorted.forEach((notice, idx) => {
+                sorted.forEach((notice) => {
                     const isGlobal = notice.class === 0;
                     const priority = (notice.priority || '').toLowerCase();
                     const priorityClass = priority === 'high' ? 'priority-high' :
@@ -2531,7 +2144,8 @@
                     const priorityBadge = priority ? `<span class="notice-badge ${priority}">${priority}</span>` : '';
                     const formattedDate = notice.date ? formatDate(notice.date) : 'Date not specified';
                     const newBadge = isNew(notice.date) ? `<span class="badge-new">New!</span>` : '';
-                    const rid = getResourceId('notice', idx, classNum);
+                    const titleForId = notice.title || 'untitled';
+                    const rid = getResourceId('notice', notice.class || 0, titleForId);
                     const bookmarked = isBookmarked(rid);
 
                     noticeHTML += `
@@ -2564,24 +2178,28 @@
             if (allBookmarks.length === 0) {
                 bookmarkHTML += `<div class="no-data">No bookmarks yet. Star resources to save them here.</div>`;
             } else {
-                // We need to render all bookmarks across all classes – we'll build a list
-                // Gather all resources from all classes
                 const allResources = [];
-                globalSubjects.forEach(s => allResources.push({ id: getResourceId('study', allResources.length, s.class),
-                        title: s.name, type: 'Study', class: s.class }));
-                globalPapers.forEach(p => allResources.push({ id: getResourceId('paper', allResources.length, p.class),
-                        title: p.subject, type: 'Paper', class: p.class }));
-                globalOthers.forEach(o => allResources.push({ id: getResourceId('other', allResources.length, o.class),
-                        title: o.title, type: 'Other', class: o.class }));
-                globalNotices.forEach((n, i) => {
+                globalSubjects.forEach(s => {
+                    allResources.push({ id: getResourceId('study', s.class, s.name), title: s.name, type: 'Study',
+                        class: s.class });
+                });
+                globalPapers.forEach(p => {
+                    allResources.push({ id: getResourceId('paper', p.class, p.subject), title: p.subject,
+                        type: 'Paper', class: p.class });
+                });
+                globalOthers.forEach(o => {
+                    allResources.push({ id: getResourceId('other', o.class, o.title), title: o.title,
+                        type: 'Other', class: o.class });
+                });
+                globalNotices.forEach(n => {
                     const cls = n.class || 0;
-                    allResources.push({ id: getResourceId('notice', i, cls), title: n.title, type: 'Notice',
-                    class: cls });
+                    allResources.push({ id: getResourceId('notice', cls, n.title || 'untitled'), title: n
+                            .title || 'Untitled', type: 'Notice', class: cls });
                 });
 
                 const bookmarkedItems = allResources.filter(r => allBookmarks.includes(r.id));
                 if (bookmarkedItems.length === 0) {
-                    bookmarkHTML += `<div class="no-data">No bookmarks match.</div>`;
+                    bookmarkHTML += `<div class="no-data">No bookmarks found.</div>`;
                 } else {
                     bookmarkedItems.forEach(item => {
                         bookmarkHTML += `
@@ -2599,7 +2217,7 @@
             }
             bookmarkHTML += `</div>`;
 
-            // Inject all
+            // Inject HTML
             document.getElementById('studyMaterialsList').innerHTML = studyHTML;
             document.getElementById('previousPapersList').innerHTML = papersHTML;
             document.getElementById('othersList').innerHTML = othersHTML;
@@ -2609,45 +2227,61 @@
             document.getElementById('noticeList').innerHTML = noticeHTML;
             document.getElementById('bookmarkList').innerHTML = bookmarkHTML;
 
-            // Re-bind bookmark events
-            document.querySelectorAll('.bookmark-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const id = this.dataset.resourceId;
-                    toggleBookmark(id);
-                    this.classList.toggle('active');
-                    // Update progress for the current class
-                    updateProgress(currentClass);
-                    // If we're on the bookmarks tab, re-render it
-                    if (document.querySelector('#bookmarkContent.active')) {
-                        renderDetailPanel(currentClass);
-                        // Re-activate bookmark tab
-                        document.querySelector('[data-bs-target="#bookmarkContent"]')?.classList.add('active');
-                        document.querySelector('#bookmarkContent')?.classList.add('show', 'active');
-                    }
-                });
-            });
+            // ---- Event delegation for bookmark buttons (works even after re-render) ----
+            // We attach a single listener to the parent tab content.
+            // This avoids multiple bindings and ensures clicks are always captured.
+            const tabContent = document.getElementById('tabContent');
+            // Remove any previous delegate listener to avoid duplicates
+            tabContent.removeEventListener('click', handleBookmarkClick);
+            tabContent.addEventListener('click', handleBookmarkClick);
 
-            // Update progress for this class: count how many unique resources have been bookmarked OR clicked
-            // We'll count bookmarks as "accessed" for simplicity + clicks on download/access
             updateProgress(classNum);
         }
 
+        // ---- Global bookmark click handler (delegated) ----
+        function handleBookmarkClick(e) {
+            const btn = e.target.closest('.bookmark-btn');
+            if (!btn) return;
+            e.stopPropagation();
+
+            const id = btn.dataset.resourceId;
+            if (!id) {
+                console.warn('[Bookmark] No resource-id found on button');
+                return;
+            }
+
+            console.log('[Bookmark] Clicked ID:', id);
+
+            // Toggle
+            toggleBookmark(id);
+            btn.classList.toggle('active');
+
+            // Update progress for current class
+            if (currentClass) updateProgress(currentClass);
+
+            // If we are on the bookmarks tab, re-render to reflect changes
+            if (document.querySelector('#bookmarkContent.active')) {
+                renderDetailPanel(currentClass);
+                // Re-activate the bookmark tab
+                document.querySelector('[data-bs-target="#bookmarkContent"]')?.classList.add('active');
+                document.querySelector('#bookmarkContent')?.classList.add('show', 'active');
+            }
+        }
+
         // =================================================================
-        // PROGRESS TRACKING
+        // PROGRESS
         // =================================================================
         function updateProgress(classNum) {
             const progressData = JSON.parse(localStorage.getItem('nsm_progress') || '{}');
-            // Count all resources for this class
             const allRes = [];
-            globalSubjects.filter(s => s.class == classNum).forEach((s, i) => allRes.push(getResourceId('study', i,
-            classNum)));
-            globalPapers.filter(p => p.class == classNum).forEach((p, i) => allRes.push(getResourceId('paper', i,
-            classNum)));
-            globalOthers.filter(o => o.class == classNum).forEach((o, i) => allRes.push(getResourceId('other', i,
-            classNum)));
-            globalNotices.filter(n => n.class == classNum || n.class === 0).forEach((n, i) => allRes.push(getResourceId(
-                'notice', i, classNum)));
+            globalSubjects.filter(s => s.class == classNum).forEach(s => allRes.push(getResourceId('study', classNum, s
+            .name)));
+            globalPapers.filter(p => p.class == classNum).forEach(p => allRes.push(getResourceId('paper', classNum, p
+            .subject)));
+            globalOthers.filter(o => o.class == classNum).forEach(o => allRes.push(getResourceId('other', classNum, o
+            .title)));
+            globalNotices.filter(n => n.class == classNum || n.class === 0)
+                .forEach(n => allRes.push(getResourceId('notice', n.class || 0, n.title || 'untitled')));
 
             const bookmarks = getBookmarks();
             let accessed = 0;
@@ -2655,7 +2289,6 @@
             progressData[classNum] = accessed;
             localStorage.setItem('nsm_progress', JSON.stringify(progressData));
 
-            // Update card progress if visible
             const cards = document.querySelectorAll(`.class-card[data-class="${classNum}"]`);
             cards.forEach(card => {
                 const total = allRes.length;
@@ -2668,37 +2301,41 @@
         }
 
         // =================================================================
-        // SHOW / HIDE CLASS DETAIL
+        // SHOW / HIDE DETAIL
         // =================================================================
         function showClassDetail(classNum) {
             document.getElementById('classGridSection').style.display = 'none';
             document.getElementById('classDetailSection').style.display = 'block';
             document.getElementById('selectedClassNum').innerText = classNum;
             renderDetailPanel(classNum);
-            setGlobalUIVisible(false);
             document.getElementById('classDetailSection').scrollIntoView({ behavior: 'smooth' });
-            // Update hash
             window.location.hash = `class-${classNum}`;
+            // Hide global UI elements (header, footer, resources)
+            setGlobalUIVisible(false);
         }
 
         function backToClasses() {
             document.getElementById('classGridSection').style.display = 'block';
             document.getElementById('classDetailSection').style.display = 'none';
-            setGlobalUIVisible(true);
             window.location.hash = '';
             window.scrollTo({ top: document.getElementById('classGridSection').offsetTop - 100, behavior: 'smooth' });
-            // Re-filter cards with current search
-            const searchVal = document.getElementById('globalSearch').value;
-            renderClassCards(searchVal);
+            // Show global UI elements
+            setGlobalUIVisible(true);
+        }
+
+        // Helper to toggle visibility of .hide-on-detail elements
+        function setGlobalUIVisible(visible) {
+            document.querySelectorAll('.hide-on-detail').forEach(el => {
+                el.style.display = visible ? '' : 'none';
+            });
         }
 
         // =================================================================
-        // SWIPE SUPPORT FOR TABS
+        // SWIPE SUPPORT
         // =================================================================
-        let touchStartX = 0;
-        let touchEndX = 0;
+        let touchStartX = 0,
+            touchEndX = 0;
         const tabContainer = document.getElementById('resourceTab');
-
         tabContainer.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
         tabContainer.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].screenX;
@@ -2711,13 +2348,11 @@
             let newIdx = diff > 0 ? activeIdx + 1 : activeIdx - 1;
             if (newIdx < 0) newIdx = 0;
             if (newIdx >= tabs.length) newIdx = tabs.length - 1;
-            if (newIdx !== activeIdx) {
-                tabs[newIdx].click();
-            }
+            if (newIdx !== activeIdx) tabs[newIdx].click();
         }, { passive: true });
 
         // =================================================================
-        // TOGGLE EXAM SUBJECTS (global)
+        // TOGGLE EXAM (global)
         // =================================================================
         function toggleExamSubjects(el) {
             const body = el.nextElementSibling;
@@ -2732,10 +2367,10 @@
         window.toggleExamSubjects = toggleExamSubjects;
 
         // =================================================================
-        // RIPPLE EFFECT
+        // RIPPLE
         // =================================================================
         document.addEventListener('click', function(e) {
-            const target = e.target.closest('.download-btn, .btn-student-zone, .btn-back, .theme-toggle, .back-to-top');
+            const target = e.target.closest('.download-btn, .btn-student-zone, .btn-back, .back-to-top');
             if (!target) return;
             const rect = target.getBoundingClientRect();
             const ripple = document.createElement('span');
@@ -2751,98 +2386,16 @@
         });
 
         // =================================================================
-        // DARK MODE TOGGLE
-        // =================================================================
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const themeLabel = document.getElementById('themeLabel');
-
-        function setTheme(dark) {
-            if (dark) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                themeIcon.className = 'fas fa-sun';
-                themeLabel.textContent = 'Light';
-                localStorage.setItem('nsm_theme', 'dark');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-                themeIcon.className = 'fas fa-moon';
-                themeLabel.textContent = 'Dark';
-                localStorage.setItem('nsm_theme', 'light');
-            }
-        }
-
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            setTheme(!isDark);
-        });
-
-        // Load saved theme
-        if (localStorage.getItem('nsm_theme') === 'dark') {
-            setTheme(true);
-        }
-
-        // =================================================================
         // BACK TO TOP
         // =================================================================
         const backToTop = document.getElementById('backToTop');
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 400) backToTop.classList.add('show');
-            else backToTop.classList.remove('show');
+            backToTop.classList.toggle('show', window.scrollY > 400);
         });
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
         // =================================================================
-        // SEARCH FUNCTIONALITY
-        // =================================================================
-        const searchInput = document.getElementById('globalSearch');
-        const clearSearch = document.getElementById('clearSearch');
-
-        searchInput.addEventListener('input', function() {
-            const val = this.value.trim();
-            if (val.length > 0) {
-                clearSearch.style.display = 'block';
-            } else {
-                clearSearch.style.display = 'none';
-            }
-            // If we are on the class grid, filter cards
-            if (document.getElementById('classGridSection').style.display !== 'none') {
-                renderClassCards(val);
-            } else {
-                // If in detail view, we can filter resources inside the current class
-                // For simplicity, we'll just re-render the detail panel with a filter (not implemented to keep it clean)
-                // But we can at least filter notices and materials via JS – we'll do a simple client-side filter
-                const items = document.querySelectorAll('.resource-item, .notice-card');
-                const search = val.toLowerCase();
-                items.forEach(item => {
-                    const text = item.textContent.toLowerCase();
-                    if (text.includes(search)) item.style.display = 'flex';
-                    else item.style.display = 'none';
-                });
-                // Also filter accordion headers
-                document.querySelectorAll('.exam-accordion').forEach(acc => {
-                    const header = acc.querySelector('.exam-header');
-                    const body = acc.querySelector('.exam-body');
-                    if (header && header.textContent.toLowerCase().includes(search)) {
-                        acc.style.display = 'block';
-                    } else if (body && body.textContent.toLowerCase().includes(search)) {
-                        acc.style.display = 'block';
-                    } else {
-                        acc.style.display = 'none';
-                    }
-                });
-            }
-        });
-
-        clearSearch.addEventListener('click', () => {
-            searchInput.value = '';
-            clearSearch.style.display = 'none';
-            searchInput.dispatchEvent(new Event('input'));
-        });
-
-        // =================================================================
-        // SHARE CLASS LINK
+        // SHARE
         // =================================================================
         document.getElementById('shareClassBtn').addEventListener('click', function() {
             const url = window.location.href.split('#')[0] + '#class-' + currentClass;
@@ -2853,7 +2406,6 @@
                     setTimeout(() => this.innerHTML = orig, 1500);
                 });
             } else {
-                // fallback
                 const temp = document.createElement('input');
                 temp.value = url;
                 document.body.appendChild(temp);
@@ -2875,45 +2427,32 @@
                 document.querySelectorAll('.bottom-nav a').forEach(l => l.classList.remove('active'));
                 this.classList.add('active');
                 const target = this.dataset.target;
-                if (target === 'home') {
-                    window.location.href = 'index.html';
-                } else if (target === 'classes') {
-                    backToClasses();
-                } else if (target === 'notices') {
-                    // If in detail, switch to notices tab
+                if (target === 'home') window.location.href = 'index.html';
+                else if (target === 'classes') backToClasses();
+                else if (target === 'notices') {
                     if (document.getElementById('classDetailSection').style.display !== 'none') {
-                        const noticeTab = document.querySelector('[data-bs-target="#noticeContent"]');
-                        if (noticeTab) noticeTab.click();
-                    } else {
-                        // If on grid, just scroll to top
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
+                        document.querySelector('[data-bs-target="#noticeContent"]')?.click();
+                    } else window.scrollTo({ top: 0, behavior: 'smooth' });
                 } else if (target === 'bookmarks') {
                     if (document.getElementById('classDetailSection').style.display !== 'none') {
-                        const bookmarkTab = document.querySelector('[data-bs-target="#bookmarkContent"]');
-                        if (bookmarkTab) bookmarkTab.click();
-                    } else {
-                        // If on grid, show a toast or alert
-                        alert('Please select a class first to view bookmarks.');
-                    }
+                        document.querySelector('[data-bs-target="#bookmarkContent"]')?.click();
+                    } else alert('Please select a class first to view bookmarks.');
                 }
             });
         });
 
         // =================================================================
-        // HASH ROUTING (deep linking)
+        // HASH ROUTING
         // =================================================================
         function handleHash() {
             const hash = window.location.hash;
             if (hash.startsWith('#class-')) {
                 const cls = parseInt(hash.replace('#class-', ''));
                 if (!isNaN(cls) && cls > 0 && cls <= 10) {
-                    // Wait for data to be loaded
                     if (dataLoaded) {
                         showClassDetail(cls);
                         document.getElementById('classSelect').value = cls;
                     } else {
-                        // If data not loaded yet, set a one-time listener
                         const checkData = setInterval(() => {
                             if (dataLoaded) {
                                 clearInterval(checkData);
@@ -2925,18 +2464,14 @@
                 }
             }
         }
-
         window.addEventListener('hashchange', handleHash);
 
         // =================================================================
-        // PARALLAX HEADER
+        // PARALLAX
         // =================================================================
         window.addEventListener('scroll', function() {
             const header = document.getElementById('parallaxHeader');
-            const scroll = window.scrollY;
-            if (header) {
-                header.style.backgroundPositionY = (scroll * 0.2) + 'px';
-            }
+            if (header) header.style.backgroundPositionY = (window.scrollY * 0.2) + 'px';
         });
 
         // =================================================================
@@ -2947,33 +2482,10 @@
             const loaded = await fetchData();
             if (loaded) {
                 renderClassCards();
-                // Check hash after data is loaded
                 handleHash();
-                // Update last updated
-                const stored = localStorage.getItem('nsm_last_updated');
-                if (stored) document.getElementById('lastUpdated').textContent = 'Last updated: ' + stored;
             }
-            document.getElementById("year").textContent = new Date().getFullYear();
             AOS.init({ duration: 800, once: true, easing: 'ease-out' });
-
-            // Navbar scroll effect
-            window.addEventListener('scroll', () => {
-                document.querySelector('.navbar')?.classList.toggle('scrolled', window.scrollY > 20);
-            });
-
-            // Newsletter
-            document.querySelector('.newsletter-form button')?.addEventListener('click', () => {
-                const email = document.querySelector('.newsletter-form input')?.value;
-                if (email) {
-                    alert('Thank you for subscribing!');
-                    document.querySelector('.newsletter-form input').value = '';
-                }
-            });
-
-            // Back to classes button
             document.getElementById('backToClassesBtn').addEventListener('click', backToClasses);
-
-            // Class select dropdown
             document.getElementById('classSelect').addEventListener('change', async (e) => {
                 const cls = e.target.value;
                 if (!cls) return;
@@ -2981,12 +2493,10 @@
                 showClassDetail(parseInt(cls));
                 window.location.hash = `class-${cls}`;
             });
-
-            // Re-render bookmarks when tab is shown
             document.querySelector('[data-bs-target="#bookmarkContent"]')?.addEventListener('shown.bs.tab', function() {
                 if (currentClass) renderDetailPanel(currentClass);
             });
-
+            document.getElementById("year").textContent = new Date().getFullYear();
         })();
     </script>
 
