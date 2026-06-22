@@ -179,7 +179,7 @@
             </div>
         </div>
 
-        <!-- Action Grid (NO separate Edit Profile tile) -->
+        <!-- Action Grid -->
         <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
             <h4 class="text-white fw-semibold"><i class="fas fa-bolt text-warning me-2"></i>Neuro Actions</h4>
         </div>
@@ -290,7 +290,7 @@
 <script>
 // ==================== CONFIG ====================
 // 🔽 REPLACE WITH YOUR DEPLOYED APPS SCRIPT URL
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7DYA3wm_Bk8gmZFavV6VXVxOfF1URDbQ_vbhRGUvifCKt-cxTjhbhRQgFkL1CfcUS/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx83-G8lzte-JT5G7uphbIFug1y3FiOZkL_yBfdD7uJmzopCDes8fJz7X-UiMp5-4Ce/exec';
 
 // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
 const STUDENT_DATA = {
@@ -415,16 +415,91 @@ function showResultsModal() {
     modal.style.display = 'flex';
 }
 
-// ---- ATTENDANCE ----
+// ---- ATTENDANCE (UPDATED: fetches from backend) ----
 function showAttendanceReport() {
     modalTitleSpan.innerText = "📆 Attendance Analytics";
+    // Show loading spinner
     modalBodyDiv.innerHTML = `
-        <div><div class="text-center mb-3"><span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span><p>Overall Attendance</p></div>
-        <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div>
-        <h6 class="text-white">Monthly Breakdown</h6>
-        <ul class="list-unstyled"><li class="d-flex justify-content-between"><span>March 2025</span><span>Present: 18/18 (100%)</span></li><li class="d-flex justify-content-between mt-2"><span>February 2025</span><span>Present: 20/22 (91%)</span></li></ul>
+        <div class="text-center py-4">
+            <div class="spinner-border text-success" role="status"></div>
+            <p class="mt-2 text-white-50">Fetching your attendance records...</p>
+        </div>
     `;
     modal.style.display = 'flex';
+    // Fetch data from backend
+    fetchAttendanceRecords();
+}
+
+async function fetchAttendanceRecords() {
+    if (!currentUser) return;
+    try {
+        const url = `${SCRIPT_URL}?action=attendance&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.result === 'success' && data.records && data.records.length > 0) {
+            // Build the list of records
+            let recordsHtml = data.records.map(rec => `
+                <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
+                    <span class="text-white">${rec.month}</span>
+                    <span class="badge bg-success">${rec.percentage}%</span>
+                    <span class="text-white-50 small">${rec.present}/${rec.total} days</span>
+                </li>
+            `).join('');
+
+            modalBodyDiv.innerHTML = `
+                <div>
+                    <div class="text-center mb-3">
+                        <span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span>
+                        <p class="text-white-50">Overall Attendance</p>
+                    </div>
+                    <div class="progress mb-4" style="height:12px;">
+                        <div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div>
+                    </div>
+                    <h6 class="text-white">Monthly Breakdown</h6>
+                    <ul class="list-unstyled">
+                        ${recordsHtml}
+                    </ul>
+                </div>
+            `;
+        } else {
+            // No records found – show fallback message
+            modalBodyDiv.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="fas fa-calendar-times fa-3x text-white-50 mb-3"></i>
+                    <p class="text-white-50">No attendance records found for you.</p>
+                    <p class="text-white-50 small">Please contact the school administrator if you believe this is a mistake.</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        // Fallback to hardcoded dummy data if fetch fails
+        modalBodyDiv.innerHTML = `
+            <div>
+                <div class="text-center mb-3">
+                    <span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span>
+                    <p class="text-white-50">Overall Attendance (cached)</p>
+                </div>
+                <div class="progress mb-4" style="height:12px;">
+                    <div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div>
+                </div>
+                <h6 class="text-white">Monthly Breakdown (sample)</h6>
+                <ul class="list-unstyled">
+                    <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
+                        <span class="text-white">March 2025</span>
+                        <span class="badge bg-success">100%</span>
+                        <span class="text-white-50 small">18/18 days</span>
+                    </li>
+                    <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
+                        <span class="text-white">February 2025</span>
+                        <span class="badge bg-warning">91%</span>
+                        <span class="text-white-50 small">20/22 days</span>
+                    </li>
+                </ul>
+            </div>
+        `;
+        showToast("Could not fetch live attendance – showing cached data", "error");
+    }
 }
 
 // ---- MORAL VALUES ----
