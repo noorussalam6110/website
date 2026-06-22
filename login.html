@@ -6,15 +6,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <title>NOORUSSALAM MADRASA | Student Portal</title>
-    <!-- Anek Malayalam font -->
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Topper Poster Libraries -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- (All your existing CSS here – keep as is) -->
     <style>
         * { font-family: 'Anek Malayalam', 'Inter', sans-serif; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -51,8 +50,6 @@
         .refresh-btn { animation:pulseGlow 2s infinite; }
         .forgot-link { color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.9rem; transition:color 0.2s; }
         .forgot-link:hover { color:#93c5fd; text-decoration:underline; }
-
-        /* Topper Poster Styles */
         .topper-modal-glass { background:rgba(15,25,55,0.98); backdrop-filter:blur(24px); border:1px solid rgba(212,175,55,0.4); border-radius:2rem; max-width:800px; width:95%; max-height:95vh; overflow-y:auto; padding:25px; }
         .topper-modal-glass .modal-header { border-bottom:2px solid #D4AF37; padding-bottom:12px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; }
         .topper-modal-glass .modal-header h3 { color:#D4AF37; font-weight:700; }
@@ -139,7 +136,6 @@
 <!-- ===================== DASHBOARD ===================== -->
 <div id="dashboardSection" style="display:none;">
     <div class="container">
-        <!-- Header -->
         <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <div class="avatar-neon" id="avatarInitials">SK</div>
@@ -188,7 +184,6 @@
             <div class="action-tile" onclick="showAttendanceReport()"><div class="bg-success bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-calendar-week fa-2x text-success"></i></div><h6 class="text-white">Attendance</h6><small class="text-white-50">Monthly report</small></div>
             <div class="action-tile" onclick="showMoralValuesModal()"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-hand-holding-heart fa-2x text-warning"></i></div><h6 class="text-white">Moral Values</h6><small class="text-white-50">Character report</small></div>
             <div class="action-tile" onclick="showProfileCard()"><div class="bg-secondary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-user-astronaut fa-2x text-secondary"></i></div><h6 class="text-white">Profile</h6><small class="text-white-50">Personal info</small></div>
-            <!-- Topper Poster -->
             <div class="action-tile" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-trophy fa-2x text-warning"></i></div><h6 class="text-white">🏆 Topper Poster</h6><small class="text-white-50">Download certificate</small></div>
             <div class="action-tile" onclick="window.location.href='student_zone.html'"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">📚 Study Zone</h6><small class="text-white-50">Notes & Resources</small></div>
         </div>
@@ -289,8 +284,7 @@
 <!-- ===================== JAVASCRIPT ===================== -->
 <script>
 // ==================== CONFIG ====================
-// 🔽 REPLACE WITH YOUR DEPLOYED APPS SCRIPT URL
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx83-G8lzte-JT5G7uphbIFug1y3FiOZkL_yBfdD7uJmzopCDes8fJz7X-UiMp5-4Ce/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzMVCW63Aj9LKNaHSG7dgIR0gl5MJOeqpIt9-aQ7Lkb9iCn4qxXiQGMaqr4mZfqaFpD/exec';
 
 // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
 const STUDENT_DATA = {
@@ -346,13 +340,32 @@ function updateDashboardUI() {
     if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block'; else topperTile.style.display = 'none';
 }
 
-// ==================== LOAD ACTIVITIES & EVENTS ====================
+// ==================== LOAD ACTIVITIES & EVENTS (with Live Feed) ====================
 async function loadActivitiesAndCalendar() {
-    document.getElementById('activityFeedList').innerHTML = `
-        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-book text-primary mt-1"></i><div><div class="text-white">📘 Submitted Mathematics Project</div><small class="text-white-50">2 hours ago</small></div></li>
-        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-trophy text-primary mt-1"></i><div><div class="text-white">🏆 Ranked 3rd in Monthly Test</div><small class="text-white-50">Yesterday</small></div></li>
-        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-calendar-check text-primary mt-1"></i><div><div class="text-white">✅ Attendance: 100% this week</div><small class="text-white-50">2 days ago</small></div></li>
-    `;
+    // -------- Live Feed (student-specific) --------
+    try {
+        const feedUrl = `${SCRIPT_URL}?action=livefeed&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+        const resp = await fetch(feedUrl);
+        const data = await resp.json();
+        if (data.result === 'success' && data.feed && data.feed.length > 0) {
+            const feedHtml = data.feed.map(item =>
+                `<li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3">
+                    <i class="fas fa-circle text-primary mt-1" style="font-size:0.6rem;"></i>
+                    <div>
+                        <div class="text-white">${item.activity}</div>
+                        <small class="text-white-50">${item.description} • ${item.timestamp}</small>
+                    </div>
+                </li>`
+            ).join('');
+            document.getElementById('activityFeedList').innerHTML = feedHtml;
+        } else {
+            loadDefaultFeed();
+        }
+    } catch (e) {
+        loadDefaultFeed();
+    }
+
+    // -------- Events --------
     try {
         const url = `${SCRIPT_URL}?action=events&t=${Date.now()}`;
         const resp = await fetch(url);
@@ -368,6 +381,14 @@ async function loadActivitiesAndCalendar() {
     } catch (e) {
         loadDefaultEvents();
     }
+}
+
+function loadDefaultFeed() {
+    document.getElementById('activityFeedList').innerHTML = `
+        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-book text-primary mt-1"></i><div><div class="text-white">📘 Submitted Mathematics Project</div><small class="text-white-50">2 hours ago</small></div></li>
+        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-trophy text-primary mt-1"></i><div><div class="text-white">🏆 Ranked 3rd in Monthly Test</div><small class="text-white-50">Yesterday</small></div></li>
+        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-calendar-check text-primary mt-1"></i><div><div class="text-white">✅ Attendance: 100% this week</div><small class="text-white-50">2 days ago</small></div></li>
+    `;
 }
 
 function loadDefaultEvents() {
@@ -387,7 +408,6 @@ function closeModal() {
 }
 
 // ==================== MODAL VIEWS ====================
-// ---- RESULTS (with link to full results page) ----
 function showResultsModal() {
     modalTitleSpan.innerText = "📊 Overall Grade";
     modalBodyDiv.innerHTML = `
@@ -415,10 +435,8 @@ function showResultsModal() {
     modal.style.display = 'flex';
 }
 
-// ---- ATTENDANCE (UPDATED: fetches from backend) ----
 function showAttendanceReport() {
     modalTitleSpan.innerText = "📆 Attendance Analytics";
-    // Show loading spinner
     modalBodyDiv.innerHTML = `
         <div class="text-center py-4">
             <div class="spinner-border text-success" role="status"></div>
@@ -426,7 +444,6 @@ function showAttendanceReport() {
         </div>
     `;
     modal.style.display = 'flex';
-    // Fetch data from backend
     fetchAttendanceRecords();
 }
 
@@ -438,7 +455,6 @@ async function fetchAttendanceRecords() {
         const data = await response.json();
 
         if (data.result === 'success' && data.records && data.records.length > 0) {
-            // Build the list of records
             let recordsHtml = data.records.map(rec => `
                 <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
                     <span class="text-white">${rec.month}</span>
@@ -463,7 +479,6 @@ async function fetchAttendanceRecords() {
                 </div>
             `;
         } else {
-            // No records found – show fallback message
             modalBodyDiv.innerHTML = `
                 <div class="text-center py-3">
                     <i class="fas fa-calendar-times fa-3x text-white-50 mb-3"></i>
@@ -473,7 +488,6 @@ async function fetchAttendanceRecords() {
             `;
         }
     } catch (error) {
-        // Fallback to hardcoded dummy data if fetch fails
         modalBodyDiv.innerHTML = `
             <div>
                 <div class="text-center mb-3">
@@ -502,7 +516,6 @@ async function fetchAttendanceRecords() {
     }
 }
 
-// ---- MORAL VALUES ----
 function showMoralValuesModal() {
     modalTitleSpan.innerText = "🌟 Moral Values Report";
     const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
@@ -522,7 +535,6 @@ function showMoralValuesModal() {
     modal.style.display = 'flex';
 }
 
-// ---- PROFILE (with Edit Profile button INSIDE) ----
 function showProfileCard() {
     modalTitleSpan.innerText = "👤 Student Profile";
     modalBodyDiv.innerHTML = `
@@ -539,7 +551,6 @@ function showProfileCard() {
             <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div>
             <div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div>
         </div>
-        <!-- 🔽 EDIT BUTTON INSIDE PROFILE MODAL -->
         <div class="mt-4 text-center">
             <button class="btn btn-outline-info rounded-pill px-4 py-2" 
                     onclick="closeModal(); openEditProfile();" 
@@ -645,7 +656,6 @@ async function handleLogin(e) {
             showToast(data.message || "Invalid credentials", "error");
         }
     } catch (err) {
-        // Offline fallback
         if (STUDENT_DATA[id] && STUDENT_DATA[id].password === pwd) {
             currentUser = { ...STUDENT_DATA[id], studentId: id };
             localStorage.setItem('noor_session', JSON.stringify(currentUser));
