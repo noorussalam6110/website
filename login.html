@@ -29,8 +29,9 @@
         .login-title { font-size:2rem; font-weight:800; background:linear-gradient(135deg, #fff, #93c5fd); -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center; }
         .input-group-custom { background:rgba(255,255,255,0.06); border-radius:1.2rem; border:1px solid rgba(255,255,255,0.15); transition:all 0.3s; display:flex; align-items:center; padding:0 1rem; }
         .input-group-custom:focus-within { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); background:rgba(255,255,255,0.1); }
-        .form-control-glass { background:transparent; border:none; color:white; padding:0.9rem 0; width:100%; outline:none; }
+        .form-control-glass { background:transparent; border:none; color:#ffffff; padding:0.9rem 0; width:100%; outline:none; }
         .form-control-glass::placeholder { color:rgba(255,255,255,0.35); }
+        .form-control-glass:focus::placeholder { color:rgba(255,255,255,0.7); }
         .btn-gradient { background:linear-gradient(95deg, #3b82f6, #8b5cf6); border:none; padding:14px; font-weight:700; border-radius:1.5rem; transition:transform 0.2s, box-shadow 0.2s; color:#fff; width:100%; cursor:pointer; }
         .btn-gradient:hover { transform:scale(1.02); box-shadow:0 15px 30px -10px #3b82f6; }
         .dashboard-header-glow { background:rgba(15,25,55,0.6); backdrop-filter:blur(20px); border-radius:2rem; padding:1rem 2rem; margin-bottom:2rem; border:1px solid rgba(255,255,255,0.1); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; }
@@ -45,8 +46,6 @@
         .glass-toast { background:rgba(0,0,0,0.8); backdrop-filter:blur(20px); border-left:4px solid #10b981; }
         .modal-glass { background:rgba(10,20,40,0.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.2); }
         .badge-rank { background:linear-gradient(135deg, #fbbf24, #f59e0b); padding:5px 12px; border-radius:40px; font-weight:700; }
-        @keyframes pulseGlow { 0%{box-shadow:0 0 0 0 rgba(59,130,246,0.4);} 70%{box-shadow:0 0 0 10px rgba(59,130,246,0);} 100%{box-shadow:0 0 0 0 rgba(59,130,246,0);} }
-        .refresh-btn { animation:pulseGlow 2s infinite; }
         .forgot-link { color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.9rem; transition:color 0.2s; }
         .forgot-link:hover { color:#93c5fd; text-decoration:underline; }
         .topper-modal-glass { background:rgba(15,25,55,0.98); backdrop-filter:blur(24px); border:1px solid rgba(212,175,55,0.4); border-radius:2rem; max-width:800px; width:95%; max-height:95vh; overflow-y:auto; padding:25px; }
@@ -92,6 +91,8 @@
         #findStudentIdModal .form-control-glass { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:1rem; padding:0.7rem 1rem; width:100%; outline:none; margin-top:4px; }
         #findStudentIdModal .form-control-glass:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
         #findStudentIdModal label { font-size:0.8rem; color:rgba(255,255,255,0.6); }
+        .grade-bar { height:6px; border-radius:4px; background:#e0e0e0; overflow:hidden; margin-top:6px; }
+        .grade-bar-fill { height:100%; border-radius:4px; transition:width 0.5s; }
     </style>
 </head>
 <body>
@@ -138,7 +139,19 @@
         <form id="findStudentIdForm" onsubmit="findStudentId(event)">
             <div class="mb-3">
                 <label>Class</label>
-                <input type="text" id="findClass" class="form-control-glass" placeholder="e.g. 9" required>
+                <select id="findClass" class="form-control-glass" required>
+                    <option value="">Select Class</option>
+                    <option value="1">Class 1</option>
+                    <option value="2">Class 2</option>
+                    <option value="3">Class 3</option>
+                    <option value="4">Class 4</option>
+                    <option value="5">Class 5</option>
+                    <option value="6">Class 6</option>
+                    <option value="7">Class 7</option>
+                    <option value="8">Class 8</option>
+                    <option value="9">Class 9</option>
+                    <option value="10">Class 10</option>
+                </select>
             </div>
             <div class="mb-3">
                 <label>Student Name (First 3 Letters)</label>
@@ -166,7 +179,7 @@
                 </div>
             </div>
             <div class="d-flex gap-3 mt-2 mt-sm-0">
-                <button id="globalRefreshBtn" class="btn btn-outline-light rounded-pill px-4 refresh-btn"><i class="fas fa-sync-alt me-2"></i>Sync</button>
+                <!-- Sync button removed -->
                 <button id="logoutBtn" class="btn btn-danger rounded-pill px-4"><i class="fas fa-sign-out-alt"></i> Exit</button>
             </div>
         </div>
@@ -175,8 +188,17 @@
         <div class="stats-grid">
             <div class="stat-card-neon">
                 <div class="d-flex justify-content-between align-items-start">
-                    <div><span class="stat-value-xl" id="overallGradeDisplay">A+</span><div class="text-white-50">Academic Grade</div></div>
-                    <div class="bg-primary bg-opacity-25 p-3 rounded-4"><i class="fas fa-crown fa-2x text-warning"></i></div>
+                    <div>
+                        <span class="stat-value-xl" id="overallGradeDisplay">A+</span>
+                        <div class="text-white-50">Academic Grade</div>
+                        <!-- Grade line indicator (graph) -->
+                        <div class="grade-bar" style="width:100%;">
+                            <div id="gradeLineFill" class="grade-bar-fill" style="width:0%; background:linear-gradient(90deg, #4ade80, #facc15, #ef4444);"></div>
+                        </div>
+                    </div>
+                    <div id="gradeIconContainer" class="bg-primary bg-opacity-25 p-3 rounded-4">
+                        <i id="gradeIcon" class="fas fa-graduation-cap fa-2x text-warning"></i>
+                    </div>
                 </div>
                 <div class="mt-3"><div class="progress" style="height:8px;"><div id="gradeProgressFill" class="progress-bar bg-gradient" style="width:92%"></div></div><div class="d-flex justify-content-between mt-1"><small>Performance</small><small id="gradePercentLabel">92%</small></div></div>
             </div>
@@ -305,7 +327,7 @@
 <!-- ===================== JAVASCRIPT ===================== -->
 <script>
 // ==================== CONFIG ====================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOsczwaMvdi0bCZ2rxPEQiyuv8SeKW8jxwNRK1HlWqdcce74fJi-9NzfCO7SBOQnCo/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2olOhLt65-5R6UG7ZV8c0T9u5lkXfE649Y7d1LKvJ-dK4vov8RhxHRHztIkFa-Gk/exec';
 
 // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
 const STUDENT_DATA = {
@@ -363,6 +385,22 @@ function formatMonthYear(dateValue) {
     }
 }
 
+// ==================== ACADEMIC GRADE ICON & COLOR ====================
+function getGradeDetails(grade) {
+    const map = {
+        'A+': { icon: 'fa-star', color: '#22c55e', width: 100 },
+        'A': { icon: 'fa-star', color: '#4ade80', width: 90 },
+        'B+': { icon: 'fa-star-half-alt', color: '#facc15', width: 80 },
+        'B': { icon: 'fa-star-half-alt', color: '#fbbf24', width: 70 },
+        'C+': { icon: 'fa-circle', color: '#fb923c', width: 60 },
+        'C': { icon: 'fa-circle', color: '#f97316', width: 50 },
+        'D+': { icon: 'fa-circle', color: '#ef4444', width: 40 },
+        'D': { icon: 'fa-circle', color: '#dc2626', width: 30 },
+        'E': { icon: 'fa-circle', color: '#b91c1c', width: 20 }
+    };
+    return map[grade] || { icon: 'fa-question', color: '#94a3b8', width: 0 };
+}
+
 // ==================== UPDATE DASHBOARD UI ====================
 function updateDashboardUI() {
     if (!currentUser) return;
@@ -371,18 +409,31 @@ function updateDashboardUI() {
     document.getElementById('studentClassText').innerText = currentUser.class;
     document.getElementById('avatarInitials').innerText = currentUser.avatar;
     document.getElementById('overallGradeDisplay').innerText = currentUser.overallGrade;
-    let perf = currentUser.performance; document.getElementById('gradeProgressFill').style.width = perf + '%'; document.getElementById('gradePercentLabel').innerHTML = perf + '%';
-    document.getElementById('attendanceRateLabel').innerHTML = currentUser.attendance + '%'; document.getElementById('attendanceProgressFill').style.width = currentUser.attendance + '%';
+    let perf = currentUser.performance; 
+    document.getElementById('gradeProgressFill').style.width = perf + '%'; 
+    document.getElementById('gradePercentLabel').innerHTML = perf + '%';
+
+    // Update grade icon and line
+    const grade = currentUser.overallGrade;
+    const gradeInfo = getGradeDetails(grade);
+    document.getElementById('gradeIcon').className = `fas ${gradeInfo.icon} fa-2x`;
+    document.getElementById('gradeIconContainer').style.backgroundColor = gradeInfo.color + '33';
+    document.getElementById('gradeLineFill').style.width = gradeInfo.width + '%';
+    document.getElementById('gradeLineFill').style.background = `linear-gradient(90deg, ${gradeInfo.color}, ${gradeInfo.color})`;
+
+    document.getElementById('attendanceRateLabel').innerHTML = currentUser.attendance + '%'; 
+    document.getElementById('attendanceProgressFill').style.width = currentUser.attendance + '%';
     document.getElementById('attendanceTrend').innerHTML = `<i class="fas fa-arrow-up"></i> ${currentUser.trendAttendance}`;
     let rankDisplay = currentUser.rank + (currentUser.rank === 1 ? 'st' : currentUser.rank === 2 ? 'nd' : currentUser.rank === 3 ? 'rd' : 'th');
     document.getElementById('rankNumber').innerHTML = rankDisplay;
     let rankChangeHtml = currentUser.rankChange === '+1' ? '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser.rankChange === '-1' ? '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable');
     document.getElementById('rankBadge').innerHTML = rankChangeHtml;
     document.getElementById('moralValuesDisplay').innerText = currentUser.moralValuesGrade || 'B+';
-    document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',').slice(0,2).join(', ') : 'N/A';
+    // moralValuesSub will be updated by the modal fetch
+    document.getElementById('moralValuesSub').innerText = 'Loading...';
     const gradeMap = { 'A+':95, 'A':85, 'B+':75, 'B':65, 'C+':55, 'C':45, 'D':35, 'F':25 };
-    const grade = currentUser.moralValuesGrade || 'B';
-    document.getElementById('moralValuesProgressFill').style.width = (gradeMap[grade] || 70) + '%';
+    const g = currentUser.moralValuesGrade || 'B';
+    document.getElementById('moralValuesProgressFill').style.width = (gradeMap[g] || 70) + '%';
     const topperTile = document.getElementById('topperPosterTile');
     if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block'; else topperTile.style.display = 'none';
 }
@@ -564,23 +615,96 @@ async function fetchAttendanceRecords() {
     }
 }
 
+// ==================== MORAL VALUES (from separate sheet) ====================
 function showMoralValuesModal() {
     modalTitleSpan.innerText = "🌟 Moral Values Report";
-    const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
-    let subHtml = subValues.map(item => {
-        const parts = item.split(':');
-        const trait = parts[0]?.trim() || 'N/A';
-        const grade = parts[1]?.trim() || 'B';
-        const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b';
-        return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`;
-    }).join('');
     modalBodyDiv.innerHTML = `
-        <div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div>
-        <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div>
-        <h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div>
-        <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
+        <div class="text-center py-4">
+            <div class="spinner-border text-warning" role="status"></div>
+            <p class="mt-2 text-white-50">Loading moral values...</p>
+        </div>
     `;
     modal.style.display = 'flex';
+    fetchMoralValues();
+}
+
+async function fetchMoralValues() {
+    if (!currentUser) return;
+    try {
+        const url = `${SCRIPT_URL}?action=moralvalues&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.result === 'success' && data.traits && data.traits.length > 0) {
+            let traitsHtml = data.traits.map(t => {
+                const gradeColor = t.grade === 'A+' ? '#10b981' : t.grade === 'A' ? '#06b6d4' : t.grade === 'B+' ? '#3b82f6' : '#f59e0b';
+                return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10">
+                    <span class="text-white">${t.trait}</span>
+                    <span style="color:${gradeColor}; font-weight:700;">${t.grade}</span>
+                </div>`;
+            }).join('');
+
+            // Update the moral values sub text on dashboard
+            const traitNames = data.traits.map(t => t.trait).slice(0,2).join(', ');
+            document.getElementById('moralValuesSub').innerText = traitNames || 'N/A';
+
+            modalBodyDiv.innerHTML = `
+                <div>
+                    <div class="text-center mb-4">
+                        <div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
+                            ${currentUser.moralValuesGrade || 'B+'}
+                        </div>
+                        <p class="text-white-50">Overall Moral Values Grade</p>
+                    </div>
+                    <div class="progress mb-4" style="height:12px;">
+                        <div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div>
+                    </div>
+                    <h6 class="text-white">Detailed Traits</h6>
+                    <div>${traitsHtml}</div>
+                    <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
+                </div>
+            `;
+        } else {
+            // Fallback to data from Students sheet if moral sheet not set up
+            const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
+            let subHtml = subValues.map(item => {
+                const parts = item.split(':');
+                const trait = parts[0]?.trim() || 'N/A';
+                const grade = parts[1]?.trim() || 'B';
+                const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b';
+                return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`;
+            }).join('');
+            document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',').slice(0,2).join(', ') : 'N/A';
+            modalBodyDiv.innerHTML = `
+                <div>
+                    <div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div>
+                    <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div>
+                    <h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div>
+                    <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        // Fallback to Students data
+        const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
+        let subHtml = subValues.map(item => {
+            const parts = item.split(':');
+            const trait = parts[0]?.trim() || 'N/A';
+            const grade = parts[1]?.trim() || 'B';
+            const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b';
+            return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`;
+        }).join('');
+        document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',').slice(0,2).join(', ') : 'N/A';
+        modalBodyDiv.innerHTML = `
+            <div>
+                <div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div>
+                <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div>
+                <h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div>
+                <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
+            </div>
+        `;
+        showToast("Could not fetch moral values – showing cached data", "error");
+    }
 }
 
 function showProfileCard() {
@@ -676,10 +800,10 @@ function closeFindStudentId() {
 
 async function findStudentId(e) {
     e.preventDefault();
-    const className = document.getElementById('findClass').value.trim();
+    const className = document.getElementById('findClass').value;
     const studentName = document.getElementById('findName').value.trim();
     if (!className || !studentName) {
-        showToast("Please enter both Class and Name", "error");
+        showToast("Please select Class and enter Name", "error");
         return;
     }
     const resultDiv = document.getElementById('findResult');
@@ -804,15 +928,7 @@ function restoreSession() {
 // ==================== EVENT BINDINGS ====================
 document.getElementById('loginForm').addEventListener('submit', handleLogin);
 document.getElementById('logoutBtn').addEventListener('click', logout);
-document.getElementById('globalRefreshBtn').addEventListener('click', async function() {
-    if (!currentUser) return;
-    showLoading(true);
-    await new Promise(r => setTimeout(r, 700));
-    updateDashboardUI();
-    await loadActivitiesAndCalendar();
-    showToast("Synced", "success");
-    showLoading(false);
-});
+// Removed refresh button event listener
 closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
 window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
