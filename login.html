@@ -14,7 +14,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* (All CSS unchanged – keep your existing styles) */
         * { font-family: 'Anek Malayalam', 'Inter', sans-serif; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Anek Malayalam', 'Inter', sans-serif; background:radial-gradient(circle at 10% 20%, rgba(15,25,55,0.95), rgba(5,10,30,0.98)); min-height:100vh; position:relative; overflow-x:hidden; }
@@ -102,7 +101,7 @@
     <p style="color:white; font-weight:600;">Loading smart portal...</p>
 </div>
 
-<!-- ===================== LOGIN SECTION (ID only + Forgot Student ID link) ===================== -->
+<!-- ===================== LOGIN SECTION ===================== -->
 <div id="loginSection" class="login-wrapper">
     <div class="login-panel">
         <div class="logo-circle">
@@ -139,11 +138,15 @@
         <form id="findStudentIdForm" onsubmit="findStudentId(event)">
             <div class="mb-3">
                 <label>Class</label>
-                <input type="text" id="findClass" class="form-control-glass" placeholder="e.g., Grade 9 - STEM" required>
+                <input type="text" id="findClass" class="form-control-glass" placeholder="e.g. 9" required>
             </div>
             <div class="mb-3">
-                <label>Student Name</label>
-                <input type="text" id="findName" class="form-control-glass" placeholder="Enter full or partial name" required>
+                <label>Student Name (First 3 Letters)</label>
+                <input type="text" id="findName" class="form-control-glass" 
+                       placeholder="e.g., SUH" 
+                       oninput="this.value = this.value.toUpperCase().slice(0,3);" 
+                       required>
+                <small class="text-white-50">Auto-uppercase • Max 3 letters</small>
             </div>
             <button type="submit" class="btn-gradient w-100 text-white"><i class="fas fa-search me-2"></i> Find</button>
         </form>
@@ -151,7 +154,7 @@
     </div>
 </div>
 
-<!-- ===================== DASHBOARD (unchanged) ===================== -->
+<!-- ===================== DASHBOARD ===================== -->
 <div id="dashboardSection" style="display:none;">
     <div class="container">
         <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
@@ -239,7 +242,7 @@
     </div>
 </div>
 
-<!-- ===================== FORGOT PASSWORD MODAL (kept) ===================== -->
+<!-- ===================== FORGOT PASSWORD MODAL ===================== -->
 <div id="forgotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
     <div class="modal-glass p-4" style="max-width:420px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
         <div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">🔑 Forgot Password</h3><button id="closeForgotModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
@@ -302,7 +305,7 @@
 <!-- ===================== JAVASCRIPT ===================== -->
 <script>
 // ==================== CONFIG ====================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzGuDjBOsaCVu_NDdjxzFhMM2Z3xijtFleR2sLM8EbsX3LcWUpLjzlmF8cf2JgP7NFq/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOsczwaMvdi0bCZ2rxPEQiyuv8SeKW8jxwNRK1HlWqdcce74fJi-9NzfCO7SBOQnCo/exec';
 
 // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
 const STUDENT_DATA = {
@@ -451,7 +454,7 @@ function closeModal() {
     modal.style.display = 'none';
 }
 
-// ==================== MODAL VIEWS (unchanged) ====================
+// ==================== MODAL VIEWS ====================
 function showResultsModal() {
     modalTitleSpan.innerText = "📊 Overall Grade";
     modalBodyDiv.innerHTML = `
@@ -710,7 +713,6 @@ function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(() => {
         showToast(`Copied: ${text}`, "success");
     }).catch(() => {
-        // Fallback
         const textarea = document.createElement('textarea');
         textarea.value = text;
         document.body.appendChild(textarea);
@@ -836,8 +838,7 @@ window.addEventListener('click', function(e) {
 
 restoreSession();
 
-// ==================== FORGOT PASSWORD (kept) ====================
-// (Same as before – unchanged)
+// ==================== FORGOT PASSWORD ====================
 const forgotModal = document.getElementById('forgotModal');
 document.getElementById('closeForgotModalBtn').addEventListener('click', function() { forgotModal.style.display = 'none'; });
 document.getElementById('forgotCloseBtn').addEventListener('click', function() { forgotModal.style.display = 'none'; });
@@ -876,7 +877,6 @@ document.getElementById('forgotSubmitBtn').addEventListener('click', async funct
 });
 
 // ==================== TOPPER POSTER ====================
-// (Same as before – unchanged)
 let topperPhotoData = null;
 let cropperInstance = null;
 const CERT_BG = "https://i.postimg.cc/vBJs8jT4/topper.jpg";
