@@ -1,1163 +1,2053 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <title>NOORUSSALAM MADRASA | Student Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
     <style>
-        * { font-family: 'Anek Malayalam', 'Inter', sans-serif; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:'Anek Malayalam', 'Inter', sans-serif; background:radial-gradient(circle at 10% 20%, rgba(15,25,55,0.95), rgba(5,10,30,0.98)); min-height:100vh; position:relative; overflow-x:hidden; }
-        body::before { content:''; position:fixed; width:200%; height:200%; top:-50%; left:-50%; background:radial-gradient(circle, rgba(59,130,246,0.08) 0%, rgba(139,92,246,0.05) 50%, transparent 80%); animation:slowDrift 40s infinite alternate; pointer-events:none; z-index:0; }
-        @keyframes slowDrift { 0%{transform:translate(0,0) rotate(0deg);} 100%{transform:translate(5%,5%) rotate(5deg);} }
-        .container { position:relative; z-index:2; max-width:1400px; margin:0 auto; padding:20px; }
-        .glass-card { background:rgba(255,255,255,0.08); backdrop-filter:blur(16px); border-radius:2rem; border:1px solid rgba(255,255,255,0.12); box-shadow:0 25px 45px -12px rgba(0,0,0,0.4); transition:all 0.4s; }
-        .glass-card:hover { transform:translateY(-6px); border-color:rgba(59,130,246,0.5); }
-        .login-wrapper { min-height:100vh; display:flex; align-items:center; justify-content:center; }
-        .login-panel { max-width:480px; width:100%; background:rgba(15,25,55,0.75); backdrop-filter:blur(20px); border-radius:2.5rem; padding:2.5rem; border:1px solid rgba(255,255,255,0.2); box-shadow:0 30px 50px rgba(0,0,0,0.5); animation:floatIn 0.7s ease; }
-        @keyframes floatIn { from{opacity:0; transform:translateY(40px) scale(0.96);} to{opacity:1; transform:translateY(0) scale(1);} }
-        .logo-circle { width:85px; height:85px; background:linear-gradient(135deg, #3b82f6, #a855f7); border-radius:30px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; box-shadow:0 15px 35px rgba(59,130,246,0.3); }
-        .login-title { font-size:2rem; font-weight:800; background:linear-gradient(135deg, #fff, #93c5fd); -webkit-background-clip:text; background-clip:text; color:transparent; text-align:center; }
-        .input-group-custom { background:rgba(255,255,255,0.06); border-radius:1.2rem; border:1px solid rgba(255,255,255,0.15); transition:all 0.3s; display:flex; align-items:center; padding:0 1rem; }
-        .input-group-custom:focus-within { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); background:rgba(255,255,255,0.1); }
-        .form-control-glass { background:transparent; border:none; color:#ffffff; padding:0.9rem 0; width:100%; outline:none; }
-        .form-control-glass::placeholder { color:rgba(255,255,255,0.35); }
-        .form-control-glass:focus::placeholder { color:rgba(255,255,255,0.7); }
-        .btn-gradient { background:linear-gradient(95deg, #3b82f6, #8b5cf6); border:none; padding:14px; font-weight:700; border-radius:1.5rem; transition:transform 0.2s, box-shadow 0.2s; color:#fff; width:100%; cursor:pointer; }
-        .btn-gradient:hover { transform:scale(1.02); box-shadow:0 15px 30px -10px #3b82f6; }
-        .dashboard-header-glow { background:rgba(15,25,55,0.6); backdrop-filter:blur(20px); border-radius:2rem; padding:1rem 2rem; margin-bottom:2rem; border:1px solid rgba(255,255,255,0.1); display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; }
-        .avatar-neon { width:70px; height:70px; background:linear-gradient(135deg, #f97316, #ef4444); border-radius:30px; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; box-shadow:0 0 20px rgba(249,115,22,0.4); }
-        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.8rem; margin-bottom:2.5rem; }
-        .stat-card-neon { background:rgba(20,30,55,0.6); backdrop-filter:blur(12px); border-radius:1.8rem; padding:1.5rem; transition:all 0.3s; border:1px solid rgba(255,255,255,0.08); }
-        .stat-value-xl { font-size:3rem; font-weight:800; background:linear-gradient(120deg, #fff, #94a3b8); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .action-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:1.5rem; margin:2rem 0; }
-        .action-tile { background:rgba(255,255,255,0.05); backdrop-filter:blur(10px); border-radius:1.5rem; padding:1.5rem; text-align:center; cursor:pointer; transition:all 0.25s; border:1px solid rgba(255,255,255,0.05); }
-        .action-tile:hover { background:rgba(59,130,246,0.2); transform:translateY(-8px); border-color:#3b82f6; }
-        .activity-timeline { background:rgba(0,0,0,0.3); backdrop-filter:blur(8px); border-radius:1.5rem; padding:1.5rem; }
-        .glass-toast { background:rgba(0,0,0,0.8); backdrop-filter:blur(20px); border-left:4px solid #10b981; }
-        .modal-glass { background:rgba(10,20,40,0.95); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.2); }
-        .badge-rank { background:linear-gradient(135deg, #fbbf24, #f59e0b); padding:5px 12px; border-radius:40px; font-weight:700; }
-        .forgot-link { color:rgba(255,255,255,0.5); text-decoration:none; font-size:0.9rem; transition:color 0.2s; }
-        .forgot-link:hover { color:#93c5fd; text-decoration:underline; }
-        .topper-modal-glass { background:rgba(15,25,55,0.98); backdrop-filter:blur(24px); border:1px solid rgba(212,175,55,0.4); border-radius:2rem; max-width:800px; width:95%; max-height:95vh; overflow-y:auto; padding:25px; }
-        .topper-modal-glass .modal-header { border-bottom:2px solid #D4AF37; padding-bottom:12px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; }
-        .topper-modal-glass .modal-header h3 { color:#D4AF37; font-weight:700; }
-        .topper-modal-glass .modal-close { background:none; border:none; color:rgba(255,255,255,0.6); font-size:2rem; cursor:pointer; transition:0.2s; }
-        .topper-modal-glass .modal-close:hover { color:#ef4444; transform:rotate(90deg); }
-        .photo-container { width:180px; height:180px; margin:15px auto; border-radius:50%; overflow:hidden; border:4px solid #D4AF37; box-shadow:0 8px 20px rgba(0,0,0,0.3); background:#e8ddd0; }
-        .photo-container img { width:100%; height:100%; object-fit:cover; }
-        .upload-btn { background:linear-gradient(105deg, #1E3A8A, #3B82F6); color:#D4AF37; border:none; padding:10px 22px; border-radius:50px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:10px; transition:0.2s; }
-        .upload-btn:hover { transform:scale(1.02); box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-        .preview-btn { background:linear-gradient(105deg, #D4AF37, #C9A82E); color:#1E3A8A; border:none; padding:14px 28px; border-radius:60px; font-weight:800; font-size:1rem; cursor:pointer; width:100%; max-width:300px; margin:20px auto 0; display:flex; align-items:center; justify-content:center; gap:12px; transition:0.25s; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
-        .preview-btn:hover { transform:translateY(-3px); filter:brightness(1.02); }
-        .topper-info { text-align:center; color:white; margin-bottom:15px; }
-        .topper-info h4 { font-size:1.4rem; font-weight:700; }
-        .topper-info p { color:rgba(255,255,255,0.7); }
-        .crop-container { background:#ece1cf; border-radius:16px; overflow:hidden; max-height:55vh; display:flex; justify-content:center; align-items:center; margin:15px 0; }
-        .crop-container img { max-width:100%; display:block; }
-        .crop-actions { display:flex; justify-content:flex-end; gap:16px; margin-top:16px; }
-        .btn-crop-save { background:#D4AF37; border:none; padding:10px 24px; border-radius:60px; font-weight:800; color:#1E3A8A; cursor:pointer; }
-        .btn-cancel-crop { background:#e2d4c0; border:none; padding:10px 24px; border-radius:60px; font-weight:700; color:#5a3e1f; cursor:pointer; }
-        .poster-preview-container { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,28,58,0.97); z-index:10001; overflow:auto; padding:20px; backdrop-filter:blur(12px); display:none; }
-        .poster-preview-container .certificate-canvas { background:white; width:100%; max-width:700px; margin:40px auto 20px; border-radius:24px; box-shadow:0 25px 50px -12px black; display:block; border:3px solid #D4AF37; }
-        .poster-preview-container .close-preview { position:fixed; top:20px; right:25px; font-size:32px; color:white; background:rgba(212,175,55,0.2); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(5px); border:2px solid #D4AF37; z-index:10002; }
-        .poster-preview-container .close-preview:hover { background:#ef4444; transform:rotate(90deg); }
-        .poster-preview-buttons { position:fixed; bottom:25px; left:50%; transform:translateX(-50%); display:flex; gap:15px; z-index:10003; background:rgba(10,28,58,0.85); backdrop-filter:blur(12px); padding:12px 24px; border-radius:60px; border:1px solid #D4AF37; }
-        .poster-preview-buttons button { padding:12px 24px; border-radius:50px; font-weight:700; border:none; cursor:pointer; display:flex; align-items:center; gap:8px; transition:0.2s; }
-        .poster-preview-buttons button:first-child { background:#D4AF37; color:#1E3A8A; }
-        .poster-preview-buttons button:last-child { background:#1E3A8A; color:#D4AF37; }
-        .poster-preview-buttons button:hover { transform:translateY(-2px); }
-        .topper-loading { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,28,58,0.95); z-index:9999; display:none; align-items:center; justify-content:center; flex-direction:column; backdrop-filter:blur(10px); }
-        .topper-loading .spinner { width:55px; height:55px; border:4px solid rgba(212,175,55,0.2); border-top:4px solid #D4AF37; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:20px; }
-        .topper-loading p { color:white; font-weight:500; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .success-animation { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10003; display:none; }
-        .success-checkmark { width:70px; height:70px; stroke:white; stroke-width:2; background:#10b981; border-radius:50%; }
-        @media (max-width:680px) { .photo-container { width:140px; height:140px; } .poster-preview-buttons { flex-direction:column; width:90%; bottom:20px; } .poster-preview-buttons button { width:100%; justify-content:center; } }
-        #forgotModal .form-control-glass { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:1rem; padding:0.9rem 1.2rem; width:100%; outline:none; }
-        #forgotModal .form-control-glass:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
-        #editProfileModal .form-control-glass { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:1rem; padding:0.7rem 1rem; width:100%; outline:none; margin-top:4px; }
-        #editProfileModal .form-control-glass:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
-        #editProfileModal label { font-size:0.8rem; color:rgba(255,255,255,0.6); }
-        #findStudentIdModal .form-control-glass { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#fff; border-radius:1rem; padding:0.7rem 1rem; width:100%; outline:none; margin-top:4px; }
-        #findStudentIdModal .form-control-glass:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,0.3); }
-        #findStudentIdModal label { font-size:0.8rem; color:rgba(255,255,255,0.6); }
-        .grade-bar { height:6px; border-radius:4px; background:#e0e0e0; overflow:hidden; margin-top:6px; }
-        .grade-bar-fill { height:100%; border-radius:4px; transition:width 0.5s; }
+        /* ── Reset & Base ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+        }
+        body {
+            background: radial-gradient(circle at 10% 20%, rgba(15, 25, 55, 0.95), rgba(5, 10, 30, 0.98));
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            transition: background 0.4s, color 0.4s;
+        }
+        body.light-theme {
+            background: radial-gradient(circle at 10% 20%, #f0f4ff, #e8edf5);
+        }
+        body.light-theme .glass-card,
+        body.light-theme .stat-card-neon,
+        body.light-theme .activity-timeline,
+        body.light-theme .dashboard-header-glow,
+        body.light-theme .action-tile {
+            background: rgba(255, 255, 255, 0.7) !important;
+            backdrop-filter: blur(12px) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+            color: #1a1a2e !important;
+        }
+        body.light-theme .text-white {
+            color: #1a1a2e !important;
+        }
+        body.light-theme .text-white-50 {
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+        body.light-theme .login-panel {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(20px) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        body.light-theme .login-title {
+            background: linear-gradient(135deg, #1a1a2e, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+        body.light-theme .form-control-glass {
+            color: #1a1a2e !important;
+        }
+        body.light-theme .form-control-glass::placeholder {
+            color: rgba(0, 0, 0, 0.35) !important;
+        }
+        body.light-theme .input-group-custom {
+            background: rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+        }
+        body.light-theme .input-group-custom:focus-within {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.06) !important;
+        }
+        body.light-theme .stat-value-xl {
+            background: linear-gradient(120deg, #1a1a2e, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+        body.light-theme .modal-glass {
+            background: rgba(255, 255, 255, 0.95) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+        }
+        body.light-theme .modal-glass .text-white {
+            color: #1a1a2e !important;
+        }
+        body.light-theme .modal-glass .text-white-50 {
+            color: rgba(0, 0, 0, 0.6) !important;
+        }
+        body.light-theme .topper-modal-glass {
+            background: rgba(255, 255, 255, 0.97) !important;
+            border-color: #D4AF37 !important;
+        }
+        body.light-theme .topper-modal-glass .topper-info h4,
+        body.light-theme .topper-modal-glass .topper-info p {
+            color: #1a1a2e !important;
+        }
+        body.light-theme .topper-modal-glass .modal-header h3 {
+            color: #1a1a2e !important;
+        }
+        body.light-theme #calendarEventsList .glass-card {
+            background: rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(0, 0, 0, 0.06) !important;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(139, 92, 246, 0.05) 50%, transparent 80%);
+            animation: slowDrift 40s infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes slowDrift {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            100% {
+                transform: translate(5%, 5%) rotate(5deg);
+            }
+        }
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s;
+        }
+        .glass-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-panel {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(15, 25, 55, 0.75);
+            backdrop-filter: blur(20px);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
+            animation: floatIn 0.7s ease;
+        }
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.96);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .logo-circle {
+            width: 85px;
+            height: 85px;
+            background: linear-gradient(135deg, #3b82f6, #a855f7);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.3);
+        }
+        .login-title {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #93c5fd);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+        }
+        .input-group-custom {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+        }
+        .input-group-custom:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .form-control-glass {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            padding: 0.9rem 0;
+            width: 100%;
+            outline: none;
+        }
+        .form-control-glass::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+        .form-control-glass:focus::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .btn-gradient {
+            background: linear-gradient(95deg, #3b82f6, #8b5cf6);
+            border: none;
+            padding: 14px;
+            font-weight: 700;
+            border-radius: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: #fff;
+            width: 100%;
+            cursor: pointer;
+        }
+        .btn-gradient:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px -10px #3b82f6;
+        }
+        .dashboard-header-glow {
+            background: rgba(15, 25, 55, 0.6);
+            backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .avatar-neon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 800;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.4);
+            overflow: hidden;
+        }
+        .avatar-neon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+        .stat-card-neon {
+            background: rgba(20, 30, 55, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 1.8rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .stat-value-xl {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(120deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .action-tile {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .action-tile:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-8px);
+            border-color: #3b82f6;
+        }
+        .activity-timeline {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+        }
+        .glass-toast {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            border-left: 4px solid #10b981;
+        }
+        .modal-glass {
+            background: rgba(10, 20, 40, 0.95);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .badge-rank {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            padding: 5px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+        }
+        .forgot-link {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .forgot-link:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+        .topper-modal-glass {
+            background: rgba(15, 25, 55, 0.98);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-radius: 2rem;
+            max-width: 800px;
+            width: 95%;
+            max-height: 95vh;
+            overflow-y: auto;
+            padding: 25px;
+        }
+        .topper-modal-glass .modal-header {
+            border-bottom: 2px solid #D4AF37;
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topper-modal-glass .modal-header h3 {
+            color: #D4AF37;
+            font-weight: 700;
+        }
+        .topper-modal-glass .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .topper-modal-glass .modal-close:hover {
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+        .photo-container {
+            width: 180px;
+            height: 180px;
+            margin: 15px auto;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #D4AF37;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            background: #e8ddd0;
+        }
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .upload-btn {
+            background: linear-gradient(105deg, #1E3A8A, #3B82F6);
+            color: #D4AF37;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+        .upload-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .preview-btn {
+            background: linear-gradient(105deg, #D4AF37, #C9A82E);
+            color: #1E3A8A;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: 0.25s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .preview-btn:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.02);
+        }
+        .topper-info {
+            text-align: center;
+            color: white;
+            margin-bottom: 15px;
+        }
+        .topper-info h4 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .topper-info p {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .crop-container {
+            background: #ece1cf;
+            border-radius: 16px;
+            overflow: hidden;
+            max-height: 55vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 15px 0;
+        }
+        .crop-container img {
+            max-width: 100%;
+            display: block;
+        }
+        .crop-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .btn-crop-save {
+            background: #D4AF37;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-weight: 800;
+            color: #1E3A8A;
+            cursor: pointer;
+        }
+        .btn-cancel-crop {
+            background: #e2d4c0;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 60px;
+            font-weight: 700;
+            color: #5a3e1f;
+            cursor: pointer;
+        }
+        .poster-preview-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 28, 58, 0.97);
+            z-index: 10001;
+            overflow: auto;
+            padding: 20px;
+            backdrop-filter: blur(12px);
+            display: none;
+        }
+        .poster-preview-container .certificate-canvas {
+            background: white;
+            width: 100%;
+            max-width: 700px;
+            margin: 40px auto 20px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px black;
+            display: block;
+            border: 3px solid #D4AF37;
+        }
+        .poster-preview-container .close-preview {
+            position: fixed;
+            top: 20px;
+            right: 25px;
+            font-size: 32px;
+            color: white;
+            background: rgba(212, 175, 55, 0.2);
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 2px solid #D4AF37;
+            z-index: 10002;
+        }
+        .poster-preview-container .close-preview:hover {
+            background: #ef4444;
+            transform: rotate(90deg);
+        }
+        .poster-preview-buttons {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10003;
+            background: rgba(10, 28, 58, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            border-radius: 60px;
+            border: 1px solid #D4AF37;
+        }
+        .poster-preview-buttons button {
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+        .poster-preview-buttons button:first-child {
+            background: #D4AF37;
+            color: #1E3A8A;
+        }
+        .poster-preview-buttons button:last-child {
+            background: #1E3A8A;
+            color: #D4AF37;
+        }
+        .poster-preview-buttons button:hover {
+            transform: translateY(-2px);
+        }
+        .topper-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 28, 58, 0.95);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+        .topper-loading .spinner {
+            width: 55px;
+            height: 55px;
+            border: 4px solid rgba(212, 175, 55, 0.2);
+            border-top: 4px solid #D4AF37;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 20px;
+        }
+        .topper-loading p {
+            color: white;
+            font-weight: 500;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .success-animation {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10003;
+            display: none;
+        }
+        .success-checkmark {
+            width: 70px;
+            height: 70px;
+            stroke: white;
+            stroke-width: 2;
+            background: #10b981;
+            border-radius: 50%;
+        }
+
+        /* ── Theme toggle ── */
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 40px;
+            padding: 6px 12px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .theme-toggle .toggle-track {
+            width: 44px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 40px;
+            position: relative;
+            transition: 0.3s;
+        }
+        .theme-toggle .toggle-thumb {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        body.light-theme .theme-toggle .toggle-track {
+            background: #3b82f6;
+        }
+        body.light-theme .theme-toggle .toggle-thumb {
+            left: 22px;
+            background: white;
+        }
+        .theme-toggle .icon-sun,
+        .theme-toggle .icon-moon {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.6);
+            transition: 0.3s;
+        }
+        body.light-theme .theme-toggle .icon-sun {
+            color: #fbbf24;
+        }
+        body.light-theme .theme-toggle .icon-moon {
+            color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* ── Profile photo upload ── */
+        .profile-photo-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-photo-wrapper .photo-edit-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background: #3b82f6;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .profile-photo-wrapper .photo-edit-btn:hover {
+            transform: scale(1.1);
+            background: #2563eb;
+        }
+
+        /* ── ID Card preview ── */
+        .id-card-preview {
+            max-width: 280px;
+            margin: 10px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+            border: 2px solid #D4AF37;
+        }
+        .id-card-preview canvas {
+            width: 100%;
+            display: block;
+        }
+
+        @media (max-width: 680px) {
+            .photo-container {
+                width: 140px;
+                height: 140px;
+            }
+            .poster-preview-buttons {
+                flex-direction: column;
+                width: 90%;
+                bottom: 20px;
+            }
+            .poster-preview-buttons button {
+                width: 100%;
+                justify-content: center;
+            }
+            .dashboard-header-glow {
+                padding: 0.8rem 1.2rem;
+            }
+            .action-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 0.8rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.8rem;
+            }
+            .id-card-preview {
+                max-width: 220px;
+            }
+        }
+
+        #forgotModal .form-control-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border-radius: 1rem;
+            padding: 0.9rem 1.2rem;
+            width: 100%;
+            outline: none;
+        }
+        #forgotModal .form-control-glass:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        #editProfileModal .form-control-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border-radius: 1rem;
+            padding: 0.7rem 1rem;
+            width: 100%;
+            outline: none;
+            margin-top: 4px;
+        }
+        #editProfileModal .form-control-glass:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        #editProfileModal label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        #findStudentIdModal .form-control-glass {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border-radius: 1rem;
+            padding: 0.7rem 1rem;
+            width: 100%;
+            outline: none;
+            margin-top: 4px;
+        }
+        #findStudentIdModal .form-control-glass:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        #findStudentIdModal label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .grade-bar {
+            height: 6px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .grade-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 
-<div id="loadingOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:9999; display:none; justify-content:center; align-items:center; flex-direction:column; gap:1rem;">
-    <div class="spinner-border text-primary" style="width:4rem; height:4rem;" role="status"></div>
-    <p style="color:white; font-weight:600;">Loading smart portal...</p>
-</div>
-
-<!-- ===================== LOGIN SECTION ===================== -->
-<div id="loginSection" class="login-wrapper">
-    <div class="login-panel">
-        <div class="logo-circle">
-            <img src="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png" alt="Noorussalam Logo" style="width:60px; height:60px; object-fit:contain; border-radius:50%;">
-        </div>
-        <h1 class="login-title mb-2">NOORUSSALAM</h1>
-        <p class="text-center text-white-50 mb-4">Student Intelligent Dashboard</p>
-        <div id="offlineBadge" style="display:none;" class="alert alert-warning small mb-3"><i class="fas fa-wifi-slash"></i> Offline mode (cached)</div>
-        <form id="loginForm">
-            <div class="mb-4">
-                <div class="input-group-custom d-flex align-items-center px-3">
-                    <i class="fas fa-id-card text-primary me-2"></i>
-                    <input type="text" id="studentId" class="form-control-glass form-control" placeholder="Enter your Student ID" autofocus>
-                </div>
-            </div>
-            <button type="submit" class="btn-gradient btn w-100 text-white"><i class="fas fa-arrow-right-to-bracket me-2"></i> Access Dashboard</button>
-            <div class="mt-3 text-center">
-                <a href="#" id="forgotStudentIdLink" class="forgot-link"><i class="fas fa-question-circle me-1"></i> Forgot Student ID?</a>
-            </div>
-            <div class="mt-3 text-center text-white-50 small">
-                <i class="fa-solid fa-circle-info"></i> Student Id മറന്നാൽ ‘Forgot Student Id’ ക്ലിക്ക് ചെയ്ത് ക്ലാസും പേരിന്റെ ആദ്യത്തെ 3 അക്ഷരങ്ങളും ടൈപ്പ് ചെയ്യുക.
-            </div>
-        </form>
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div id="loadingOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); z-index:9999; display:none; justify-content:center; align-items:center; flex-direction:column; gap:1rem;">
+        <div class="spinner-border text-primary" style="width:4rem; height:4rem;" role="status"></div>
+        <p style="color:white; font-weight:600;">Loading smart portal...</p>
     </div>
-</div>
 
-<!-- ===================== FORGOT STUDENT ID MODAL ===================== -->
-<div id="findStudentIdModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1061; align-items:center; justify-content:center;">
-    <div class="modal-glass p-4" style="max-width:450px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
-        <div class="d-flex justify-content-between mb-3">
-            <h3 class="text-white fw-bold"><i class="fas fa-search text-info"></i> Find Student ID</h3>
-            <button onclick="closeFindStudentId()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
-        </div>
-        <form id="findStudentIdForm" onsubmit="findStudentId(event)">
-            <div class="mb-3">
-                <label>Class</label>
-                <select id="findClass" class="form-control-glass" required>
-                    <option value="">Select Class</option>
-                    <option value="1">Class 1</option>
-                    <option value="2">Class 2</option>
-                    <option value="3">Class 3</option>
-                    <option value="4">Class 4</option>
-                    <option value="5">Class 5</option>
-                    <option value="6">Class 6</option>
-                    <option value="7">Class 7</option>
-                    <option value="8">Class 8</option>
-                    <option value="9">Class 9</option>
-                    <option value="10">Class 10</option>
-                </select>
+    <!-- ===== LOGIN ===== -->
+    <div id="loginSection" class="login-wrapper">
+        <div class="login-panel">
+            <div class="logo-circle">
+                <img src="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png" alt="Noorussalam Logo" style="width:60px; height:60px; object-fit:contain; border-radius:50%;">
             </div>
-            <div class="mb-3">
-                <label>Student Name (First 3 Letters)</label>
-                <input type="text" id="findName" class="form-control-glass" 
-                       placeholder="e.g., SUH" 
-                       oninput="this.value = this.value.toUpperCase().slice(0,3);" 
-                       required>
-                <small class="text-white-50">ആദ്യത്തെ 3 അക്ഷരങ്ങൾ മാത്രം</small>
-            </div>
-            <button type="submit" class="btn-gradient w-100 text-white"><i class="fas fa-search me-2"></i> Find</button>
-        </form>
-        <div id="findResult" class="mt-3" style="display:none;"></div>
-    </div>
-</div>
-
-<!-- ===================== DASHBOARD ===================== -->
-<div id="dashboardSection" style="display:none;">
-    <div class="container">
-        <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <div class="avatar-neon" id="avatarInitials">SK</div>
-                <div>
-                    <h2 class="text-white mb-0 fw-bold" id="studentFullName">Student Name</h2>
-                    <div class="text-white-50"><i class="fas fa-id-card me-1"></i> <span id="displayStudentId">ID</span> • <i class="fas fa-graduation-cap"></i> <span id="studentClassText">Class</span></div>
+            <h1 class="login-title mb-2">NOORUSSALAM</h1>
+            <p class="text-center text-white-50 mb-4">Student Intelligent Dashboard</p>
+            <div id="offlineBadge" style="display:none;" class="alert alert-warning small mb-3"><i class="fas fa-wifi-slash"></i> Offline mode (cached)</div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <div class="input-group-custom d-flex align-items-center px-3">
+                        <i class="fas fa-id-card text-primary me-2"></i>
+                        <input type="text" id="studentId" class="form-control-glass form-control" placeholder="Enter your Student ID" autofocus>
+                    </div>
                 </div>
-            </div>
-            <div class="d-flex gap-3 mt-2 mt-sm-0">
-                <!-- Sync button removed -->
-                <button id="logoutBtn" class="btn btn-danger rounded-pill px-4"><i class="fas fa-sign-out-alt"></i> Exit</button>
-            </div>
+                <button type="submit" class="btn-gradient btn w-100 text-white"><i class="fas fa-arrow-right-to-bracket me-2"></i> Access Dashboard</button>
+                <div class="mt-3 text-center">
+                    <a href="#" id="forgotStudentIdLink" class="forgot-link"><i class="fas fa-question-circle me-1"></i> Forgot Student ID?</a>
+                </div>
+                <div class="mt-3 text-center text-white-50 small">
+                    <i class="fa-solid fa-circle-info"></i> Student Id മറന്നാൽ ‘Forgot Student Id’ ക്ലിക്ക് ചെയ്ത് ക്ലാസും പേരിന്റെ ആദ്യത്തെ 3 അക്ഷരങ്ങളും ടൈപ്പ് ചെയ്യുക.
+                </div>
+            </form>
         </div>
+    </div>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-            <div class="stat-card-neon">
-                <div class="d-flex justify-content-between align-items-start">
+    <!-- ===== FORGOT STUDENT ID MODAL ===== -->
+    <div id="findStudentIdModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1061; align-items:center; justify-content:center;">
+        <div class="modal-glass p-4" style="max-width:450px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
+            <div class="d-flex justify-content-between mb-3">
+                <h3 class="text-white fw-bold"><i class="fas fa-search text-info"></i> Find Student ID</h3>
+                <button onclick="closeFindStudentId()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="findStudentIdForm" onsubmit="findStudentId(event)">
+                <div class="mb-3">
+                    <label>Class</label>
+                    <select id="findClass" class="form-control-glass" required>
+                        <option value="">Select Class</option>
+                        <option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option>
+                        <option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option>
+                        <option value="7">Class 7</option><option value="8">Class 8</option><option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label>Student Name (First 3 Letters)</label>
+                    <input type="text" id="findName" class="form-control-glass"
+                    placeholder="e.g., SUH"
+                    oninput="this.value = this.value.toUpperCase().slice(0,3);"
+                    required>
+                    <small class="text-white-50">ആദ്യത്തെ 3 അക്ഷരങ്ങൾ മാത്രം</small>
+                </div>
+                <button type="submit" class="btn-gradient w-100 text-white"><i class="fas fa-search me-2"></i> Find</button>
+            </form>
+            <div id="findResult" class="mt-3" style="display:none;"></div>
+        </div>
+    </div>
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="dashboardSection" style="display:none;">
+        <div class="container">
+            <!-- Header -->
+            <div class="dashboard-header-glow d-flex flex-wrap justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="avatar-neon" id="avatarInitials">
+                        <img id="avatarPhoto" src="" alt="Photo" style="display:none;">
+                        <span id="avatarText">SK</span>
+                    </div>
                     <div>
-                        <span class="stat-value-xl" id="overallGradeDisplay">A+</span>
-                        <div class="text-white-50">Academic Grade</div>
-                        <!-- Grade line indicator (graph) -->
-                        <div class="grade-bar" style="width:100%;">
-                            <div id="gradeLineFill" class="grade-bar-fill" style="width:0%; background:linear-gradient(90deg, #4ade80, #facc15, #ef4444);"></div>
+                        <h2 class="text-white mb-0 fw-bold" id="studentFullName">Student Name</h2>
+                        <div class="text-white-50"><i class="fas fa-id-card me-1"></i> <span id="displayStudentId">ID</span> • <i class="fas fa-graduation-cap"></i> <span id="studentClassText">Class</span></div>
+                    </div>
+                </div>
+                <div class="d-flex gap-3 mt-2 mt-sm-0 align-items-center">
+                    <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Theme">
+                        <i class="fas fa-sun icon-sun"></i>
+                        <div class="toggle-track">
+                            <div class="toggle-thumb"></div>
+                        </div>
+                        <i class="fas fa-moon icon-moon"></i>
+                    </div>
+                    <button id="logoutBtn" class="btn btn-danger rounded-pill px-4"><i class="fas fa-sign-out-alt"></i> Exit</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card-neon">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="stat-value-xl" id="overallGradeDisplay">A+</span>
+                            <div class="text-white-50">Academic Grade</div>
+                            <div class="grade-bar" style="width:100%;">
+                                <div id="gradeLineFill" class="grade-bar-fill" style="width:0%; background:linear-gradient(90deg, #4ade80, #facc15, #ef4444);"></div>
+                            </div>
+                        </div>
+                        <div id="gradeIconContainer" class="bg-primary bg-opacity-25 p-3 rounded-4">
+                            <i id="gradeIcon" class="fas fa-graduation-cap fa-2x text-warning"></i>
                         </div>
                     </div>
-                    <div id="gradeIconContainer" class="bg-primary bg-opacity-25 p-3 rounded-4">
-                        <i id="gradeIcon" class="fas fa-graduation-cap fa-2x text-warning"></i>
-                    </div>
+                    <div class="mt-3"><div class="progress" style="height:8px;"><div id="gradeProgressFill" class="progress-bar bg-gradient" style="width:92%"></div></div><div class="d-flex justify-content-between mt-1"><small>Performance</small><small id="gradePercentLabel">92%</small></div></div>
                 </div>
-                <div class="mt-3"><div class="progress" style="height:8px;"><div id="gradeProgressFill" class="progress-bar bg-gradient" style="width:92%"></div></div><div class="d-flex justify-content-between mt-1"><small>Performance</small><small id="gradePercentLabel">92%</small></div></div>
-            </div>
-            <div class="stat-card-neon">
-                <div><span class="stat-value-xl" id="attendanceRateLabel">94%</span><div class="text-white-50">Attendance Rate</div></div>
-                <div class="mt-2 d-flex align-items-center gap-2"><i class="fas fa-chart-line text-success"></i><span class="text-white-50" id="attendanceTrend">+2% vs last month</span></div>
-                <div class="progress mt-2"><div id="attendanceProgressFill" class="progress-bar bg-success" style="width:94%"></div></div>
-            </div>
-            <div class="stat-card-neon">
-                <div><span class="stat-value-xl" id="rankNumber">3rd</span><div class="text-white-50">Class Rank</div></div>
-                <div class="mt-2"><span id="rankBadge" class="badge-rank"><i class="fas fa-arrow-up me-1"></i> Improved +1</span></div>
-            </div>
-            <div class="stat-card-neon">
-                <div><span class="stat-value-xl" id="moralValuesDisplay">A+</span><div class="text-white-50">Moral Values</div></div>
-                <div class="mt-2 d-flex align-items-center gap-2"><i class="fas fa-heart text-danger"></i><span class="text-white-50" id="moralValuesSub">Honesty, Respect</span></div>
-                <div class="progress mt-2"><div id="moralValuesProgressFill" class="progress-bar bg-warning" style="width:95%"></div></div>
-            </div>
-        </div>
-
-        <!-- Action Grid -->
-        <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
-            <h4 class="text-white fw-semibold"><i class="fas fa-bolt text-warning me-2"></i>Neuro Actions</h4>
-        </div>
-        <div class="action-grid">
-            <div class="action-tile" onclick="showResultsModal()"><div class="bg-primary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-chart-simple fa-2x text-primary"></i></div><h6 class="text-white"> റിസൾട്ടുകൾ</h6><small class="text-white-50">Overall Grade</small></div>
-            <div class="action-tile" onclick="showAttendanceReport()"><div class="bg-success bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-calendar-week fa-2x text-success"></i></div><h6 class="text-white">ഹാജർ നില</h6><small class="text-white-50">Monthly report</small></div>
-            <div class="action-tile" onclick="showMoralValuesModal()"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-hand-holding-heart fa-2x text-warning"></i></div><h6 class="text-white">മൂല്യബോധം</h6><small class="text-white-50">Character report</small></div>
-            <div class="action-tile" onclick="showProfileCard()"><div class="bg-secondary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-user-astronaut fa-2x text-secondary"></i></div><h6 class="text-white">പ്രൊഫൈൽ</h6><small class="text-white-50">Personal info</small></div>
-            <div class="action-tile" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-trophy fa-2x text-warning"></i></div><h6 class="text-white">🏆 Topper Poster</h6><small class="text-white-50">Download certificate</small></div>
-            <div class="action-tile" onclick="window.location.href='student-zone.html'"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">📚 Study Zone</h6><small class="text-white-50">Notes & Resources</small></div>
-        </div>
-
-        <!-- Activity & Events -->
-        <div class="row g-4 mt-2">
-            <div class="col-lg-6">
-                <div class="activity-timeline">
-                    <h5 class="text-white mb-3"><i class="fas fa-waveform me-2 text-primary"></i>Live Feed</h5>
-                    <ul class="list-unstyled" id="activityFeedList">
-                        <li class="text-white-50 text-center py-3"><i class="fas fa-spinner fa-pulse"></i> Loading...</li>
-                    </ul>
+                <div class="stat-card-neon">
+                    <div><span class="stat-value-xl" id="attendanceRateLabel">94%</span><div class="text-white-50">Attendance Rate</div></div>
+                    <div class="mt-2 d-flex align-items-center gap-2"><i class="fas fa-chart-line text-success"></i><span class="text-white-50" id="attendanceTrend">+2% vs last month</span></div>
+                    <div class="progress mt-2"><div id="attendanceProgressFill" class="progress-bar bg-success" style="width:94%"></div></div>
+                </div>
+                <div class="stat-card-neon">
+                    <div><span class="stat-value-xl" id="rankNumber">3rd</span><div class="text-white-50">Class Rank</div></div>
+                    <div class="mt-2"><span id="rankBadge" class="badge-rank"><i class="fas fa-arrow-up me-1"></i> Improved +1</span></div>
+                </div>
+                <div class="stat-card-neon">
+                    <div><span class="stat-value-xl" id="moralValuesDisplay">A+</span><div class="text-white-50">Moral Values</div></div>
+                    <div class="mt-2 d-flex align-items-center gap-2"><i class="fas fa-heart text-danger"></i><span class="text-white-50" id="moralValuesSub">Honesty, Respect</span></div>
+                    <div class="progress mt-2"><div id="moralValuesProgressFill" class="progress-bar bg-warning" style="width:95%"></div></div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="activity-timeline">
-                    <h5 class="text-white mb-3"><i class="fas fa-calendar-alt me-2 text-warning"></i>Upcoming Events</h5>
-                    <div id="calendarEventsList" class="d-flex flex-column gap-3">
-                        <div class="text-white-50 text-center">Loading events...</div>
+
+            <!-- Action Grid -->
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                <h4 class="text-white fw-semibold"><i class="fas fa-bolt text-warning me-2"></i>Neuro Actions</h4>
+            </div>
+            <div class="action-grid">
+                <div class="action-tile" onclick="showResultsModal()"><div class="bg-primary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-chart-simple fa-2x text-primary"></i></div><h6 class="text-white"> റിസൾട്ടുകൾ</h6><small class="text-white-50">Overall Grade</small></div>
+                <div class="action-tile" onclick="showAttendanceReport()"><div class="bg-success bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-calendar-week fa-2x text-success"></i></div><h6 class="text-white">ഹാജർ നില</h6><small class="text-white-50">Monthly report</small></div>
+                <div class="action-tile" onclick="showMoralValuesModal()"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-hand-holding-heart fa-2x text-warning"></i></div><h6 class="text-white">മൂല്യബോധം</h6><small class="text-white-50">Character report</small></div>
+                <div class="action-tile" onclick="showProfileCard()"><div class="bg-secondary bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-user-astronaut fa-2x text-secondary"></i></div><h6 class="text-white">പ്രൊഫൈൽ</h6><small class="text-white-50">Personal info</small></div>
+                <div class="action-tile" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-trophy fa-2x text-warning"></i></div><h6 class="text-white">🏆 Topper Poster</h6><small class="text-white-50">Download certificate</small></div>
+                <div class="action-tile" onclick="window.location.href='student-zone.html'"><div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-book-open fa-2x text-info"></i></div><h6 class="text-white">📚 Study Zone</h6><small class="text-white-50">Notes & Resources</small></div>
+                <!-- ID Card -->
+                <div class="action-tile" onclick="showIdCard()"><div class="bg-teal bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;background:rgba(20,184,166,0.2)!important;"><i class="fas fa-id-card fa-2x text-teal" style="color:#14b8a6;"></i></div><h6 class="text-white">🪪 ID Card</h6><small class="text-white-50">Digital ID</small></div>
+            </div>
+
+            <!-- Two-column: Activity + Events -->
+            <div class="row g-4 mt-2">
+                <div class="col-lg-6">
+                    <div class="activity-timeline">
+                        <h5 class="text-white mb-3"><i class="fas fa-waveform me-2 text-primary"></i>Live Feed</h5>
+                        <ul class="list-unstyled" id="activityFeedList">
+                            <li class="text-white-50 text-center py-3"><i class="fas fa-spinner fa-pulse"></i> Loading...</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="activity-timeline">
+                        <h5 class="text-white mb-3"><i class="fas fa-calendar-alt me-2 text-warning"></i>Upcoming Events</h5>
+                        <div id="calendarEventsList" class="d-flex flex-column gap-3">
+                            <div class="text-white-50 text-center">Loading events...</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <div class="text-center text-white-50 mt-5 pb-4 small">
+                <i class="fas fa-shield-alt me-1"></i> Encrypted session • Noorussalam Madrasa v3.0
+            </div>
         </div>
-        <div class="text-center text-white-50 mt-5 pb-4 small">
-            <i class="fas fa-shield-alt me-1"></i> Encrypted session • Noorussalam Madrasa v3.0
+    </div>
+
+    <!-- ===== GLOBAL MODAL ===== -->
+    <div id="globalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1050; align-items:center; justify-content:center;">
+        <div class="modal-glass rounded-4 p-4" style="max-width:600px; width:90%;">
+            <div class="d-flex justify-content-between mb-3"><h3 id="modalTitle" class="text-white fw-bold">Title</h3><button id="closeModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
+            <div id="modalContentBody" class="text-white-50" style="max-height:70vh; overflow-y:auto;"></div>
         </div>
     </div>
-</div>
 
-<!-- ===================== GLOBAL MODAL ===================== -->
-<div id="globalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1050; align-items:center; justify-content:center;">
-    <div class="modal-glass rounded-4 p-4" style="max-width:500px; width:90%;">
-        <div class="d-flex justify-content-between mb-3"><h3 id="modalTitle" class="text-white fw-bold">Title</h3><button id="closeModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
-        <div id="modalContentBody" class="text-white-50" style="max-height:60vh; overflow-y:auto;"></div>
-    </div>
-</div>
-
-<!-- ===================== FORGOT PASSWORD MODAL ===================== -->
-<div id="forgotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
-    <div class="modal-glass p-4" style="max-width:420px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
-        <div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">🔑 Forgot Password</h3><button id="closeForgotModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
-        <div id="forgotStep1"><p class="text-white-50">Enter your Student ID to retrieve your password.</p><input type="text" id="forgotStudentId" class="form-control-glass mb-3" placeholder="Student ID"><button id="forgotSubmitBtn" class="btn-gradient btn w-100 text-white"><i class="fas fa-search me-2"></i> Find Password</button></div>
-        <div id="forgotStep2" style="display:none;"><div id="forgotResult" class="text-center"></div><button id="forgotCloseBtn" class="btn btn-outline-light mt-3 w-100">Close</button></div>
-        <div id="forgotLoading" style="display:none; text-align:center; padding:20px;"><div class="spinner-border text-primary" role="status"></div><p class="text-white-50 mt-2">Checking...</p></div>
-    </div>
-</div>
-
-<!-- ===================== EDIT PROFILE MODAL ===================== -->
-<div id="editProfileModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1070; align-items:center; justify-content:center;">
-    <div class="modal-glass p-4" style="max-width:450px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
-        <div class="d-flex justify-content-between mb-3">
-            <h3 class="text-white fw-bold"><i class="fas fa-user-edit text-info"></i> Edit Profile</h3>
-            <button onclick="closeEditProfile()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
+    <!-- ===== FORGOT PASSWORD MODAL ===== -->
+    <div id="forgotModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
+        <div class="modal-glass p-4" style="max-width:420px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
+            <div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">🔑 Forgot Password</h3><button id="closeForgotModalBtn" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
+            <div id="forgotStep1"><p class="text-white-50">Enter your Student ID to retrieve your password.</p><input type="text" id="forgotStudentId" class="form-control-glass mb-3" placeholder="Student ID"><button id="forgotSubmitBtn" class="btn-gradient btn w-100 text-white"><i class="fas fa-search me-2"></i> Find Password</button></div>
+            <div id="forgotStep2" style="display:none;"><div id="forgotResult" class="text-center"></div><button id="forgotCloseBtn" class="btn btn-outline-light mt-3 w-100">Close</button></div>
+            <div id="forgotLoading" style="display:none; text-align:center; padding:20px;"><div class="spinner-border text-primary" role="status"></div><p class="text-white-50 mt-2">Checking...</p></div>
         </div>
-        <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
-            <div class="mb-3">
-                <label>Full Name</label>
-                <input type="text" id="editName" class="form-control-glass" required>
-            </div>
-            <div class="mb-3">
-                <label>Father's Name</label>
-                <input type="text" id="editFatherName" class="form-control-glass">
-            </div>
-            <div class="mb-3">
-                <label>Date of Birth</label>
-                <input type="date" id="editDob" class="form-control-glass">
-            </div>
-            <div class="mb-3">
-                <label>Email</label>
-                <input type="email" id="editEmail" class="form-control-glass">
-            </div>
-            <div class="mb-3">
-                <label>Phone</label>
-                <input type="tel" id="editPhone" class="form-control-glass">
-            </div>
-            <div class="mb-3">
-                <label>New Password (leave blank to keep current)</label>
-                <input type="password" id="editPassword" class="form-control-glass" placeholder="••••••••">
-            </div>
-            <button type="submit" class="btn-gradient w-100 text-white"><i class="fas fa-save me-2"></i> Save Changes</button>
-        </form>
     </div>
-</div>
 
-<!-- ===================== TOPPER POSTER MODALS ===================== -->
-<div id="topperModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); z-index:1051; align-items:center; justify-content:center; padding:20px;">
-    <div class="topper-modal-glass"><div class="modal-header"><h3><i class="fas fa-crown" style="color:#D4AF37;"></i> 🏆 Topper Poster</h3><button class="modal-close" onclick="closeTopperModal()">×</button></div><div class="topper-info"><h4 id="topperNameDisplay">Student Name</h4><p id="topperClassRank">Class X - Rank 1</p></div><div class="photo-section text-center"><div class="photo-container" style="margin:0 auto 15px;"><img id="topperPhotoPreview" src="" alt="Photo"></div><input type="file" id="topperPhotoUpload" accept="image/*" style="display:none"><button class="upload-btn" onclick="openTopperCrop()"><i class="fas fa-crop-alt"></i> Upload & Crop Photo</button><p style="color:rgba(255,255,255,0.4); font-size:0.8rem; margin-top:8px;">Optional – upload a square photo</p></div><div class="text-center"><button class="preview-btn" onclick="previewTopperPoster()"><i class="fas fa-certificate"></i> Preview Poster</button></div><p style="color:rgba(255,255,255,0.3); font-size:0.7rem; text-align:center; margin-top:15px;">Download as PNG or PDF from preview</p></div>
-</div>
+    <!-- ===== EDIT PROFILE MODAL ===== -->
+    <div id="editProfileModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(12px); z-index:1070; align-items:center; justify-content:center;">
+        <div class="modal-glass p-4" style="max-width:450px; width:90%; background:rgba(15,25,55,0.98); border:1px solid rgba(255,255,255,0.2); border-radius:2rem;">
+            <div class="d-flex justify-content-between mb-3">
+                <h3 class="text-white fw-bold"><i class="fas fa-user-edit text-info"></i> Edit Profile</h3>
+                <button onclick="closeEditProfile()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="editProfileForm" onsubmit="saveProfileChanges(event)">
+                <div class="mb-3"><label>Full Name</label><input type="text" id="editName" class="form-control-glass" required></div>
+                <div class="mb-3"><label>Father's Name</label><input type="text" id="editFatherName" class="form-control-glass"></div>
+                <div class="mb-3"><label>Date of Birth</label><input type="date" id="editDob" class="form-control-glass"></div>
+                <div class="mb-3"><label>Email</label><input type="email" id="editEmail" class="form-control-glass"></div>
+                <div class="mb-3"><label>Phone</label><input type="tel" id="editPhone" class="form-control-glass"></div>
+                <div class="mb-3"><label>New Password (leave blank to keep current)</label><input type="password" id="editPassword" class="form-control-glass" placeholder="••••••••"></div>
+                <button type="submit" class="btn-gradient w-100 text-white"><i class="fas fa-save me-2"></i> Save Changes</button>
+            </form>
+        </div>
+    </div>
 
-<div id="topperCropModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
-    <div class="modal-glass rounded-4 p-4" style="max-width:600px; width:95%;"><div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">✂️ Crop Photo</h3><button onclick="closeTopperCrop()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div><div class="crop-container"><img id="topperCropImage" style="max-width:100%; display:block;"></div><div class="crop-actions"><button class="btn-cancel-crop" onclick="closeTopperCrop()">❌ Cancel</button><button class="btn-crop-save" onclick="saveTopperCrop()">✔️ Crop & Save</button></div></div>
-</div>
+    <!-- ===== TOPPER POSTER MODALS ===== -->
+    <div id="topperModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(12px); z-index:1051; align-items:center; justify-content:center; padding:20px;">
+        <div class="topper-modal-glass"><div class="modal-header"><h3><i class="fas fa-crown" style="color:#D4AF37;"></i> 🏆 Topper Poster</h3><button class="modal-close" onclick="closeTopperModal()">×</button></div><div class="topper-info"><h4 id="topperNameDisplay">Student Name</h4><p id="topperClassRank">Class X - Rank 1</p></div><div class="photo-section text-center"><div class="photo-container" style="margin:0 auto 15px;"><img id="topperPhotoPreview" src="" alt="Photo"></div><input type="file" id="topperPhotoUpload" accept="image/*" style="display:none"><button class="upload-btn" onclick="openTopperCrop()"><i class="fas fa-crop-alt"></i> Upload & Crop Photo</button><p style="color:rgba(255,255,255,0.4); font-size:0.8rem; margin-top:8px;">Optional – upload a square photo</p></div><div class="text-center"><button class="preview-btn" onclick="previewTopperPoster()"><i class="fas fa-certificate"></i> Preview Poster</button></div><p style="color:rgba(255,255,255,0.3); font-size:0.7rem; text-align:center; margin-top:15px;">Download as PNG or PDF from preview</p></div>
+    </div>
 
-<div id="posterPreviewOverlay" class="poster-preview-container"><div class="close-preview" onclick="closePosterPreview()">×</div><canvas id="posterPreviewCanvas" class="certificate-canvas"></canvas><div class="poster-preview-buttons"><button onclick="downloadTopperPoster('png')"><i class="fas fa-download"></i> PNG</button><button onclick="downloadTopperPoster('pdf')"><i class="fas fa-file-pdf"></i> PDF</button></div></div>
-<div class="topper-loading" id="topperLoading"><div class="spinner"></div><p id="topperLoadingText">Generating poster...</p></div>
-<div class="success-animation" id="topperSuccess"><svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none"/><path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
+    <div id="topperCropModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); z-index:1060; align-items:center; justify-content:center;">
+        <div class="modal-glass rounded-4 p-4" style="max-width:600px; width:95%;"><div class="d-flex justify-content-between mb-3"><h3 class="text-white fw-bold">✂️ Crop Photo</h3><button onclick="closeTopperCrop()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div><div class="crop-container"><img id="topperCropImage" style="max-width:100%; display:block;"></div><div class="crop-actions"><button class="btn-cancel-crop" onclick="closeTopperCrop()">❌ Cancel</button><button class="btn-crop-save" onclick="saveTopperCrop()">✔️ Crop & Save</button></div></div>
+    </div>
 
-<!-- ===================== JAVASCRIPT ===================== -->
-<script>
-// ==================== CONFIG ====================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2olOhLt65-5R6UG7ZV8c0T9u5lkXfE649Y7d1LKvJ-dK4vov8RhxHRHztIkFa-Gk/exec';
+    <div id="posterPreviewOverlay" class="poster-preview-container"><div class="close-preview" onclick="closePosterPreview()">×</div><canvas id="posterPreviewCanvas" class="certificate-canvas"></canvas><div class="poster-preview-buttons"><button onclick="downloadTopperPoster('png')"><i class="fas fa-download"></i> PNG</button><button onclick="downloadTopperPoster('pdf')"><i class="fas fa-file-pdf"></i> PDF</button></div></div>
+    <div class="topper-loading" id="topperLoading"><div class="spinner"></div><p id="topperLoadingText">Generating poster...</p></div>
+    <div class="success-animation" id="topperSuccess"><svg class="success-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="none"/><path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/></svg></div>
 
-// ==================== MOCK DATA (OFFLINE FALLBACK) ====================
-const STUDENT_DATA = {
-    "NSM2025001": { password: "welcome123", name: "Suhail Kerala", class: "Grade 9 - STEM", roll: "15", overallGrade: "A+", attendance: 94, rank: 3, rankChange: "+1", moralValuesGrade: "A+", moralValuesSub: "Honesty:A+, Respect:A", performance: 92, avatar: "SK", email: "suhail@noor.edu", phone: "+91 9876543210", trendAttendance: "+2%", fatherName: "Abdul Rahman", dob: "2006-05-15" },
-    "NSM2025002": { password: "welcome123", name: "Aisha Rahman", class: "Grade 8 - Arts", roll: "08", overallGrade: "A", attendance: 96, rank: 2, rankChange: "0", moralValuesGrade: "A", moralValuesSub: "Honesty:A, Respect:A+", performance: 88, avatar: "AR", email: "aisha@noor.edu", phone: "+91 9876543211", trendAttendance: "+1%", fatherName: "Rahman Khan", dob: "2007-08-22" }
-};
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT ============================================= -->
+    <!-- ============================================================ -->
+    <script>
+        // ==================== CONFIG ====================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7H7VTQMT0vNylLt_b3BhW7LL-aFndtJ7h07VMtgzLTzsJrBcXBxZqPCUxh15Sky1D/exec';
 
-let currentUser = null;
-const loginSection = document.getElementById('loginSection');
-const dashboardSection = document.getElementById('dashboardSection');
-const loadingOverlay = document.getElementById('loadingOverlay');
-const modal = document.getElementById('globalModal');
-const closeModalBtn = document.getElementById('closeModalBtn');
-const modalTitleSpan = document.getElementById('modalTitle');
-const modalBodyDiv = document.getElementById('modalContentBody');
+        // ==================== MOCK DATA (OFFLINE FALLBACK) ====================
+        const STUDENT_DATA = {
+            "NSM2025001": { password: "welcome123", name: "Suhail P", class: "1", roll: "1", overallGrade: "A+",
+                attendance: 94, rank: 3, rankChange: "+1", moralValuesGrade: "A+", moralValuesSub: "Honesty:A+, Respect:A",
+                performance: 92, avatar: "SP", email: "suhail@noor.edu", phone: "9876543210", trendAttendance: "+2%",
+                fatherName: "Siraj", dob: "2006-05-15", photo: "" },
+            "NSM2025002": { password: "welcome123", name: "Aisha Rahman", class: "8", roll: "08", overallGrade: "A",
+                attendance: 96, rank: 2, rankChange: "0", moralValuesGrade: "A", moralValuesSub: "Honesty:A, Respect:A+",
+                performance: 88, avatar: "AR", email: "aisha@noor.edu", phone: "+91 9876543211", trendAttendance: "+1%",
+                fatherName: "Rahman Khan", dob: "2007-08-22", photo: "" }
+        };
 
-// ==================== UTILITY FUNCTIONS ====================
-function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
+        let currentUser = null;
+        const loginSection = document.getElementById('loginSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const modal = document.getElementById('globalModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const modalTitleSpan = document.getElementById('modalTitle');
+        const modalBodyDiv = document.getElementById('modalContentBody');
 
-function showToast(message, type = 'success') {
-    let toastDiv = document.createElement('div');
-    toastDiv.className = 'position-fixed bottom-0 end-0 m-3 p-3 rounded-4 text-white d-flex align-items-center gap-3 glass-toast';
-    toastDiv.style.zIndex = '1200';
-    toastDiv.style.background = 'rgba(0,0,0,0.85)';
-    toastDiv.style.backdropFilter = 'blur(12px)';
-    toastDiv.style.borderLeft = `4px solid ${type === 'success' ? '#10b981' : '#ef4444'}`;
-    toastDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} fa-lg"></i><span>${message}</span>`;
-    document.body.appendChild(toastDiv);
-    setTimeout(() => { toastDiv.style.opacity = '0'; setTimeout(() => toastDiv.remove(), 500); }, 3000);
-}
+        // ==================== UTILITY ====================
+        function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
 
-// ==================== DATE FORMATTER (date only) ====================
-function formatDate(dateValue) {
-    if (!dateValue) return '';
-    try {
-        let d = new Date(dateValue);
-        if (isNaN(d)) return dateValue;
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return d.toLocaleString('en-US', options);
-    } catch (e) {
-        return dateValue;
-    }
-}
-
-function formatMonthYear(dateValue) {
-    if (!dateValue) return '';
-    try {
-        let d = new Date(dateValue);
-        if (isNaN(d)) return dateValue;
-        const month = d.toLocaleString('en-US', { month: 'short' });
-        const year = d.getFullYear();
-        return `${month}/${year}`;
-    } catch (e) {
-        return dateValue;
-    }
-}
-
-// ==================== ACADEMIC GRADE ICON & COLOR ====================
-function getGradeDetails(grade) {
-    const map = {
-        'A+': { icon: 'fa-star', color: '#22c55e', width: 100 },
-        'A': { icon: 'fa-star', color: '#4ade80', width: 90 },
-        'B+': { icon: 'fa-star-half-alt', color: '#facc15', width: 80 },
-        'B': { icon: 'fa-star-half-alt', color: '#fbbf24', width: 70 },
-        'C+': { icon: 'fa-circle', color: '#fb923c', width: 60 },
-        'C': { icon: 'fa-circle', color: '#f97316', width: 50 },
-        'D+': { icon: 'fa-circle', color: '#ef4444', width: 40 },
-        'D': { icon: 'fa-circle', color: '#dc2626', width: 30 },
-        'E': { icon: 'fa-circle', color: '#b91c1c', width: 20 }
-    };
-    return map[grade] || { icon: 'fa-question', color: '#94a3b8', width: 0 };
-}
-
-// ==================== UPDATE DASHBOARD UI ====================
-function updateDashboardUI() {
-    if (!currentUser) return;
-    document.getElementById('studentFullName').innerText = currentUser.name;
-    document.getElementById('displayStudentId').innerText = currentUser.studentId;
-    document.getElementById('studentClassText').innerText = currentUser.class;
-    document.getElementById('avatarInitials').innerText = currentUser.avatar;
-    document.getElementById('overallGradeDisplay').innerText = currentUser.overallGrade;
-    let perf = currentUser.performance; 
-    document.getElementById('gradeProgressFill').style.width = perf + '%'; 
-    document.getElementById('gradePercentLabel').innerHTML = perf + '%';
-
-    // Update grade icon and line
-    const grade = currentUser.overallGrade;
-    const gradeInfo = getGradeDetails(grade);
-    document.getElementById('gradeIcon').className = `fas ${gradeInfo.icon} fa-2x`;
-    document.getElementById('gradeIconContainer').style.backgroundColor = gradeInfo.color + '33';
-    document.getElementById('gradeLineFill').style.width = gradeInfo.width + '%';
-    document.getElementById('gradeLineFill').style.background = `linear-gradient(90deg, ${gradeInfo.color}, ${gradeInfo.color})`;
-
-    document.getElementById('attendanceRateLabel').innerHTML = currentUser.attendance + '%'; 
-    document.getElementById('attendanceProgressFill').style.width = currentUser.attendance + '%';
-    document.getElementById('attendanceTrend').innerHTML = `<i class="fas fa-arrow-up"></i> ${currentUser.trendAttendance}`;
-    let rankDisplay = currentUser.rank + (currentUser.rank === 1 ? 'st' : currentUser.rank === 2 ? 'nd' : currentUser.rank === 3 ? 'rd' : 'th');
-    document.getElementById('rankNumber').innerHTML = rankDisplay;
-    let rankChangeHtml = currentUser.rankChange === '+1' ? '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser.rankChange === '-1' ? '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable');
-    document.getElementById('rankBadge').innerHTML = rankChangeHtml;
-    document.getElementById('moralValuesDisplay').innerText = currentUser.moralValuesGrade || 'B+';
-    // moralValuesSub will be updated by the modal fetch
-    document.getElementById('moralValuesSub').innerText = 'Loading...';
-    const gradeMap = { 'A+':95, 'A':85, 'B+':75, 'B':65, 'C+':55, 'C':45, 'D':35, 'F':25 };
-    const g = currentUser.moralValuesGrade || 'B';
-    document.getElementById('moralValuesProgressFill').style.width = (gradeMap[g] || 70) + '%';
-    const topperTile = document.getElementById('topperPosterTile');
-    if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block'; else topperTile.style.display = 'none';
-}
-
-// ==================== LOAD ACTIVITIES & EVENTS ====================
-async function loadActivitiesAndCalendar() {
-    try {
-        const feedUrl = `${SCRIPT_URL}?action=livefeed&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
-        const resp = await fetch(feedUrl);
-        const data = await resp.json();
-        if (data.result === 'success' && data.feed && data.feed.length > 0) {
-            const feedHtml = data.feed.map(item => {
-                const displayTime = formatDate(item.timestamp);
-                return `<li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3">
-                    <i class="fas fa-circle text-primary mt-1" style="font-size:0.6rem;"></i>
-                    <div>
-                        <div class="text-white">${item.activity}</div>
-                        <small class="text-white-50">${item.description} • ${displayTime}</small>
-                    </div>
-                </li>`;
-            }).join('');
-            document.getElementById('activityFeedList').innerHTML = feedHtml;
-        } else {
-            loadDefaultFeed();
+        function showToast(message, type = 'success') {
+            let toastDiv = document.createElement('div');
+            toastDiv.className = 'position-fixed bottom-0 end-0 m-3 p-3 rounded-4 text-white d-flex align-items-center gap-3 glass-toast';
+            toastDiv.style.zIndex = '1200';
+            toastDiv.style.background = 'rgba(0,0,0,0.85)';
+            toastDiv.style.backdropFilter = 'blur(12px)';
+            toastDiv.style.borderLeft = `4px solid ${type === 'success' ? '#10b981' : '#ef4444'}`;
+            toastDiv.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle'} fa-lg"></i><span>${message}</span>`;
+            document.body.appendChild(toastDiv);
+            setTimeout(() => { toastDiv.style.opacity = '0';
+                setTimeout(() => toastDiv.remove(), 500); }, 3000);
         }
-    } catch (e) {
-        loadDefaultFeed();
-    }
 
-    try {
-        const url = `${SCRIPT_URL}?action=events&t=${Date.now()}`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        if (data.result === 'success' && data.events && data.events.length > 0) {
-            const calHtml = data.events.map(ev => {
-                const displayDate = formatDate(ev.date);
-                return `<div class="glass-card p-3"><div class="d-flex justify-content-between"><span class="text-warning fw-bold">${displayDate}</span><i class="fas fa-bell text-info"></i></div><div class="text-white fw-semibold mt-1">${ev.title}</div><small class="text-white-50">${ev.desc || ''}</small></div>`;
-            }).join('');
-            document.getElementById('calendarEventsList').innerHTML = calHtml;
-        } else {
-            loadDefaultEvents();
+        function formatDate(dateValue) {
+            if (!dateValue) return '';
+            try { let d = new Date(dateValue); if (isNaN(d)) return dateValue; return d.toLocaleDateString('en-US', { year: 'numeric',
+                    month: 'short', day: 'numeric' }); } catch (e) { return dateValue; }
         }
-    } catch (e) {
-        loadDefaultEvents();
-    }
-}
 
-function loadDefaultFeed() {
-    document.getElementById('activityFeedList').innerHTML = `
-        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-book text-primary mt-1"></i><div><div class="text-white">📘 Submitted Mathematics Project</div><small class="text-white-50">2 hours ago</small></div></li>
-        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-trophy text-primary mt-1"></i><div><div class="text-white">🏆 Ranked 3rd in Monthly Test</div><small class="text-white-50">Yesterday</small></div></li>
-        <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-calendar-check text-primary mt-1"></i><div><div class="text-white">✅ Attendance: 100% this week</div><small class="text-white-50">2 days ago</small></div></li>
-    `;
-}
+        function formatMonthYear(dateValue) {
+            if (!dateValue) return '';
+            try { let d = new Date(dateValue); if (isNaN(d)) return dateValue; return d.toLocaleDateString('en-US', { month: 'short',
+                    year: 'numeric' }); } catch (e) { return dateValue; }
+        }
 
-function loadDefaultEvents() {
-    const defaultEvents = [
-        { date: "Mar 28, 2025", title: "Annual Exam Starts", desc: "Final exams begin" },
-        { date: "Apr 05, 2025", title: "Science Exhibition", desc: "Inter-school competition" },
-        { date: "Apr 15, 2025", title: "Result Day", desc: "Performance meet" }
-    ];
-    document.getElementById('calendarEventsList').innerHTML = defaultEvents.map(ev =>
-        `<div class="glass-card p-3"><div class="d-flex justify-content-between"><span class="text-warning fw-bold">${ev.date}</span><i class="fas fa-bell text-info"></i></div><div class="text-white fw-semibold mt-1">${ev.title}</div><small class="text-white-50">${ev.desc}</small></div>`
-    ).join('');
-}
+        // ==================== THEME TOGGLE ====================
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            localStorage.setItem('noor_theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
+        }
 
-// ==================== CLOSE MODAL HELPER ====================
-function closeModal() {
-    modal.style.display = 'none';
-}
+        function restoreTheme() {
+            const saved = localStorage.getItem('noor_theme');
+            if (saved === 'light') document.body.classList.add('light-theme');
+        }
+        restoreTheme();
 
-// ==================== MODAL VIEWS ====================
-function showResultsModal() {
-    modalTitleSpan.innerText = "📊 Overall Grade";
-    modalBodyDiv.innerHTML = `
-        <div class="text-center py-3">
-            <div style="font-size:4rem; font-weight:800; background:linear-gradient(135deg,#3b82f6,#a855f7); -webkit-background-clip:text; background-clip:text; color:transparent;">
-                ${currentUser.overallGrade}
-            </div>
-            <p class="text-white-50">Overall Grade</p>
-            <div class="mt-3">
-                <div class="d-flex justify-content-between">
-                    <span class="text-white">Performance</span>
-                    <span class="text-white fw-bold">${currentUser.performance}%</span>
-                </div>
-                <div class="progress" style="height:12px;">
-                    <div class="progress-bar bg-primary" style="width:${currentUser.performance}%"></div>
-                </div>
-            </div>
-            <div class="mt-4">
-                <a href="result.html" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color: #3b82f6; color: #3b82f6; font-weight:600; text-decoration:none;">
-                    <i class="fas fa-external-link-alt me-2"></i> Access Full Results Page
-                </a>
-            </div>
-        </div>
-    `;
-    modal.style.display = 'flex';
-}
+        // ==================== GRADE HELPERS ====================
+        function getGradeDetails(grade) {
+            const map = { 'A+': { icon: 'fa-star', color: '#22c55e', width: 100 }, 'A': { icon: 'fa-star', color: '#4ade80',
+                    width: 90 }, 'B+': { icon: 'fa-star-half-alt', color: '#facc15', width: 80 }, 'B': { icon: 'fa-star-half-alt',
+                    color: '#fbbf24', width: 70 }, 'C+': { icon: 'fa-circle', color: '#fb923c', width: 60 },
+                'C': { icon: 'fa-circle', color: '#f97316', width: 50 }, 'D+': { icon: 'fa-circle', color: '#ef4444',
+                    width: 40 }, 'D': { icon: 'fa-circle', color: '#dc2626', width: 30 }, 'E': { icon: 'fa-circle',
+                    color: '#b91c1c', width: 20 } };
+            return map[grade] || { icon: 'fa-question', color: '#94a3b8', width: 0 };
+        }
 
-function showAttendanceReport() {
-    modalTitleSpan.innerText = "📆 Attendance Analytics";
-    modalBodyDiv.innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-success" role="status"></div>
-            <p class="mt-2 text-white-50">Fetching your attendance records...</p>
-        </div>
-    `;
-    modal.style.display = 'flex';
-    fetchAttendanceRecords();
-}
+        // ==================== UPDATE DASHBOARD UI ====================
+        function updateDashboardUI() {
+            if (!currentUser) return;
+            document.getElementById('studentFullName').innerText = currentUser.name;
+            document.getElementById('displayStudentId').innerText = currentUser.studentId;
+            document.getElementById('studentClassText').innerText = 'Class ' + currentUser.class;
 
-async function fetchAttendanceRecords() {
-    if (!currentUser) return;
-    try {
-        const url = `${SCRIPT_URL}?action=attendance&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
-        const response = await fetch(url);
-        const data = await response.json();
+            // Avatar with photo
+            const avatarDiv = document.getElementById('avatarInitials');
+            const avatarImg = document.getElementById('avatarPhoto');
+            const avatarText = document.getElementById('avatarText');
+            if (currentUser.photo && currentUser.photo.startsWith('data:image')) {
+                avatarImg.src = currentUser.photo;
+                avatarImg.style.display = 'block';
+                avatarText.style.display = 'none';
+            } else {
+                avatarImg.style.display = 'none';
+                avatarText.style.display = 'block';
+                avatarText.innerText = currentUser.avatar || 'S';
+            }
 
-        if (data.result === 'success' && data.records && data.records.length > 0) {
-            let recordsHtml = data.records.map(rec => {
-                const displayMonth = formatMonthYear(rec.month);
-                return `<li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
-                    <span class="text-white">${displayMonth}</span>
-                    <span class="badge bg-success">${rec.percentage}%</span>
-                    <span class="text-white-50 small">${rec.present}/${rec.total} days</span>
-                </li>`;
-            }).join('');
+            document.getElementById('overallGradeDisplay').innerText = currentUser.overallGrade;
+            let perf = currentUser.performance;
+            document.getElementById('gradeProgressFill').style.width = perf + '%';
+            document.getElementById('gradePercentLabel').innerHTML = perf + '%';
+            const grade = currentUser.overallGrade;
+            const gradeInfo = getGradeDetails(grade);
+            document.getElementById('gradeIcon').className = `fas ${gradeInfo.icon} fa-2x`;
+            document.getElementById('gradeIconContainer').style.backgroundColor = gradeInfo.color + '33';
+            document.getElementById('gradeLineFill').style.width = gradeInfo.width + '%';
+            document.getElementById('gradeLineFill').style.background = `linear-gradient(90deg, ${gradeInfo.color}, ${gradeInfo.color})`;
+            document.getElementById('attendanceRateLabel').innerHTML = currentUser.attendance + '%';
+            document.getElementById('attendanceProgressFill').style.width = currentUser.attendance + '%';
+            document.getElementById('attendanceTrend').innerHTML = `<i class="fas fa-arrow-up"></i> ${currentUser.trendAttendance}`;
+            let rankDisplay = currentUser.rank + (currentUser.rank === 1 ? 'st' : currentUser.rank === 2 ? 'nd' : currentUser
+                .rank === 3 ? 'rd' : 'th');
+            document.getElementById('rankNumber').innerHTML = rankDisplay;
+            let rankChangeHtml = currentUser.rankChange === '+1' ? '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser
+                .rankChange === '-1' ? '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable');
+            document.getElementById('rankBadge').innerHTML = rankChangeHtml;
+            document.getElementById('moralValuesDisplay').innerText = currentUser.moralValuesGrade || 'B+';
+            document.getElementById('moralValuesSub').innerText = 'Loading...';
+            const gradeMap = { 'A+': 95, 'A': 85, 'B+': 75, 'B': 65, 'C+': 55, 'C': 45, 'D': 35, 'F': 25 };
+            const g = currentUser.moralValuesGrade || 'B';
+            document.getElementById('moralValuesProgressFill').style.width = (gradeMap[g] || 70) + '%';
+            const topperTile = document.getElementById('topperPosterTile');
+            if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block';
+            else topperTile.style.display = 'none';
+        }
 
-            modalBodyDiv.innerHTML = `
-                <div>
-                    <div class="text-center mb-3">
-                        <span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span>
-                        <p class="text-white-50">Overall Attendance</p>
-                    </div>
-                    <div class="progress mb-4" style="height:12px;">
-                        <div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div>
-                    </div>
-                    <h6 class="text-white">Monthly Breakdown</h6>
-                    <ul class="list-unstyled">
-                        ${recordsHtml}
-                    </ul>
-                </div>
+        // ==================== LOAD ACTIVITIES & EVENTS ====================
+        async function loadActivitiesAndCalendar() {
+            try {
+                const feedUrl =
+                    `${SCRIPT_URL}?action=livefeed&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+                const resp = await fetch(feedUrl);
+                const data = await resp.json();
+                if (data.result === 'success' && data.feed && data.feed.length > 0) {
+                    const feedHtml = data.feed.map(item => {
+                        const displayTime = formatDate(item.timestamp);
+                        return `<li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3">
+                            <i class="fas fa-circle text-primary mt-1" style="font-size:0.6rem;"></i>
+                            <div><div class="text-white">${item.activity}</div><small class="text-white-50">${item.description} • ${displayTime}</small></div>
+                        </li>`;
+                    }).join('');
+                    document.getElementById('activityFeedList').innerHTML = feedHtml;
+                } else { loadDefaultFeed(); }
+            } catch (e) { loadDefaultFeed(); }
+
+            try {
+                const url = `${SCRIPT_URL}?action=events&t=${Date.now()}`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.result === 'success' && data.events && data.events.length > 0) {
+                    const calHtml = data.events.map(ev => {
+                        const displayDate = formatDate(ev.date);
+                        return `<div class="glass-card p-3"><div class="d-flex justify-content-between"><span class="text-warning fw-bold">${displayDate}</span><i class="fas fa-bell text-info"></i></div><div class="text-white fw-semibold mt-1">${ev.title}</div><small class="text-white-50">${ev.desc || ''}</small></div>`;
+                    }).join('');
+                    document.getElementById('calendarEventsList').innerHTML = calHtml;
+                } else { loadDefaultEvents(); }
+            } catch (e) { loadDefaultEvents(); }
+        }
+
+        function loadDefaultFeed() {
+            document.getElementById('activityFeedList').innerHTML = `
+                <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-book text-primary mt-1"></i><div><div class="text-white">📘 Submitted Mathematics Project</div><small class="text-white-50">2 hours ago</small></div></li>
+                <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-trophy text-primary mt-1"></i><div><div class="text-white">🏆 Ranked 3rd in Monthly Test</div><small class="text-white-50">Yesterday</small></div></li>
+                <li class="mb-3 pb-2 border-bottom border-white-10 d-flex gap-3"><i class="fas fa-calendar-check text-primary mt-1"></i><div><div class="text-white">✅ Attendance: 100% this week</div><small class="text-white-50">2 days ago</small></div></li>
             `;
-        } else {
+        }
+
+        function loadDefaultEvents() {
+            const defaultEvents = [
+                { date: "Mar 28, 2025", title: "Annual Exam Starts", desc: "Final exams begin" },
+                { date: "Apr 05, 2025", title: "Science Exhibition", desc: "Inter-school competition" },
+                { date: "Apr 15, 2025", title: "Result Day", desc: "Performance meet" }
+            ];
+            document.getElementById('calendarEventsList').innerHTML = defaultEvents.map(ev =>
+                `<div class="glass-card p-3"><div class="d-flex justify-content-between"><span class="text-warning fw-bold">${ev.date}</span><i class="fas fa-bell text-info"></i></div><div class="text-white fw-semibold mt-1">${ev.title}</div><small class="text-white-50">${ev.desc}</small></div>`
+            ).join('');
+        }
+
+        // ==================== CLOSE MODAL ====================
+        function closeModal() { modal.style.display = 'none'; }
+
+        // ==================== RESULTS ====================
+        function showResultsModal() {
+            modalTitleSpan.innerText = "📊 Overall Grade";
             modalBodyDiv.innerHTML = `
                 <div class="text-center py-3">
-                    <i class="fas fa-calendar-times fa-3x text-white-50 mb-3"></i>
-                    <p class="text-white-50">No attendance records found for you.</p>
-                    <p class="text-white-50 small">Please contact the school administrator if you believe this is a mistake.</p>
+                    <div style="font-size:4rem; font-weight:800; background:linear-gradient(135deg,#3b82f6,#a855f7); -webkit-background-clip:text; background-clip:text; color:transparent;">${currentUser.overallGrade}</div>
+                    <p class="text-white-50">Overall Grade</p>
+                    <div class="mt-3"><div class="d-flex justify-content-between"><span class="text-white">Performance</span><span class="text-white fw-bold">${currentUser.performance}%</span></div><div class="progress" style="height:12px;"><div class="progress-bar bg-primary" style="width:${currentUser.performance}%"></div></div></div>
+                    <div class="mt-4"><a href="result.html" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color:#3b82f6;color:#3b82f6;font-weight:600;text-decoration:none;"><i class="fas fa-external-link-alt me-2"></i> Access Full Results Page</a></div>
                 </div>
             `;
+            modal.style.display = 'flex';
         }
-    } catch (error) {
-        modalBodyDiv.innerHTML = `
-            <div>
-                <div class="text-center mb-3">
-                    <span style="font-size:3rem; font-weight:800;">${currentUser.attendance}%</span>
-                    <p class="text-white-50">Overall Attendance (cached)</p>
-                </div>
-                <div class="progress mb-4" style="height:12px;">
-                    <div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div>
-                </div>
-                <h6 class="text-white">Monthly Breakdown (sample)</h6>
-                <ul class="list-unstyled">
-                    <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
-                        <span class="text-white">Mar/2025</span>
-                        <span class="badge bg-success">100%</span>
-                        <span class="text-white-50 small">18/18 days</span>
-                    </li>
-                    <li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2">
-                        <span class="text-white">Feb/2025</span>
-                        <span class="badge bg-warning">91%</span>
-                        <span class="text-white-50 small">20/22 days</span>
-                    </li>
-                </ul>
-            </div>
-        `;
-        showToast("Could not fetch live attendance – showing cached data", "error");
-    }
-}
 
-// ==================== MORAL VALUES (from separate sheet) ====================
-function showMoralValuesModal() {
-    modalTitleSpan.innerText = "🌟 Moral Values Report";
-    modalBodyDiv.innerHTML = `
-        <div class="text-center py-4">
-            <div class="spinner-border text-warning" role="status"></div>
-            <p class="mt-2 text-white-50">Loading moral values...</p>
-        </div>
-    `;
-    modal.style.display = 'flex';
-    fetchMoralValues();
-}
+        // ==================== ATTENDANCE ====================
+        function showAttendanceReport() {
+            modalTitleSpan.innerText = "📆 Attendance Analytics";
+            modalBodyDiv.innerHTML =
+                `<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div><p class="mt-2 text-white-50">Fetching your attendance records...</p></div>`;
+            modal.style.display = 'flex';
+            fetchAttendanceRecords();
+        }
 
-async function fetchMoralValues() {
-    if (!currentUser) return;
-    try {
-        const url = `${SCRIPT_URL}?action=moralvalues&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
-        const response = await fetch(url);
-        const data = await response.json();
+        async function fetchAttendanceRecords() {
+            if (!currentUser) return;
+            try {
+                const url =
+                    `${SCRIPT_URL}?action=attendance&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.result === 'success' && data.records && data.records.length > 0) {
+                    let recordsHtml = data.records.map(rec => {
+                        const displayMonth = formatMonthYear(rec.month);
+                        return `<li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">${displayMonth}</span><span class="badge bg-success">${rec.percentage}%</span><span class="text-white-50 small">${rec.present}/${rec.total} days</span></li>`;
+                    }).join('');
+                    modalBodyDiv.innerHTML =
+                        `<div><div class="text-center mb-3"><span style="font-size:3rem;font-weight:800;">${currentUser.attendance}%</span><p class="text-white-50">Overall Attendance</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div><h6 class="text-white">Monthly Breakdown</h6><ul class="list-unstyled">${recordsHtml}</ul></div>`;
+                } else {
+                    modalBodyDiv.innerHTML =
+                        `<div class="text-center py-3"><i class="fas fa-calendar-times fa-3x text-white-50 mb-3"></i><p class="text-white-50">No attendance records found.</p></div>`;
+                }
+            } catch (error) {
+                modalBodyDiv.innerHTML =
+                    `<div><div class="text-center mb-3"><span style="font-size:3rem;font-weight:800;">${currentUser.attendance}%</span><p class="text-white-50">Overall Attendance (cached)</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div><h6 class="text-white">Monthly Breakdown (sample)</h6><ul class="list-unstyled"><li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">Mar/2025</span><span class="badge bg-success">100%</span><span class="text-white-50 small">18/18 days</span></li><li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">Feb/2025</span><span class="badge bg-warning">91%</span><span class="text-white-50 small">20/22 days</span></li></ul></div>`;
+                showToast("Could not fetch live attendance – showing cached data", "error");
+            }
+        }
 
-        if (data.result === 'success' && data.traits && data.traits.length > 0) {
-            let traitsHtml = data.traits.map(t => {
-                const gradeColor = t.grade === 'A+' ? '#10b981' : t.grade === 'A' ? '#06b6d4' : t.grade === 'B+' ? '#3b82f6' : '#f59e0b';
-                return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10">
-                    <span class="text-white">${t.trait}</span>
-                    <span style="color:${gradeColor}; font-weight:700;">${t.grade}</span>
-                </div>`;
-            }).join('');
+        // ==================== MORAL VALUES ====================
+        function showMoralValuesModal() {
+            modalTitleSpan.innerText = "🌟 Moral Values Report";
+            modalBodyDiv.innerHTML =
+                `<div class="text-center py-4"><div class="spinner-border text-warning" role="status"></div><p class="mt-2 text-white-50">Loading moral values...</p></div>`;
+            modal.style.display = 'flex';
+            fetchMoralValues();
+        }
 
-            // Update the moral values sub text on dashboard
-            const traitNames = data.traits.map(t => t.trait).slice(0,2).join(', ');
-            document.getElementById('moralValuesSub').innerText = traitNames || 'N/A';
+        async function fetchMoralValues() {
+            if (!currentUser) return;
+            try {
+                const url =
+                    `${SCRIPT_URL}?action=moralvalues&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.result === 'success' && data.traits && data.traits.length > 0) {
+                    let traitsHtml = data.traits.map(t => {
+                        const gradeColor = t.grade === 'A+' ? '#10b981' : t.grade === 'A' ? '#06b6d4' : t.grade === 'B+' ?
+                            '#3b82f6' : '#f59e0b';
+                        return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span class="text-white">${t.trait}</span><span style="color:${gradeColor};font-weight:700;">${t.grade}</span></div>`;
+                    }).join('');
+                    const traitNames = data.traits.map(t => t.trait).slice(0, 2).join(', ');
+                    document.getElementById('moralValuesSub').innerText = traitNames || 'N/A';
+                    modalBodyDiv.innerHTML =
+                        `<div><div class="text-center mb-4"><div style="font-size:3rem;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade||'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div><h6 class="text-white">Detailed Traits</h6><div>${traitsHtml}</div><div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div></div>`;
+                } else {
+                    fallbackMoralValues();
+                }
+            } catch (error) { fallbackMoralValues(); }
+        }
 
-            modalBodyDiv.innerHTML = `
-                <div>
-                    <div class="text-center mb-4">
-                        <div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">
-                            ${currentUser.moralValuesGrade || 'B+'}
-                        </div>
-                        <p class="text-white-50">Overall Moral Values Grade</p>
-                    </div>
-                    <div class="progress mb-4" style="height:12px;">
-                        <div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div>
-                    </div>
-                    <h6 class="text-white">Detailed Traits</h6>
-                    <div>${traitsHtml}</div>
-                    <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
-                </div>
-            `;
-        } else {
-            // Fallback to data from Students sheet if moral sheet not set up
+        function fallbackMoralValues() {
             const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
             let subHtml = subValues.map(item => {
                 const parts = item.split(':');
                 const trait = parts[0]?.trim() || 'N/A';
                 const grade = parts[1]?.trim() || 'B';
-                const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b';
-                return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`;
+                const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' :
+                    '#f59e0b';
+                return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor};font-weight:700;">${grade}</span></div>`;
             }).join('');
-            document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',').slice(0,2).join(', ') : 'N/A';
+            document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub
+                .split(',').slice(0, 2).join(', ') : 'N/A';
+            modalBodyDiv.innerHTML =
+                `<div><div class="text-center mb-4"><div style="font-size:3rem;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade||'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div><h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div><div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div></div>`;
+            showToast("Could not fetch moral values – showing cached data", "error");
+        }
+
+        // ==================== PROFILE (with Photo Upload) ====================
+        function showProfileCard() {
+            modalTitleSpan.innerText = "👤 Student Profile";
+            const formattedDob = formatDate(currentUser.dob);
+            const photoHtml = currentUser.photo ? `<img src="${currentUser.photo}" style="width:100%;height:100%;object-fit:cover;">` :
+                `<span style="font-size:2.5rem;font-weight:700;">${currentUser.avatar}</span>`;
             modalBodyDiv.innerHTML = `
-                <div>
-                    <div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div>
-                    <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div>
-                    <h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div>
-                    <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
+                <div class="text-center mb-3">
+                    <div class="profile-photo-wrapper">
+                        <div class="avatar-neon mx-auto mb-2" style="width:120px;height:120px;font-size:32px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f97316,#ef4444);">
+                            ${photoHtml}
+                        </div>
+                        <div class="photo-edit-btn" onclick="openProfilePhotoUpload()" title="Change Photo">
+                            <i class="fas fa-camera fa-sm"></i>
+                        </div>
+                    </div>
+                    <h4 class="text-white">${currentUser.name}</h4>
+                    <p class="text-white-50">Class ${currentUser.class}</p>
+                </div>
+                <div class="row">
+                    <div class="col-6"><small>Student ID</small><p class="text-white fw-bold">${currentUser.studentId}</p></div>
+                    <div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll}</p></div>
+                    <div class="col-12"><small>Father's Name</small><p class="text-white">${currentUser.fatherName||'N/A'}</p></div>
+                    <div class="col-12"><small>Date of Birth</small><p class="text-white">${formattedDob}</p></div>
+                    <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div>
+                    <div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div>
+                </div>
+                <div class="mt-4 text-center d-flex flex-wrap gap-3 justify-content-center">
+                    <button class="btn btn-outline-info rounded-pill px-4 py-2" onclick="closeModal();openEditProfile();" style="border-color:#3b82f6;color:#3b82f6;font-weight:600;background:rgba(59,130,246,0.08);"><i class="fas fa-edit me-2"></i> Edit Profile</button>
+                    <button class="btn btn-outline-success rounded-pill px-4 py-2" onclick="closeModal();showIdCard();" style="border-color:#14b8a6;color:#14b8a6;font-weight:600;background:rgba(20,184,166,0.08);"><i class="fas fa-id-card me-2"></i> ID Card</button>
                 </div>
             `;
+            modal.style.display = 'flex';
         }
-    } catch (error) {
-        // Fallback to Students data
-        const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
-        let subHtml = subValues.map(item => {
-            const parts = item.split(':');
-            const trait = parts[0]?.trim() || 'N/A';
-            const grade = parts[1]?.trim() || 'B';
-            const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' : '#f59e0b';
-            return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor}; font-weight:700;">${grade}</span></div>`;
-        }).join('');
-        document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',').slice(0,2).join(', ') : 'N/A';
-        modalBodyDiv.innerHTML = `
-            <div>
-                <div class="text-center mb-4"><div style="font-size:3rem; font-weight:800; background:linear-gradient(135deg,#fbbf24,#f59e0b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade || 'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div>
-                <div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div>
-                <h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div>
-                <div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div>
-            </div>
-        `;
-        showToast("Could not fetch moral values – showing cached data", "error");
-    }
-}
 
-function showProfileCard() {
-    modalTitleSpan.innerText = "👤 Student Profile";
-    const formattedDob = formatDate(currentUser.dob);
-    modalBodyDiv.innerHTML = `
-        <div class="text-center mb-3">
-            <div class="avatar-neon mx-auto mb-2" style="width:80px;height:80px; font-size:32px;">${currentUser.avatar}</div>
-            <h4 class="text-white">${currentUser.name}</h4>
-            <p class="text-white-50">${currentUser.class}</p>
-        </div>
-        <div class="row">
-            <div class="col-6"><small>Student ID</small><p class="text-white fw-bold">${currentUser.studentId}</p></div>
-            <div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll}</p></div>
-            <div class="col-12"><small>Father's Name</small><p class="text-white">${currentUser.fatherName || 'N/A'}</p></div>
-            <div class="col-12"><small>Date of Birth</small><p class="text-white">${formattedDob}</p></div>
-            <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div>
-            <div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div>
-        </div>
-        <div class="mt-4 text-center">
-            <button class="btn btn-outline-info rounded-pill px-4 py-2" 
-                    onclick="closeModal(); openEditProfile();" 
-                    style="border-color: #3b82f6; color: #3b82f6; font-weight:600; background:rgba(59,130,246,0.08);">
-                <i class="fas fa-edit me-2"></i> Edit Profile
-            </button>
-        </div>
-    `;
-    modal.style.display = 'flex';
-}
-
-// ==================== EDIT PROFILE ====================
-function openEditProfile() {
-    if (!currentUser) return;
-    document.getElementById('editName').value = currentUser.name || '';
-    document.getElementById('editFatherName').value = currentUser.fatherName || '';
-    document.getElementById('editDob').value = currentUser.dob || '';
-    document.getElementById('editEmail').value = currentUser.email || '';
-    document.getElementById('editPhone').value = currentUser.phone || '';
-    document.getElementById('editPassword').value = '';
-    document.getElementById('editProfileModal').style.display = 'flex';
-}
-
-function closeEditProfile() {
-    document.getElementById('editProfileModal').style.display = 'none';
-}
-
-async function saveProfileChanges(e) {
-    e.preventDefault();
-    if (!currentUser) return;
-
-    const name = document.getElementById('editName').value.trim();
-    const fatherName = document.getElementById('editFatherName').value.trim();
-    const dob = document.getElementById('editDob').value.trim();
-    const email = document.getElementById('editEmail').value.trim();
-    const phone = document.getElementById('editPhone').value.trim();
-    const password = document.getElementById('editPassword').value.trim();
-
-    if (!name) { showToast("Name is required", "error"); return; }
-
-    showLoading(true);
-    try {
-        let url = `${SCRIPT_URL}?action=updateProfile&studentId=${encodeURIComponent(currentUser.studentId)}&name=${encodeURIComponent(name)}&fatherName=${encodeURIComponent(fatherName)}&dob=${encodeURIComponent(dob)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
-        if (password) url += `&password=${encodeURIComponent(password)}`;
-
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.result === 'success') {
-            currentUser = { ...currentUser, ...data };
-            localStorage.setItem('noor_session', JSON.stringify(currentUser));
-            updateDashboardUI();
-            closeEditProfile();
-            showToast("Profile updated successfully! ✅", "success");
-        } else {
-            showToast(data.message || "Update failed", "error");
-        }
-    } catch (err) {
-        showToast("Network error – please try again", "error");
-    }
-    showLoading(false);
-}
-
-// ==================== FORGOT STUDENT ID ====================
-function openFindStudentId() {
-    document.getElementById('findStudentIdModal').style.display = 'flex';
-    document.getElementById('findResult').style.display = 'none';
-    document.getElementById('findResult').innerHTML = '';
-}
-
-function closeFindStudentId() {
-    document.getElementById('findStudentIdModal').style.display = 'none';
-}
-
-async function findStudentId(e) {
-    e.preventDefault();
-    const className = document.getElementById('findClass').value;
-    const studentName = document.getElementById('findName').value.trim();
-    if (!className || !studentName) {
-        showToast("Please select Class and enter Name", "error");
-        return;
-    }
-    const resultDiv = document.getElementById('findResult');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `<div class="text-center text-white-50"><i class="fas fa-spinner fa-pulse"></i> Searching...</div>`;
-
-    try {
-        const url = `${SCRIPT_URL}?action=findStudentId&class=${encodeURIComponent(className)}&name=${encodeURIComponent(studentName)}&t=${Date.now()}`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-
-        if (data.result === 'success' && data.students && data.students.length > 0) {
-            let html = `<div class="alert alert-success">Found ${data.students.length} student(s):</div><ul class="list-group">`;
-            data.students.forEach(s => {
-                html += `<li class="list-group-item d-flex justify-content-between align-items-center" style="background:rgba(255,255,255,0.05); color:white; border-color:rgba(255,255,255,0.1);">
-                    <div><strong>${s.name}</strong> (${s.class})<br><small>Roll: ${s.roll}</small></div>
-                    <span class="badge bg-primary" style="cursor:pointer;" onclick="copyToClipboard('${s.studentId}')">${s.studentId} <i class="fas fa-copy ms-1"></i></span>
-                </li>`;
-            });
-            html += `</ul><p class="text-white-50 mt-2 small">Click on the ID to copy it.</p>`;
-            resultDiv.innerHTML = html;
-        } else {
-            resultDiv.innerHTML = `<div class="alert alert-danger">${data.message || 'No students found.'}</div>`;
-        }
-    } catch (error) {
-        resultDiv.innerHTML = `<div class="alert alert-danger">Network error. Please try again.</div>`;
-    }
-}
-
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showToast(`Copied: ${text}`, "success");
-    }).catch(() => {
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-        showToast(`Copied: ${text}`, "success");
-    });
-}
-
-// ==================== LOGIN / LOGOUT ====================
-async function handleLogin(e) {
-    e.preventDefault();
-    const id = document.getElementById('studentId').value.trim();
-    if (!id) { showToast("Please enter your Student ID", "error"); return; }
-    showLoading(true);
-    await new Promise(r => setTimeout(r, 800));
-    try {
-        const url = `${SCRIPT_URL}?action=login&studentId=${encodeURIComponent(id)}&t=${Date.now()}`;
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.result === 'success') {
-            currentUser = {
-                studentId: data.studentId,
-                name: data.name,
-                class: data.class,
-                roll: data.roll || '',
-                overallGrade: data.overallGrade || 'A+',
-                attendance: data.attendance || 94,
-                rank: data.rank || 3,
-                rankChange: data.rankChange || '+1',
-                moralValuesGrade: data.moralValuesGrade || 'B+',
-                moralValuesSub: data.moralValuesSub || 'Honesty:A, Respect:A+',
-                performance: data.performance || 90,
-                avatar: data.name?.charAt(0).toUpperCase() || 'S',
-                email: data.email || '',
-                phone: data.phone || '',
-                trendAttendance: data.trendAttendance || '+2%',
-                fatherName: data.fatherName || '',
-                dob: data.dob || ''
+        // ==================== PROFILE PHOTO UPLOAD ====================
+        function openProfilePhotoUpload() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('topperCropImage').src = ev.target.result;
+                    document.getElementById('topperCropModal').style.display = 'flex';
+                    document.getElementById('topperCropImage').onload = function() {
+                        if (cropperInstance) cropperInstance.destroy();
+                        cropperInstance = new Cropper(document.getElementById('topperCropImage'), {
+                            aspectRatio: 1,
+                            viewMode: 2,
+                            dragMode: 'move',
+                            autoCropArea: 0.9,
+                            cropBoxMovable: true,
+                            cropBoxResizable: true,
+                            zoomable: true,
+                            background: true,
+                            responsive: true,
+                            center: true,
+                        });
+                    };
+                    const originalSave = window.saveTopperCrop;
+                    window.saveTopperCrop = function() {
+                        if (!cropperInstance) { alert('Crop tool not ready'); return; }
+                        const croppedCanvas = cropperInstance.getCroppedCanvas({ width: 400, height: 400 });
+                        if (!croppedCanvas) { alert('Crop failed'); return; }
+                        const croppedData = croppedCanvas.toDataURL('image/jpeg', 0.8);
+                        uploadProfilePhoto(croppedData);
+                        closeTopperCrop();
+                        window.saveTopperCrop = originalSave;
+                    };
+                };
+                reader.readAsDataURL(file);
             };
-            localStorage.setItem('noor_session', JSON.stringify(currentUser));
-            updateDashboardUI();
-            await loadActivitiesAndCalendar();
-            loginSection.style.display = 'none';
-            dashboardSection.style.display = 'block';
-            showToast(`Welcome back, ${currentUser.name} ✨`, "success");
-        } else {
-            showToast(data.message || "Student ID not found", "error");
+            fileInput.click();
         }
-    } catch (err) {
-        if (STUDENT_DATA[id]) {
-            currentUser = { ...STUDENT_DATA[id], studentId: id };
-            localStorage.setItem('noor_session', JSON.stringify(currentUser));
-            updateDashboardUI();
-            await loadActivitiesAndCalendar();
-            loginSection.style.display = 'none';
-            dashboardSection.style.display = 'block';
-            showToast(`Welcome back, ${currentUser.name} ✨ (offline)`, "success");
-        } else {
-            showToast("Student ID not found", "error");
-        }
-    }
-    showLoading(false);
-}
 
-function logout() {
-    currentUser = null;
-    localStorage.removeItem('noor_session');
-    dashboardSection.style.display = 'none';
-    loginSection.style.display = 'flex';
-    document.getElementById('loginForm').reset();
-    showToast("Logged out securely", "success");
-}
-
-function restoreSession() {
-    const saved = localStorage.getItem('noor_session');
-    if (saved) {
-        try {
-            currentUser = JSON.parse(saved);
-            updateDashboardUI();
-            loadActivitiesAndCalendar();
-            loginSection.style.display = 'none';
-            dashboardSection.style.display = 'block';
-        } catch (e) {}
-    }
-}
-
-// ==================== EVENT BINDINGS ====================
-document.getElementById('loginForm').addEventListener('submit', handleLogin);
-document.getElementById('logoutBtn').addEventListener('click', logout);
-// Removed refresh button event listener
-closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
-window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
-
-window.showResultsModal = showResultsModal;
-window.showAttendanceReport = showAttendanceReport;
-window.showMoralValuesModal = showMoralValuesModal;
-window.showProfileCard = showProfileCard;
-window.closeModal = closeModal;
-window.openEditProfile = openEditProfile;
-window.closeEditProfile = closeEditProfile;
-window.saveProfileChanges = saveProfileChanges;
-
-document.getElementById('forgotStudentIdLink').addEventListener('click', function(e) {
-    e.preventDefault();
-    openFindStudentId();
-});
-
-// Close Forgot Student ID modal on outside click
-window.addEventListener('click', function(e) {
-    const modal = document.getElementById('findStudentIdModal');
-    if (e.target === modal) closeFindStudentId();
-});
-
-restoreSession();
-
-// ==================== FORGOT PASSWORD ====================
-const forgotModal = document.getElementById('forgotModal');
-document.getElementById('closeForgotModalBtn').addEventListener('click', function() { forgotModal.style.display = 'none'; });
-document.getElementById('forgotCloseBtn').addEventListener('click', function() { forgotModal.style.display = 'none'; });
-window.addEventListener('click', function(e) { if (e.target === forgotModal) forgotModal.style.display = 'none'; });
-document.getElementById('forgotSubmitBtn').addEventListener('click', async function() {
-    const studentId = document.getElementById('forgotStudentId').value.trim();
-    if (!studentId) { alert('Please enter your Student ID.'); return; }
-    document.getElementById('forgotStep1').style.display = 'none';
-    document.getElementById('forgotLoading').style.display = 'block';
-    this.disabled = true;
-    try {
-        const url = `${SCRIPT_URL}?action=forgot&studentId=${encodeURIComponent(studentId)}&t=${Date.now()}`;
-        const resp = await fetch(url);
-        const data = await resp.json();
-        document.getElementById('forgotLoading').style.display = 'none';
-        this.disabled = false;
-        document.getElementById('forgotStep2').style.display = 'block';
-        if (data.result === 'success') {
-            document.getElementById('forgotResult').innerHTML = `
-                <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i> Password found!</div>
-                <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:12px; margin:15px 0;">
-                    <p class="text-white-50 mb-1">Student: <strong class="text-white">${data.name}</strong></p>
-                    <p class="text-white-50 mb-0">Your password: <strong class="text-warning" style="font-size:1.4rem; letter-spacing:2px;">${data.password}</strong></p>
-                </div>
-                <p class="text-white-50 small">You can now close this window and log in.</p>
-            `;
-        } else {
-            document.getElementById('forgotResult').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> ${data.message}</div>`;
-        }
-    } catch (error) {
-        document.getElementById('forgotLoading').style.display = 'none';
-        this.disabled = false;
-        document.getElementById('forgotStep2').style.display = 'block';
-        document.getElementById('forgotResult').innerHTML = `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> Network error. Please try again.</div>`;
-    }
-});
-
-// ==================== TOPPER POSTER ====================
-let topperPhotoData = null;
-let cropperInstance = null;
-const CERT_BG = "https://i.postimg.cc/vBJs8jT4/topper.jpg";
-
-function showTopperPoster() {
-    if (!currentUser) return;
-    document.getElementById('topperNameDisplay').textContent = currentUser.name;
-    const rankText = currentUser.rank === 1 ? 'First' : 'Second';
-    document.getElementById('topperClassRank').textContent = `Class ${currentUser.class} - ${rankText} (Rank ${currentUser.rank})`;
-    const saved = localStorage.getItem(`topper_photo_${currentUser.studentId}`);
-    if (saved) { topperPhotoData = saved; document.getElementById('topperPhotoPreview').src = saved; }
-    else { topperPhotoData = null; document.getElementById('topperPhotoPreview').src = ''; }
-    document.getElementById('topperModal').style.display = 'flex';
-}
-
-function closeTopperModal() { document.getElementById('topperModal').style.display = 'none'; }
-
-function openTopperCrop() {
-    const fileInput = document.getElementById('topperPhotoUpload');
-    fileInput.click();
-    fileInput.onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            document.getElementById('topperCropImage').src = ev.target.result;
-            document.getElementById('topperCropModal').style.display = 'flex';
-            document.getElementById('topperCropImage').onload = () => {
-                if (cropperInstance) cropperInstance.destroy();
-                cropperInstance = new Cropper(document.getElementById('topperCropImage'), {
-                    aspectRatio: 1, viewMode: 2, dragMode: 'move', autoCropArea: 0.9,
-                    cropBoxMovable: true, cropBoxResizable: true, zoomable: true,
-                    background: true, responsive: true, center: true,
-                });
-            };
-        };
-        reader.readAsDataURL(file);
-    };
-}
-
-function closeTopperCrop() {
-    if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
-    document.getElementById('topperCropModal').style.display = 'none';
-    document.getElementById('topperCropImage').src = '';
-}
-
-function saveTopperCrop() {
-    if (!cropperInstance) { alert('Crop tool not ready'); return; }
-    const croppedCanvas = cropperInstance.getCroppedCanvas({ width: 800, height: 800 });
-    if (!croppedCanvas) { alert('Crop failed'); return; }
-    const croppedData = croppedCanvas.toDataURL('image/png');
-    topperPhotoData = croppedData;
-    document.getElementById('topperPhotoPreview').src = croppedData;
-    localStorage.setItem(`topper_photo_${currentUser.studentId}`, croppedData);
-    closeTopperCrop();
-    showToast('Photo cropped & saved!', 'success');
-}
-
-function loadImage(src) {
-    return new Promise((resolve, reject) => {
-        let img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => resolve(img);
-        img.onerror = () => reject();
-        img.src = src;
-    });
-}
-
-async function renderTopperCanvas(name, cls, rank, photo) {
-    const w = 2400, h = 3200;
-    const canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
-    try {
-        const bg = await loadImage(CERT_BG);
-        ctx.drawImage(bg, 0, 0, w, h);
-        const cx = w/2, cy = 1600, r = 400;
-        if (photo) {
+        async function uploadProfilePhoto(base64Data) {
+            if (!currentUser) return;
+            showLoading(true);
             try {
-                let img = await loadImage(photo);
-                ctx.save();
-                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
-                let dw, dh;
-                if (img.width > img.height) { dh = r*2; dw = img.width * (dh / img.height); }
-                else { dw = r*2; dh = img.height * (dw / img.width); }
-                ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
-                ctx.restore();
-            } catch(e) { drawPlaceholder(ctx, cx, cy, r); }
-        } else { drawPlaceholder(ctx, cx, cy, r); }
-        ctx.shadowColor = 'rgba(0,0,0,0.2)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 95px "Anek Malayalam", "Inter", sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(name, cx, 2180);
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 70px "Anek Malayalam", "Inter", sans-serif';
-        const positionText = rank === 1 ? 'TOPPER' : 'SECOND PLACE';
-        ctx.fillText(`Class ${cls} - ${positionText}`, cx, 2360);
-        ctx.shadowBlur = 0; ctx.shadowColor = 'transparent';
-        return canvas;
-    } catch(e) { console.error("Render error:", e); throw new Error("Background failed"); }
-}
-
-function drawPlaceholder(ctx, cx, cy, r) {
-    ctx.fillStyle = '#F4E8D1'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#000000'; ctx.font = 'bold 85px "Anek Malayalam"'; ctx.fillText('📸', cx, cy + 25);
-}
-
-async function previewTopperPoster() {
-    if (!currentUser) return;
-    showTopperLoading('Generating poster...');
-    try {
-        const rank = currentUser.rank;
-        const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
-        hideTopperLoading();
-        const previewCanvas = document.getElementById('posterPreviewCanvas');
-        previewCanvas.width = 1600; previewCanvas.height = 2134;
-        const pctx = previewCanvas.getContext('2d');
-        pctx.drawImage(canvas, 0, 0, 2400, 3200, 0, 0, 1600, 2134);
-        document.getElementById('posterPreviewOverlay').style.display = 'block';
-    } catch(e) { hideTopperLoading(); alert('Error generating poster. Please try again.'); }
-}
-
-function closePosterPreview() { document.getElementById('posterPreviewOverlay').style.display = 'none'; }
-
-async function downloadTopperPoster(type) {
-    if (!currentUser) return;
-    showTopperLoading('Creating file...');
-    try {
-        const rank = currentUser.rank;
-        const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
-        const finalCanvas = document.createElement('canvas');
-        finalCanvas.width = canvas.width; finalCanvas.height = canvas.height;
-        const fctx = finalCanvas.getContext('2d');
-        fctx.fillStyle = '#fff'; fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
-        fctx.drawImage(canvas, 0, 0);
-        const img = finalCanvas.toDataURL('image/png');
-        const fileName = `Noorussalam_Class${currentUser.class}_Rank${currentUser.rank}_${currentUser.name.replace(/\s/g, '_')}`;
-        if (type === 'png') {
-            let a = document.createElement('a');
-            a.href = img; a.download = `${fileName}.png`; a.click();
-        } else if (type === 'pdf') {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [2400, 3200] });
-            pdf.addImage(img, 'PNG', 0, 0, 2400, 3200);
-            pdf.save(`${fileName}.pdf`);
+                const url =
+                    `${SCRIPT_URL}?action=updatePhoto&studentId=${encodeURIComponent(currentUser.studentId)}&photo=${encodeURIComponent(base64Data)}&t=${
+                        Date.now()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.result === 'success') {
+                    currentUser.photo = base64Data;
+                    localStorage.setItem('noor_session', JSON.stringify(currentUser));
+                    updateDashboardUI();
+                    showToast('Profile photo updated! ✅', 'success');
+                    if (modal.style.display === 'flex' && modalTitleSpan.innerText === '👤 Student Profile') {
+                        showProfileCard();
+                    }
+                } else {
+                    showToast(data.message || 'Photo update failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network error – please try again', 'error');
+            }
+            showLoading(false);
         }
-        if (typeof confetti !== 'undefined') confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#D4AF37', '#0A1C3A'] });
-        hideTopperLoading();
-        showToast('✅ Poster Downloaded!', 'success');
-    } catch(e) { hideTopperLoading(); alert('Download failed'); }
-}
 
-function showTopperLoading(text) { document.getElementById('topperLoadingText').textContent = text; document.getElementById('topperLoading').style.display = 'flex'; }
-function hideTopperLoading() { document.getElementById('topperLoading').style.display = 'none'; }
+        // ==================== EDIT PROFILE ====================
+        function openEditProfile() {
+            if (!currentUser) return;
+            document.getElementById('editName').value = currentUser.name || '';
+            document.getElementById('editFatherName').value = currentUser.fatherName || '';
+            document.getElementById('editDob').value = currentUser.dob || '';
+            document.getElementById('editEmail').value = currentUser.email || '';
+            document.getElementById('editPhone').value = currentUser.phone || '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editProfileModal').style.display = 'flex';
+        }
 
-window.showTopperPoster = showTopperPoster;
-window.closeTopperModal = closeTopperModal;
-window.openTopperCrop = openTopperCrop;
-window.closeTopperCrop = closeTopperCrop;
-window.saveTopperCrop = saveTopperCrop;
-window.previewTopperPoster = previewTopperPoster;
-window.closePosterPreview = closePosterPreview;
-window.downloadTopperPoster = downloadTopperPoster;
-</script>
+        function closeEditProfile() { document.getElementById('editProfileModal').style.display = 'none'; }
+
+        async function saveProfileChanges(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            const name = document.getElementById('editName').value.trim();
+            const fatherName = document.getElementById('editFatherName').value.trim();
+            const dob = document.getElementById('editDob').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            const phone = document.getElementById('editPhone').value.trim();
+            const password = document.getElementById('editPassword').value.trim();
+            if (!name) { showToast("Name is required", "error"); return; }
+            showLoading(true);
+            try {
+                let url =
+                    `${SCRIPT_URL}?action=updateProfile&studentId=${encodeURIComponent(currentUser.studentId)}&name=${encodeURIComponent(name)}&fatherName=${encodeURIComponent(fatherName)}&dob=${encodeURIComponent(dob)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`;
+                if (password) url += `&password=${encodeURIComponent(password)}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.result === 'success') {
+                    currentUser = { ...currentUser, ...data };
+                    localStorage.setItem('noor_session', JSON.stringify(currentUser));
+                    updateDashboardUI();
+                    closeEditProfile();
+                    showToast("Profile updated successfully! ✅", "success");
+                } else { showToast(data.message || "Update failed", "error"); }
+            } catch (err) { showToast("Network error – please try again", "error"); }
+            showLoading(false);
+        }
+
+        // ==================== ID CARD (Reduced Vertical Space) ====================
+        const ID_BG_IMAGE = "https://i.postimg.cc/JzXGNdFp/modern-islamic-education-1024x683.png";
+
+        function showIdCard() {
+            modalTitleSpan.innerText = "🪪 Digital ID Card";
+            modalBodyDiv.innerHTML = `
+                <div class="text-center py-2">
+                    <div class="id-card-preview"><canvas id="idCardCanvas" width="400" height="600"></canvas></div>
+                    <div class="d-flex gap-3 justify-content-center mt-3 flex-wrap">
+                        <button class="btn btn-outline-success rounded-pill px-4 py-2" onclick="downloadIdCard('png')"><i class="fas fa-download me-2"></i> PNG</button>
+                        <button class="btn btn-outline-danger rounded-pill px-4 py-2" onclick="downloadIdCard('pdf')"><i class="fas fa-file-pdf me-2"></i> PDF</button>
+                        <button class="btn btn-outline-info rounded-pill px-4 py-2" onclick="openProfilePhotoUpload()"><i class="fas fa-camera me-2"></i> Change Photo</button>
+                    </div>
+                    <p class="text-white-50 small mt-2">Download your digital student ID card.</p>
+                </div>
+            `;
+            modal.style.display = 'flex';
+            setTimeout(() => renderIdCard(), 300);
+        }
+
+        function renderIdCard() {
+            const canvas = document.getElementById('idCardCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = 400,
+                h = 600;
+
+            const bgImg = new Image();
+            bgImg.crossOrigin = 'anonymous';
+            bgImg.onload = function() {
+                ctx.drawImage(bgImg, 0, 0, w, h);
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                ctx.shadowBlur = 6;
+                ctx.shadowOffsetX = 1;
+                ctx.shadowOffsetY = 1;
+                ctx.textAlign = 'center';
+                const centerX = w / 2;
+
+                // ----- PHOTO LABEL -----
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = 'bold 16px "Anek Malayalam", sans-serif';
+                ctx.fillText('PHOTO', centerX, 200);
+
+                // ----- Photo Circle -----
+                const cx = w / 2,
+                    cy = 255,
+                    r = 65;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.closePath();
+                ctx.strokeStyle = '#D4AF37';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.clip();
+                ctx.fillStyle = '#e8ddd0';
+                ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+                if (currentUser.photo && currentUser.photo.startsWith('data:image')) {
+                    const img = new Image();
+                    img.onload = function() {
+                        ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+                    };
+                    img.src = currentUser.photo;
+                } else {
+                    ctx.fillStyle = '#a9a9a9';
+                    ctx.font = '40px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('📸', cx, cy + 12);
+                }
+                ctx.restore();
+
+                // ----- Student Details (Reduced Spacing) -----
+                let yPos = 360; // Slightly adjusted start
+
+                // Name
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 24px "Anek Malayalam", sans-serif';
+                ctx.fillText(currentUser.name, centerX, yPos);
+                yPos += 34; // Reduced from 45
+
+                // UID NUMBER
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = '17px "Anek Malayalam", sans-serif';
+                ctx.fillText('UID NUMBER : ' + currentUser.studentId, centerX, yPos);
+                yPos += 30; // Reduced from 40
+
+                // FATHER
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = '17px "Anek Malayalam", sans-serif';
+                ctx.fillText('FATHER : ' + (currentUser.fatherName || 'N/A'), centerX, yPos);
+                yPos += 30;
+
+                // CLASS
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = '17px "Anek Malayalam", sans-serif';
+                ctx.fillText('CLASS : ' + currentUser.class, centerX, yPos);
+                yPos += 30;
+
+                // ROLL
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = '17px "Anek Malayalam", sans-serif';
+                ctx.fillText('ROLL : ' + (currentUser.roll || 'N/A'), centerX, yPos);
+                yPos += 30;
+
+                // PHONE
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = '17px "Anek Malayalam", sans-serif';
+                ctx.fillText('PHONE : ' + (currentUser.phone || 'N/A'), centerX, yPos);
+
+                // ----- Footer -----
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.font = '12px "Anek Malayalam", sans-serif';
+                ctx.textAlign = 'center';
+                const issued = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                ctx.fillText('Issued: ' + issued, w / 2, h - 25);
+            };
+            bgImg.src = ID_BG_IMAGE;
+            // Fallback if image fails
+            bgImg.onerror = function() {
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                grad.addColorStop(0, '#0a1c3a');
+                grad.addColorStop(0.6, '#1e3a8a');
+                grad.addColorStop(1, '#3b82f6');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.textAlign = 'center';
+                const centerX = w / 2;
+                let yPos = 200;
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('PHOTO', centerX, yPos);
+                yPos += 60;
+                ctx.beginPath();
+                ctx.arc(centerX, yPos + 30, 50, 0, Math.PI * 2);
+                ctx.fillStyle = '#a9a9a9';
+                ctx.fill();
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Arial';
+                ctx.fillText('📸', centerX, yPos + 38);
+                yPos = 380; // Adjusted start
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 22px Arial';
+                ctx.fillText(currentUser.name, centerX, yPos);
+                yPos += 34;
+                ctx.fillStyle = '#E5E7EB';
+                ctx.font = '17px Arial';
+                ctx.fillText('UID NUMBER : ' + currentUser.studentId, centerX, yPos);
+                yPos += 30;
+                ctx.fillText('FATHER : ' + (currentUser.fatherName || 'N/A'), centerX, yPos);
+                yPos += 30;
+                ctx.fillText('CLASS : ' + currentUser.class, centerX, yPos);
+                yPos += 30;
+                ctx.fillText('ROLL : ' + (currentUser.roll || 'N/A'), centerX, yPos);
+                yPos += 30;
+                ctx.fillText('PHONE : ' + (currentUser.phone || 'N/A'), centerX, yPos);
+
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                ctx.font = '12px Arial';
+                ctx.fillText('Issued: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short',
+                    day: 'numeric' }), w / 2, h - 25);
+            };
+        }
+
+        function downloadIdCard(type) {
+            const canvas = document.getElementById('idCardCanvas');
+            if (!canvas) return;
+            const dataUrl = canvas.toDataURL('image/png');
+            const fileName = `ID_Card_${currentUser.studentId}_${currentUser.name.replace(/\s/g, '_')}`;
+            if (type === 'png') {
+                let a = document.createElement('a');
+                a.href = dataUrl;
+                a.download = `${fileName}.png`;
+                a.click();
+            } else if (type === 'pdf') {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [400, 600] });
+                pdf.addImage(dataUrl, 'PNG', 0, 0, 400, 600);
+                pdf.save(`${fileName}.pdf`);
+            }
+            showToast('✅ ID Card downloaded!', 'success');
+        }
+
+        // ==================== FORGOT STUDENT ID ====================
+        function openFindStudentId() {
+            document.getElementById('findStudentIdModal').style.display = 'flex';
+            document.getElementById('findResult').style.display = 'none';
+            document.getElementById('findResult').innerHTML = '';
+        }
+
+        function closeFindStudentId() { document.getElementById('findStudentIdModal').style.display = 'none'; }
+
+        async function findStudentId(e) {
+            e.preventDefault();
+            const className = document.getElementById('findClass').value;
+            const studentName = document.getElementById('findName').value.trim();
+            if (!className || !studentName) { showToast("Please select Class and enter Name", "error"); return; }
+            const resultDiv = document.getElementById('findResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML =
+                `<div class="text-center text-white-50"><i class="fas fa-spinner fa-pulse"></i> Searching...</div>`;
+            try {
+                const url =
+                    `${SCRIPT_URL}?action=findStudentId&class=${encodeURIComponent(className)}&name=${encodeURIComponent(studentName)}&t=${
+                        Date.now()}`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.result === 'success' && data.students && data.students.length > 0) {
+                    let html =
+                        `<div class="alert alert-success">Found ${data.students.length} student(s):</div><ul class="list-group">`;
+                    data.students.forEach(s => {
+                        html +=
+                            `<li class="list-group-item d-flex justify-content-between align-items-center" style="background:rgba(255,255,255,0.05);color:white;border-color:rgba(255,255,255,0.1);"><div><strong>${s.name}</strong> (${s.class})<br><small>Roll: ${s.roll}</small></div><span class="badge bg-primary" style="cursor:pointer;" onclick="copyToClipboard('${s.studentId}')">${s.studentId} <i class="fas fa-copy ms-1"></i></span></li>`;
+                    });
+                    html += `</ul><p class="text-white-50 mt-2 small">Click on the ID to copy it.</p>`;
+                    resultDiv.innerHTML = html;
+                } else { resultDiv.innerHTML =
+                        `<div class="alert alert-danger">${data.message||'No students found.'}</div>`; }
+            } catch (error) { resultDiv.innerHTML =
+                `<div class="alert alert-danger">Network error. Please try again.</div>`; }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => { showToast(`Copied: ${text}`, "success"); }).catch(() => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showToast(`Copied: ${text}`, "success");
+            });
+        }
+
+        // ==================== LOGIN / LOGOUT ====================
+        async function handleLogin(e) {
+            e.preventDefault();
+            const id = document.getElementById('studentId').value.trim();
+            if (!id) { showToast("Please enter your Student ID", "error"); return; }
+            showLoading(true);
+            await new Promise(r => setTimeout(r, 800));
+            try {
+                const url = `${SCRIPT_URL}?action=login&studentId=${encodeURIComponent(id)}&t=${Date.now()}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.result === 'success') {
+                    currentUser = {
+                        studentId: data.studentId,
+                        name: data.name,
+                        class: data.class,
+                        roll: data.roll || '',
+                        overallGrade: data.overallGrade || 'A+',
+                        attendance: data.attendance || 94,
+                        rank: data.rank || 3,
+                        rankChange: data.rankChange || '+1',
+                        moralValuesGrade: data.moralValuesGrade || 'B+',
+                        moralValuesSub: data.moralValuesSub || 'Honesty:A, Respect:A+',
+                        performance: data.performance || 90,
+                        avatar: data.name?.charAt(0).toUpperCase() || 'S',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        trendAttendance: data.trendAttendance || '+2%',
+                        fatherName: data.fatherName || '',
+                        dob: data.dob || '',
+                        photo: data.photo || ''
+                    };
+                    localStorage.setItem('noor_session', JSON.stringify(currentUser));
+                    updateDashboardUI();
+                    await loadActivitiesAndCalendar();
+                    loginSection.style.display = 'none';
+                    dashboardSection.style.display = 'block';
+                    showToast(`Welcome back, ${currentUser.name} ✨`, "success");
+                } else { showToast(data.message || "Student ID not found", "error"); }
+            } catch (err) {
+                if (STUDENT_DATA[id]) {
+                    currentUser = { ...STUDENT_DATA[id], studentId: id };
+                    localStorage.setItem('noor_session', JSON.stringify(currentUser));
+                    updateDashboardUI();
+                    await loadActivitiesAndCalendar();
+                    loginSection.style.display = 'none';
+                    dashboardSection.style.display = 'block';
+                    showToast(`Welcome back, ${currentUser.name} ✨ (offline)`, "success");
+                } else { showToast("Student ID not found", "error"); }
+            }
+            showLoading(false);
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('noor_session');
+            dashboardSection.style.display = 'none';
+            loginSection.style.display = 'flex';
+            document.getElementById('loginForm').reset();
+            showToast("Logged out securely", "success");
+        }
+
+        function restoreSession() {
+            const saved = localStorage.getItem('noor_session');
+            if (saved) {
+                try {
+                    currentUser = JSON.parse(saved);
+                    updateDashboardUI();
+                    loadActivitiesAndCalendar();
+                    loginSection.style.display = 'none';
+                    dashboardSection.style.display = 'block';
+                } catch (e) {}
+            }
+        }
+
+        // ==================== EVENT BINDINGS ====================
+        document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        closeModalBtn.addEventListener('click', () => modal.style.display = 'none');
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+        window.showResultsModal = showResultsModal;
+        window.showAttendanceReport = showAttendanceReport;
+        window.showMoralValuesModal = showMoralValuesModal;
+        window.showProfileCard = showProfileCard;
+        window.closeModal = closeModal;
+        window.openEditProfile = openEditProfile;
+        window.closeEditProfile = closeEditProfile;
+        window.saveProfileChanges = saveProfileChanges;
+        window.showIdCard = showIdCard;
+        window.downloadIdCard = downloadIdCard;
+        window.openProfilePhotoUpload = openProfilePhotoUpload;
+
+        document.getElementById('forgotStudentIdLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            openFindStudentId();
+        });
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('findStudentIdModal');
+            if (e.target === modal) closeFindStudentId();
+        });
+
+        // ==================== FORGOT PASSWORD ====================
+        const forgotModal = document.getElementById('forgotModal');
+        document.getElementById('closeForgotModalBtn').addEventListener('click', function() { forgotModal.style.display =
+                'none'; });
+        document.getElementById('forgotCloseBtn').addEventListener('click', function() { forgotModal.style.display =
+            'none'; });
+        window.addEventListener('click', function(e) { if (e.target === forgotModal) forgotModal.style.display =
+            'none'; });
+        document.getElementById('forgotSubmitBtn').addEventListener('click', async function() {
+            const studentId = document.getElementById('forgotStudentId').value.trim();
+            if (!studentId) { alert('Please enter your Student ID.'); return; }
+            document.getElementById('forgotStep1').style.display = 'none';
+            document.getElementById('forgotLoading').style.display = 'block';
+            this.disabled = true;
+            try {
+                const url = `${SCRIPT_URL}?action=forgot&studentId=${encodeURIComponent(studentId)}&t=${Date.now()}`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                document.getElementById('forgotLoading').style.display = 'none';
+                this.disabled = false;
+                document.getElementById('forgotStep2').style.display = 'block';
+                if (data.result === 'success') {
+                    document.getElementById('forgotResult').innerHTML = `
+                        <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i> Password found!</div>
+                        <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;margin:15px 0;">
+                            <p class="text-white-50 mb-1">Student: <strong class="text-white">${data.name}</strong></p>
+                            <p class="text-white-50 mb-0">Your password: <strong class="text-warning" style="font-size:1.4rem;letter-spacing:2px;">${data.password}</strong></p>
+                        </div>
+                        <p class="text-white-50 small">You can now close this window and log in.</p>
+                    `;
+                } else {
+                    document.getElementById('forgotResult').innerHTML =
+                        `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> ${data.message}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('forgotLoading').style.display = 'none';
+                this.disabled = false;
+                document.getElementById('forgotStep2').style.display = 'block';
+                document.getElementById('forgotResult').innerHTML =
+                    `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i> Network error. Please try again.</div>`;
+            }
+        });
+
+        // ==================== TOPPER POSTER ====================
+        let topperPhotoData = null;
+        let cropperInstance = null;
+        const CERT_BG = "https://i.postimg.cc/vBJs8jT4/topper.jpg";
+
+        function showTopperPoster() {
+            if (!currentUser) return;
+            document.getElementById('topperNameDisplay').textContent = currentUser.name;
+            const rankText = currentUser.rank === 1 ? 'First' : 'Second';
+            document.getElementById('topperClassRank').textContent = `Class ${currentUser.class} - ${rankText} (Rank ${currentUser.rank})`;
+            const saved = localStorage.getItem(`topper_photo_${currentUser.studentId}`);
+            if (saved) { topperPhotoData = saved;
+                document.getElementById('topperPhotoPreview').src = saved; } else if (currentUser.photo) { topperPhotoData =
+                    currentUser.photo;
+                document.getElementById('topperPhotoPreview').src = currentUser.photo; } else { topperPhotoData = null;
+                document.getElementById('topperPhotoPreview').src = ''; }
+            document.getElementById('topperModal').style.display = 'flex';
+        }
+
+        function closeTopperModal() { document.getElementById('topperModal').style.display = 'none'; }
+
+        function openTopperCrop() {
+            const fileInput = document.getElementById('topperPhotoUpload');
+            fileInput.click();
+            fileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('topperCropImage').src = ev.target.result;
+                    document.getElementById('topperCropModal').style.display = 'flex';
+                    document.getElementById('topperCropImage').onload = () => {
+                        if (cropperInstance) cropperInstance.destroy();
+                        cropperInstance = new Cropper(document.getElementById('topperCropImage'), {
+                            aspectRatio: 1,
+                            viewMode: 2,
+                            dragMode: 'move',
+                            autoCropArea: 0.9,
+                            cropBoxMovable: true,
+                            cropBoxResizable: true,
+                            zoomable: true,
+                            background: true,
+                            responsive: true,
+                            center: true,
+                        });
+                    };
+                };
+                reader.readAsDataURL(file);
+            };
+        }
+
+        function closeTopperCrop() {
+            if (cropperInstance) { cropperInstance.destroy();
+                cropperInstance = null; }
+            document.getElementById('topperCropModal').style.display = 'none';
+            document.getElementById('topperCropImage').src = '';
+        }
+
+        function saveTopperCrop() {
+            if (!cropperInstance) { alert('Crop tool not ready'); return; }
+            const croppedCanvas = cropperInstance.getCroppedCanvas({ width: 800, height: 800 });
+            if (!croppedCanvas) { alert('Crop failed'); return; }
+            const croppedData = croppedCanvas.toDataURL('image/png');
+            topperPhotoData = croppedData;
+            document.getElementById('topperPhotoPreview').src = croppedData;
+            localStorage.setItem(`topper_photo_${currentUser.studentId}`, croppedData);
+            closeTopperCrop();
+            showToast('Photo cropped & saved!', 'success');
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                let img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => reject();
+                img.src = src;
+            });
+        }
+
+        async function renderTopperCanvas(name, cls, rank, photo) {
+            const w = 2400,
+                h = 3200;
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            try {
+                const bg = await loadImage(CERT_BG);
+                ctx.drawImage(bg, 0, 0, w, h);
+                const cx = w / 2,
+                    cy = 1600,
+                    r = 400;
+                if (photo) {
+                    try {
+                        let img = await loadImage(photo);
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.clip();
+                        let dw, dh;
+                        if (img.width > img.height) { dh = r * 2;
+                            dw = img.width * (dh / img.height); } else { dw = r * 2;
+                            dh = img.height * (dw / img.width); }
+                        ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
+                        ctx.restore();
+                    } catch (e) { drawPlaceholder(ctx, cx, cy, r); }
+                } else { drawPlaceholder(ctx, cx, cy, r); }
+                ctx.shadowColor = 'rgba(0,0,0,0.2)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 3;
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 95px "Anek Malayalam", "Inter", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(name, cx, 2180);
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 70px "Anek Malayalam", "Inter", sans-serif';
+                const positionText = rank === 1 ? 'TOPPER' : 'SECOND PLACE';
+                ctx.fillText(`Class ${cls} - ${positionText}`, cx, 2360);
+                ctx.shadowBlur = 0;
+                ctx.shadowColor = 'transparent';
+                return canvas;
+            } catch (e) { console.error("Render error:", e);
+                throw new Error("Background failed"); }
+        }
+
+        function drawPlaceholder(ctx, cx, cy, r) {
+            ctx.fillStyle = '#F4E8D1';
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 85px "Anek Malayalam"';
+            ctx.fillText('📸', cx, cy + 25);
+        }
+
+        async function previewTopperPoster() {
+            if (!currentUser) return;
+            showTopperLoading('Generating poster...');
+            try {
+                const rank = currentUser.rank;
+                const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
+                hideTopperLoading();
+                const previewCanvas = document.getElementById('posterPreviewCanvas');
+                previewCanvas.width = 1600;
+                previewCanvas.height = 2134;
+                const pctx = previewCanvas.getContext('2d');
+                pctx.drawImage(canvas, 0, 0, 2400, 3200, 0, 0, 1600, 2134);
+                document.getElementById('posterPreviewOverlay').style.display = 'block';
+            } catch (e) { hideTopperLoading();
+                alert('Error generating poster. Please try again.'); }
+        }
+
+        function closePosterPreview() { document.getElementById('posterPreviewOverlay').style.display = 'none'; }
+
+        async function downloadTopperPoster(type) {
+            if (!currentUser) return;
+            showTopperLoading('Creating file...');
+            try {
+                const rank = currentUser.rank;
+                const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
+                const finalCanvas = document.createElement('canvas');
+                finalCanvas.width = canvas.width;
+                finalCanvas.height = canvas.height;
+                const fctx = finalCanvas.getContext('2d');
+                fctx.fillStyle = '#fff';
+                fctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+                fctx.drawImage(canvas, 0, 0);
+                const img = finalCanvas.toDataURL('image/png');
+                const fileName =
+                    `Noorussalam_Class${currentUser.class}_Rank${currentUser.rank}_${currentUser.name.replace(/\s/g, '_')}`;
+                if (type === 'png') {
+                    let a = document.createElement('a');
+                    a.href = img;
+                    a.download = `${fileName}.png`;
+                    a.click();
+                } else if (type === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [2400, 3200] });
+                    pdf.addImage(img, 'PNG', 0, 0, 2400, 3200);
+                    pdf.save(`${fileName}.pdf`);
+                }
+                if (typeof confetti !== 'undefined') confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 },
+                    colors: ['#D4AF37', '#0A1C3A'] });
+                hideTopperLoading();
+                showToast('✅ Poster Downloaded!', 'success');
+            } catch (e) { hideTopperLoading();
+                alert('Download failed'); }
+        }
+
+        function showTopperLoading(text) { document.getElementById('topperLoadingText').textContent = text;
+            document.getElementById('topperLoading').style.display = 'flex'; }
+
+        function hideTopperLoading() { document.getElementById('topperLoading').style.display = 'none'; }
+
+        window.showTopperPoster = showTopperPoster;
+        window.closeTopperModal = closeTopperModal;
+        window.openTopperCrop = openTopperCrop;
+        window.closeTopperCrop = closeTopperCrop;
+        window.saveTopperCrop = saveTopperCrop;
+        window.previewTopperPoster = previewTopperPoster;
+        window.closePosterPreview = closePosterPreview;
+        window.downloadTopperPoster = downloadTopperPoster;
+        window.toggleTheme = toggleTheme;
+
+        // ==================== RESTORE SESSION ====================
+        restoreSession();
+    </script>
 </body>
 </html>
