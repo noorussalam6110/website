@@ -17,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
     <style>
-        /* ── Reset & Base ── */
         * {
             margin: 0;
             padding: 0;
@@ -597,8 +596,6 @@
             background: #10b981;
             border-radius: 50%;
         }
-
-        /* ── Theme toggle ── */
         .theme-toggle {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -652,8 +649,6 @@
         body.light-theme .theme-toggle .icon-moon {
             color: rgba(0, 0, 0, 0.3);
         }
-
-        /* ── Profile photo upload ── */
         .profile-photo-wrapper {
             position: relative;
             display: inline-block;
@@ -678,8 +673,6 @@
             transform: scale(1.1);
             background: #2563eb;
         }
-
-        /* ── ID Card preview ── */
         .id-card-preview {
             max-width: 280px;
             margin: 10px auto;
@@ -692,7 +685,6 @@
             width: 100%;
             display: block;
         }
-
         @media (max-width: 680px) {
             .photo-container { width: 140px; height: 140px; }
             .poster-preview-buttons { flex-direction: column; width: 90%; bottom: 20px; }
@@ -702,7 +694,6 @@
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.8rem; }
             .id-card-preview { max-width: 220px; }
         }
-
         #forgotModal .form-control-glass {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1302,7 +1293,7 @@
             modal.style.display = 'flex';
         }
 
-        // ==================== PROFILE PHOTO UPLOAD (FIXED – POST with URL-encoded) ====================
+        // ==================== PROFILE PHOTO UPLOAD ====================
         function openProfilePhotoUpload() {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
@@ -1416,7 +1407,7 @@
             showLoading(false);
         }
 
-        // ==================== ID CARD ====================
+        // ==================== ID CARD (SQUARE PHOTO WITH ROUNDED CORNERS) ====================
         const ID_BG_IMAGE = "https://i.postimg.cc/JzXGNdFp/modern-islamic-education-1024x683.png";
 
         function showIdCard() {
@@ -1461,35 +1452,47 @@
                 ctx.font = 'bold 16px "Anek Malayalam", sans-serif';
                 ctx.fillText('PHOTO', centerX, 200);
 
+                // ----- SQUARE PHOTO WITH ROUNDED CORNERS -----
                 const cx = w / 2,
                     cy = 255,
-                    r = 65;
+                    size = 120;
+                const radius = 16;
+                const x = cx - size / 2;
+                const y = cy - size / 2;
+
+                // Draw border (rounded square)
                 ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.roundRect(x, y, size, size, radius);
                 ctx.closePath();
                 ctx.strokeStyle = '#D4AF37';
                 ctx.lineWidth = 4;
                 ctx.stroke();
+
+                // Clip and draw photo inside rounded square
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.roundRect(x, y, size, size, radius);
+                ctx.closePath();
                 ctx.clip();
+
                 ctx.fillStyle = '#e8ddd0';
-                ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+                ctx.fillRect(x, y, size, size);
+
                 if (currentUser.photo && currentUser.photo.startsWith('data:image')) {
                     const img = new Image();
                     img.onload = function() {
-                        ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2);
+                        ctx.drawImage(img, x, y, size, size);
                     };
                     img.src = currentUser.photo;
                 } else {
                     ctx.fillStyle = '#a9a9a9';
-                    ctx.font = '40px sans-serif';
+                    ctx.font = '50px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('📸', cx, cy + 12);
+                    ctx.fillText('📸', cx, cy + 16);
                 }
                 ctx.restore();
 
+                // ----- Student Details -----
                 let yPos = 360;
                 ctx.fillStyle = '#FFFFFF';
                 ctx.font = 'bold 24px "Anek Malayalam", sans-serif';
@@ -1499,20 +1502,12 @@
                 ctx.font = '17px "Anek Malayalam", sans-serif';
                 ctx.fillText('UID NUMBER : ' + currentUser.studentId, centerX, yPos);
                 yPos += 30;
-                ctx.fillStyle = '#E5E7EB';
-                ctx.font = '17px "Anek Malayalam", sans-serif';
                 ctx.fillText('FATHER : ' + (currentUser.fatherName || 'N/A'), centerX, yPos);
                 yPos += 30;
-                ctx.fillStyle = '#E5E7EB';
-                ctx.font = '17px "Anek Malayalam", sans-serif';
                 ctx.fillText('CLASS : ' + currentUser.class, centerX, yPos);
                 yPos += 30;
-                ctx.fillStyle = '#E5E7EB';
-                ctx.font = '17px "Anek Malayalam", sans-serif';
                 ctx.fillText('ROLL : ' + (currentUser.roll || 'N/A'), centerX, yPos);
                 yPos += 30;
-                ctx.fillStyle = '#E5E7EB';
-                ctx.font = '17px "Anek Malayalam", sans-serif';
                 ctx.fillText('PHONE : ' + (currentUser.phone || 'N/A'), centerX, yPos);
 
                 ctx.shadowBlur = 0;
@@ -1538,13 +1533,22 @@
                 ctx.font = 'bold 16px Arial';
                 ctx.fillText('PHOTO', centerX, yPos);
                 yPos += 60;
+
+                const cx = w / 2,
+                    cy2 = yPos + 30,
+                    size = 100,
+                    radius = 14;
+                const x = cx - size / 2;
+                const y2 = cy2 - size / 2;
                 ctx.beginPath();
-                ctx.arc(centerX, yPos + 30, 50, 0, Math.PI * 2);
+                ctx.roundRect(x, y2, size, size, radius);
+                ctx.closePath();
                 ctx.fillStyle = '#a9a9a9';
                 ctx.fill();
                 ctx.fillStyle = 'white';
-                ctx.font = '30px Arial';
-                ctx.fillText('📸', centerX, yPos + 38);
+                ctx.font = '40px Arial';
+                ctx.fillText('📸', cx, cy2 + 12);
+
                 yPos = 380;
                 ctx.fillStyle = 'white';
                 ctx.font = 'bold 22px Arial';
