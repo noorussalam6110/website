@@ -17,6 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
     <style>
+        /* ── Reset & Base ── */
         * {
             margin: 0;
             padding: 0;
@@ -1407,7 +1408,7 @@
             showLoading(false);
         }
 
-        // ==================== ID CARD (SQUARE PHOTO WITH ROUNDED CORNERS) ====================
+        // ==================== ID CARD (Square photo with rounded corners) ====================
         const ID_BG_IMAGE = "https://i.postimg.cc/JzXGNdFp/modern-islamic-education-1024x683.png";
 
         function showIdCard() {
@@ -1434,6 +1435,24 @@
             const w = 400,
                 h = 600;
 
+            // Helper to draw rounded rect (fallback for older browsers)
+            function roundRect(ctx, x, y, w, h, r) {
+                if (ctx.roundRect) {
+                    ctx.roundRect(x, y, w, h, r);
+                    return;
+                }
+                // Manual fallback
+                ctx.moveTo(x + r, y);
+                ctx.lineTo(x + w - r, y);
+                ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+                ctx.lineTo(x + w, y + h - r);
+                ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+                ctx.lineTo(x + r, y + h);
+                ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+                ctx.lineTo(x, y + r);
+                ctx.quadraticCurveTo(x, y, x + r, y);
+            }
+
             const bgImg = new Image();
             bgImg.crossOrigin = 'anonymous';
             bgImg.onload = function() {
@@ -1455,14 +1474,14 @@
                 // ----- SQUARE PHOTO WITH ROUNDED CORNERS -----
                 const cx = w / 2,
                     cy = 255,
-                    size = 120;
-                const radius = 16;
+                    size = 120,
+                    radius = 16;
                 const x = cx - size / 2;
                 const y = cy - size / 2;
 
                 // Draw border (rounded square)
                 ctx.beginPath();
-                ctx.roundRect(x, y, size, size, radius);
+                roundRect(ctx, x, y, size, size, radius);
                 ctx.closePath();
                 ctx.strokeStyle = '#D4AF37';
                 ctx.lineWidth = 4;
@@ -1471,17 +1490,35 @@
                 // Clip and draw photo inside rounded square
                 ctx.save();
                 ctx.beginPath();
-                ctx.roundRect(x, y, size, size, radius);
+                roundRect(ctx, x, y, size, size, radius);
                 ctx.closePath();
                 ctx.clip();
 
+                // Background
                 ctx.fillStyle = '#e8ddd0';
                 ctx.fillRect(x, y, size, size);
 
+                // Draw photo (assuming the image is square, but we'll use cover-like behavior)
                 if (currentUser.photo && currentUser.photo.startsWith('data:image')) {
                     const img = new Image();
                     img.onload = function() {
-                        ctx.drawImage(img, x, y, size, size);
+                        // Draw image to cover the square area
+                        const imgAspect = img.width / img.height;
+                        const boxAspect = size / size; // 1:1
+                        let drawW, drawH, dx, dy;
+                        if (imgAspect > boxAspect) {
+                            // image wider than box: fit height, crop width
+                            drawH = size;
+                            drawW = img.width * (size / img.height);
+                            dx = x + (size - drawW) / 2;
+                            dy = y;
+                        } else {
+                            drawW = size;
+                            drawH = img.height * (size / img.width);
+                            dx = x;
+                            dy = y + (size - drawH) / 2;
+                        }
+                        ctx.drawImage(img, dx, dy, drawW, drawH);
                     };
                     img.src = currentUser.photo;
                 } else {
@@ -1494,6 +1531,7 @@
 
                 // ----- Student Details -----
                 let yPos = 360;
+                ctx.shadowBlur = 0;
                 ctx.fillStyle = '#FFFFFF';
                 ctx.font = 'bold 24px "Anek Malayalam", sans-serif';
                 ctx.fillText(currentUser.name, centerX, yPos);
@@ -1510,7 +1548,6 @@
                 yPos += 30;
                 ctx.fillText('PHONE : ' + (currentUser.phone || 'N/A'), centerX, yPos);
 
-                ctx.shadowBlur = 0;
                 ctx.fillStyle = 'rgba(255,255,255,0.5)';
                 ctx.font = '12px "Anek Malayalam", sans-serif';
                 ctx.textAlign = 'center';
@@ -1518,6 +1555,7 @@
                 ctx.fillText('Issued: ' + issued, w / 2, h - 25);
             };
             bgImg.src = ID_BG_IMAGE;
+            // Fallback if background fails
             bgImg.onerror = function() {
                 const grad = ctx.createLinearGradient(0, 0, w, h);
                 grad.addColorStop(0, '#0a1c3a');
@@ -1541,7 +1579,7 @@
                 const x = cx - size / 2;
                 const y2 = cy2 - size / 2;
                 ctx.beginPath();
-                ctx.roundRect(x, y2, size, size, radius);
+                roundRect(ctx, x, y2, size, size, radius);
                 ctx.closePath();
                 ctx.fillStyle = '#a9a9a9';
                 ctx.fill();
