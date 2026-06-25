@@ -17,6 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
     <style>
+        /* ===== CSS (unchanged – same as previous) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -30,7 +31,6 @@
             overflow-x: hidden;
             transition: background 0.4s, color 0.4s;
         }
-
         #dashboardSection.dashboard-light {
             background: radial-gradient(circle at 10% 20%, #f0f4ff, #e8edf5);
         }
@@ -94,7 +94,6 @@
         #dashboardSection.dashboard-light .theme-toggle .icon-moon {
             color: rgba(0, 0, 0, 0.3);
         }
-
         body::before {
             content: '';
             position: fixed;
@@ -662,7 +661,6 @@
             transform: scale(1.1);
             background: #2563eb;
         }
-
         .id-card-preview {
             max-width: 420px;
             margin: 10px auto;
@@ -677,7 +675,6 @@
             display: block;
             image-rendering: auto;
         }
-
         @media (max-width: 680px) {
             .photo-container {
                 width: 140px;
@@ -707,7 +704,6 @@
                 max-width: 320px;
             }
         }
-
         #forgotModal .form-control-glass {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1423,7 +1419,7 @@
         }
 
         // ================================================================
-        // ==================== ID CARD – FIXED ============================
+        // ==================== ID CARD – CORRECT BACKGROUND & FIELDS ======
         // ================================================================
         const ID_BG_IMAGE = "https://i.postimg.cc/3xzWVN9m/ID-CARD.jpg";
 
@@ -1487,7 +1483,7 @@
             ctx.imageSmoothingQuality = 'high';
 
             try {
-                // 1. Draw background image – FULL OPACITY, NO WASHOUT
+                // 1. Draw background image – FULL OPACITY, NO OVERLAY
                 const bgImg = await loadImage(ID_BG_IMAGE);
                 ctx.drawImage(bgImg, 0, 0, w, h);
 
@@ -1550,7 +1546,7 @@
                 roundRect(ctx, px, py, photoSize, photoSize, photoRadius);
                 ctx.stroke();
 
-                // 5. Student data – dark fonts with subtle shadow for readability
+                // 5. Student data – dark fonts with subtle shadow
                 ctx.shadowColor = 'rgba(255,255,255,0.15)';
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 1;
@@ -1560,7 +1556,7 @@
 
                 let yPos = 720;
 
-                // NAME – large bold
+                // NAME
                 ctx.fillStyle = '#1a1a2e';
                 ctx.font = 'bold 48px "Anek Malayalam", "Inter", sans-serif';
                 ctx.fillText(displayValue(currentUser.name), w / 2, yPos);
@@ -1578,7 +1574,7 @@
                 ctx.fillText('FATHER : ' + displayValue(currentUser.fatherName), w / 2, yPos);
                 yPos += 60;
 
-                // CLASS & ROLL – single line, bold, larger for visibility
+                // CLASS & ROLL – single line, bold, larger
                 ctx.fillStyle = '#1a1a2e';
                 ctx.font = 'bold 38px "Anek Malayalam", "Inter", sans-serif';
                 ctx.fillText('CLASS : ' + displayValue(currentUser.class) + '  •  ROLL : ' + displayValue(currentUser.roll), w / 2,
@@ -1590,7 +1586,7 @@
                 ctx.font = '34px "Anek Malayalam", "Inter", sans-serif';
                 ctx.fillText('PHONE : ' + displayValue(currentUser.phone), w / 2, yPos);
 
-                // 6. Footer – issued date
+                // 6. Footer
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = 'rgba(26,26,46,0.5)';
                 ctx.font = '24px "Anek Malayalam", "Inter", sans-serif';
@@ -1598,7 +1594,7 @@
                 const issued = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
                 ctx.fillText('Issued: ' + issued, w / 2, h - 50);
 
-                // 7. Small watermark
+                // 7. Watermark
                 ctx.fillStyle = 'rgba(0,0,0,0.04)';
                 ctx.font = '16px "Anek Malayalam", sans-serif';
                 ctx.textAlign = 'right';
@@ -1606,7 +1602,7 @@
                 ctx.fillText('✦ NSM ✦', w - 30, h - 18);
 
             } catch (error) {
-                console.warn('ID card background fallback:', error);
+                console.warn('ID card fallback:', error);
                 // Fallback gradient
                 const grad = ctx.createLinearGradient(0, 0, w, h);
                 grad.addColorStop(0, '#f5efe8');
@@ -1767,6 +1763,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.result === 'success') {
+                    // Map exactly from backend response
                     currentUser = {
                         studentId: data.studentId,
                         name: data.name || '',
