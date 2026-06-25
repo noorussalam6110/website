@@ -17,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
     <style>
-        /* ===== CSS (unchanged, same as previous) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -31,6 +30,8 @@
             overflow-x: hidden;
             transition: background 0.4s, color 0.4s;
         }
+
+        /* ===== DASHBOARD LIGHT THEME ===== */
         #dashboardSection.dashboard-light {
             background: radial-gradient(circle at 10% 20%, #f0f4ff, #e8edf5);
         }
@@ -94,6 +95,7 @@
         #dashboardSection.dashboard-light .theme-toggle .icon-moon {
             color: rgba(0, 0, 0, 0.3);
         }
+
         body::before {
             content: '';
             position: fixed;
@@ -661,6 +663,8 @@
             transform: scale(1.1);
             background: #2563eb;
         }
+
+        /* ===== ID CARD PREVIEW ===== */
         .id-card-preview {
             max-width: 420px;
             margin: 10px auto;
@@ -675,6 +679,7 @@
             display: block;
             image-rendering: auto;
         }
+
         @media (max-width: 680px) {
             .photo-container {
                 width: 140px;
@@ -704,6 +709,7 @@
                 max-width: 320px;
             }
         }
+
         #forgotModal .form-control-glass {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -1547,7 +1553,7 @@
                 roundRectClear(ctx, px, py, photoSize, photoSize, photoRadius);
                 ctx.stroke();
 
-                // 5. Student data – use displayValue to show "Not updated" for empty fields
+                // 5. Student data – larger font for class/roll, and bold
                 ctx.shadowColor = 'rgba(255,255,255,0.15)';
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 1;
@@ -1575,13 +1581,13 @@
                 ctx.fillText('FATHER : ' + displayValue(currentUser.fatherName), w / 2, yPos);
                 yPos += 60;
 
-                // CLASS & ROLL in a single line
+                // CLASS & ROLL in a single line – larger and bold for visibility on mobile
                 const classVal = displayValue(currentUser.class);
                 const rollVal = displayValue(currentUser.roll);
-                ctx.fillStyle = '#2d2d44';
-                ctx.font = '34px "Anek Malayalam", "Inter", sans-serif';
+                ctx.fillStyle = '#1a1a2e'; // slightly darker for emphasis
+                ctx.font = 'bold 38px "Anek Malayalam", "Inter", sans-serif';
                 ctx.fillText('CLASS : ' + classVal + '  •  ROLL : ' + rollVal, w / 2, yPos);
-                yPos += 60;
+                yPos += 64; // increased spacing
 
                 // PHONE
                 ctx.fillStyle = '#2d2d44';
@@ -1641,7 +1647,7 @@
                 ctx.textBaseline = 'middle';
                 ctx.fillText('📸', cx, cy + 10);
 
-                // Text fallback – with displayValue
+                // Text fallback – with emphasized class/roll
                 ctx.shadowColor = 'rgba(255,255,255,0.15)';
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 1;
@@ -1661,8 +1667,12 @@
                 yPos2 += 60;
                 const classVal2 = displayValue(currentUser.class);
                 const rollVal2 = displayValue(currentUser.roll);
+                ctx.fillStyle = '#1a1a2e';
+                ctx.font = 'bold 38px "Anek Malayalam", sans-serif';
                 ctx.fillText('CLASS : ' + classVal2 + '  •  ROLL : ' + rollVal2, w / 2, yPos2);
-                yPos2 += 60;
+                yPos2 += 64;
+                ctx.fillStyle = '#2d2d44';
+                ctx.font = '34px "Anek Malayalam", sans-serif';
                 ctx.fillText('PHONE : ' + displayValue(currentUser.phone), w / 2, yPos2);
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = 'rgba(26,26,46,0.4)';
@@ -1762,7 +1772,6 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.result === 'success') {
-                    // Use data from sheet – if fields missing, keep as empty string (no fallback mock values)
                     currentUser = {
                         studentId: data.studentId,
                         name: data.name || '',
@@ -1792,7 +1801,6 @@
                     showToast(`Welcome, ${currentUser.name || 'Student'} ✨`, "success");
                 } else { showToast(data.message || "Student ID not found", "error"); }
             } catch (err) {
-                // Offline fallback – use mock data only if network fails (sheet unreachable)
                 if (STUDENT_DATA[id]) {
                     currentUser = { ...STUDENT_DATA[id], studentId: id };
                     localStorage.setItem('noor_session', JSON.stringify(currentUser));
