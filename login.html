@@ -17,6 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
     <style>
+        /* ===== CSS (unchanged, same as previous) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -30,8 +31,6 @@
             overflow-x: hidden;
             transition: background 0.4s, color 0.4s;
         }
-
-        /* ===== DASHBOARD LIGHT THEME ===== */
         #dashboardSection.dashboard-light {
             background: radial-gradient(circle at 10% 20%, #f0f4ff, #e8edf5);
         }
@@ -95,7 +94,6 @@
         #dashboardSection.dashboard-light .theme-toggle .icon-moon {
             color: rgba(0, 0, 0, 0.3);
         }
-
         body::before {
             content: '';
             position: fixed;
@@ -663,8 +661,6 @@
             transform: scale(1.1);
             background: #2563eb;
         }
-
-        /* ===== ID CARD PREVIEW – ORIGINAL POSITIONING, CLEAR BG ===== */
         .id-card-preview {
             max-width: 420px;
             margin: 10px auto;
@@ -679,7 +675,6 @@
             display: block;
             image-rendering: auto;
         }
-
         @media (max-width: 680px) {
             .photo-container {
                 width: 140px;
@@ -709,7 +704,6 @@
                 max-width: 320px;
             }
         }
-
         #forgotModal .form-control-glass {
             background: rgba(255, 255, 255, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -999,7 +993,7 @@
         // ==================== CONFIG ====================
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0cAwgHsWfk2lHO5PmHa0VTYnt2ZAA7jXEMJLMdLbkc1KaWqTzxAnD89tV0ZrNrm61/exec';
 
-        // ==================== MOCK DATA ====================
+        // ==================== MOCK DATA (only for offline fallback) ====================
         const STUDENT_DATA = {
             "NSM2025001": { password: "welcome123", name: "Suhail P", class: "1", roll: "1", overallGrade: "A+",
                 attendance: 94, rank: 3, rankChange: "+1", moralValuesGrade: "A+", moralValuesSub: "Honesty:A+, Respect:A",
@@ -1076,9 +1070,9 @@
         // ==================== UPDATE DASHBOARD UI ====================
         function updateDashboardUI() {
             if (!currentUser) return;
-            document.getElementById('studentFullName').innerText = currentUser.name;
+            document.getElementById('studentFullName').innerText = currentUser.name || 'Student';
             document.getElementById('displayStudentId').innerText = currentUser.studentId;
-            document.getElementById('studentClassText').innerText = 'Class ' + currentUser.class;
+            document.getElementById('studentClassText').innerText = currentUser.class ? 'Class ' + currentUser.class : 'Class N/A';
 
             const avatarDiv = document.getElementById('avatarInitials');
             const avatarImg = document.getElementById('avatarPhoto');
@@ -1090,33 +1084,34 @@
             } else {
                 avatarImg.style.display = 'none';
                 avatarText.style.display = 'block';
-                avatarText.innerText = currentUser.avatar || 'S';
+                avatarText.innerText = currentUser.avatar || (currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'S');
             }
 
-            document.getElementById('overallGradeDisplay').innerText = currentUser.overallGrade;
-            let perf = currentUser.performance;
+            document.getElementById('overallGradeDisplay').innerText = currentUser.overallGrade || 'N/A';
+            let perf = currentUser.performance || 0;
             document.getElementById('gradeProgressFill').style.width = perf + '%';
             document.getElementById('gradePercentLabel').innerHTML = perf + '%';
-            const grade = currentUser.overallGrade;
+            const grade = currentUser.overallGrade || 'N/A';
             const gradeInfo = getGradeDetails(grade);
             document.getElementById('gradeIcon').className = `fas ${gradeInfo.icon} fa-2x`;
             document.getElementById('gradeIconContainer').style.backgroundColor = gradeInfo.color + '33';
             document.getElementById('gradeLineFill').style.width = gradeInfo.width + '%';
             document.getElementById('gradeLineFill').style.background = `linear-gradient(90deg, ${gradeInfo.color}, ${gradeInfo.color})`;
-            document.getElementById('attendanceRateLabel').innerHTML = currentUser.attendance + '%';
-            document.getElementById('attendanceProgressFill').style.width = currentUser.attendance + '%';
-            document.getElementById('attendanceTrend').innerHTML = `<i class="fas fa-arrow-up"></i> ${currentUser.trendAttendance}`;
-            let rankDisplay = currentUser.rank + (currentUser.rank === 1 ? 'st' : currentUser.rank === 2 ? 'nd' : currentUser
-                .rank === 3 ? 'rd' : 'th');
+            document.getElementById('attendanceRateLabel').innerHTML = (currentUser.attendance || 0) + '%';
+            document.getElementById('attendanceProgressFill').style.width = (currentUser.attendance || 0) + '%';
+            document.getElementById('attendanceTrend').innerHTML = currentUser.trendAttendance || 'No data';
+            let rankDisplay = currentUser.rank ? currentUser.rank + (currentUser.rank === 1 ? 'st' : currentUser.rank === 2 ?
+                'nd' : currentUser.rank === 3 ? 'rd' : 'th') : 'N/A';
             document.getElementById('rankNumber').innerHTML = rankDisplay;
-            let rankChangeHtml = currentUser.rankChange === '+1' ? '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser
-                .rankChange === '-1' ? '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable');
+            let rankChangeHtml = currentUser.rankChange ? (currentUser.rankChange === '+1' ?
+                '<i class="fas fa-arrow-up"></i> Improved +1' : (currentUser.rankChange === '-1' ?
+                    '<i class="fas fa-arrow-down"></i> Dropped' : 'Stable')) : 'N/A';
             document.getElementById('rankBadge').innerHTML = rankChangeHtml;
-            document.getElementById('moralValuesDisplay').innerText = currentUser.moralValuesGrade || 'B+';
-            document.getElementById('moralValuesSub').innerText = 'Loading...';
+            document.getElementById('moralValuesDisplay').innerText = currentUser.moralValuesGrade || 'N/A';
+            document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub || 'Not updated';
             const gradeMap = { 'A+': 95, 'A': 85, 'B+': 75, 'B': 65, 'C+': 55, 'C': 45, 'D': 35, 'F': 25 };
-            const g = currentUser.moralValuesGrade || 'B';
-            document.getElementById('moralValuesProgressFill').style.width = (gradeMap[g] || 70) + '%';
+            const g = currentUser.moralValuesGrade || 'N/A';
+            document.getElementById('moralValuesProgressFill').style.width = (gradeMap[g] || 0) + '%';
             const topperTile = document.getElementById('topperPosterTile');
             if (currentUser.rank === 1 || currentUser.rank === 2) topperTile.style.display = 'block';
             else topperTile.style.display = 'none';
@@ -1182,9 +1177,9 @@
             modalTitleSpan.innerText = "📊 Overall Grade";
             modalBodyDiv.innerHTML = `
                 <div class="text-center py-3">
-                    <div style="font-size:4rem; font-weight:800; background:linear-gradient(135deg,#3b82f6,#a855f7); -webkit-background-clip:text; background-clip:text; color:transparent;">${currentUser.overallGrade}</div>
+                    <div style="font-size:4rem; font-weight:800; background:linear-gradient(135deg,#3b82f6,#a855f7); -webkit-background-clip:text; background-clip:text; color:transparent;">${currentUser.overallGrade || 'N/A'}</div>
                     <p class="text-white-50">Overall Grade</p>
-                    <div class="mt-3"><div class="d-flex justify-content-between"><span class="text-white">Performance</span><span class="text-white fw-bold">${currentUser.performance}%</span></div><div class="progress" style="height:12px;"><div class="progress-bar bg-primary" style="width:${currentUser.performance}%"></div></div></div>
+                    <div class="mt-3"><div class="d-flex justify-content-between"><span class="text-white">Performance</span><span class="text-white fw-bold">${currentUser.performance || 0}%</span></div><div class="progress" style="height:12px;"><div class="progress-bar bg-primary" style="width:${currentUser.performance || 0}%"></div></div></div>
                     <div class="mt-4"><a href="result.html" class="btn btn-outline-light rounded-pill px-4 py-2" style="border-color:#3b82f6;color:#3b82f6;font-weight:600;text-decoration:none;"><i class="fas fa-external-link-alt me-2"></i> Access Full Results Page</a></div>
                 </div>
             `;
@@ -1213,14 +1208,14 @@
                         return `<li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">${displayMonth}</span><span class="badge bg-success">${rec.percentage}%</span><span class="text-white-50 small">${rec.present}/${rec.total} days</span></li>`;
                     }).join('');
                     modalBodyDiv.innerHTML =
-                        `<div><div class="text-center mb-3"><span style="font-size:3rem;font-weight:800;">${currentUser.attendance}%</span><p class="text-white-50">Overall Attendance</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div><h6 class="text-white">Monthly Breakdown</h6><ul class="list-unstyled">${recordsHtml}</ul></div>`;
+                        `<div><div class="text-center mb-3"><span style="font-size:3rem;font-weight:800;">${currentUser.attendance || 0}%</span><p class="text-white-50">Overall Attendance</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance || 0}%"></div></div><h6 class="text-white">Monthly Breakdown</h6><ul class="list-unstyled">${recordsHtml}</ul></div>`;
                 } else {
                     modalBodyDiv.innerHTML =
                         `<div class="text-center py-3"><i class="fas fa-calendar-times fa-3x text-white-50 mb-3"></i><p class="text-white-50">No attendance records found.</p></div>`;
                 }
             } catch (error) {
                 modalBodyDiv.innerHTML =
-                    `<div><div class="text-center mb-3"><span style="font-size:3rem;font-weight:800;">${currentUser.attendance}%</span><p class="text-white-50">Overall Attendance (cached)</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance}%"></div></div><h6 class="text-white">Monthly Breakdown (sample)</h6><ul class="list-unstyled"><li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">Mar/2025</span><span class="badge bg-success">100%</span><span class="text-white-50 small">18/18 days</span></li><li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">Feb/2025</span><span class="badge bg-warning">91%</span><span class="text-white-50 small">20/22 days</span></li></ul></div>`;
+                    `<div><div class="text-center mb-3"><span style="font-size:3rem;font-weight:800;">${currentUser.attendance || 0}%</span><p class="text-white-50">Overall Attendance (cached)</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-success" style="width:${currentUser.attendance || 0}%"></div></div><h6 class="text-white">Monthly Breakdown (sample)</h6><ul class="list-unstyled"><li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">Mar/2025</span><span class="badge bg-success">100%</span><span class="text-white-50 small">18/18 days</span></li><li class="d-flex justify-content-between align-items-center border-bottom border-white-10 py-2"><span class="text-white">Feb/2025</span><span class="badge bg-warning">91%</span><span class="text-white-50 small">20/22 days</span></li></ul></div>`;
                 showToast("Could not fetch live attendance – showing cached data", "error");
             }
         }
@@ -1258,11 +1253,11 @@
         }
 
         function fallbackMoralValues() {
-            const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:A', 'Respect:A+'];
+            const subValues = currentUser.moralValuesSub ? currentUser.moralValuesSub.split(',') : ['Honesty:N/A', 'Respect:N/A'];
             let subHtml = subValues.map(item => {
                 const parts = item.split(':');
                 const trait = parts[0]?.trim() || 'N/A';
-                const grade = parts[1]?.trim() || 'B';
+                const grade = parts[1]?.trim() || 'N/A';
                 const gradeColor = grade === 'A+' ? '#10b981' : grade === 'A' ? '#06b6d4' : grade === 'B+' ? '#3b82f6' :
                     '#f59e0b';
                 return `<div class="d-flex justify-content-between align-items-center p-2 border-bottom border-white-10"><span>${trait}</span><span style="color:${gradeColor};font-weight:700;">${grade}</span></div>`;
@@ -1270,7 +1265,7 @@
             document.getElementById('moralValuesSub').innerText = currentUser.moralValuesSub ? currentUser.moralValuesSub
                 .split(',').slice(0, 2).join(', ') : 'N/A';
             modalBodyDiv.innerHTML =
-                `<div><div class="text-center mb-4"><div style="font-size:3rem;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade||'B+'}</div><p class="text-white-50">Overall Moral Values Grade</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div><h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div><div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div></div>`;
+                `<div><div class="text-center mb-4"><div style="font-size:3rem;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">${currentUser.moralValuesGrade||'N/A'}</div><p class="text-white-50">Overall Moral Values Grade</p></div><div class="progress mb-4" style="height:12px;"><div class="progress-bar bg-warning" style="width:${document.getElementById('moralValuesProgressFill').style.width}"></div></div><h6 class="text-white">Sub‑categories</h6><div>${subHtml}</div><div class="alert alert-dark mt-3"><i class="fas fa-hand-holding-heart text-warning"></i> Character development is our priority.</div></div>`;
             showToast("Could not fetch moral values – showing cached data", "error");
         }
 
@@ -1279,7 +1274,7 @@
             modalTitleSpan.innerText = "👤 Student Profile";
             const formattedDob = formatDate(currentUser.dob);
             const photoHtml = currentUser.photo ? `<img src="${currentUser.photo}" style="width:100%;height:100%;object-fit:cover;">` :
-                `<span style="font-size:2.5rem;font-weight:700;">${currentUser.avatar}</span>`;
+                `<span style="font-size:2.5rem;font-weight:700;">${currentUser.avatar || '?'}</span>`;
             modalBodyDiv.innerHTML = `
                 <div class="text-center mb-3">
                     <div class="profile-photo-wrapper">
@@ -1290,16 +1285,16 @@
                             <i class="fas fa-camera fa-sm"></i>
                         </div>
                     </div>
-                    <h4 class="text-white">${currentUser.name}</h4>
-                    <p class="text-white-50">Class ${currentUser.class}</p>
+                    <h4 class="text-white">${currentUser.name || 'Not updated'}</h4>
+                    <p class="text-white-50">${currentUser.class ? 'Class '+currentUser.class : 'Class N/A'}</p>
                 </div>
                 <div class="row">
                     <div class="col-6"><small>Student ID</small><p class="text-white fw-bold">${currentUser.studentId}</p></div>
-                    <div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll}</p></div>
-                    <div class="col-12"><small>Father's Name</small><p class="text-white">${currentUser.fatherName||'N/A'}</p></div>
-                    <div class="col-12"><small>Date of Birth</small><p class="text-white">${formattedDob}</p></div>
-                    <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email}</p></div>
-                    <div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone}</p></div>
+                    <div class="col-6"><small>Roll Number</small><p class="text-white fw-bold">${currentUser.roll || 'N/A'}</p></div>
+                    <div class="col-12"><small>Father's Name</small><p class="text-white">${currentUser.fatherName || 'Not updated'}</p></div>
+                    <div class="col-12"><small>Date of Birth</small><p class="text-white">${formattedDob || 'Not updated'}</p></div>
+                    <div class="col-12"><small>Email</small><p class="text-white">${currentUser.email || 'Not updated'}</p></div>
+                    <div class="col-12"><small>Phone</small><p class="text-white">${currentUser.phone || 'Not updated'}</p></div>
                 </div>
                 <div class="mt-4 text-center d-flex flex-wrap gap-3 justify-content-center">
                     <button class="btn btn-outline-info rounded-pill px-4 py-2" onclick="closeModal();openEditProfile();" style="border-color:#3b82f6;color:#3b82f6;font-weight:600;background:rgba(59,130,246,0.08);"><i class="fas fa-edit me-2"></i> Edit Profile</button>
@@ -1424,7 +1419,7 @@
         }
 
         // ================================================================
-        // ==================== ID CARD – ORIGINAL POSITIONING, CLEAR BG ====
+        // ==================== ID CARD – ORIGINAL POSITIONING =============
         // ================================================================
         const ID_BG_IMAGE = "https://i.postimg.cc/t4jFn1t9/ID-CARD.jpg";
 
@@ -1438,7 +1433,7 @@
                         <button class="btn btn-outline-danger rounded-pill px-4 py-2" onclick="downloadIdCard('pdf')"><i class="fas fa-file-pdf me-2"></i> PDF</button>
                         <button class="btn btn-outline-info rounded-pill px-4 py-2" onclick="openProfilePhotoUpload()"><i class="fas fa-camera me-2"></i> Change Photo</button>
                     </div>
-                    <p class="text-white-50 small mt-2">Original positioning – clear background with dark fonts.</p>
+                    <p class="text-white-50 small mt-2">Missing data appears as "Not updated".</p>
                 </div>
             `;
             modal.style.display = 'flex';
@@ -1473,14 +1468,17 @@
             ctx.quadraticCurveTo(x, y, x + r, y);
         }
 
+        // Helper to display "Not updated" for empty fields
+        function displayValue(value) {
+            return (value && value.trim() !== '') ? value : 'Not updated';
+        }
+
         async function renderIdCardOriginal() {
             const canvas = document.getElementById('idCardCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-            // High-res canvas: 800x1200 (scaled 2x from original 400x600)
             const w = 800,
                 h = 1200;
-            const scale = 2;
 
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
@@ -1490,14 +1488,14 @@
                 const bgImg = await loadImageClear(ID_BG_IMAGE);
                 ctx.drawImage(bgImg, 0, 0, w, h);
 
-                // 2. "PHOTO" label (scaled from original y=200)
+                // 2. "PHOTO" label
                 ctx.shadowBlur = 0;
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#1a1a2e';
                 ctx.font = 'bold 32px "Anek Malayalam", sans-serif';
                 ctx.fillText('PHOTO', w / 2, 400);
 
-                // 3. Photo – original position (cx=200, cy=255, size=120) scaled by 2
+                // 3. Photo
                 const photoSize = 240,
                     photoRadius = 32;
                 const cx = w / 2,
@@ -1510,8 +1508,6 @@
                 roundRectClear(ctx, px, py, photoSize, photoSize, photoRadius);
                 ctx.closePath();
                 ctx.clip();
-
-                // Light background for photo area
                 ctx.fillStyle = '#e8ddd0';
                 ctx.fillRect(px, py, photoSize, photoSize);
 
@@ -1543,7 +1539,7 @@
                 }
                 ctx.restore();
 
-                // 4. Photo border – gold
+                // 4. Photo border
                 ctx.shadowBlur = 0;
                 ctx.strokeStyle = 'rgba(212,175,55,0.6)';
                 ctx.lineWidth = 4;
@@ -1551,7 +1547,7 @@
                 roundRectClear(ctx, px, py, photoSize, photoSize, photoRadius);
                 ctx.stroke();
 
-                // 5. Student data – dark fonts with subtle shadow for readability
+                // 5. Student data – use displayValue to show "Not updated" for empty fields
                 ctx.shadowColor = 'rgba(255,255,255,0.15)';
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 1;
@@ -1559,13 +1555,12 @@
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
 
-                // Original yPos=360 scaled to 720
                 let yPos = 720;
 
                 // Name
                 ctx.fillStyle = '#1a1a2e';
                 ctx.font = 'bold 48px "Anek Malayalam", "Inter", sans-serif';
-                ctx.fillText(currentUser.name, w / 2, yPos);
+                ctx.fillText(displayValue(currentUser.name), w / 2, yPos);
                 yPos += 68;
 
                 // UID NUMBER
@@ -1577,27 +1572,23 @@
                 // FATHER
                 ctx.fillStyle = '#2d2d44';
                 ctx.font = '34px "Anek Malayalam", "Inter", sans-serif';
-                ctx.fillText('FATHER : ' + (currentUser.fatherName || 'N/A'), w / 2, yPos);
+                ctx.fillText('FATHER : ' + displayValue(currentUser.fatherName), w / 2, yPos);
                 yPos += 60;
 
-                // CLASS
+                // CLASS & ROLL in a single line
+                const classVal = displayValue(currentUser.class);
+                const rollVal = displayValue(currentUser.roll);
                 ctx.fillStyle = '#2d2d44';
                 ctx.font = '34px "Anek Malayalam", "Inter", sans-serif';
-                ctx.fillText('CLASS : ' + currentUser.class, w / 2, yPos);
-                yPos += 60;
-
-                // ROLL
-                ctx.fillStyle = '#2d2d44';
-                ctx.font = '34px "Anek Malayalam", "Inter", sans-serif';
-                ctx.fillText('ROLL : ' + (currentUser.roll || 'N/A'), w / 2, yPos);
+                ctx.fillText('CLASS : ' + classVal + '  •  ROLL : ' + rollVal, w / 2, yPos);
                 yPos += 60;
 
                 // PHONE
                 ctx.fillStyle = '#2d2d44';
                 ctx.font = '34px "Anek Malayalam", "Inter", sans-serif';
-                ctx.fillText('PHONE : ' + (currentUser.phone || 'N/A'), w / 2, yPos);
+                ctx.fillText('PHONE : ' + displayValue(currentUser.phone), w / 2, yPos);
 
-                // 6. Footer – issued date & school name
+                // 6. Footer
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = 'rgba(26,26,46,0.5)';
                 ctx.font = '24px "Anek Malayalam", "Inter", sans-serif';
@@ -1650,7 +1641,7 @@
                 ctx.textBaseline = 'middle';
                 ctx.fillText('📸', cx, cy + 10);
 
-                // Text fallback – dark
+                // Text fallback – with displayValue
                 ctx.shadowColor = 'rgba(255,255,255,0.15)';
                 ctx.shadowBlur = 4;
                 ctx.shadowOffsetX = 1;
@@ -1660,19 +1651,19 @@
                 let yPos2 = 720;
                 ctx.fillStyle = '#1a1a2e';
                 ctx.font = 'bold 48px "Anek Malayalam", sans-serif';
-                ctx.fillText(currentUser.name, w / 2, yPos2);
+                ctx.fillText(displayValue(currentUser.name), w / 2, yPos2);
                 yPos2 += 68;
                 ctx.fillStyle = '#2d2d44';
                 ctx.font = '34px "Anek Malayalam", sans-serif';
                 ctx.fillText('UID NUMBER : ' + currentUser.studentId, w / 2, yPos2);
                 yPos2 += 60;
-                ctx.fillText('FATHER : ' + (currentUser.fatherName || 'N/A'), w / 2, yPos2);
+                ctx.fillText('FATHER : ' + displayValue(currentUser.fatherName), w / 2, yPos2);
                 yPos2 += 60;
-                ctx.fillText('CLASS : ' + currentUser.class, w / 2, yPos2);
+                const classVal2 = displayValue(currentUser.class);
+                const rollVal2 = displayValue(currentUser.roll);
+                ctx.fillText('CLASS : ' + classVal2 + '  •  ROLL : ' + rollVal2, w / 2, yPos2);
                 yPos2 += 60;
-                ctx.fillText('ROLL : ' + (currentUser.roll || 'N/A'), w / 2, yPos2);
-                yPos2 += 60;
-                ctx.fillText('PHONE : ' + (currentUser.phone || 'N/A'), w / 2, yPos2);
+                ctx.fillText('PHONE : ' + displayValue(currentUser.phone), w / 2, yPos2);
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = 'rgba(26,26,46,0.4)';
                 ctx.font = '24px "Anek Malayalam", sans-serif';
@@ -1688,7 +1679,7 @@
             if (!canvas) { showToast('ID card not ready', 'error'); return; }
             try {
                 const dataUrl = canvas.toDataURL('image/png', 1.0);
-                const fileName = `ID_Card_${currentUser.studentId}_${currentUser.name.replace(/\s/g, '_')}`;
+                const fileName = `ID_Card_${currentUser.studentId}_${currentUser.name?.replace(/\s/g, '_') || 'Student'}`;
                 if (type === 'png') {
                     const a = document.createElement('a');
                     a.href = dataUrl;
@@ -1771,22 +1762,23 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 if (data.result === 'success') {
+                    // Use data from sheet – if fields missing, keep as empty string (no fallback mock values)
                     currentUser = {
                         studentId: data.studentId,
-                        name: data.name,
-                        class: data.class,
+                        name: data.name || '',
+                        class: data.class || '',
                         roll: data.roll || '',
-                        overallGrade: data.overallGrade || 'A+',
-                        attendance: data.attendance || 94,
-                        rank: data.rank || 3,
-                        rankChange: data.rankChange || '+1',
-                        moralValuesGrade: data.moralValuesGrade || 'B+',
-                        moralValuesSub: data.moralValuesSub || 'Honesty:A, Respect:A+',
-                        performance: data.performance || 90,
-                        avatar: data.name?.charAt(0).toUpperCase() || 'S',
+                        overallGrade: data.overallGrade || '',
+                        attendance: data.attendance || '',
+                        rank: data.rank || '',
+                        rankChange: data.rankChange || '',
+                        moralValuesGrade: data.moralValuesGrade || '',
+                        moralValuesSub: data.moralValuesSub || '',
+                        performance: data.performance || '',
+                        avatar: data.name ? data.name.charAt(0).toUpperCase() : '',
                         email: data.email || '',
                         phone: data.phone || '',
-                        trendAttendance: data.trendAttendance || '+2%',
+                        trendAttendance: data.trendAttendance || '',
                         fatherName: data.fatherName || '',
                         dob: data.dob || '',
                         photo: data.photo || ''
@@ -1797,9 +1789,10 @@
                     loginSection.style.display = 'none';
                     dashboardSection.style.display = 'block';
                     restoreTheme();
-                    showToast(`Welcome back, ${currentUser.name} ✨`, "success");
+                    showToast(`Welcome, ${currentUser.name || 'Student'} ✨`, "success");
                 } else { showToast(data.message || "Student ID not found", "error"); }
             } catch (err) {
+                // Offline fallback – use mock data only if network fails (sheet unreachable)
                 if (STUDENT_DATA[id]) {
                     currentUser = { ...STUDENT_DATA[id], studentId: id };
                     localStorage.setItem('noor_session', JSON.stringify(currentUser));
@@ -1917,9 +1910,9 @@
 
         function showTopperPoster() {
             if (!currentUser) return;
-            document.getElementById('topperNameDisplay').textContent = currentUser.name;
-            const rankText = currentUser.rank === 1 ? 'First' : 'Second';
-            document.getElementById('topperClassRank').textContent = `Class ${currentUser.class} - ${rankText} (Rank ${currentUser.rank})`;
+            document.getElementById('topperNameDisplay').textContent = currentUser.name || 'Student';
+            const rankText = currentUser.rank === 1 ? 'First' : currentUser.rank === 2 ? 'Second' : 'Not ranked';
+            document.getElementById('topperClassRank').textContent = `Class ${currentUser.class || 'N/A'} - ${rankText}`;
             const saved = localStorage.getItem(`topper_photo_${currentUser.studentId}`);
             if (saved) { topperPhotoData = saved;
                 document.getElementById('topperPhotoPreview').src = saved; } else if (currentUser.photo) { topperPhotoData =
@@ -2026,11 +2019,11 @@
                 ctx.fillStyle = '#000000';
                 ctx.font = 'bold 95px "Anek Malayalam", "Inter", sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(name, cx, 2180);
+                ctx.fillText(name || 'Student', cx, 2180);
                 ctx.fillStyle = '#000000';
                 ctx.font = 'bold 70px "Anek Malayalam", "Inter", sans-serif';
-                const positionText = rank === 1 ? 'TOPPER' : 'SECOND PLACE';
-                ctx.fillText(`Class ${cls} - ${positionText}`, cx, 2360);
+                const positionText = rank === 1 ? 'TOPPER' : rank === 2 ? 'SECOND PLACE' : 'NOT RANKED';
+                ctx.fillText(`Class ${cls || 'N/A'} - ${positionText}`, cx, 2360);
                 ctx.shadowBlur = 0;
                 ctx.shadowColor = 'transparent';
                 return canvas;
@@ -2052,7 +2045,7 @@
             if (!currentUser) return;
             showTopperLoading('Generating poster...');
             try {
-                const rank = currentUser.rank;
+                const rank = currentUser.rank || 0;
                 const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
                 hideTopperLoading();
                 const previewCanvas = document.getElementById('posterPreviewCanvas');
@@ -2071,7 +2064,7 @@
             if (!currentUser) return;
             showTopperLoading('Creating file...');
             try {
-                const rank = currentUser.rank;
+                const rank = currentUser.rank || 0;
                 const canvas = await renderTopperCanvas(currentUser.name, currentUser.class, rank, topperPhotoData);
                 const finalCanvas = document.createElement('canvas');
                 finalCanvas.width = canvas.width;
@@ -2082,7 +2075,7 @@
                 fctx.drawImage(canvas, 0, 0);
                 const img = finalCanvas.toDataURL('image/png');
                 const fileName =
-                    `Noorussalam_Class${currentUser.class}_Rank${currentUser.rank}_${currentUser.name.replace(/\s/g, '_')}`;
+                    `Noorussalam_Class${currentUser.class || 'N/A'}_Rank${currentUser.rank || 'N/A'}_${currentUser.name?.replace(/\s/g, '_') || 'Student'}`;
                 if (type === 'png') {
                     let a = document.createElement('a');
                     a.href = img;
