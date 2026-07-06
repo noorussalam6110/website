@@ -6,8 +6,11 @@
     <title>Noorussalam - Fee Check</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- jsPDF and autoTable from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        /* ===== RESET & BASE ===== */
+        /* ===== RESET & BASE (same as before, kept for UI) ===== */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body {
             font-family:'Anek Malayalam',sans-serif;
@@ -200,244 +203,25 @@
         .admin-empty i { font-size:2.5rem; opacity:0.2; margin-bottom:12px; display:block; }
         .admin-empty h4 { color:#64748b; font-weight:600; font-size:0.85rem; }
 
-        .print-btn { background: linear-gradient(135deg, #0ea5e9, #3b82f6); color: white; border: none; padding: 8px 18px; border-radius: 40px; font-weight: 600; font-size: 0.75rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease; font-family: inherit; }
-        .print-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(59,130,246,0.3); }
-
-        /* ================================================================ */
-        /* ===== PRINT: FIXED TABLE SIZE, FULL A4 WIDTH ===== */
-        /* ================================================================ */
-        @page {
-            size: A4 portrait;
-            margin: 3mm 4mm;
+        /* NEW: PDF Print Button */
+        .pdf-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
-
-        @media print {
-            /* Hide EVERYTHING */
-            body * { visibility: hidden !important; }
-
-            /* Force admin overlay to be visible */
-            .admin-overlay,
-            .admin-modal,
-            .admin-panel-content,
-            .admin-tab-content,
-            #tabStudents,
-            #tabFees,
-            .admin-table-wrap,
-            .admin-table-wrap *,
-            .admin-stats,
-            .admin-stats *,
-            #adminLastUpdated {
-                visibility: visible !important;
-                display: block !important;
-                position: static !important;
-                float: none !important;
-                background: white !important;
-                color: black !important;
-                border: none !important;
-                box-shadow: none !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                height: auto !important;
-                max-height: none !important;
-                overflow: visible !important;
-                font-family: 'Anek Malayalam', sans-serif !important;
-            }
-
-            /* Hide all background graphics */
-            body::before,
-            .stars-bg,
-            .star,
-            .header::before,
-            .header::after,
-            .container::before,
-            .container::after {
-                display: none !important;
-                visibility: hidden !important;
-                opacity: 0 !important;
-                background: none !important;
-            }
-
-            .admin-overlay {
-                display: block !important;
-                position: relative !important;
-                background: white !important;
-                backdrop-filter: none !important;
-                padding: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-                overflow: visible !important;
-            }
-
-            .admin-modal {
-                box-shadow: none !important;
-                border: none !important;
-                padding: 0 !important;
-                max-height: none !important;
-                overflow: visible !important;
-                background: white !important;
-                color: black !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                border-radius: 0 !important;
-            }
-
-            /* HIDE ALL UI ELEMENTS */
-            .admin-modal .close-admin,
-            .admin-modal .admin-title,
-            .admin-logout-btn,
-            .admin-tabs,
-            .admin-toolbar,
-            .admin-toolbar *,
-            .admin-login-section,
-            .admin-login-form,
-            .admin-actions .btn-sm {
-                display: none !important;
-            }
-
-            /* ===== STATS - COMPACT ===== */
-            .admin-stats {
-                display: grid !important;
-                grid-template-columns: repeat(4, 1fr) !important;
-                gap: 3px !important;
-                margin-bottom: 6px !important;
-                padding: 0 2px !important;
-            }
-            .admin-stat-card {
-                background: #f5f5f5 !important;
-                border: 1px solid #ddd !important;
-                padding: 3px 4px !important;
-                text-align: center !important;
-                border-radius: 2px !important;
-            }
-            .admin-stat-card .stat-num {
-                font-size: 10pt !important;
-                font-weight: 700 !important;
-                color: #000 !important;
-            }
-            .admin-stat-card .stat-label {
-                font-size: 7pt !important;
-                color: #333 !important;
-                text-transform: uppercase !important;
-                letter-spacing: 0.3px !important;
-            }
-            #adminLastUpdated {
-                font-size: 6.5pt !important;
-                color: #666 !important;
-                text-align: right !important;
-                margin-bottom: 3px !important;
-                padding: 0 2px !important;
-            }
-
-            /* ===== TABLE - FIXED SIZE, FULL WIDTH ===== */
-            .admin-table-wrap {
-                border: 1px solid #ccc !important;
-                border-radius: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                width: 100% !important;
-                overflow: visible !important;
-                background: white !important;
-                display: block !important;
-            }
-            .admin-table-wrap table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                font-size: 9pt !important;
-                table-layout: fixed !important;
-                background: white !important;
-                color: black !important;
-                display: table !important;
-                border-spacing: 0 !important;
-                margin: 0 !important;
-            }
-            .admin-table-wrap table thead {
-                display: table-header-group !important;
-            }
-            .admin-table-wrap table tbody {
-                display: table-row-group !important;
-            }
-            .admin-table-wrap table tr {
-                display: table-row !important;
-                page-break-inside: avoid !important;
-            }
-            .admin-table-wrap table th {
-                display: table-cell !important;
-                background: #e8e8e8 !important;
-                color: #000 !important;
-                border: 1px solid #aaa !important;
-                padding: 3px 4px !important;
-                text-align: left !important;
-                font-weight: 700 !important;
-                font-size: 8pt !important;
-                white-space: nowrap !important;
-            }
-            .admin-table-wrap table td {
-                display: table-cell !important;
-                border: 1px solid #ccc !important;
-                padding: 3px 4px !important;
-                background: white !important;
-                color: #000 !important;
-                font-size: 8.5pt !important;
-                word-wrap: break-word !important;
-                overflow-wrap: break-word !important;
-                line-height: 1.3 !important;
-            }
-
-            /* ===== HIDE STUDENT AND ACTIONS COLUMNS ===== */
-            .admin-table-wrap table th:nth-child(3),
-            .admin-table-wrap table td:nth-child(3),
-            .admin-table-wrap table th:nth-child(8),
-            .admin-table-wrap table td:nth-child(8) {
-                display: none !important;
-            }
-
-            /* ===== COLUMN WIDTHS (6 columns) - FIXED PERCENTAGES ===== */
-            .admin-table-wrap table th:nth-child(1) { width: 5% !important; }
-            .admin-table-wrap table th:nth-child(2) { width: 28% !important; }
-            .admin-table-wrap table th:nth-child(3) { width: 14% !important; }
-            .admin-table-wrap table th:nth-child(4) { width: 20% !important; }
-            .admin-table-wrap table th:nth-child(5) { width: 13% !important; }
-            .admin-table-wrap table th:nth-child(6) { width: 20% !important; }
-
-            /* ===== STATUS BADGE ===== */
-            .admin-table-wrap .status-badge {
-                border: 1px solid #999 !important;
-                background: #f0f0f0 !important;
-                color: #000 !important;
-                padding: 1px 6px !important;
-                border-radius: 8px !important;
-                font-weight: 600 !important;
-                font-size: 7pt !important;
-                display: inline-block !important;
-                line-height: 1.4 !important;
-            }
-
-            .admin-empty {
-                color: #000 !important;
-                padding: 15px !important;
-                text-align: center !important;
-                font-size: 10pt !important;
-            }
-
-            /* ===== PAGE BREAKS ===== */
-            table { page-break-after: auto !important; }
-            thead { display: table-header-group !important; }
-
-            /* ===== FORCE WHITE BACKGROUND AND BLACK TEXT ===== */
-            * {
-                color: #000 !important;
-                background: white !important;
-                border-color: #aaa !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-            }
-            body {
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
+        .pdf-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(239,68,68,0.3);
         }
 
         /* ===== RESPONSIVE ===== */
@@ -554,6 +338,7 @@
                     <div style="font-size:0.7rem;color:#94a3b8;text-align:right;" id="adminLastUpdated"></div>
                 </div>
 
+                <!-- STUDENTS TAB with PDF button -->
                 <div id="tabStudents" class="admin-tab-content">
                     <div class="admin-toolbar">
                         <div class="left">
@@ -563,7 +348,7 @@
                                 <option value="pending">Pending</option>
                                 <option value="paid">Paid</option>
                             </select>
-                            <button class="print-btn" onclick="printStudentList()"><i class="fas fa-print"></i> Print List</button>
+                            <button class="pdf-btn" onclick="generatePDF('students')"><i class="fas fa-file-pdf"></i> Download PDF</button>
                         </div>
                         <div>
                             <button class="btn-admin primary" onclick="openAddStudentForm()"><i class="fas fa-plus"></i> Add New</button>
@@ -572,6 +357,7 @@
                     <div class="admin-table-wrap" id="adminStudentsTableWrap"><div class="admin-loader"><div class="spinner-sm"></div><span>Loading...</span></div></div>
                 </div>
 
+                <!-- FEES TAB with PDF button -->
                 <div id="tabFees" class="admin-tab-content">
                     <div class="admin-toolbar">
                         <div class="left">
@@ -581,7 +367,7 @@
                                 <option value="pending">Pending</option>
                                 <option value="paid">Paid</option>
                             </select>
-                            <button class="print-btn" onclick="printFeesList()"><i class="fas fa-print"></i> Print List</button>
+                            <button class="pdf-btn" onclick="generatePDF('fees')"><i class="fas fa-file-pdf"></i> Download PDF</button>
                         </div>
                         <div>
                             <button class="btn-admin success" onclick="openBulkFeeForm()"><i class="fas fa-edit"></i> Bulk</button>
@@ -670,7 +456,7 @@
         let currentScript = null;
 
         // ============================================================
-        // STARS
+        // STARS, TOAST, HELPERS (same as before)
         // ============================================================
         function generateStars() {
             const container = document.getElementById('starContainer');
@@ -693,9 +479,6 @@
         window.addEventListener('resize', generateStars);
         generateStars();
 
-        // ============================================================
-        // TOAST
-        // ============================================================
         function showToast(msg, isErr = false) {
             const t = document.getElementById("toastMsg");
             t.textContent = msg;
@@ -760,6 +543,9 @@
             return ((pendingMonths || 0) * MONTHLY_FEE) + (previousBalance || 0);
         }
 
+        // ============================================================
+        // PUBLIC FEE CHECK (unchanged)
+        // ============================================================
         function generateWhatsAppMessage(data) {
             let msg = `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${UPI_ID}\n\nവിശദ വിവരങ്ങൾക്ക് ${SUPPORT_PHONE} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
             return msg;
@@ -925,7 +711,7 @@
         }
 
         // ============================================================
-        // ADMIN LOGIN / LOGOUT
+        // ADMIN LOGIN / LOGOUT (unchanged)
         // ============================================================
         async function adminLogin() {
             const password = document.getElementById("adminPassword").value.trim();
@@ -962,6 +748,9 @@
             }
         }
 
+        // ============================================================
+        // ADMIN PANEL OPEN/CLOSE (unchanged)
+        // ============================================================
         function openAdminPanel() {
             document.getElementById("adminOverlay").classList.add("active");
             if (isAdminLoggedIn) {
@@ -1009,6 +798,9 @@
             if (e.target === this) closeBulkFeeForm();
         });
 
+        // ============================================================
+        // ADMIN DASHBOARD (unchanged)
+        // ============================================================
         async function loadAdminDashboard() {
             try {
                 const data = await adminApiGet("getDashboardData");
@@ -1040,20 +832,7 @@
         }
 
         // ============================================================
-        // PRINT FUNCTIONS
-        // ============================================================
-        function printStudentList() {
-            renderAdminStudents();
-            setTimeout(() => { window.print(); }, 400);
-        }
-
-        function printFeesList() {
-            renderAdminFees();
-            setTimeout(() => { window.print(); }, 400);
-        }
-
-        // ============================================================
-        // ADMIN STUDENTS LIST
+        // RENDER FUNCTIONS (students & fees) - unchanged
         // ============================================================
         function renderAdminStudents() {
             const wrap = document.getElementById("adminStudentsTableWrap");
@@ -1113,9 +892,6 @@
             wrap.innerHTML = html;
         }
 
-        // ============================================================
-        // ADMIN FEES LIST
-        // ============================================================
         function renderAdminFees() {
             const wrap = document.getElementById("adminFeesTableWrap");
             const search = document.getElementById("adminFeeSearch").value.toLowerCase().trim();
@@ -1167,7 +943,7 @@
         }
 
         // ============================================================
-        // ADMIN TABS
+        // SWITCH ADMIN TAB (unchanged)
         // ============================================================
         function switchAdminTab(tabId) {
             document.querySelectorAll(".admin-tabs .tab").forEach(t => t.classList.remove("active"));
@@ -1180,7 +956,139 @@
         }
 
         // ============================================================
-        // ADMIN STUDENT CRUD
+        // PDF GENERATION FUNCTION (NEW)
+        // ============================================================
+        function generatePDF(type) {
+            // Get current filter for the appropriate tab
+            let filter;
+            let data;
+            let title;
+            let columns;
+            let rows;
+
+            if (type === 'students') {
+                filter = document.getElementById("adminFilter").value;
+                data = allRecords.filter(r => {
+                    if (filter === "all") return true;
+                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    if (filter === "pending") return pending > 0;
+                    if (filter === "paid") return pending === 0;
+                    return true;
+                });
+                title = "Fee Report - Parents List";
+                columns = ["#", "Parent", "Mobile", "Last Paid Month", "Due (₹)", "Status"];
+                rows = data.map((r, idx) => {
+                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    let status = "Paid";
+                    if (pending > 0) status = "Pending";
+                    else if (pending < 0) status = "Advance";
+                    return [
+                        idx+1,
+                        r.parentName || "",
+                        r.mobile || "",
+                        r.lastPaidMonthFormatted || "---",
+                        pending.toLocaleString(),
+                        status
+                    ];
+                });
+            } else { // fees
+                filter = document.getElementById("adminFeeFilter").value;
+                data = allRecords.filter(r => {
+                    if (filter === "all") return true;
+                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    if (filter === "pending") return pending > 0;
+                    if (filter === "paid") return pending === 0;
+                    return true;
+                });
+                title = "Fee Report - Fees List";
+                columns = ["#", "Parent", "Mobile", "Last Paid Month", "Months Paid", "Months Pending", "Due (₹)", "Status"];
+                rows = data.map((r, idx) => {
+                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    let status = "Paid";
+                    if (pending > 0) status = "Pending";
+                    else if (pending < 0) status = "Advance";
+                    return [
+                        idx+1,
+                        r.parentName || "",
+                        r.mobile || "",
+                        r.lastPaidMonthFormatted || "---",
+                        r.paidMonths || 0,
+                        r.pendingMonths || 0,
+                        pending.toLocaleString(),
+                        status
+                    ];
+                });
+            }
+
+            if (rows.length === 0) {
+                showToast("⚠️ No data to export for the selected filter.", true);
+                return;
+            }
+
+            // Create PDF with jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = 210; // A4 width in mm
+            const margin = 8;
+            const usableWidth = pageWidth - 2 * margin;
+
+            // Add title
+            doc.setFontSize(16);
+            doc.text("Noorussalam Madrasa", margin, 20);
+            doc.setFontSize(10);
+            doc.text(title + " (Filter: " + filter.charAt(0).toUpperCase() + filter.slice(1) + ")", margin, 28);
+            doc.setFontSize(8);
+            doc.text("Generated: " + new Date().toLocaleString('en-IN'), margin, 34);
+
+            // Build table
+            const startY = 40;
+            doc.autoTable({
+                head: [columns],
+                body: rows,
+                startY: startY,
+                margin: { left: margin, right: margin },
+                tableWidth: usableWidth,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 1.5,
+                    lineColor: [180, 180, 180],
+                    lineWidth: 0.1,
+                },
+                headStyles: {
+                    fillColor: [200, 200, 200],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    halign: 'left',
+                    fontSize: 8,
+                },
+                columnStyles: {
+                    0: { cellWidth: 8 },
+                    1: { cellWidth: 30 },
+                    2: { cellWidth: 22 },
+                    3: { cellWidth: 28 },
+                    4: { cellWidth: 20 },
+                    5: { cellWidth: 18 },
+                    6: { cellWidth: 22 },
+                    7: { cellWidth: 22 },
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 245, 245],
+                },
+                didDrawPage: function (data) {
+                    // Footer
+                    doc.setFontSize(7);
+                    doc.text("Page " + data.pageNumber, margin, doc.internal.pageSize.height - 5);
+                    doc.text("Noorussalam Madrasa - Fee Management", pageWidth - margin - 40, doc.internal.pageSize.height - 5);
+                }
+            });
+
+            // Save PDF
+            doc.save('Noorussalam_Fee_Report.pdf');
+            showToast("✅ PDF downloaded successfully!", false);
+        }
+
+        // ============================================================
+        // ADMIN CRUD FUNCTIONS (unchanged)
         // ============================================================
         function openAddStudentForm() {
             document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-plus"></i> Add Student';
@@ -1384,7 +1292,7 @@
             }
         });
 
-        console.log("🌟 Noorussalam Fee System v7.7 (Fixed table size, full A4 width, 9pt font)");
+        console.log("🌟 Noorussalam Fee System v8.0 - PDF Generation (Fixed layout)");
         console.log("🔐 Admin: Click 'Admin' in footer or double-tap header.");
         console.log("📡 API URL:", API_URL);
     </script>
