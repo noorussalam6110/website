@@ -162,7 +162,7 @@
         }
         .emergency-note { font-size:0.6rem; margin-top:10px; color:#fca5a5; text-align:center; opacity:0.6; }
 
-        /* ===== RESULT CARD (for new tab) ===== */
+        /* ===== RESULT CARD ===== */
         .result-card {
             margin-top:20px; border-radius:28px; background:rgba(255,255,255,0.04);
             border:1px solid rgba(255,255,255,0.06); overflow:hidden; animation:fadeSlide 0.5s ease;
@@ -416,15 +416,15 @@
         .admin-empty i { font-size:2.5rem; opacity:0.2; margin-bottom:12px; display:block; }
         .admin-empty h4 { color:rgba(255,255,255,0.5); font-weight:600; font-size:0.85rem; }
 
-        /* ===== RESULT ONLY PAGE (new tab) ===== */
+        /* ===== RESULT ONLY PAGE ===== */
         .result-only {
             display:none;
-        }
-        .result-only.active {
-            display:block;
             max-width:580px;
             width:100%;
             margin:0 auto;
+        }
+        .result-only.active {
+            display:block;
         }
         .result-only .back-btn {
             display:inline-flex;
@@ -452,6 +452,46 @@
         body.result-mode .container { display:none; }
         body.result-mode .result-only { display:block; }
 
+        /* Result page header */
+        .result-header {
+            background:linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+            padding:28px 20px 24px;
+            text-align:center;
+            color:white;
+            position:relative;
+            overflow:hidden;
+            border-radius:32px 32px 0 0;
+            margin-bottom:0;
+        }
+        .result-header::before {
+            content:''; position:absolute; top:-50%; right:-30%; width:80%; height:200%;
+            background:radial-gradient(ellipse, rgba(99,102,241,0.15), transparent 70%); pointer-events:none;
+        }
+        .result-header::after {
+            content:''; position:absolute; bottom:-40%; left:-20%; width:70%; height:150%;
+            background:radial-gradient(ellipse, rgba(251,191,36,0.08), transparent 60%); pointer-events:none;
+        }
+        .result-header h1 {
+            font-size:1.5rem; font-weight:800; display:flex; align-items:center; justify-content:center;
+            gap:12px; flex-wrap:wrap; position:relative; z-index:2;
+        }
+        .result-header h1 i { color:#fbbf24; filter:drop-shadow(0 0 20px rgba(251,191,36,0.2)); }
+        .result-header p {
+            font-size:0.8rem; opacity:0.7; margin-top:4px; position:relative; z-index:2; font-weight:400; letter-spacing:0.3px;
+        }
+        .result-header .badge {
+            background:linear-gradient(135deg, #f59e0b, #d97706); display:inline-flex; align-items:center; gap:10px;
+            padding:6px 20px; border-radius:100px; font-size:0.65rem; font-weight:700; margin-top:10px;
+            box-shadow:0 4px 20px rgba(245,158,11,0.3); position:relative; z-index:2; letter-spacing:0.5px; text-transform:uppercase;
+        }
+        .result-body {
+            background:rgba(255,255,255,0.03);
+            padding:20px 20px 28px;
+            border-radius:0 0 32px 32px;
+            border:1px solid rgba(255,255,255,0.04);
+            border-top:none;
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width:480px) {
             .content { padding:20px 16px; }
@@ -472,6 +512,7 @@
             .badge { font-size:0.6rem; padding:6px 14px; }
             .container { border-radius:32px; }
             .gpay-container { padding:16px; }
+            .result-header h1 { font-size:1.2rem; }
         }
         @media (max-width:380px) {
             .header h1 { font-size:1.1rem; }
@@ -563,8 +604,6 @@
 
         <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
         <div id="result"></div>
-
-        <!-- gpay section is now inside result-only -->
     </div>
 
     <div class="footer">
@@ -573,9 +612,16 @@
     </div>
 </div>
 
-<!-- ===== RESULT ONLY PAGE (hidden by default) ===== -->
+<!-- ===== RESULT ONLY PAGE (new tab) ===== -->
 <div class="result-only" id="resultOnly">
-    <div style="max-width:580px; margin:0 auto; padding:16px;">
+    <!-- Header -->
+    <div class="result-header">
+        <h1><i class="fas fa-mosque"></i> നൂറുസ്സലാം മദ്റസ</h1>
+        <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
+        <div class="badge"><i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ വിവരങ്ങൾ</div>
+    </div>
+
+    <div class="result-body">
         <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> തിരികെ പോകുക</button>
         <div id="resultOnlyContent">
             <!-- will be filled by displayResultOnly -->
@@ -752,24 +798,21 @@
     (function init() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('mode') === 'result') {
-            // Show result-only page
             document.body.classList.add('result-mode');
             document.getElementById('resultOnly').classList.add('active');
-            // Read data from localStorage
             const stored = localStorage.getItem('feeResult');
             if (stored) {
                 try {
                     const data = JSON.parse(stored);
                     displayResultOnly(data);
                 } catch(e) {
-                    showToast('❌ വിവരങ്ങൾ ലഭ്യമല്ല', true);
+                    document.getElementById('resultOnlyContent').innerHTML = `<div class="result-card"><div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">❌ ഡാറ്റ പിശക്: ${escapeHtml(e.message)}</div></div>`;
                 }
-                localStorage.removeItem('feeResult'); // clean up
+                localStorage.removeItem('feeResult');
             } else {
                 document.getElementById('resultOnlyContent').innerHTML = `<div class="result-card"><div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">❌ ഡാറ്റ കണ്ടെത്തിയില്ല. ദയവായി മുൻ പേജിൽ നിന്ന് പരിശോധിക്കുക.</div></div>`;
             }
         } else {
-            // Normal mode: show main container
             document.body.classList.remove('result-mode');
             document.getElementById('resultOnly').classList.remove('active');
         }
@@ -782,7 +825,7 @@
         if (window.history.length > 1) {
             window.history.back();
         } else {
-            window.close(); // close tab if no history
+            window.close();
         }
     }
 
@@ -848,15 +891,46 @@
         return monthNames[month - 1] + " " + year;
     }
 
-    // ===== DATE FORMATTER: DD/MM/YYYY =====
+    // ===== ROBUST DATE FORMATTER: DD/MM/YYYY =====
     function formatDateToDDMMYYYY(dateStr) {
         if (!dateStr) return "";
-        const date = new Date(dateStr);
-        if (isNaN(date.getTime())) return dateStr;
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return day + "/" + month + "/" + year;
+        try {
+            let date = new Date(dateStr);
+            if (isNaN(date.getTime())) {
+                // Try parsing as DD/MM/YYYY or other formats
+                const parts = String(dateStr).split(/[\/\-]/);
+                if (parts.length === 3) {
+                    // Check if it's DD/MM/YYYY or MM/DD/YYYY
+                    let d, m, y;
+                    if (parseInt(parts[0]) > 12) {
+                        // DD/MM/YYYY
+                        d = parseInt(parts[0]);
+                        m = parseInt(parts[1]);
+                        y = parseInt(parts[2]);
+                    } else if (parseInt(parts[1]) > 12) {
+                        // MM/DD/YYYY - swap
+                        d = parseInt(parts[1]);
+                        m = parseInt(parts[0]);
+                        y = parseInt(parts[2]);
+                    } else {
+                        // Assume DD/MM/YYYY
+                        d = parseInt(parts[0]);
+                        m = parseInt(parts[1]);
+                        y = parseInt(parts[2]);
+                    }
+                    if (!isNaN(d) && !isNaN(m) && !isNaN(y) && m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+                        return String(d).padStart(2, '0') + "/" + String(m).padStart(2, '0') + "/" + String(y);
+                    }
+                }
+                return String(dateStr);
+            }
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return day + "/" + month + "/" + year;
+        } catch(e) {
+            return String(dateStr);
+        }
     }
 
     function getCurrentMonth() {
@@ -874,7 +948,7 @@
     }
 
     function generateWhatsAppMessage(data) {
-        let msg = `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${UPI_ID}\n\nവിശദ വിവരങ്ങൾക്ക് ${SUPPORT_PHONE} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
+        let msg = `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${UPI_ID}\n\nവിശദ വിവരങ്ങൾക്ക് ${SUPPORT_PHONE} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
         return msg;
     }
 
@@ -898,12 +972,16 @@
         const previousBalance = data.previousBalance || 0;
         const totalPending = calculateTotalPending(pendingMonths, previousBalance);
         data.totalPending = totalPending;
+
+        // Use backend formatted date or format in frontend
+        let formattedDate = data.lastPaidDateFormatted || "";
+        if (!formattedDate && data.lastPaidDate) {
+            formattedDate = formatDateToDDMMYYYY(data.lastPaidDate);
+        }
+
         const whatsappMsg = generateWhatsAppMessage(data);
         const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
 
-        const formattedDate = data.lastPaidDateFormatted || (data.lastPaidDate ? formatDateToDDMMYYYY(data.lastPaidDate) : "");
-
-        // Also set currentStudentData for gpay
         currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending };
         currentDueAmount = totalPending;
 
@@ -913,8 +991,8 @@
                 <table class="info-table">
                     <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
                     ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
-                    <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td>${escapeHtml(data.lastPaidMonth)}</td></tr>
-                    <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td>${escapeHtml(formattedDate || "---")}</td></tr>
+                    <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td>${escapeHtml(data.lastPaidMonth || "---")}</td></tr>
+                    <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td><strong style="color:#fbbf24;">${escapeHtml(formattedDate || "---")}</strong></td></tr>
                     <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${MONTHLY_FEE} = ₹${(pendingMonths * MONTHLY_FEE).toLocaleString()}</td></tr>
                     ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
                     <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
@@ -936,7 +1014,6 @@
             </div>
         `;
 
-        // Attach Google Pay event
         const amountInput = document.getElementById("payAmount");
         if (amountInput) {
             amountInput.min = 1;
@@ -964,17 +1041,7 @@
         }
     }
 
-    // ===== OLD displayResult for same page (not used now, but keep for fallback) =====
-    function displayResult(data) {
-        // This is now replaced by displayResultOnly for new tab mode.
-        // But we keep it for any other usage.
-        displayResultOnly(data);
-    }
-
-    function showError(msg) {
-        // Not used in new tab mode, but keep for compatibility
-    }
-
+    // ===== CHECK FEE =====
     function checkFee() {
         const mobile = document.getElementById("mobile").value.trim();
         if (mobile.length !== 10 || isNaN(mobile)) {
@@ -985,7 +1052,6 @@
         btn.disabled = true;
         document.getElementById("loader").style.display = "block";
         document.getElementById("result").innerHTML = "";
-        // No gpay section in main page now; it's in result-only
         if (currentScript && document.head.contains(currentScript)) document.head.removeChild(currentScript);
         const callbackName = "callback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
         window[callbackName] = function(data) {
@@ -994,10 +1060,8 @@
             document.getElementById("loader").style.display = "none";
             if (data && data.success === true) {
                 if (!data.mobile && mobile) data.mobile = mobile;
-                // Save data to localStorage and open new tab
                 try {
                     localStorage.setItem('feeResult', JSON.stringify(data));
-                    // Open new tab with mode=result
                     const url = window.location.origin + window.location.pathname + '?mode=result';
                     window.open(url, '_blank');
                     showToast("✅ വിവരങ്ങൾ പുതിയ ടാബിൽ തുറക്കുന്നു...", false);
@@ -1070,7 +1134,7 @@
     document.getElementById("mobile").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
 
     // ============================================================
-    // ADMIN API HELPERS (same as before)
+    // ADMIN API HELPERS
     // ============================================================
     function jsonpRequest(params, callback) {
         return new Promise((resolve, reject) => {
@@ -1165,7 +1229,6 @@
 
     document.getElementById("adminEntryLink").addEventListener("click", function(e) { e.preventDefault(); openAdminPanel(); });
 
-    // Double tap header
     let headerTapCount = 0, headerTapTimer = null;
     document.getElementById("headerDoubleTap").addEventListener("click", function() {
         headerTapCount++;
@@ -1186,7 +1249,6 @@
         if (e.key === "Enter") adminLogin();
     });
 
-    // Close other modals
     document.getElementById("studentFormOverlay").addEventListener("click", function(e) {
         if (e.target === this) closeStudentForm();
     });
@@ -1195,7 +1257,7 @@
     });
 
     // ============================================================
-    // ADMIN DASHBOARD (same as before)
+    // ADMIN DASHBOARD
     // ============================================================
     async function loadAdminDashboard() {
         try {
@@ -1366,20 +1428,20 @@
         document.getElementById("fLastPaidMonth").value = "";
         document.getElementById("fPaidMonths").value = "0";
         document.getElementById("fPrevBalance").value = "0";
-        
+
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const day = String(today.getDate()).padStart(2, '0');
         document.getElementById("fLastPaidDate").value = year + "-" + month + "-" + day;
-        
+
         document.getElementById("studentFormOverlay").classList.add("active");
     }
 
     function openEditStudent(mobile) {
         const record = allRecords.find(r => String(r.mobile) === String(mobile));
         if (!record) { showToast("❌ വിവരങ്ങൾ കണ്ടെത്തിയില്ല", true); return; }
-        
+
         document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-edit"></i> വിദ്യാർത്ഥി തിരുത്തുക';
         document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> അപ്ഡേറ്റ് ചെയ്യുക';
         document.getElementById("editStudentMobile").value = mobile;
@@ -1390,7 +1452,7 @@
         document.getElementById("fPaidMonths").value = record.paidMonths || 0;
         document.getElementById("fPrevBalance").value = record.previousBalance || 0;
         document.getElementById("fLastPaidDate").value = record.lastPaidDate || "";
-        
+
         document.getElementById("studentFormOverlay").classList.add("active");
     }
 
@@ -1436,7 +1498,7 @@
     }
 
     // ============================================================
-    // ADMIN: PAY FEE (MONTHLY)
+    // ADMIN: PAY FEE
     // ============================================================
     async function payMonthlyFee(mobile) {
         const month = prompt("ഏത് മാസത്തെ ഫീസ് അടക്കുന്നു? (YYYY-MM format)", getCurrentMonth());
@@ -1579,7 +1641,7 @@
     // ============================================================
     // INIT
     // ============================================================
-    console.log("🌟 നൂറുസ്സലാം വരിസംഖ്യ സിസ്റ്റം v6.0 (New tab result)");
+    console.log("🌟 നൂറുസ്സലാം വരിസംഖ്യ സിസ്റ്റം v6.1 (Fixed date & result header)");
     console.log("🔐 അഡ്മിൻ പ്രവേശനം: ഫൂട്ടറിലെ 'Admin' ക്ലിക്ക് ചെയ്യുക അല്ലെങ്കിൽ ഹെഡർ ഡബിൾ ടാപ്പ് ചെയ്യുക.");
     if (complaintInfoBox && complaintInfoBox.style.display === "block") setupComplaintActions();
 
