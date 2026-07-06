@@ -7,18 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ===== BASE ===== */
+        /* ===== RESET ===== */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body {
             font-family:'Anek Malayalam',sans-serif;
             background: linear-gradient(135deg, #0b1120 0%, #1a2332 40%, #0d1b2a 100%);
-            min-height:100vh;
-            padding:16px;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            position:relative;
-            overflow-x:hidden;
+            min-height:100vh; padding:16px; display:flex; justify-content:center; align-items:center;
+            position:relative; overflow-x:hidden;
         }
         body::before {
             content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%;
@@ -458,7 +453,6 @@
         .admin-modal::-webkit-scrollbar-track { background:transparent; }
         .admin-modal::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:10px; }
 
-        /* ===== UTILITY ===== */
         .secret-hint { font-size:0.5rem; color:rgba(255,255,255,0.06); text-align:center; margin-top:4px; user-select:none; pointer-events:none; }
         .admin-logout-btn {
             background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.1); color:#f87171;
@@ -701,7 +695,7 @@
     // ============================================================
     // CONFIGURATION
     // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbyYBtjdEIkMwbe_iwpGytWnNAdUO-IBHvS5otfy06ILXgta2lL_sTK4CHmXFJPivcaz/exec"; // <-- Replace with your URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbyvqKaBKtbXrMJQQJi6Z4weWhRSVd0yQaaWvWKrjf9fsbzyURivmvROBiH2EnIdYoeo/exec"; // <-- Replace with your URL
     const ADMIN_PASSWORD = "madrasa2026";
     const MONTHLY_FEE = 200;
     const SUPPORT_EMAIL = "noorussalamhelp@gmail.com";
@@ -765,9 +759,9 @@
         });
     }
 
-    // ===== SAFE FORMAT MONTH =====
+    // ===== SAFE MONTH FORMAT =====
     function formatMonthForDisplay(monthStr) {
-        if (monthStr == null || monthStr === "") return "---";
+        if (monthStr == null) return "---";
         const str = String(monthStr);
         if (str === "") return "---";
         const parts = str.split("-");
@@ -778,6 +772,17 @@
         const monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
                             "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
         return monthNames[month - 1] + " " + year;
+    }
+
+    // ===== DATE FORMATTER: DD/MM/YYYY =====
+    function formatDateToDDMMYYYY(dateStr) {
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return day + "/" + month + "/" + year;
     }
 
     function getCurrentMonth() {
@@ -821,11 +826,16 @@
         const whatsappMsg = generateWhatsAppMessage(data);
         const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
 
+        // Get formatted date – either from backend or format in frontend
+        const formattedDate = data.lastPaidDateFormatted || (data.lastPaidDate ? formatDateToDDMMYYYY(data.lastPaidDate) : "");
+
         document.getElementById("result").innerHTML = `
             <div class="result-card">
                 <table class="info-table">
                     <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
+                    ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
                     <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td>${escapeHtml(data.lastPaidMonth)}</td></tr>
+                    <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td>${escapeHtml(formattedDate || "---")}</td></tr>
                     <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${MONTHLY_FEE} = ₹${(pendingMonths * MONTHLY_FEE).toLocaleString()}</td></tr>
                     ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
                     <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
@@ -1151,7 +1161,7 @@
                 <td><strong>${escapeHtml(r.parentName)}</strong></td>
                 <td>${escapeHtml(r.studentName || '')}</td>
                 <td>${escapeHtml(r.mobile)}</td>
-                <td>${escapeHtml(formatMonthForDisplay(r.lastPaidMonth))}</td>
+                <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
                 <td>₹${pending.toLocaleString()}</td>
                 <td>${statusLabel}</td>
                 <td style="text-align:center;">
@@ -1209,7 +1219,7 @@
                 <td>${idx+1}</td>
                 <td><strong>${escapeHtml(r.parentName)}</strong></td>
                 <td>${escapeHtml(r.mobile)}</td>
-                <td>${escapeHtml(formatMonthForDisplay(r.lastPaidMonth))}</td>
+                <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
                 <td>${r.paidMonths || 0}</td>
                 <td>${r.pendingMonths || 0}</td>
                 <td>₹${pending.toLocaleString()}</td>
@@ -1462,7 +1472,7 @@
     // ============================================================
     // INIT
     // ============================================================
-    console.log("🌟 നൂറുസ്സലാം വരിസംഖ്യ സിസ്റ്റം v5.1 (fixed date format)");
+    console.log("🌟 നൂറുസ്സലാം വരിസംഖ്യ സിസ്റ്റം v5.2 (DD/MM/YYYY & CSS enhanced)");
     console.log("🔐 അഡ്മിൻ പ്രവേശനം: ഫൂട്ടറിലെ 'Admin' ക്ലിക്ക് ചെയ്യുക അല്ലെങ്കിൽ ഹെഡർ ഡബിൾ ടാപ്പ് ചെയ്യുക.");
     if (complaintInfoBox && complaintInfoBox.style.display === "block") setupComplaintActions();
 
