@@ -117,6 +117,8 @@
         .info-message { font-size:0.72rem; line-height:1.6; color:rgba(255,255,255,0.6); font-weight:400; }
         .info-message strong { color:rgba(255,255,255,0.8); }
 
+        /* COMPLAINT SECTION REMOVED */
+
         /* ===== RESULT CARD ===== */
         .result-card {
             margin-top:20px; border-radius:28px; background:rgba(255,255,255,0.04);
@@ -391,7 +393,7 @@
         }
 
         /* ================================================================ */
-        /* ===== PRINT STYLES: CLEAN, ONLY LIST, FULL A4 ===== */
+        /* ===== PRINT STYLES: PROPER TABLE, FULL A4, NO GRAPHICS ===== */
         /* ================================================================ */
         @page {
             size: A4 portrait;
@@ -429,7 +431,6 @@
                 overflow: visible !important;
                 font-family: 'Anek Malayalam', sans-serif !important;
             }
-            /* Force admin overlay to be visible even if not active */
             .admin-overlay {
                 display: block !important;
                 position: relative !important;
@@ -495,23 +496,38 @@
                 text-align: right !important;
                 margin-bottom: 8px !important;
             }
-            /* Table */
+            /* Table - PROPER TABLE FORMAT */
             .admin-table-wrap {
                 border: 1px solid #ccc !important;
                 border-radius: 0 !important;
                 margin-top: 6px !important;
                 width: 100% !important;
                 overflow: visible !important;
+                background: white !important;
+                display: block !important;
             }
             .admin-table-wrap table {
                 width: 100% !important;
                 border-collapse: collapse !important;
                 font-size: 9pt !important;
-                table-layout: auto !important;
+                table-layout: fixed !important;
                 background: white !important;
                 color: black !important;
+                display: table !important;
+                border-spacing: 0 !important;
+            }
+            .admin-table-wrap table thead {
+                display: table-header-group !important;
+            }
+            .admin-table-wrap table tbody {
+                display: table-row-group !important;
+            }
+            .admin-table-wrap table tr {
+                display: table-row !important;
+                page-break-inside: avoid !important;
             }
             .admin-table-wrap table th {
+                display: table-cell !important;
                 background: #e8e8e8 !important;
                 color: #000 !important;
                 border: 1px solid #aaa !important;
@@ -522,6 +538,7 @@
                 white-space: nowrap !important;
             }
             .admin-table-wrap table td {
+                display: table-cell !important;
                 border: 1px solid #ccc !important;
                 padding: 3px 6px !important;
                 background: white !important;
@@ -562,7 +579,6 @@
                 font-size: 11pt !important;
             }
             /* Page breaks */
-            table tr { page-break-inside: avoid !important; }
             table { page-break-after: auto !important; }
             thead { display: table-header-group !important; }
             /* Force white background, black text */
@@ -639,7 +655,7 @@
     <!-- ===== MAIN CONTAINER (Public Fee Check) ===== -->
     <div class="container" id="mainContainer">
         <div class="header" id="headerDoubleTap">
-            <h1><i class="fas fa-mosque"></i> നൂറുസ്സലാം മദ്റസ</h1>
+            <h1>നൂറുസ്സലാം മദ്റസ</h1>
             <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
             <div class="badge"><i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ പെൻഡിംങ് പേയ്മെന്റ് സിസ്റ്റം</div>
         </div>
@@ -661,8 +677,6 @@
                     ⚠️ അവസാനം അടച്ചതിന്റെ റസീപ്റ്റ് കയ്യിൽ സൂക്ഷിക്കേണ്ടതാണ്.</p>
                 </div>
             </div>
-
-            <!-- COMPLAINT SECTION REMOVED -->
 
             <!-- LOADER & RESULT -->
             <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
@@ -823,7 +837,7 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbyZLs55Z0HqVngw0sMPCmE9vIqlLws2W3LvDlIxI5epiWLfs2IntaYmPpFk1NLQxnyz/exec"; // <-- Replace with your URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbxpspO6opQSz9UnS4vseP-4ETkuCRUSu_0hHcUlBbdMyGbsFo_zaP6j9HdGE6DATxTg/exec"; // <-- REPLACE WITH YOUR DEPLOYED URL
         const ADMIN_PASSWORD = "madrasa2026";
         const MONTHLY_FEE = 200;
         const SUPPORT_EMAIL = "noorussalamhelp@gmail.com";
@@ -930,7 +944,7 @@
         }
 
         // ============================================================
-        // PUBLIC FEE CHECK (unchanged)
+        // PUBLIC FEE CHECK
         // ============================================================
         function calculateTotalPending(pendingMonths, previousBalance) {
             return ((pendingMonths || 0) * MONTHLY_FEE) + (previousBalance || 0);
@@ -955,7 +969,6 @@
             return true;
         }
 
-        // ===== DISPLAY RESULT INLINE =====
         function displayResult(data) {
             const pendingMonths = data.pendingMonths || 0;
             const previousBalance = data.previousBalance || 0;
@@ -1066,7 +1079,7 @@
         }
 
         // ============================================================
-        // ADMIN API HELPERS
+        // ADMIN API HELPERS (with mode: cors for POST)
         // ============================================================
         function jsonpRequest(params, callback) {
             return new Promise((resolve, reject) => {
@@ -1091,6 +1104,7 @@
             try {
                 const resp = await fetch(API_URL, {
                     method: 'POST',
+                    mode: 'cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action, ...payload })
                 });
@@ -1587,7 +1601,7 @@
         // ============================================================
         // INIT
         // ============================================================
-        console.log("🌟 Noorussalam Fee System v7.1 (Complaint removed, print fixed, add/edit fixed)");
+        console.log("🌟 Noorussalam Fee System v7.2 (Print table fixed, add/edit fixed)");
         console.log("🔐 Admin: Click 'Admin' in footer or double-tap header.");
         console.log("📡 API URL:", API_URL);
     </script>
