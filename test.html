@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>നൂറുസ്സലാം - ഫീസ് & അഡ്മിൻ</title>
+    <title>നൂറുസ്സലാം - ഫീസ് പരിശോധന</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -162,7 +162,7 @@
         }
         .emergency-note { font-size:0.6rem; margin-top:10px; color:#fca5a5; text-align:center; opacity:0.6; }
 
-        /* ===== RESULT ===== */
+        /* ===== RESULT CARD (for new tab) ===== */
         .result-card {
             margin-top:20px; border-radius:28px; background:rgba(255,255,255,0.04);
             border:1px solid rgba(255,255,255,0.06); overflow:hidden; animation:fadeSlide 0.5s ease;
@@ -416,6 +416,42 @@
         .admin-empty i { font-size:2.5rem; opacity:0.2; margin-bottom:12px; display:block; }
         .admin-empty h4 { color:rgba(255,255,255,0.5); font-weight:600; font-size:0.85rem; }
 
+        /* ===== RESULT ONLY PAGE (new tab) ===== */
+        .result-only {
+            display:none;
+        }
+        .result-only.active {
+            display:block;
+            max-width:580px;
+            width:100%;
+            margin:0 auto;
+        }
+        .result-only .back-btn {
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            background:rgba(255,255,255,0.06);
+            border:1px solid rgba(255,255,255,0.08);
+            color:rgba(255,255,255,0.6);
+            padding:10px 20px;
+            border-radius:60px;
+            font-size:0.8rem;
+            font-weight:600;
+            cursor:pointer;
+            transition:all 0.3s ease;
+            font-family:inherit;
+            margin-bottom:20px;
+        }
+        .result-only .back-btn:hover {
+            background:rgba(255,255,255,0.1);
+            transform:translateY(-2px);
+        }
+        .result-only .back-btn:active { transform:scale(0.97); }
+
+        /* Hide main container when in result mode */
+        body.result-mode .container { display:none; }
+        body.result-mode .result-only { display:block; }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width:480px) {
             .content { padding:20px 16px; }
@@ -474,7 +510,7 @@
 <!-- STARS -->
 <div class="stars-bg" id="starContainer"></div>
 
-<!-- MAIN CONTAINER -->
+<!-- ===== MAIN CONTAINER (Fee Check Form) ===== -->
 <div class="container" id="mainContainer">
     <div class="header" id="headerDoubleTap">
         <h1><i class="fas fa-mosque"></i> നൂറുസ്സലാം മദ്റസ</h1>
@@ -528,24 +564,22 @@
         <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
         <div id="result"></div>
 
-        <div id="gpaySectionWrapper" class="gpay-section-wrapper" style="display:none;">
-            <div class="gpay-container">
-                <div style="text-align:center;"><span class="due-amount-badge" id="dueAmountBadge">📋 ബാക്കി തുക: ₹0</span></div>
-                <div class="amount-editor">
-                    <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
-                    <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="0" placeholder="തുക നൽകുക"></div>
-                    <div class="amount-hint" style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.</div>
-                    <div id="advanceWarningBox" class="advance-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്.</div>
-                </div>
-                <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
-                <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ameerpattani786@oksbi</p>
-            </div>
-        </div>
+        <!-- gpay section is now inside result-only -->
     </div>
 
     <div class="footer">
         <a id="adminEntryLink">🔐 Admin</a> | Noorussalam Madrasa © 2026 | <i class="fas fa-phone-alt"></i> 7034678818
         <div class="secret-hint">•••</div>
+    </div>
+</div>
+
+<!-- ===== RESULT ONLY PAGE (hidden by default) ===== -->
+<div class="result-only" id="resultOnly">
+    <div style="max-width:580px; margin:0 auto; padding:16px;">
+        <button class="back-btn" onclick="goBack()"><i class="fas fa-arrow-left"></i> തിരികെ പോകുക</button>
+        <div id="resultOnlyContent">
+            <!-- will be filled by displayResultOnly -->
+        </div>
     </div>
 </div>
 
@@ -713,6 +747,46 @@
     let currentScript = null;
 
     // ============================================================
+    // CHECK IF IN RESULT-ONLY MODE
+    // ============================================================
+    (function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'result') {
+            // Show result-only page
+            document.body.classList.add('result-mode');
+            document.getElementById('resultOnly').classList.add('active');
+            // Read data from localStorage
+            const stored = localStorage.getItem('feeResult');
+            if (stored) {
+                try {
+                    const data = JSON.parse(stored);
+                    displayResultOnly(data);
+                } catch(e) {
+                    showToast('❌ വിവരങ്ങൾ ലഭ്യമല്ല', true);
+                }
+                localStorage.removeItem('feeResult'); // clean up
+            } else {
+                document.getElementById('resultOnlyContent').innerHTML = `<div class="result-card"><div style="padding:20px;text-align:center;color:rgba(255,255,255,0.5);">❌ ഡാറ്റ കണ്ടെത്തിയില്ല. ദയവായി മുൻ പേജിൽ നിന്ന് പരിശോധിക്കുക.</div></div>`;
+            }
+        } else {
+            // Normal mode: show main container
+            document.body.classList.remove('result-mode');
+            document.getElementById('resultOnly').classList.remove('active');
+        }
+    })();
+
+    // ============================================================
+    // GO BACK FUNCTION
+    // ============================================================
+    function goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.close(); // close tab if no history
+        }
+    }
+
+    // ============================================================
     // STARS
     // ============================================================
     function generateStars() {
@@ -818,7 +892,8 @@
         return true;
     }
 
-    function displayResult(data) {
+    // ===== DISPLAY RESULT IN THE RESULT-ONLY PAGE =====
+    function displayResultOnly(data) {
         const pendingMonths = data.pendingMonths || 0;
         const previousBalance = data.previousBalance || 0;
         const totalPending = calculateTotalPending(pendingMonths, previousBalance);
@@ -826,10 +901,14 @@
         const whatsappMsg = generateWhatsAppMessage(data);
         const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
 
-        // Get formatted date – either from backend or format in frontend
         const formattedDate = data.lastPaidDateFormatted || (data.lastPaidDate ? formatDateToDDMMYYYY(data.lastPaidDate) : "");
 
-        document.getElementById("result").innerHTML = `
+        // Also set currentStudentData for gpay
+        currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending };
+        currentDueAmount = totalPending;
+
+        const content = document.getElementById('resultOnlyContent');
+        content.innerHTML = `
             <div class="result-card">
                 <table class="info-table">
                     <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
@@ -842,15 +921,24 @@
                 </table>
                 <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
             </div>
+            <div class="gpay-section-wrapper" id="gpaySectionWrapper">
+                <div class="gpay-container">
+                    <div style="text-align:center;"><span class="due-amount-badge" id="dueAmountBadge">📋 നിലവിലെ ബാക്കി: ₹${totalPending.toLocaleString()}</span></div>
+                    <div class="amount-editor">
+                        <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
+                        <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="${totalPending > 0 ? totalPending : ''}" placeholder="തുക നൽകുക"></div>
+                        <div class="amount-hint" style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.</div>
+                        <div id="advanceWarningBox" class="advance-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്.</div>
+                    </div>
+                    <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
+                    <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ${UPI_ID}</p>
+                </div>
+            </div>
         `;
-        currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending };
-        currentDueAmount = totalPending;
-        const gpayWrapper = document.getElementById("gpaySectionWrapper");
-        gpayWrapper.style.display = "block";
-        document.getElementById("dueAmountBadge").innerHTML = `📋 നിലവിലെ ബാക്കി: ₹${totalPending.toLocaleString()}`;
+
+        // Attach Google Pay event
         const amountInput = document.getElementById("payAmount");
         if (amountInput) {
-            amountInput.value = totalPending > 0 ? totalPending : "";
             amountInput.min = 1;
         }
         const warnBox = document.getElementById("advanceWarningBox");
@@ -859,32 +947,45 @@
             if (!isNaN(val) && totalPending > 0 && val > totalPending) warnBox.style.display = "flex";
             else warnBox.style.display = "none";
         };
-        amountInput.removeEventListener("input", checkAdvance);
-        amountInput.addEventListener("input", checkAdvance);
+        if (amountInput) {
+            amountInput.removeEventListener("input", checkAdvance);
+            amountInput.addEventListener("input", checkAdvance);
+        }
         const oldBtn = document.getElementById("googlePayBtn");
-        const newBtn = oldBtn.cloneNode(true);
-        oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-        newBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            let customAmount = parseFloat(document.getElementById("payAmount").value);
-            if (isNaN(customAmount) || customAmount <= 0) { alert("ദയവായി ശരിയായ തുക നൽകുക"); return; }
-            initiateGooglePay(customAmount, currentStudentData.parentName, currentStudentData.mobile);
-        });
+        if (oldBtn) {
+            const newBtn = oldBtn.cloneNode(true);
+            oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+            newBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                let customAmount = parseFloat(document.getElementById("payAmount").value);
+                if (isNaN(customAmount) || customAmount <= 0) { alert("ദയവായി ശരിയായ തുക നൽകുക"); return; }
+                initiateGooglePay(customAmount, currentStudentData.parentName, currentStudentData.mobile);
+            });
+        }
+    }
+
+    // ===== OLD displayResult for same page (not used now, but keep for fallback) =====
+    function displayResult(data) {
+        // This is now replaced by displayResultOnly for new tab mode.
+        // But we keep it for any other usage.
+        displayResultOnly(data);
     }
 
     function showError(msg) {
-        document.getElementById("result").innerHTML = `<div class="result-card"><table class="info-table"><tr><td>⚠️ പിശക്</td><td style="color:#f87171;">${escapeHtml(msg)}</td></tr></table></div>`;
-        document.getElementById("gpaySectionWrapper").style.display = "none";
+        // Not used in new tab mode, but keep for compatibility
     }
 
     function checkFee() {
         const mobile = document.getElementById("mobile").value.trim();
-        if (mobile.length !== 10 || isNaN(mobile)) { showError("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക."); return; }
+        if (mobile.length !== 10 || isNaN(mobile)) {
+            showToast("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.", true);
+            return;
+        }
         const btn = document.getElementById("checkBtn");
         btn.disabled = true;
         document.getElementById("loader").style.display = "block";
         document.getElementById("result").innerHTML = "";
-        document.getElementById("gpaySectionWrapper").style.display = "none";
+        // No gpay section in main page now; it's in result-only
         if (currentScript && document.head.contains(currentScript)) document.head.removeChild(currentScript);
         const callbackName = "callback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
         window[callbackName] = function(data) {
@@ -893,14 +994,23 @@
             document.getElementById("loader").style.display = "none";
             if (data && data.success === true) {
                 if (!data.mobile && mobile) data.mobile = mobile;
-                displayResult(data);
+                // Save data to localStorage and open new tab
+                try {
+                    localStorage.setItem('feeResult', JSON.stringify(data));
+                    // Open new tab with mode=result
+                    const url = window.location.origin + window.location.pathname + '?mode=result';
+                    window.open(url, '_blank');
+                    showToast("✅ വിവരങ്ങൾ പുതിയ ടാബിൽ തുറക്കുന്നു...", false);
+                } catch(e) {
+                    showToast("❌ ഡാറ്റ സംഭരിക്കുന്നതിൽ പിശക്", true);
+                }
             } else {
-                showError(data?.message || "വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.");
+                showToast(data?.message || "❌ വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.", true);
             }
         };
         const script = document.createElement("script");
         script.src = `${API_URL}?mobile=${mobile}&callback=${callbackName}`;
-        script.onerror = () => { delete window[callbackName]; btn.disabled = false; document.getElementById("loader").style.display = "none"; showError("API ബന്ധപെടാനായില്ല. നെറ്റ്വർക്ക് പരിശോധിക്കുക."); };
+        script.onerror = () => { delete window[callbackName]; btn.disabled = false; document.getElementById("loader").style.display = "none"; showToast("❌ API ബന്ധപെടാനായില്ല. നെറ്റ്വർക്ക് പരിശോധിക്കുക.", true); };
         currentScript = script;
         document.head.appendChild(script);
     }
@@ -960,7 +1070,7 @@
     document.getElementById("mobile").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
 
     // ============================================================
-    // ADMIN API HELPERS
+    // ADMIN API HELPERS (same as before)
     // ============================================================
     function jsonpRequest(params, callback) {
         return new Promise((resolve, reject) => {
@@ -1085,7 +1195,7 @@
     });
 
     // ============================================================
-    // ADMIN DASHBOARD
+    // ADMIN DASHBOARD (same as before)
     // ============================================================
     async function loadAdminDashboard() {
         try {
@@ -1098,7 +1208,6 @@
                 document.getElementById("statAmount").textContent = "₹" + (data.totalPendingAmount || 0).toLocaleString();
                 document.getElementById("adminLastUpdated").textContent = "അവസാനം അപ്ഡേറ്റ്: " + new Date().toLocaleString('ml-IN');
 
-                // Load settings
                 const settings = await adminApiGet("getSettings");
                 if (settings && !settings.error) {
                     document.getElementById("setMonthlyFee").value = settings.monthlyFee || 200;
@@ -1258,7 +1367,6 @@
         document.getElementById("fPaidMonths").value = "0";
         document.getElementById("fPrevBalance").value = "0";
         
-        // Auto-fill today's date for new students
         const today = new Date();
         const year = today.getFullYear();
         const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -1366,7 +1474,7 @@
     }
 
     // ============================================================
-    // ADMIN: DELETE PARENT (with confirm)
+    // ADMIN: DELETE PARENT
     // ============================================================
     async function deleteParentWithConfirm(mobile) {
         const parentName = allRecords.find(r => String(r.mobile) === String(mobile))?.parentName || mobile;
@@ -1444,7 +1552,6 @@
         }
     }
 
-    // Load settings into form
     async function loadSettings() {
         try {
             const settings = await adminApiGet("getSettings");
@@ -1472,7 +1579,7 @@
     // ============================================================
     // INIT
     // ============================================================
-    console.log("🌟 നൂറുസ്സലാം വരിസംഖ്യ സിസ്റ്റം v5.2 (DD/MM/YYYY & CSS enhanced)");
+    console.log("🌟 നൂറുസ്സലാം വരിസംഖ്യ സിസ്റ്റം v6.0 (New tab result)");
     console.log("🔐 അഡ്മിൻ പ്രവേശനം: ഫൂട്ടറിലെ 'Admin' ക്ലിക്ക് ചെയ്യുക അല്ലെങ്കിൽ ഹെഡർ ഡബിൾ ടാപ്പ് ചെയ്യുക.");
     if (complaintInfoBox && complaintInfoBox.style.display === "block") setupComplaintActions();
 
