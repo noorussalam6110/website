@@ -435,10 +435,10 @@
             box-shadow: 0 4px 20px rgba(59,130,246,0.3);
         }
 
-        /* ===== PRINT STYLES: FULL LIST, READABLE TEXT, A4 ===== */
+        /* ===== PRINT STYLES: FULL LIST, HIDE STUDENT & ACTIONS, FIT A4 ===== */
         @page {
             size: A4 portrait;
-            margin: 8mm 10mm;
+            margin: 6mm 8mm;
         }
 
         @media print {
@@ -462,7 +462,7 @@
             .admin-modal {
                 box-shadow: none !important;
                 border: none !important;
-                padding: 10px 0 !important;
+                padding: 5px 0 !important;
                 max-height: none !important;
                 overflow: visible !important;
                 background: white !important;
@@ -489,28 +489,29 @@
             .admin-stats {
                 display: grid !important;
                 grid-template-columns: repeat(4, 1fr) !important;
-                gap: 8px !important;
-                margin-bottom: 16px !important;
+                gap: 6px !important;
+                margin-bottom: 12px !important;
             }
             .admin-stat-card {
                 background: #f8fafc !important;
                 border: 1px solid #ddd !important;
-                padding: 8px !important;
+                padding: 4px !important;
                 text-align: center !important;
             }
             .admin-stat-card .stat-num {
-                font-size: 1.0rem !important;
+                font-size: 0.9rem !important;
                 color: #000 !important;
             }
             .admin-stat-card .stat-label {
-                font-size: 0.65rem !important;
+                font-size: 0.6rem !important;
                 color: #000 !important;
             }
-            /* Table styles - FULL LIST with BIGGER TEXT */
+
+            /* ===== TABLE: HIDE STUDENT & ACTIONS COLUMNS ===== */
             .admin-table-wrap {
                 border: 1px solid #ccc !important;
                 border-radius: 0 !important;
-                margin-top: 8px !important;
+                margin-top: 6px !important;
                 background: white !important;
                 overflow: visible !important;
                 width: 100% !important;
@@ -518,44 +519,60 @@
             .admin-table-wrap table {
                 width: 100% !important;
                 border-collapse: collapse !important;
-                font-size: 0.85rem !important;  /* Increased from 0.65rem */
-                table-layout: auto !important;
+                font-size: 0.65rem !important;  /* compact but readable */
+                table-layout: fixed !important;
                 font-family: 'Anek Malayalam', sans-serif !important;
             }
+            /* Hide Student (col 3) and Actions (col 8) */
+            .admin-table-wrap table th:nth-child(3),
+            .admin-table-wrap table td:nth-child(3),
+            .admin-table-wrap table th:nth-child(8),
+            .admin-table-wrap table td:nth-child(8) {
+                display: none !important;
+            }
+            /* Assign column widths (now only 6 columns: #, Parent, Mobile, Last Paid Month, Due, Status) */
+            .admin-table-wrap table th:nth-child(1) { width: 8% !important; }   /* # */
+            .admin-table-wrap table th:nth-child(2) { width: 25% !important; }  /* Parent */
+            .admin-table-wrap table th:nth-child(3) { width: 15% !important; }  /* Mobile */
+            .admin-table-wrap table th:nth-child(4) { width: 20% !important; }  /* Last Paid Month */
+            .admin-table-wrap table th:nth-child(5) { width: 12% !important; }  /* Due */
+            .admin-table-wrap table th:nth-child(6) { width: 20% !important; }  /* Status */
+
             .admin-table-wrap table th {
                 background: #f0f0f0 !important;
                 color: #000 !important;
                 border-bottom: 2px solid #999 !important;
-                padding: 6px 8px !important;
+                padding: 4px 4px !important;
                 text-align: left !important;
                 font-weight: 700 !important;
+                font-size: 0.6rem !important;
                 white-space: nowrap !important;
-                font-size: 0.75rem !important;
             }
             .admin-table-wrap table td {
                 color: #000 !important;
                 border-bottom: 1px solid #ddd !important;
                 background: white !important;
-                padding: 5px 8px !important;
+                padding: 3px 4px !important;
                 white-space: normal !important;
                 word-wrap: break-word !important;
-                max-width: 150px !important;
-                font-size: 0.8rem !important;
+                overflow-wrap: break-word !important;
+                font-size: 0.6rem !important;
+                line-height: 1.3 !important;
             }
             .admin-table-wrap .status-badge {
                 border: 1px solid #999 !important;
                 background: #eee !important;
                 color: #000 !important;
-                padding: 2px 8px !important;
-                border-radius: 20px !important;
+                padding: 1px 6px !important;
+                border-radius: 12px !important;
                 font-weight: 600 !important;
                 display: inline-block !important;
-                font-size: 0.7rem !important;
+                font-size: 0.55rem !important;
             }
             .admin-empty {
                 color: #000 !important;
             }
-            /* Hide action buttons in table */
+            /* Hide action buttons */
             .admin-actions .btn-sm {
                 display: none !important;
             }
@@ -566,11 +583,9 @@
             .admin-tab-content.active {
                 display: block !important;
             }
-            /* Override visibility for the active tab content */
             #tabStudents, #tabFees {
                 display: block !important;
             }
-            /* Hide any extra elements */
             .admin-toolbar {
                 display: none !important;
             }
@@ -651,649 +666,1010 @@
     </style>
 </head>
 <body>
-<!-- ===== STARS ===== -->
-<div class="stars-bg" id="starContainer"></div>
 
-<!-- ===== MAIN CONTAINER ===== -->
-<div class="container" id="mainContainer">
-    <div class="header" id="headerDoubleTap">
-        <h1>നൂറുസ്സലാം മദ്റസ</h1>
-        <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
-        <div class="badge"><i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ പെൻഡിംങ് പേയ്മെന്റ് സിസ്റ്റം</div>
-    </div>
+    <!-- ===== STARS ===== -->
+    <div class="stars-bg" id="starContainer"></div>
 
-    <div class="content">
-        <!-- Public Fee Check -->
-        <div class="input-group">
-            <div class="input-label"><i class="fas fa-mobile-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</div>
-            <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off" inputmode="numeric">
+    <!-- ===== MAIN CONTAINER ===== -->
+    <div class="container" id="mainContainer">
+        <div class="header" id="headerDoubleTap">
+            <h1>നൂറുസ്സലാം മദ്റസ</h1>
+            <p>കമ്പിപ്പാലം-കേരള എസ്റ്റേറ്റ്</p>
+            <div class="badge"><i class="fas fa-hand-holding-usd"></i> വരിസംഖ്യ പെൻഡിംങ് പേയ്മെന്റ് സിസ്റ്റം</div>
         </div>
-        <button class="check-btn" onclick="checkFee()" id="checkBtn">
-            <span class="btn-icon">🔍</span> പരിശോധിക്കുക
-        </button>
 
-        <div class="info-box">
-            <div class="info-box-title"><i class="fas fa-info-circle"></i> <span>ശ്രദ്ധിക്കുക</span></div>
-            <div class="info-message">
-                <p>⚠️ <strong>വരിസംഖ്യ അടച്ച് 0-3 ദിവസങ്ങൾക്കകം അപ്‌ഡേറ്റ് ആവുന്നതാണ്.</strong><br>
-                ⚠️ അവസാനം അടച്ചതിന്റെ റസീപ്റ്റ് കയ്യിൽ സൂക്ഷിക്കേണ്ടതാണ്.</p>
+        <div class="content">
+            <!-- Public Fee Check -->
+            <div class="input-group">
+                <div class="input-label"><i class="fas fa-mobile-alt"></i> രജിസ്റ്റർ ചെയ്ത മൊബൈൽ നമ്പർ</div>
+                <input type="tel" id="mobile" placeholder="9876543210" maxlength="10" autocomplete="off" inputmode="numeric">
             </div>
-        </div>
-
-        <!-- Complaint -->
-        <div class="complaint-section">
-            <button class="complaint-btn" id="complaintToggleBtn">
-                <i class="fas fa-exclamation-triangle"></i> പരാതി ഉന്നയിക്കുക
-                <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i>
+            <button class="check-btn" onclick="checkFee()" id="checkBtn">
+                <span class="btn-icon">🔍</span> പരിശോധിക്കുക
             </button>
-            <div id="complaintInfoBox" class="complaint-info-box" style="display:none;">
-                <div class="complaint-info-header"><i class="fas fa-bullhorn"></i> <span>📢 പരാതി / അറിയിപ്പ് ബോർഡ്</span></div>
-                <div class="complaint-message-text">
-                    ✍️ <strong>വരിസംഖ്യ സംബന്ധമായ പരാതികൾ / തെറ്റുകൾ:</strong><br>
-                    • പേയ്മെന്റ് അപ്ഡേറ്റ് ആകുന്നതിൽ കാലതാമസം<br>• തുകയിലെ വ്യത്യാസം / കുടിശ്ശിക തെറ്റ്<br>• മൊബൈൽ നമ്പർ പ്രശ്നങ്ങൾ
+
+            <div class="info-box">
+                <div class="info-box-title"><i class="fas fa-info-circle"></i> <span>ശ്രദ്ധിക്കുക</span></div>
+                <div class="info-message">
+                    <p>⚠️ <strong>വരിസംഖ്യ അടച്ച് 0-3 ദിവസങ്ങൾക്കകം അപ്‌ഡേറ്റ് ആവുന്നതാണ്.</strong><br>
+                    ⚠️ അവസാനം അടച്ചതിന്റെ റസീപ്റ്റ് കയ്യിൽ സൂക്ഷിക്കേണ്ടതാണ്.</p>
                 </div>
-                <div class="action-buttons-row">
-                    <a href="#" id="mailComplaintBtn" class="contact-action-btn mail-action"><i class="fas fa-envelope"></i> ഇമെയിൽ</a>
-                    <a href="#" id="whatsappComplaintBtn" class="contact-action-btn whatsapp-action"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-                    <a href="#" id="callComplaintBtn" class="contact-action-btn call-action"><i class="fas fa-phone-alt"></i> കോൾ</a>
-                </div>
-                <div class="emergency-note"><i class="fas fa-shield-alt"></i> Designed by Suhail Kerala</div>
             </div>
+
+            <!-- Complaint -->
+            <div class="complaint-section">
+                <button class="complaint-btn" id="complaintToggleBtn">
+                    <i class="fas fa-exclamation-triangle"></i> പരാതി ഉന്നയിക്കുക
+                    <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i>
+                </button>
+                <div id="complaintInfoBox" class="complaint-info-box" style="display:none;">
+                    <div class="complaint-info-header"><i class="fas fa-bullhorn"></i> <span>📢 പരാതി / അറിയിപ്പ് ബോർഡ്</span></div>
+                    <div class="complaint-message-text">
+                        ✍️ <strong>വരിസംഖ്യ സംബന്ധമായ പരാതികൾ / തെറ്റുകൾ:</strong><br>
+                        • പേയ്മെന്റ് അപ്ഡേറ്റ് ആകുന്നതിൽ കാലതാമസം<br>• തുകയിലെ വ്യത്യാസം / കുടിശ്ശിക തെറ്റ്<br>• മൊബൈൽ നമ്പർ പ്രശ്നങ്ങൾ
+                    </div>
+                    <div class="action-buttons-row">
+                        <a href="#" id="mailComplaintBtn" class="contact-action-btn mail-action"><i class="fas fa-envelope"></i> ഇമെയിൽ</a>
+                        <a href="#" id="whatsappComplaintBtn" class="contact-action-btn whatsapp-action"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                        <a href="#" id="callComplaintBtn" class="contact-action-btn call-action"><i class="fas fa-phone-alt"></i> കോൾ</a>
+                    </div>
+                    <div class="emergency-note"><i class="fas fa-shield-alt"></i> Designed by Suhail Kerala</div>
+                </div>
+            </div>
+
+            <!-- LOADER & RESULT -->
+            <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
+            <div id="result"></div>
         </div>
 
-        <!-- LOADER & RESULT -->
-        <div id="loader" class="loader"><div class="spinner"></div><p>ദയവായി കാത്തിരിക്കുക...</p></div>
-        <div id="result"></div>
-    </div>
-
-    <div class="footer">
-        <a id="adminEntryLink">🔐 Admin</a> | Noorussalam Madrasa © 2026 | <i class="fas fa-phone-alt"></i> 7034678818
-        <div class="secret-hint">•••</div>
-    </div>
-</div>
-
-<!-- ===== TOAST ===== -->
-<div id="toastMsg" class="toast-message"></div>
-
-<!-- ===== ADMIN OVERLAY (WHITE THEME) ===== -->
-<div class="admin-overlay" id="adminOverlay">
-    <div class="admin-modal">
-        <button class="close-admin" id="closeAdminBtn" onclick="closeAdminPanel()">&times;</button>
-
-        <!-- Login -->
-        <div id="adminLoginSection">
-            <div class="admin-title"><i class="fas fa-lock"></i> Admin Login</div>
-            <div class="admin-login-form">
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="adminPassword" placeholder="Enter admin password" onkeypress="if(event.key==='Enter') adminLogin()">
-                </div>
-                <button class="admin-login-btn" onclick="adminLogin()"><i class="fas fa-sign-in-alt"></i> Login</button>
-                <div class="admin-login-error" id="adminLoginError"></div>
-            </div>
+        <div class="footer">
+            <a id="adminEntryLink">🔐 Admin</a> | Noorussalam Madrasa © 2026 | <i class="fas fa-phone-alt"></i> 7034678818
+            <div class="secret-hint">•••</div>
         </div>
+    </div>
 
-        <!-- Panel -->
-        <div id="adminPanelSection" style="display:none;">
-            <div class="admin-title" style="justify-content:space-between;flex-wrap:wrap;">
-                <span><i class="fas fa-user-cog"></i> Admin Panel</span>
-                <button class="admin-logout-btn" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-            </div>
+    <!-- ===== TOAST ===== -->
+    <div id="toastMsg" class="toast-message"></div>
 
-            <div class="admin-tabs">
-                <button class="tab active" data-tab="tabDashboard" onclick="switchAdminTab('tabDashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
-                <button class="tab" data-tab="tabStudents" onclick="switchAdminTab('tabStudents')"><i class="fas fa-users"></i> Parents</button>
-                <button class="tab" data-tab="tabFees" onclick="switchAdminTab('tabFees')"><i class="fas fa-money-bill-wave"></i> Fees</button>
-                <button class="tab" data-tab="tabSettings" onclick="switchAdminTab('tabSettings')"><i class="fas fa-cog"></i> Settings</button>
-            </div>
+    <!-- ===== ADMIN OVERLAY (WHITE THEME) ===== -->
+    <div class="admin-overlay" id="adminOverlay">
+        <div class="admin-modal">
+            <button class="close-admin" id="closeAdminBtn" onclick="closeAdminPanel()">&times;</button>
 
-            <!-- Dashboard -->
-            <div id="tabDashboard" class="admin-tab-content active">
-                <div class="admin-stats" id="adminStats">
-                    <div class="admin-stat-card"><div class="stat-num blue" id="statTotal">0</div><div class="stat-label">Total</div></div>
-                    <div class="admin-stat-card"><div class="stat-num red" id="statPending">0</div><div class="stat-label">Pending</div></div>
-                    <div class="admin-stat-card"><div class="stat-num green" id="statPaid">0</div><div class="stat-label">Paid</div></div>
-                    <div class="admin-stat-card"><div class="stat-num yellow" id="statAmount">₹0</div><div class="stat-label">Total Due</div></div>
+            <!-- Login -->
+            <div id="adminLoginSection">
+                <div class="admin-title"><i class="fas fa-lock"></i> Admin Login</div>
+                <div class="admin-login-form">
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="adminPassword" placeholder="Enter admin password" onkeypress="if(event.key==='Enter') adminLogin()">
+                    </div>
+                    <button class="admin-login-btn" onclick="adminLogin()"><i class="fas fa-sign-in-alt"></i> Login</button>
+                    <div class="admin-login-error" id="adminLoginError"></div>
                 </div>
-                <div style="font-size:0.7rem;color:#94a3b8;text-align:right;" id="adminLastUpdated"></div>
             </div>
 
-            <!-- Students -->
-            <div id="tabStudents" class="admin-tab-content">
-                <div class="admin-toolbar">
-                    <div class="left">
-                        <input type="text" id="adminSearch" placeholder="🔍 Search..." oninput="renderAdminStudents()">
-                        <select id="adminFilter" onchange="renderAdminStudents()">
-                            <option value="all">All</option>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                        </select>
-                        <button class="print-btn" onclick="printStudentList()"><i class="fas fa-print"></i> Print List</button>
-                    </div>
-                    <div>
-                        <button class="btn-admin primary" onclick="openAddStudentForm()"><i class="fas fa-plus"></i> Add New</button>
-                    </div>
+            <!-- Panel -->
+            <div id="adminPanelSection" style="display:none;">
+                <div class="admin-title" style="justify-content:space-between;flex-wrap:wrap;">
+                    <span><i class="fas fa-user-cog"></i> Admin Panel</span>
+                    <button class="admin-logout-btn" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
-                <div class="admin-table-wrap" id="adminStudentsTableWrap"><div class="admin-loader"><div class="spinner-sm"></div><span>Loading...</span></div></div>
-            </div>
 
-            <!-- Fees -->
-            <div id="tabFees" class="admin-tab-content">
-                <div class="admin-toolbar">
-                    <div class="left">
-                        <input type="text" id="adminFeeSearch" placeholder="🔍 Search by mobile..." oninput="renderAdminFees()">
-                        <select id="adminFeeFilter" onchange="renderAdminFees()">
-                            <option value="all">All</option>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                        </select>
-                        <button class="print-btn" onclick="printFeesList()"><i class="fas fa-print"></i> Print List</button>
-                    </div>
-                    <div>
-                        <button class="btn-admin success" onclick="openBulkFeeForm()"><i class="fas fa-edit"></i> Bulk</button>
-                    </div>
+                <div class="admin-tabs">
+                    <button class="tab active" data-tab="tabDashboard" onclick="switchAdminTab('tabDashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
+                    <button class="tab" data-tab="tabStudents" onclick="switchAdminTab('tabStudents')"><i class="fas fa-users"></i> Parents</button>
+                    <button class="tab" data-tab="tabFees" onclick="switchAdminTab('tabFees')"><i class="fas fa-money-bill-wave"></i> Fees</button>
+                    <button class="tab" data-tab="tabSettings" onclick="switchAdminTab('tabSettings')"><i class="fas fa-cog"></i> Settings</button>
                 </div>
-                <div class="admin-table-wrap" id="adminFeesTableWrap"><div class="admin-loader"><div class="spinner-sm"></div><span>Loading...</span></div></div>
-            </div>
 
-            <!-- Settings -->
-            <div id="tabSettings" class="admin-tab-content">
-                <form class="admin-form" id="settingsForm" onsubmit="saveSettings(event)">
-                    <div class="form-group"><label>Monthly Fee (₹)</label><input type="number" id="setMonthlyFee" min="1" step="1"></div>
-                    <div class="form-group"><label>UPI ID</label><input type="text" id="setUpiId" placeholder="example@upi"></div>
-                    <div class="form-group"><label>Payee Name</label><input type="text" id="setPayeeName"></div>
-                    <div class="form-group"><label>Support Phone</label><input type="text" id="setSupportPhone"></div>
-                    <div class="form-group"><label>Support Email</label><input type="email" id="setSupportEmail"></div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn-admin primary"><i class="fas fa-save"></i> Save</button>
+                <!-- Dashboard -->
+                <div id="tabDashboard" class="admin-tab-content active">
+                    <div class="admin-stats" id="adminStats">
+                        <div class="admin-stat-card"><div class="stat-num blue" id="statTotal">0</div><div class="stat-label">Total</div></div>
+                        <div class="admin-stat-card"><div class="stat-num red" id="statPending">0</div><div class="stat-label">Pending</div></div>
+                        <div class="admin-stat-card"><div class="stat-num green" id="statPaid">0</div><div class="stat-label">Paid</div></div>
+                        <div class="admin-stat-card"><div class="stat-num yellow" id="statAmount">₹0</div><div class="stat-label">Total Due</div></div>
                     </div>
-                </form>
+                    <div style="font-size:0.7rem;color:#94a3b8;text-align:right;" id="adminLastUpdated"></div>
+                </div>
+
+                <!-- Students -->
+                <div id="tabStudents" class="admin-tab-content">
+                    <div class="admin-toolbar">
+                        <div class="left">
+                            <input type="text" id="adminSearch" placeholder="🔍 Search..." oninput="renderAdminStudents()">
+                            <select id="adminFilter" onchange="renderAdminStudents()">
+                                <option value="all">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                            </select>
+                            <button class="print-btn" onclick="printStudentList()"><i class="fas fa-print"></i> Print List</button>
+                        </div>
+                        <div>
+                            <button class="btn-admin primary" onclick="openAddStudentForm()"><i class="fas fa-plus"></i> Add New</button>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap" id="adminStudentsTableWrap"><div class="admin-loader"><div class="spinner-sm"></div><span>Loading...</span></div></div>
+                </div>
+
+                <!-- Fees -->
+                <div id="tabFees" class="admin-tab-content">
+                    <div class="admin-toolbar">
+                        <div class="left">
+                            <input type="text" id="adminFeeSearch" placeholder="🔍 Search by mobile..." oninput="renderAdminFees()">
+                            <select id="adminFeeFilter" onchange="renderAdminFees()">
+                                <option value="all">All</option>
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                            </select>
+                            <button class="print-btn" onclick="printFeesList()"><i class="fas fa-print"></i> Print List</button>
+                        </div>
+                        <div>
+                            <button class="btn-admin success" onclick="openBulkFeeForm()"><i class="fas fa-edit"></i> Bulk</button>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap" id="adminFeesTableWrap"><div class="admin-loader"><div class="spinner-sm"></div><span>Loading...</span></div></div>
+                </div>
+
+                <!-- Settings -->
+                <div id="tabSettings" class="admin-tab-content">
+                    <form class="admin-form" id="settingsForm" onsubmit="saveSettings(event)">
+                        <div class="form-group"><label>Monthly Fee (₹)</label><input type="number" id="setMonthlyFee" min="1" step="1"></div>
+                        <div class="form-group"><label>UPI ID</label><input type="text" id="setUpiId" placeholder="example@upi"></div>
+                        <div class="form-group"><label>Payee Name</label><input type="text" id="setPayeeName"></div>
+                        <div class="form-group"><label>Support Phone</label><input type="text" id="setSupportPhone"></div>
+                        <div class="form-group"><label>Support Email</label><input type="email" id="setSupportEmail"></div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-admin primary"><i class="fas fa-save"></i> Save</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- ===== ADD/EDIT STUDENT FORM ===== -->
-<div class="admin-overlay" id="studentFormOverlay">
-    <div class="admin-modal" style="max-width:500px;">
-        <button class="close-admin" onclick="closeStudentForm()">&times;</button>
-        <div class="admin-title" id="studentFormTitle"><i class="fas fa-user-plus"></i> Add Student</div>
-        <form class="admin-form" id="studentForm" onsubmit="saveStudent(event)">
-            <input type="hidden" id="editStudentMobile" value="">
-            <div class="form-group"><label>Parent Name *</label><input type="text" id="fParentName" placeholder="e.g. Abdul Rahman" required></div>
-            <div class="form-group"><label>Student Name</label><input type="text" id="fStudentName" placeholder="e.g. Muhammad Farooq"></div>
-            <div class="form-group"><label>Mobile (10 digits) *</label><input type="text" id="fMobile" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" required></div>
-            <div class="form-row">
-                <div class="form-group"><label>Last Paid Month</label><input type="month" id="fLastPaidMonth"></div>
-                <div class="form-group"><label>Months Paid</label><input type="number" id="fPaidMonths" value="0" min="0"></div>
-            </div>
-            <div class="form-group"><label>Previous Balance (₹)</label><input type="number" id="fPrevBalance" value="0" min="0" step="1"></div>
-            <div class="form-group"><label>Last Paid Date</label>
-                <input type="date" id="fLastPaidDate">
-            </div>
-            <div class="form-actions">
-                <button type="button" class="btn-admin outline" onclick="closeStudentForm()">Cancel</button>
-                <button type="submit" class="btn-admin primary" id="studentSubmitBtn"><i class="fas fa-save"></i> Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ===== BULK FEE FORM ===== -->
-<div class="admin-overlay" id="bulkFeeOverlay">
-    <div class="admin-modal" style="max-width:480px;">
-        <button class="close-admin" onclick="closeBulkFeeForm()">&times;</button>
-        <div class="admin-title"><i class="fas fa-edit"></i> Bulk Fee Update</div>
-        <form class="admin-form" id="bulkFeeForm" onsubmit="applyBulkUpdate(event)">
-            <div class="form-group"><label>Last Paid Month (for all) *</label><input type="month" id="bulkMonth" required></div>
-            <div class="form-group"><label>Months Paid (override) – leave blank to keep</label><input type="number" id="bulkPaidMonths" min="0" placeholder="Leave blank"></div>
-            <div class="form-actions">
-                <button type="button" class="btn-admin outline" onclick="closeBulkFeeForm()">Cancel</button>
-                <button type="submit" class="btn-admin success"><i class="fas fa-check"></i> Update</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- ============================== JAVASCRIPT ============================== -->
-<script>
-    // ============================================================
-    // CONFIGURATION
-    // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbzLFWB-ymBC3mZbGoRmXmo0m5k_3sbyyhb8ueMh6s6VLcTTsY5GqudkLP920G59tcXG/exec"; // <-- Replace with your deployed URL
-    const ADMIN_PASSWORD = "madrasa2026";
-    const MONTHLY_FEE = 200;
-    const SUPPORT_EMAIL = "noorussalamhelp@gmail.com";
-    const SUPPORT_PHONE = "9495844382";
-    const SUPPORT_NAME = "ദാരിമി ഉസ്താദ്";
-    const UPI_ID = "ameerpattani786@oksbi";
-    const PAYEE_NAME = "Noorussalam Madrasa";
-    const NOTE = "Madrasa Fee Payment";
-    const CURRENCY = "INR";
-
-    let currentStudentData = null;
-    let currentDueAmount = 0;
-    let allRecords = [];
-    let isAdminLoggedIn = false;
-    let currentScript = null;
-
-    // ============================================================
-    // STARS
-    // ============================================================
-    function generateStars() {
-        const container = document.getElementById('starContainer');
-        if (!container) return;
-        container.innerHTML = '';
-        const count = window.innerWidth < 700 ? 90 : 140;
-        for (let i = 0; i < count; i++) {
-            const star = document.createElement('div');
-            star.classList.add('star');
-            let sz = Math.random() * 3 + 1;
-            star.style.width = sz + 'px';
-            star.style.height = sz + 'px';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.animationDelay = Math.random() * 4 + 's';
-            star.style.animationDuration = Math.random() * 2.5 + 1.5 + 's';
-            container.appendChild(star);
-        }
-    }
-    window.addEventListener('resize', generateStars);
-    generateStars();
-
-    // ============================================================
-    // TOAST
-    // ============================================================
-    function showToast(msg, isErr = false) {
-        const t = document.getElementById("toastMsg");
-        t.textContent = msg;
-        t.style.background = isErr ? "#dc2626" : "#0f172a";
-        t.classList.add("show");
-        clearTimeout(t._hideTimer);
-        t._hideTimer = setTimeout(() => t.classList.remove("show"), 2600);
-    }
-
-    function escapeHtml(str) {
-        if (!str) return "";
-        return String(str).replace(/[&<>"]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            if (m === '"') return '&quot;';
-            return m;
-        });
-    }
-
-    // ===== FORMAT MONTH =====
-    function formatMonthForDisplay(monthInput) {
-        if (monthInput == null) return "---";
-        if (monthInput instanceof Date) {
-            const year = monthInput.getFullYear();
-            const month = String(monthInput.getMonth() + 1).padStart(2, '0');
-            monthInput = year + "-" + month;
-        }
-        const str = String(monthInput);
-        if (str === "") return "---";
-        const parts = str.split("-");
-        if (parts.length !== 2) return str;
-        const year = parts[0];
-        const month = parseInt(parts[1]);
-        if (isNaN(month) || month < 1 || month > 12) return str;
-        const monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
-                            "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
-        return monthNames[month - 1] + " " + year;
-    }
-
-    // ===== DATE FORMATTER =====
-    function formatDateToDDMMYYYY(dateStr) {
-        if (!dateStr) return "";
-        try {
-            const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return String(dateStr);
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            return day + "/" + month + "/" + year;
-        } catch(e) {
-            return String(dateStr);
-        }
-    }
-
-    function getCurrentMonth() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        return year + "-" + month;
-    }
-
-    // ============================================================
-    // PUBLIC FEE CHECK
-    // ============================================================
-    function calculateTotalPending(pendingMonths, previousBalance) {
-        return ((pendingMonths || 0) * MONTHLY_FEE) + (previousBalance || 0);
-    }
-
-    function generateWhatsAppMessage(data) {
-        let msg = `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${UPI_ID}\n\nവിശദ വിവരങ്ങൾക്ക് ${SUPPORT_PHONE} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
-        return msg;
-    }
-
-    function initiateGooglePay(amount, studentName, mobile) {
-        if (!amount || amount <= 0) { alert("അടയ്ക്കേണ്ട തുക ശരിയായി നൽകുക."); return false; }
-        const payAmount = parseFloat(amount).toFixed(2);
-        const description = `${NOTE} - ${studentName} (${mobile}) - ₹${payAmount}`;
-        const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${payAmount}&cu=${CURRENCY}&tn=${encodeURIComponent(description)}`;
-        const anchor = document.createElement('a');
-        anchor.href = upiLink;
-        anchor.target = "_blank";
-        document.body.appendChild(anchor);
-        anchor.click();
-        setTimeout(() => document.body.removeChild(anchor), 300);
-        return true;
-    }
-
-    // ===== DISPLAY RESULT INLINE =====
-    function displayResult(data) {
-        const pendingMonths = data.pendingMonths || 0;
-        const previousBalance = data.previousBalance || 0;
-        const totalPending = calculateTotalPending(pendingMonths, previousBalance);
-        data.totalPending = totalPending;
-
-        let formattedDate = data.lastPaidDateFormatted || "";
-        if (!formattedDate && data.lastPaidDate) {
-            formattedDate = formatDateToDDMMYYYY(data.lastPaidDate);
-        }
-
-        const whatsappMsg = generateWhatsAppMessage(data);
-        const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
-
-        currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending };
-        currentDueAmount = totalPending;
-
-        let html = `
-            <div class="result-card">
-                <table class="info-table">
-                    <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
-                    ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
-                    <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td><strong>${escapeHtml(data.lastPaidMonth || "---")}</strong></td></tr>
-                    <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td><strong style="color:#fbbf24;">${escapeHtml(formattedDate || "---")}</strong></td></tr>
-                    <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${MONTHLY_FEE} = ₹${(pendingMonths * MONTHLY_FEE).toLocaleString()}</td></tr>
-                    ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
-                    <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
-                </table>
-                <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
-            </div>
-            <div class="gpay-section-wrapper" id="gpaySectionWrapper">
-                <div class="gpay-container">
-                    <div style="text-align:center;"><span class="due-amount-badge" id="dueAmountBadge">📋 നിലവിലെ ബാക്കി: ₹${totalPending.toLocaleString()}</span></div>
-                    <div class="amount-editor">
-                        <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
-                        <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="${totalPending > 0 ? totalPending : ''}" placeholder="തുക നൽകുക"></div>
-                        <div class="amount-hint" style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.</div>
-                        <div id="advanceWarningBox" class="advance-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്.</div>
-                    </div>
-                    <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
-                    <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ${UPI_ID}</p>
+    <!-- ===== ADD/EDIT STUDENT FORM ===== -->
+    <div class="admin-overlay" id="studentFormOverlay">
+        <div class="admin-modal" style="max-width:500px;">
+            <button class="close-admin" onclick="closeStudentForm()">&times;</button>
+            <div class="admin-title" id="studentFormTitle"><i class="fas fa-user-plus"></i> Add Student</div>
+            <form class="admin-form" id="studentForm" onsubmit="saveStudent(event)">
+                <input type="hidden" id="editStudentMobile" value="">
+                <div class="form-group"><label>Parent Name *</label><input type="text" id="fParentName" placeholder="e.g. Abdul Rahman" required></div>
+                <div class="form-group"><label>Student Name</label><input type="text" id="fStudentName" placeholder="e.g. Muhammad Farooq"></div>
+                <div class="form-group"><label>Mobile (10 digits) *</label><input type="text" id="fMobile" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" required></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Last Paid Month</label><input type="month" id="fLastPaidMonth"></div>
+                    <div class="form-group"><label>Months Paid</label><input type="number" id="fPaidMonths" value="0" min="0"></div>
                 </div>
-            </div>
-        `;
+                <div class="form-group"><label>Previous Balance (₹)</label><input type="number" id="fPrevBalance" value="0" min="0" step="1"></div>
+                <div class="form-group"><label>Last Paid Date</label>
+                    <input type="date" id="fLastPaidDate">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-admin outline" onclick="closeStudentForm()">Cancel</button>
+                    <button type="submit" class="btn-admin primary" id="studentSubmitBtn"><i class="fas fa-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        document.getElementById("result").innerHTML = html;
+    <!-- ===== BULK FEE FORM ===== -->
+    <div class="admin-overlay" id="bulkFeeOverlay">
+        <div class="admin-modal" style="max-width:480px;">
+            <button class="close-admin" onclick="closeBulkFeeForm()">&times;</button>
+            <div class="admin-title"><i class="fas fa-edit"></i> Bulk Fee Update</div>
+            <form class="admin-form" id="bulkFeeForm" onsubmit="applyBulkUpdate(event)">
+                <div class="form-group"><label>Last Paid Month (for all) *</label><input type="month" id="bulkMonth" required></div>
+                <div class="form-group"><label>Months Paid (override) – leave blank to keep</label><input type="number" id="bulkPaidMonths" min="0" placeholder="Leave blank"></div>
+                <div class="form-actions">
+                    <button type="button" class="btn-admin outline" onclick="closeBulkFeeForm()">Cancel</button>
+                    <button type="submit" class="btn-admin success"><i class="fas fa-check"></i> Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
-        const amountInput = document.getElementById("payAmount");
-        if (amountInput) {
-            amountInput.min = 1;
-        }
-        const warnBox = document.getElementById("advanceWarningBox");
-        const checkAdvance = () => {
-            let val = parseFloat(amountInput.value);
-            if (!isNaN(val) && totalPending > 0 && val > totalPending) warnBox.style.display = "flex";
-            else warnBox.style.display = "none";
-        };
-        if (amountInput) {
-            amountInput.removeEventListener("input", checkAdvance);
-            amountInput.addEventListener("input", checkAdvance);
-        }
-        const oldBtn = document.getElementById("googlePayBtn");
-        if (oldBtn) {
-            const newBtn = oldBtn.cloneNode(true);
-            oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-            newBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                let customAmount = parseFloat(document.getElementById("payAmount").value);
-                if (isNaN(customAmount) || customAmount <= 0) { alert("ദയവായി ശരിയായ തുക നൽകുക"); return; }
-                initiateGooglePay(customAmount, currentStudentData.parentName, currentStudentData.mobile);
-            });
-        }
-    }
+    <!-- ============================== JAVASCRIPT ============================== -->
+    <script>
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbzLFWB-ymBC3mZbGoRmXmo0m5k_3sbyyhb8ueMh6s6VLcTTsY5GqudkLP920G59tcXG/exec"; // <-- Replace
+        const ADMIN_PASSWORD = "madrasa2026";
+        const MONTHLY_FEE = 200;
+        const SUPPORT_EMAIL = "noorussalamhelp@gmail.com";
+        const SUPPORT_PHONE = "9495844382";
+        const SUPPORT_NAME = "ദാരിമി ഉസ്താദ്";
+        const UPI_ID = "ameerpattani786@oksbi";
+        const PAYEE_NAME = "Noorussalam Madrasa";
+        const NOTE = "Madrasa Fee Payment";
+        const CURRENCY = "INR";
 
-    function showError(msg) {
-        document.getElementById("result").innerHTML = `<div class="result-card"><table class="info-table"><tr><td>⚠️ പിശക്</td><td style="color:#f87171;">${escapeHtml(msg)}</td></tr></table></div>`;
-    }
+        let currentStudentData = null;
+        let currentDueAmount = 0;
+        let allRecords = [];
+        let isAdminLoggedIn = false;
+        let currentScript = null;
 
-    // ===== CHECK FEE =====
-    function checkFee() {
-        const mobile = document.getElementById("mobile").value.trim();
-        if (mobile.length !== 10 || isNaN(mobile)) {
-            showToast("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.", true);
-            return;
-        }
-        const btn = document.getElementById("checkBtn");
-        btn.disabled = true;
-        document.getElementById("loader").style.display = "block";
-        document.getElementById("result").innerHTML = "";
-        if (currentScript && document.head.contains(currentScript)) document.head.removeChild(currentScript);
-        const callbackName = "callback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
-        window[callbackName] = function(data) {
-            delete window[callbackName];
-            btn.disabled = false;
-            document.getElementById("loader").style.display = "none";
-            if (data && data.success === true) {
-                if (!data.mobile && mobile) data.mobile = mobile;
-                displayResult(data);
-                document.getElementById("result").scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                showToast(data?.message || "❌ വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.", true);
+        // ============================================================
+        // STARS
+        // ============================================================
+        function generateStars() {
+            const container = document.getElementById('starContainer');
+            if (!container) return;
+            container.innerHTML = '';
+            const count = window.innerWidth < 700 ? 90 : 140;
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                let sz = Math.random() * 3 + 1;
+                star.style.width = sz + 'px';
+                star.style.height = sz + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 4 + 's';
+                star.style.animationDuration = Math.random() * 2.5 + 1.5 + 's';
+                container.appendChild(star);
             }
-        };
-        const script = document.createElement("script");
-        script.src = `${API_URL}?mobile=${mobile}&callback=${callbackName}`;
-        script.onerror = () => { delete window[callbackName]; btn.disabled = false; document.getElementById("loader").style.display = "none"; showToast("❌ API ബന്ധപെടാനായില്ല. നെറ്റ്വർക്ക് പരിശോധിക്കുക.", true); };
-        currentScript = script;
-        document.head.appendChild(script);
-    }
+        }
+        window.addEventListener('resize', generateStars);
+        generateStars();
 
-    // ============================================================
-    // COMPLAINT
-    // ============================================================
-    function setupComplaintActions() {
-        const mailBtn = document.getElementById("mailComplaintBtn");
-        const whatsappBtn = document.getElementById("whatsappComplaintBtn");
-        const callBtn = document.getElementById("callComplaintBtn");
+        // ============================================================
+        // TOAST
+        // ============================================================
+        function showToast(msg, isErr = false) {
+            const t = document.getElementById("toastMsg");
+            t.textContent = msg;
+            t.style.background = isErr ? "#dc2626" : "#0f172a";
+            t.classList.add("show");
+            clearTimeout(t._hideTimer);
+            t._hideTimer = setTimeout(() => t.classList.remove("show"), 2600);
+        }
 
-        if (mailBtn) {
-            mailBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                const subject = encodeURIComponent("Noorussalam Madrasa - Fee Complaint");
-                const body = encodeURIComponent(`ഉസ്താദേ,\n\nഎന്റെ വരിസംഖ്യ സംബന്ധിച്ച് ഒരു പരാതി ഉണ്ട്.\nമൊബൈൽ: ${document.getElementById("mobile").value || "---"}\n\nവിശദാംശങ്ങൾ: \n\n(ദയവായി പ്രശ്നം ചേർക്കുക)\n\nനന്ദി.`);
-                window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
-                showToast("📧 ഇമെയിൽ തുറക്കുന്നു...", false);
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str).replace(/[&<>"]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                return m;
             });
         }
-        if (whatsappBtn) {
-            whatsappBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                const mobileNumber = document.getElementById("mobile").value.trim();
-                const defaultMsg = `അസ്സലാമുഅലൈകും ${SUPPORT_NAME},\n\nവരിസംഖ്യ സംബന്ധിച്ച് പരാതി.\nമൊബൈൽ: ${mobileNumber || "നൽകിയിട്ടില്ല"}\n\nപ്രശ്നം: `;
-                window.open(`https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent(defaultMsg)}`, "_blank");
-                showToast("📱 WhatsApp തുറക്കുന്നു...", false);
-            });
-        }
-        if (callBtn) {
-            callBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                window.location.href = `tel:${SUPPORT_PHONE}`;
-                showToast("📞 കോൾ ചെയ്യുന്നു...", false);
-            });
-        }
-    }
 
-    const complaintBtn = document.getElementById("complaintToggleBtn");
-    const complaintInfoBox = document.getElementById("complaintInfoBox");
-    if (complaintBtn && complaintInfoBox) {
-        complaintBtn.addEventListener("click", () => {
-            if (complaintInfoBox.style.display === "none" || complaintInfoBox.style.display === "") {
-                complaintInfoBox.style.display = "block";
-                complaintBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> പരാതി ഉന്നയിക്കുക <i class="fas fa-chevron-up" style="font-size:0.7rem;"></i>';
-                showToast("📢 പരാതി വിവരങ്ങൾ തുറന്നു", false);
-                setupComplaintActions();
-            } else {
-                complaintInfoBox.style.display = "none";
-                complaintBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> പരാതി ഉന്നയിക്കുക <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i>';
+        // ===== FORMAT MONTH =====
+        function formatMonthForDisplay(monthInput) {
+            if (monthInput == null) return "---";
+            if (monthInput instanceof Date) {
+                const year = monthInput.getFullYear();
+                const month = String(monthInput.getMonth() + 1).padStart(2, '0');
+                monthInput = year + "-" + month;
             }
-        });
-    }
+            const str = String(monthInput);
+            if (str === "") return "---";
+            const parts = str.split("-");
+            if (parts.length !== 2) return str;
+            const year = parts[0];
+            const month = parseInt(parts[1]);
+            if (isNaN(month) || month < 1 || month > 12) return str;
+            const monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
+                                "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"];
+            return monthNames[month - 1] + " " + year;
+        }
 
-    document.getElementById("mobile").addEventListener("keypress", e => { if (e.key === "Enter") checkFee(); });
-    document.getElementById("mobile").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
+        // ===== DATE FORMATTER =====
+        function formatDateToDDMMYYYY(dateStr) {
+            if (!dateStr) return "";
+            try {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return String(dateStr);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return day + "/" + month + "/" + year;
+            } catch(e) {
+                return String(dateStr);
+            }
+        }
 
-    // ============================================================
-    // ADMIN API HELPERS
-    // ============================================================
-    function jsonpRequest(params, callback) {
-        return new Promise((resolve, reject) => {
-            const cbName = "jsonp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
-            window[cbName] = function(data) { delete window[cbName]; resolve(data); };
+        function getCurrentMonth() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            return year + "-" + month;
+        }
+
+        // ============================================================
+        // PUBLIC FEE CHECK
+        // ============================================================
+        function calculateTotalPending(pendingMonths, previousBalance) {
+            return ((pendingMonths || 0) * MONTHLY_FEE) + (previousBalance || 0);
+        }
+
+        function generateWhatsAppMessage(data) {
+            let msg = `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${UPI_ID}\n\nവിശദ വിവരങ്ങൾക്ക് ${SUPPORT_PHONE} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
+            return msg;
+        }
+
+        function initiateGooglePay(amount, studentName, mobile) {
+            if (!amount || amount <= 0) { alert("അടയ്ക്കേണ്ട തുക ശരിയായി നൽകുക."); return false; }
+            const payAmount = parseFloat(amount).toFixed(2);
+            const description = `${NOTE} - ${studentName} (${mobile}) - ₹${payAmount}`;
+            const upiLink = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${payAmount}&cu=${CURRENCY}&tn=${encodeURIComponent(description)}`;
+            const anchor = document.createElement('a');
+            anchor.href = upiLink;
+            anchor.target = "_blank";
+            document.body.appendChild(anchor);
+            anchor.click();
+            setTimeout(() => document.body.removeChild(anchor), 300);
+            return true;
+        }
+
+        // ===== DISPLAY RESULT INLINE =====
+        function displayResult(data) {
+            const pendingMonths = data.pendingMonths || 0;
+            const previousBalance = data.previousBalance || 0;
+            const totalPending = calculateTotalPending(pendingMonths, previousBalance);
+            data.totalPending = totalPending;
+
+            let formattedDate = data.lastPaidDateFormatted || "";
+            if (!formattedDate && data.lastPaidDate) {
+                formattedDate = formatDateToDDMMYYYY(data.lastPaidDate);
+            }
+
+            const whatsappMsg = generateWhatsAppMessage(data);
+            const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
+
+            currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending };
+            currentDueAmount = totalPending;
+
+            let html = `
+                <div class="result-card">
+                    <table class="info-table">
+                        <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
+                        ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
+                        <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td><strong>${escapeHtml(data.lastPaidMonth || "---")}</strong></td></tr>
+                        <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td><strong style="color:#fbbf24;">${escapeHtml(formattedDate || "---")}</strong></td></tr>
+                        <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${MONTHLY_FEE} = ₹${(pendingMonths * MONTHLY_FEE).toLocaleString()}</td></tr>
+                        ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
+                        <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
+                    </table>
+                    <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
+                </div>
+                <div class="gpay-section-wrapper" id="gpaySectionWrapper">
+                    <div class="gpay-container">
+                        <div style="text-align:center;"><span class="due-amount-badge" id="dueAmountBadge">📋 നിലവിലെ ബാക്കി: ₹${totalPending.toLocaleString()}</span></div>
+                        <div class="amount-editor">
+                            <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
+                            <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="${totalPending > 0 ? totalPending : ''}" placeholder="തുക നൽകുക"></div>
+                            <div class="amount-hint" style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.</div>
+                            <div id="advanceWarningBox" class="advance-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്.</div>
+                        </div>
+                        <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
+                        <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ${UPI_ID}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById("result").innerHTML = html;
+
+            const amountInput = document.getElementById("payAmount");
+            if (amountInput) {
+                amountInput.min = 1;
+            }
+            const warnBox = document.getElementById("advanceWarningBox");
+            const checkAdvance = () => {
+                let val = parseFloat(amountInput.value);
+                if (!isNaN(val) && totalPending > 0 && val > totalPending) warnBox.style.display = "flex";
+                else warnBox.style.display = "none";
+            };
+            if (amountInput) {
+                amountInput.removeEventListener("input", checkAdvance);
+                amountInput.addEventListener("input", checkAdvance);
+            }
+            const oldBtn = document.getElementById("googlePayBtn");
+            if (oldBtn) {
+                const newBtn = oldBtn.cloneNode(true);
+                oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+                newBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    let customAmount = parseFloat(document.getElementById("payAmount").value);
+                    if (isNaN(customAmount) || customAmount <= 0) { alert("ദയവായി ശരിയായ തുക നൽകുക"); return; }
+                    initiateGooglePay(customAmount, currentStudentData.parentName, currentStudentData.mobile);
+                });
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById("result").innerHTML = `<div class="result-card"><table class="info-table"><tr><td>⚠️ പിശക്</td><td style="color:#f87171;">${escapeHtml(msg)}</td></tr></table></div>`;
+        }
+
+        // ===== CHECK FEE =====
+        function checkFee() {
+            const mobile = document.getElementById("mobile").value.trim();
+            if (mobile.length !== 10 || isNaN(mobile)) {
+                showToast("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.", true);
+                return;
+            }
+            const btn = document.getElementById("checkBtn");
+            btn.disabled = true;
+            document.getElementById("loader").style.display = "block";
+            document.getElementById("result").innerHTML = "";
+            if (currentScript && document.head.contains(currentScript)) document.head.removeChild(currentScript);
+            const callbackName = "callback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
+            window[callbackName] = function(data) {
+                delete window[callbackName];
+                btn.disabled = false;
+                document.getElementById("loader").style.display = "none";
+                if (data && data.success === true) {
+                    if (!data.mobile && mobile) data.mobile = mobile;
+                    displayResult(data);
+                    document.getElementById("result").scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    showToast(data?.message || "❌ വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.", true);
+                }
+            };
             const script = document.createElement("script");
-            let url = API_URL + "?" + params + "&callback=" + cbName;
-            script.src = url;
-            script.onerror = () => { delete window[cbName]; reject(new Error("JSONP request failed")); };
+            script.src = `${API_URL}?mobile=${mobile}&callback=${callbackName}`;
+            script.onerror = () => { delete window[callbackName]; btn.disabled = false; document.getElementById("loader").style.display = "none"; showToast("❌ API ബന്ധപെടാനായില്ല. നെറ്റ്വർക്ക് പരിശോധിക്കുക.", true); };
+            currentScript = script;
             document.head.appendChild(script);
-            setTimeout(() => { if (window[cbName]) { delete window[cbName]; reject(new Error("JSONP timeout")); } }, 15000);
-        });
-    }
-
-    function adminApiGet(action, extraParams = "") {
-        let params = "action=" + encodeURIComponent(action);
-        if (extraParams) params += "&" + extraParams;
-        return jsonpRequest(params);
-    }
-
-    async function adminApiPost(action, payload) {
-        try {
-            const resp = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, ...payload })
-            });
-            return await resp.json();
-        } catch (e) {
-            return { success: false, message: "Network error: " + e.message };
         }
-    }
 
-    // ============================================================
-    // ADMIN LOGIN / LOGOUT
-    // ============================================================
-    async function adminLogin() {
-        const password = document.getElementById("adminPassword").value.trim();
-        const errorEl = document.getElementById("adminLoginError");
-        if (!password) { errorEl.textContent = "❌ Enter password"; return; }
-        errorEl.textContent = "⏳ Checking...";
-        try {
-            const result = await adminApiGet("verifyAdmin", "password=" + encodeURIComponent(password));
-            if (result === true || result === "true") {
-                isAdminLoggedIn = true;
+        // ============================================================
+        // COMPLAINT
+        // ============================================================
+        function setupComplaintActions() {
+            const mailBtn = document.getElementById("mailComplaintBtn");
+            const whatsappBtn = document.getElementById("whatsappComplaintBtn");
+            const callBtn = document.getElementById("callComplaintBtn");
+
+            if (mailBtn) {
+                mailBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    const subject = encodeURIComponent("Noorussalam Madrasa - Fee Complaint");
+                    const body = encodeURIComponent(`ഉസ്താദേ,\n\nഎന്റെ വരിസംഖ്യ സംബന്ധിച്ച് ഒരു പരാതി ഉണ്ട്.\nമൊബൈൽ: ${document.getElementById("mobile").value || "---"}\n\nവിശദാംശങ്ങൾ: \n\n(ദയവായി പ്രശ്നം ചേർക്കുക)\n\nനന്ദി.`);
+                    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+                    showToast("📧 ഇമെയിൽ തുറക്കുന്നു...", false);
+                });
+            }
+            if (whatsappBtn) {
+                whatsappBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    const mobileNumber = document.getElementById("mobile").value.trim();
+                    const defaultMsg = `അസ്സലാമുഅലൈകും ${SUPPORT_NAME},\n\nവരിസംഖ്യ സംബന്ധിച്ച് പരാതി.\nമൊബൈൽ: ${mobileNumber || "നൽകിയിട്ടില്ല"}\n\nപ്രശ്നം: `;
+                    window.open(`https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent(defaultMsg)}`, "_blank");
+                    showToast("📱 WhatsApp തുറക്കുന്നു...", false);
+                });
+            }
+            if (callBtn) {
+                callBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    window.location.href = `tel:${SUPPORT_PHONE}`;
+                    showToast("📞 കോൾ ചെയ്യുന്നു...", false);
+                });
+            }
+        }
+
+        const complaintBtn = document.getElementById("complaintToggleBtn");
+        const complaintInfoBox = document.getElementById("complaintInfoBox");
+        if (complaintBtn && complaintInfoBox) {
+            complaintBtn.addEventListener("click", () => {
+                if (complaintInfoBox.style.display === "none" || complaintInfoBox.style.display === "") {
+                    complaintInfoBox.style.display = "block";
+                    complaintBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> പരാതി ഉന്നയിക്കുക <i class="fas fa-chevron-up" style="font-size:0.7rem;"></i>';
+                    showToast("📢 പരാതി വിവരങ്ങൾ തുറന്നു", false);
+                    setupComplaintActions();
+                } else {
+                    complaintInfoBox.style.display = "none";
+                    complaintBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> പരാതി ഉന്നയിക്കുക <i class="fas fa-chevron-down" style="font-size:0.7rem;"></i>';
+                }
+            });
+        }
+
+        document.getElementById("mobile").addEventListener("keypress", e => { if (e.key === "Enter") checkFee(); });
+        document.getElementById("mobile").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
+
+        // ============================================================
+        // ADMIN API HELPERS
+        // ============================================================
+        function jsonpRequest(params, callback) {
+            return new Promise((resolve, reject) => {
+                const cbName = "jsonp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
+                window[cbName] = function(data) { delete window[cbName]; resolve(data); };
+                const script = document.createElement("script");
+                let url = API_URL + "?" + params + "&callback=" + cbName;
+                script.src = url;
+                script.onerror = () => { delete window[cbName]; reject(new Error("JSONP request failed")); };
+                document.head.appendChild(script);
+                setTimeout(() => { if (window[cbName]) { delete window[cbName]; reject(new Error("JSONP timeout")); } }, 15000);
+            });
+        }
+
+        function adminApiGet(action, extraParams = "") {
+            let params = "action=" + encodeURIComponent(action);
+            if (extraParams) params += "&" + extraParams;
+            return jsonpRequest(params);
+        }
+
+        async function adminApiPost(action, payload) {
+            try {
+                const resp = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...payload })
+                });
+                return await resp.json();
+            } catch (e) {
+                return { success: false, message: "Network error: " + e.message };
+            }
+        }
+
+        // ============================================================
+        // ADMIN LOGIN / LOGOUT
+        // ============================================================
+        async function adminLogin() {
+            const password = document.getElementById("adminPassword").value.trim();
+            const errorEl = document.getElementById("adminLoginError");
+            if (!password) { errorEl.textContent = "❌ Enter password"; return; }
+            errorEl.textContent = "⏳ Checking...";
+            try {
+                const result = await adminApiGet("verifyAdmin", "password=" + encodeURIComponent(password));
+                if (result === true || result === "true") {
+                    isAdminLoggedIn = true;
+                    document.getElementById("adminLoginSection").style.display = "none";
+                    document.getElementById("adminPanelSection").style.display = "block";
+                    errorEl.textContent = "";
+                    document.getElementById("adminPassword").value = "";
+                    loadAdminDashboard();
+                    showToast("✅ Admin login successful", false);
+                } else {
+                    errorEl.textContent = "❌ Wrong password";
+                }
+            } catch (e) {
+                errorEl.textContent = "❌ Connection error: " + e.message;
+            }
+        }
+
+        function adminLogout() {
+            if (confirm("Exit admin panel?")) {
+                isAdminLoggedIn = false;
+                document.getElementById("adminLoginSection").style.display = "block";
+                document.getElementById("adminPanelSection").style.display = "none";
+                document.getElementById("adminPassword").value = "";
+                document.getElementById("adminLoginError").textContent = "";
+                closeAdminPanel();
+                showToast("🔒 Logged out", false);
+            }
+        }
+
+        // ============================================================
+        // ADMIN PANEL OPEN/CLOSE
+        // ============================================================
+        function openAdminPanel() {
+            document.getElementById("adminOverlay").classList.add("active");
+            if (isAdminLoggedIn) {
                 document.getElementById("adminLoginSection").style.display = "none";
                 document.getElementById("adminPanelSection").style.display = "block";
-                errorEl.textContent = "";
-                document.getElementById("adminPassword").value = "";
                 loadAdminDashboard();
-                showToast("✅ Admin login successful", false);
             } else {
-                errorEl.textContent = "❌ Wrong password";
+                document.getElementById("adminLoginSection").style.display = "block";
+                document.getElementById("adminPanelSection").style.display = "none";
+                document.getElementById("adminPassword").value = "";
+                document.getElementById("adminLoginError").textContent = "";
             }
-        } catch (e) {
-            errorEl.textContent = "❌ Connection error: " + e.message;
         }
-    }
 
-    function adminLogout() {
-        if (confirm("Exit admin panel?")) {
-            isAdminLoggedIn = false;
-            document.getElementById("adminLoginSection").style.display = "block";
-            document.getElementById("adminPanelSection").style.display = "none";
-            document.getElementById("adminPassword").value = "";
-            document.getElementById("adminLoginError").textContent = "";
-            closeAdminPanel();
-            showToast("🔒 Logged out", false);
+        function closeAdminPanel() {
+            document.getElementById("adminOverlay").classList.remove("active");
         }
-    }
 
-    // ============================================================
-    // ADMIN PANEL OPEN/CLOSE
-    // ============================================================
-    function openAdminPanel() {
-        document.getElementById("adminOverlay").classList.add("active");
-        if (isAdminLoggedIn) {
-            document.getElementById("adminLoginSection").style.display = "none";
-            document.getElementById("adminPanelSection").style.display = "block";
-            loadAdminDashboard();
-        } else {
-            document.getElementById("adminLoginSection").style.display = "block";
-            document.getElementById("adminPanelSection").style.display = "none";
-            document.getElementById("adminPassword").value = "";
-            document.getElementById("adminLoginError").textContent = "";
+        document.getElementById("adminEntryLink").addEventListener("click", function(e) { e.preventDefault(); openAdminPanel(); });
+
+        let headerTapCount = 0, headerTapTimer = null;
+        document.getElementById("headerDoubleTap").addEventListener("click", function() {
+            headerTapCount++;
+            if (headerTapCount === 1) {
+                headerTapTimer = setTimeout(() => { headerTapCount = 0; }, 500);
+            } else if (headerTapCount >= 2) {
+                clearTimeout(headerTapTimer);
+                headerTapCount = 0;
+                openAdminPanel();
+                showToast("🔐 Opening admin panel...", false);
+            }
+        });
+
+        document.getElementById("adminOverlay").addEventListener("click", function(e) {
+            if (e.target === this) closeAdminPanel();
+        });
+        document.getElementById("adminPassword").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") adminLogin();
+        });
+
+        document.getElementById("studentFormOverlay").addEventListener("click", function(e) {
+            if (e.target === this) closeStudentForm();
+        });
+        document.getElementById("bulkFeeOverlay").addEventListener("click", function(e) {
+            if (e.target === this) closeBulkFeeForm();
+        });
+
+        // ============================================================
+        // ADMIN DASHBOARD
+        // ============================================================
+        async function loadAdminDashboard() {
+            try {
+                const data = await adminApiGet("getDashboardData");
+                if (data && !data.error) {
+                    allRecords = data.records || [];
+                    document.getElementById("statTotal").textContent = data.totalParents || 0;
+                    document.getElementById("statPending").textContent = data.parentsWithBalance || 0;
+                    document.getElementById("statPaid").textContent = data.parentsFullyPaid || 0;
+                    document.getElementById("statAmount").textContent = "₹" + (data.totalPendingAmount || 0).toLocaleString();
+                    document.getElementById("adminLastUpdated").textContent = "Last updated: " + new Date().toLocaleString('en-IN');
+
+                    const settings = await adminApiGet("getSettings");
+                    if (settings && !settings.error) {
+                        document.getElementById("setMonthlyFee").value = settings.monthlyFee || 200;
+                        document.getElementById("setUpiId").value = settings.upiId || "";
+                        document.getElementById("setPayeeName").value = settings.payeeName || "";
+                        document.getElementById("setSupportPhone").value = settings.supportPhone || "";
+                        document.getElementById("setSupportEmail").value = settings.supportEmail || "";
+                    }
+
+                    renderAdminStudents();
+                    renderAdminFees();
+                } else {
+                    showToast("❌ Dashboard data not available", true);
+                }
+            } catch (e) {
+                showToast("❌ Dashboard error: " + e.message, true);
+            }
         }
-    }
 
-    function closeAdminPanel() {
-        document.getElementById("adminOverlay").classList.remove("active");
-    }
-
-    document.getElementById("adminEntryLink").addEventListener("click", function(e) { e.preventDefault(); openAdminPanel(); });
-
-    let headerTapCount = 0, headerTapTimer = null;
-    document.getElementById("headerDoubleTap").addEventListener("click", function() {
-        headerTapCount++;
-        if (headerTapCount === 1) {
-            headerTapTimer = setTimeout(() => { headerTapCount = 0; }, 500);
-        } else if (headerTapCount >= 2) {
-            clearTimeout(headerTapTimer);
-            headerTapCount = 0;
-            openAdminPanel();
-            showToast("🔐 Opening admin panel...", false);
+        // ============================================================
+        // PRINT FUNCTIONS
+        // ============================================================
+        function printStudentList() {
+            switchAdminTab('tabStudents');
+            setTimeout(() => { window.print(); }, 400);
         }
-    });
 
-    document.getElementById("adminOverlay").addEventListener("click", function(e) {
-        if (e.target === this) closeAdminPanel();
-    });
-    document.getElementById("adminPassword").addEventListener("keypress", function(e) {
-        if (e.key === "Enter") adminLogin();
-    });
+        function printFeesList() {
+            switchAdminTab('tabFees');
+            setTimeout(() => { window.print(); }, 400);
+        }
 
-    document.getElementById("studentFormOverlay").addEventListener("click", function(e) {
-        if (e.target === this) closeStudentForm();
-    });
-    document.getElementById("bulkFeeOverlay").addEventListener("click", function(e) {
-        if (e.target === this) closeBulkFeeForm();
-    });
+        // ============================================================
+        // ADMIN STUDENTS LIST
+        // ============================================================
+        function renderAdminStudents() {
+            const wrap = document.getElementById("adminStudentsTableWrap");
+            const search = document.getElementById("adminSearch").value.toLowerCase().trim();
+            const filter = document.getElementById("adminFilter").value;
 
-    // ============================================================
-    // ADMIN DASHBOARD
-    // ============================================================
-    async function loadAdminDashboard() {
-        try {
-            const data = await adminApiGet("getDashboardData");
-            if (data && !data.error) {
-                allRecords = data.records || [];
-                document.getElementById("statTotal").textContent = data.totalParents || 0;
-                document.getElementById("statPending").textContent = data.parentsWithBalance || 0;
-                document.getElementById("statPaid").textContent = data.parentsFullyPaid || 0;
-                document.getElementById("statAmount").textContent = "₹" + (data.totalPendingAmount || 0).toLocaleString();
-                document.getElementById("adminLastUpdated").textContent = "Last updated: " + new Date().toLocaleString('en-IN');
+            let filtered = allRecords.filter(r => {
+                const match = String(r.parentName || "").toLowerCase().includes(search) ||
+                              String(r.mobile || "").includes(search) ||
+                              String(r.studentName || "").toLowerCase().includes(search);
+                if (!match) return false;
+                if (filter === "all") return true;
+                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                if (filter === "pending") return pending > 0;
+                if (filter === "paid") return pending === 0;
+                return true;
+            });
 
+            if (!filtered.length) {
+                wrap.innerHTML = `<div class="admin-empty"><i class="fas fa-users"></i><h4>No students found</h4><p style="font-size:0.7rem;margin-top:4px;">Use "Add New" to add a student.</p></div>`;
+                return;
+            }
+
+            let html = `<table>
+                <thead><tr>
+                    <th>#</th><th>Parent</th><th>Student</th><th>Mobile</th>
+                    <th>Last Paid Month</th><th>Due (₹)</th><th>Status</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr></thead><tbody>`;
+
+            filtered.forEach((r, idx) => {
+                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                let statusLabel = '<span class="status-badge paid">Paid</span>';
+                if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
+                else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
+
+                html += `<tr>
+                    <td>${idx+1}</td>
+                    <td><strong>${escapeHtml(r.parentName)}</strong></td>
+                    <td>${escapeHtml(r.studentName || '')}</td>
+                    <td>${escapeHtml(r.mobile)}</td>
+                    <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
+                    <td>₹${pending.toLocaleString()}</td>
+                    <td>${statusLabel}</td>
+                    <td style="text-align:center;">
+                        <div class="admin-actions" style="justify-content:center;flex-wrap:wrap;">
+                            <button class="btn-sm pay" onclick="payMonthlyFee('${escapeHtml(r.mobile)}')" title="Mark fee paid for a month"><i class="fas fa-check"></i></button>
+                            <button class="btn-sm history" onclick="viewPaymentHistory('${escapeHtml(r.mobile)}')" title="Payment History"><i class="fas fa-clock"></i></button>
+                            <button class="btn-sm edit" onclick="openEditStudent('${escapeHtml(r.mobile)}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-sm del" onclick="deleteParentWithConfirm('${escapeHtml(r.mobile)}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            wrap.innerHTML = html;
+        }
+
+        // ============================================================
+        // ADMIN FEES LIST
+        // ============================================================
+        function renderAdminFees() {
+            const wrap = document.getElementById("adminFeesTableWrap");
+            const search = document.getElementById("adminFeeSearch").value.toLowerCase().trim();
+            const filter = document.getElementById("adminFeeFilter").value;
+
+            let filtered = allRecords.filter(r => {
+                const match = String(r.mobile || "").includes(search) ||
+                              String(r.parentName || "").toLowerCase().includes(search);
+                if (!match) return false;
+                if (filter === "all") return true;
+                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                if (filter === "pending") return pending > 0;
+                if (filter === "paid") return pending === 0;
+                return true;
+            });
+
+            if (!filtered.length) {
+                wrap.innerHTML = `<div class="admin-empty"><i class="fas fa-money-bill-wave"></i><h4>No records found</h4></div>`;
+                return;
+            }
+
+            let html = `<table>
+                <thead><tr>
+                    <th>#</th><th>Parent</th><th>Mobile</th>
+                    <th>Last Paid Month</th><th>Months Paid</th><th>Months Pending</th>
+                    <th>Due (₹)</th><th>Status</th>
+                </tr></thead><tbody>`;
+
+            filtered.forEach((r, idx) => {
+                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                let statusLabel = '<span class="status-badge paid">Paid</span>';
+                if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
+                else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
+
+                html += `<tr>
+                    <td>${idx+1}</td>
+                    <td><strong>${escapeHtml(r.parentName)}</strong></td>
+                    <td>${escapeHtml(r.mobile)}</td>
+                    <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
+                    <td>${r.paidMonths || 0}</td>
+                    <td>${r.pendingMonths || 0}</td>
+                    <td>₹${pending.toLocaleString()}</td>
+                    <td>${statusLabel}</td>
+                </tr>`;
+            });
+
+            html += `</tbody></table>`;
+            wrap.innerHTML = html;
+        }
+
+        // ============================================================
+        // ADMIN TABS
+        // ============================================================
+        function switchAdminTab(tabId) {
+            document.querySelectorAll(".admin-tabs .tab").forEach(t => t.classList.remove("active"));
+            document.querySelector(`.admin-tabs .tab[data-tab="${tabId}"]`)?.classList.add("active");
+            document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+            document.getElementById(tabId)?.classList.add("active");
+            if (tabId === "tabStudents") renderAdminStudents();
+            if (tabId === "tabFees") renderAdminFees();
+            if (tabId === "tabSettings") loadSettings();
+        }
+
+        // ============================================================
+        // ADMIN STUDENT CRUD
+        // ============================================================
+        function openAddStudentForm() {
+            document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-plus"></i> Add Student';
+            document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Save';
+            document.getElementById("editStudentMobile").value = "";
+            document.getElementById("fParentName").value = "";
+            document.getElementById("fStudentName").value = "";
+            document.getElementById("fMobile").value = "";
+            document.getElementById("fLastPaidMonth").value = "";
+            document.getElementById("fPaidMonths").value = "0";
+            document.getElementById("fPrevBalance").value = "0";
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById("fLastPaidDate").value = year + "-" + month + "-" + day;
+
+            document.getElementById("studentFormOverlay").classList.add("active");
+        }
+
+        function openEditStudent(mobile) {
+            const record = allRecords.find(r => String(r.mobile) === String(mobile));
+            if (!record) { showToast("❌ Record not found", true); return; }
+
+            document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-edit"></i> Edit Student';
+            document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Update';
+            document.getElementById("editStudentMobile").value = mobile;
+            document.getElementById("fParentName").value = record.parentName || "";
+            document.getElementById("fStudentName").value = record.studentName || "";
+            document.getElementById("fMobile").value = record.mobile || "";
+            document.getElementById("fLastPaidMonth").value = record.lastPaidMonth || "";
+            document.getElementById("fPaidMonths").value = record.paidMonths || 0;
+            document.getElementById("fPrevBalance").value = record.previousBalance || 0;
+            document.getElementById("fLastPaidDate").value = record.lastPaidDate || "";
+
+            document.getElementById("studentFormOverlay").classList.add("active");
+        }
+
+        function closeStudentForm() {
+            document.getElementById("studentFormOverlay").classList.remove("active");
+        }
+
+        async function saveStudent(e) {
+            e.preventDefault();
+            const mobile = document.getElementById("fMobile").value.trim();
+            const parentName = document.getElementById("fParentName").value.trim();
+            const studentName = document.getElementById("fStudentName").value.trim();
+            const lastPaidMonth = document.getElementById("fLastPaidMonth").value;
+            const paidMonths = parseInt(document.getElementById("fPaidMonths").value) || 0;
+            const prevBalance = parseInt(document.getElementById("fPrevBalance").value) || 0;
+            const lastPaidDate = document.getElementById("fLastPaidDate").value;
+
+            if (!parentName) { showToast("Parent name required", true); return; }
+            if (!mobile || mobile.length !== 10) { showToast("10-digit mobile required", true); return; }
+
+            const editMobile = document.getElementById("editStudentMobile").value;
+            let result;
+            if (editMobile) {
+                result = await adminApiPost("updateParent", {
+                    mobile: editMobile,
+                    parentName, studentName, lastPaidMonth, paidMonths,
+                    previousBalance: prevBalance, lastPaidDate
+                });
+            } else {
+                result = await adminApiPost("addNewParent", {
+                    parentName, mobile, studentName, lastPaidMonth,
+                    paidMonths, previousBalance: prevBalance, lastPaidDate
+                });
+            }
+
+            if (result && result.success) {
+                showToast(result.message || "✅ Record saved", false);
+                closeStudentForm();
+                await loadAdminDashboard();
+            } else {
+                showToast(result?.message || "❌ Error occurred", true);
+            }
+        }
+
+        // ============================================================
+        // ADMIN: PAY FEE
+        // ============================================================
+        async function payMonthlyFee(mobile) {
+            const month = prompt("Which month's fee? (YYYY-MM format)", getCurrentMonth());
+            if (!month) return;
+            const amount = prompt("Amount paid (₹):", MONTHLY_FEE);
+            if (!amount) return;
+
+            const result = await adminApiPost("updateFeePayment", {
+                mobile: mobile,
+                month: month,
+                amount: parseInt(amount) || MONTHLY_FEE
+            });
+
+            if (result && result.success) {
+                showToast(result.message, false);
+                await loadAdminDashboard();
+            } else {
+                showToast(result?.message || "❌ Error", true);
+            }
+        }
+
+        // ============================================================
+        // ADMIN: VIEW PAYMENT HISTORY
+        // ============================================================
+        async function viewPaymentHistory(mobile) {
+            const result = await adminApiGet("getPaymentHistory", "mobile=" + encodeURIComponent(mobile));
+            if (result && result.success) {
+                let historyHtml = result.history.map(h =>
+                    `${formatMonthForDisplay(h.month)}: ₹${h.amount} (${h.date})`
+                ).join('\n');
+                alert("📜 Payment History (" + result.parentName + "):\n\n" + (historyHtml || "No payments yet"));
+            } else {
+                showToast(result?.message || "❌ Error", true);
+            }
+        }
+
+        // ============================================================
+        // ADMIN: DELETE PARENT
+        // ============================================================
+        async function deleteParentWithConfirm(mobile) {
+            const parentName = allRecords.find(r => String(r.mobile) === String(mobile))?.parentName || mobile;
+            if (!confirm(`⚠️ Delete all records for "${parentName}"?\n\nThis cannot be undone!`)) return;
+
+            const result = await adminApiPost("deleteParent", { mobile: mobile });
+            if (result && result.success) {
+                showToast(result.message, false);
+                await loadAdminDashboard();
+            } else {
+                showToast(result?.message || "❌ Error", true);
+            }
+        }
+
+        // ============================================================
+        // ADMIN: BULK FEE UPDATE
+        // ============================================================
+        function openBulkFeeForm() {
+            document.getElementById("bulkMonth").value = "";
+            document.getElementById("bulkPaidMonths").value = "";
+            document.getElementById("bulkFeeOverlay").classList.add("active");
+        }
+
+        function closeBulkFeeForm() {
+            document.getElementById("bulkFeeOverlay").classList.remove("active");
+        }
+
+        async function applyBulkUpdate(e) {
+            e.preventDefault();
+            const month = document.getElementById("bulkMonth").value;
+            const paidMonths = document.getElementById("bulkPaidMonths").value;
+
+            if (!month) { showToast("Please select a month", true); return; }
+
+            const payload = { lastPaidMonth: month };
+            if (paidMonths !== "") {
+                const val = parseInt(paidMonths);
+                if (!isNaN(val) && val >= 0) payload.paidMonths = val;
+            }
+
+            const result = await adminApiPost("bulkUpdate", payload);
+            if (result && result.success) {
+                showToast(result.message || "✅ Bulk update complete", false);
+                closeBulkFeeForm();
+                await loadAdminDashboard();
+            } else {
+                showToast(result?.message || "❌ Error", true);
+            }
+        }
+
+        // ============================================================
+        // ADMIN: SETTINGS
+        // ============================================================
+        async function saveSettings(e) {
+            e.preventDefault();
+            const monthlyFee = document.getElementById("setMonthlyFee").value;
+            const upiId = document.getElementById("setUpiId").value.trim();
+            const payeeName = document.getElementById("setPayeeName").value.trim();
+            const supportPhone = document.getElementById("setSupportPhone").value.trim();
+            const supportEmail = document.getElementById("setSupportEmail").value.trim();
+
+            if (!monthlyFee || monthlyFee <= 0) { showToast("Enter valid fee amount", true); return; }
+            if (!upiId) { showToast("Enter UPI ID", true); return; }
+
+            const result = await adminApiPost("updateSettings", {
+                monthlyFee: parseInt(monthlyFee),
+                upiId, payeeName, supportPhone, supportEmail
+            });
+
+            if (result && result.success) {
+                showToast(result.message, false);
+                await loadAdminDashboard();
+            } else {
+                showToast(result?.message || "❌ Error", true);
+            }
+        }
+
+        async function loadSettings() {
+            try {
                 const settings = await adminApiGet("getSettings");
                 if (settings && !settings.error) {
                     document.getElementById("setMonthlyFee").value = settings.monthlyFee || 200;
@@ -1302,387 +1678,27 @@
                     document.getElementById("setSupportPhone").value = settings.supportPhone || "";
                     document.getElementById("setSupportEmail").value = settings.supportEmail || "";
                 }
+            } catch(e) {}
+        }
 
-                renderAdminStudents();
-                renderAdminFees();
-            } else {
-                showToast("❌ Dashboard data not available", true);
+        // ============================================================
+        // KEYBOARD SHORTCUTS
+        // ============================================================
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+                if (document.getElementById("adminOverlay").classList.contains("active")) closeAdminPanel();
+                if (document.getElementById("studentFormOverlay").classList.contains("active")) closeStudentForm();
+                if (document.getElementById("bulkFeeOverlay").classList.contains("active")) closeBulkFeeForm();
             }
-        } catch (e) {
-            showToast("❌ Dashboard error: " + e.message, true);
-        }
-    }
-
-    // ============================================================
-    // PRINT FUNCTIONS
-    // ============================================================
-    function printStudentList() {
-        switchAdminTab('tabStudents');
-        setTimeout(() => { window.print(); }, 400);
-    }
-
-    function printFeesList() {
-        switchAdminTab('tabFees');
-        setTimeout(() => { window.print(); }, 400);
-    }
-
-    // ============================================================
-    // ADMIN STUDENTS LIST
-    // ============================================================
-    function renderAdminStudents() {
-        const wrap = document.getElementById("adminStudentsTableWrap");
-        const search = document.getElementById("adminSearch").value.toLowerCase().trim();
-        const filter = document.getElementById("adminFilter").value;
-
-        let filtered = allRecords.filter(r => {
-            const match = String(r.parentName || "").toLowerCase().includes(search) ||
-                          String(r.mobile || "").includes(search) ||
-                          String(r.studentName || "").toLowerCase().includes(search);
-            if (!match) return false;
-            if (filter === "all") return true;
-            const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
-            if (filter === "pending") return pending > 0;
-            if (filter === "paid") return pending === 0;
-            return true;
         });
 
-        if (!filtered.length) {
-            wrap.innerHTML = `<div class="admin-empty"><i class="fas fa-users"></i><h4>No students found</h4><p style="font-size:0.7rem;margin-top:4px;">Use "Add New" to add a student.</p></div>`;
-            return;
-        }
-
-        let html = `<table>
-            <thead><tr>
-                <th>#</th><th>Parent</th><th>Student</th><th>Mobile</th>
-                <th>Last Paid Month</th><th>Due (₹)</th><th>Status</th>
-                <th style="text-align:center;">Actions</th>
-            </tr></thead><tbody>`;
-
-        filtered.forEach((r, idx) => {
-            const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
-            let statusLabel = '<span class="status-badge paid">Paid</span>';
-            if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
-            else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
-
-            html += `<tr>
-                <td>${idx+1}</td>
-                <td><strong>${escapeHtml(r.parentName)}</strong></td>
-                <td>${escapeHtml(r.studentName || '')}</td>
-                <td>${escapeHtml(r.mobile)}</td>
-                <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
-                <td>₹${pending.toLocaleString()}</td>
-                <td>${statusLabel}</td>
-                <td style="text-align:center;">
-                    <div class="admin-actions" style="justify-content:center;flex-wrap:wrap;">
-                        <button class="btn-sm pay" onclick="payMonthlyFee('${escapeHtml(r.mobile)}')" title="Mark fee paid for a month"><i class="fas fa-check"></i></button>
-                        <button class="btn-sm history" onclick="viewPaymentHistory('${escapeHtml(r.mobile)}')" title="Payment History"><i class="fas fa-clock"></i></button>
-                        <button class="btn-sm edit" onclick="openEditStudent('${escapeHtml(r.mobile)}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn-sm del" onclick="deleteParentWithConfirm('${escapeHtml(r.mobile)}')"><i class="fas fa-trash"></i></button>
-                    </div>
-                </td>
-            </tr>`;
-        });
-
-        html += `</tbody></table>`;
-        wrap.innerHTML = html;
-    }
-
-    // ============================================================
-    // ADMIN FEES LIST
-    // ============================================================
-    function renderAdminFees() {
-        const wrap = document.getElementById("adminFeesTableWrap");
-        const search = document.getElementById("adminFeeSearch").value.toLowerCase().trim();
-        const filter = document.getElementById("adminFeeFilter").value;
-
-        let filtered = allRecords.filter(r => {
-            const match = String(r.mobile || "").includes(search) ||
-                          String(r.parentName || "").toLowerCase().includes(search);
-            if (!match) return false;
-            if (filter === "all") return true;
-            const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
-            if (filter === "pending") return pending > 0;
-            if (filter === "paid") return pending === 0;
-            return true;
-        });
-
-        if (!filtered.length) {
-            wrap.innerHTML = `<div class="admin-empty"><i class="fas fa-money-bill-wave"></i><h4>No records found</h4></div>`;
-            return;
-        }
-
-        let html = `<table>
-            <thead><tr>
-                <th>#</th><th>Parent</th><th>Mobile</th>
-                <th>Last Paid Month</th><th>Months Paid</th><th>Months Pending</th>
-                <th>Due (₹)</th><th>Status</th>
-            </tr></thead><tbody>`;
-
-        filtered.forEach((r, idx) => {
-            const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
-            let statusLabel = '<span class="status-badge paid">Paid</span>';
-            if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
-            else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
-
-            html += `<tr>
-                <td>${idx+1}</td>
-                <td><strong>${escapeHtml(r.parentName)}</strong></td>
-                <td>${escapeHtml(r.mobile)}</td>
-                <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
-                <td>${r.paidMonths || 0}</td>
-                <td>${r.pendingMonths || 0}</td>
-                <td>₹${pending.toLocaleString()}</td>
-                <td>${statusLabel}</td>
-            </tr>`;
-        });
-
-        html += `</tbody></table>`;
-        wrap.innerHTML = html;
-    }
-
-    // ============================================================
-    // ADMIN TABS
-    // ============================================================
-    function switchAdminTab(tabId) {
-        document.querySelectorAll(".admin-tabs .tab").forEach(t => t.classList.remove("active"));
-        document.querySelector(`.admin-tabs .tab[data-tab="${tabId}"]`)?.classList.add("active");
-        document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
-        document.getElementById(tabId)?.classList.add("active");
-        if (tabId === "tabStudents") renderAdminStudents();
-        if (tabId === "tabFees") renderAdminFees();
-        if (tabId === "tabSettings") loadSettings();
-    }
-
-    // ============================================================
-    // ADMIN STUDENT CRUD
-    // ============================================================
-    function openAddStudentForm() {
-        document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-plus"></i> Add Student';
-        document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Save';
-        document.getElementById("editStudentMobile").value = "";
-        document.getElementById("fParentName").value = "";
-        document.getElementById("fStudentName").value = "";
-        document.getElementById("fMobile").value = "";
-        document.getElementById("fLastPaidMonth").value = "";
-        document.getElementById("fPaidMonths").value = "0";
-        document.getElementById("fPrevBalance").value = "0";
-
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        document.getElementById("fLastPaidDate").value = year + "-" + month + "-" + day;
-
-        document.getElementById("studentFormOverlay").classList.add("active");
-    }
-
-    function openEditStudent(mobile) {
-        const record = allRecords.find(r => String(r.mobile) === String(mobile));
-        if (!record) { showToast("❌ Record not found", true); return; }
-
-        document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-edit"></i> Edit Student';
-        document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Update';
-        document.getElementById("editStudentMobile").value = mobile;
-        document.getElementById("fParentName").value = record.parentName || "";
-        document.getElementById("fStudentName").value = record.studentName || "";
-        document.getElementById("fMobile").value = record.mobile || "";
-        document.getElementById("fLastPaidMonth").value = record.lastPaidMonth || "";
-        document.getElementById("fPaidMonths").value = record.paidMonths || 0;
-        document.getElementById("fPrevBalance").value = record.previousBalance || 0;
-        document.getElementById("fLastPaidDate").value = record.lastPaidDate || "";
-
-        document.getElementById("studentFormOverlay").classList.add("active");
-    }
-
-    function closeStudentForm() {
-        document.getElementById("studentFormOverlay").classList.remove("active");
-    }
-
-    async function saveStudent(e) {
-        e.preventDefault();
-        const mobile = document.getElementById("fMobile").value.trim();
-        const parentName = document.getElementById("fParentName").value.trim();
-        const studentName = document.getElementById("fStudentName").value.trim();
-        const lastPaidMonth = document.getElementById("fLastPaidMonth").value;
-        const paidMonths = parseInt(document.getElementById("fPaidMonths").value) || 0;
-        const prevBalance = parseInt(document.getElementById("fPrevBalance").value) || 0;
-        const lastPaidDate = document.getElementById("fLastPaidDate").value;
-
-        if (!parentName) { showToast("Parent name required", true); return; }
-        if (!mobile || mobile.length !== 10) { showToast("10-digit mobile required", true); return; }
-
-        const editMobile = document.getElementById("editStudentMobile").value;
-        let result;
-        if (editMobile) {
-            result = await adminApiPost("updateParent", {
-                mobile: editMobile,
-                parentName, studentName, lastPaidMonth, paidMonths,
-                previousBalance: prevBalance, lastPaidDate
-            });
-        } else {
-            result = await adminApiPost("addNewParent", {
-                parentName, mobile, studentName, lastPaidMonth,
-                paidMonths, previousBalance: prevBalance, lastPaidDate
-            });
-        }
-
-        if (result && result.success) {
-            showToast(result.message || "✅ Record saved", false);
-            closeStudentForm();
-            await loadAdminDashboard();
-        } else {
-            showToast(result?.message || "❌ Error occurred", true);
-        }
-    }
-
-    // ============================================================
-    // ADMIN: PAY FEE
-    // ============================================================
-    async function payMonthlyFee(mobile) {
-        const month = prompt("Which month's fee? (YYYY-MM format)", getCurrentMonth());
-        if (!month) return;
-        const amount = prompt("Amount paid (₹):", MONTHLY_FEE);
-        if (!amount) return;
-
-        const result = await adminApiPost("updateFeePayment", {
-            mobile: mobile,
-            month: month,
-            amount: parseInt(amount) || MONTHLY_FEE
-        });
-
-        if (result && result.success) {
-            showToast(result.message, false);
-            await loadAdminDashboard();
-        } else {
-            showToast(result?.message || "❌ Error", true);
-        }
-    }
-
-    // ============================================================
-    // ADMIN: VIEW PAYMENT HISTORY
-    // ============================================================
-    async function viewPaymentHistory(mobile) {
-        const result = await adminApiGet("getPaymentHistory", "mobile=" + encodeURIComponent(mobile));
-        if (result && result.success) {
-            let historyHtml = result.history.map(h =>
-                `${formatMonthForDisplay(h.month)}: ₹${h.amount} (${h.date})`
-            ).join('\n');
-            alert("📜 Payment History (" + result.parentName + "):\n\n" + (historyHtml || "No payments yet"));
-        } else {
-            showToast(result?.message || "❌ Error", true);
-        }
-    }
-
-    // ============================================================
-    // ADMIN: DELETE PARENT
-    // ============================================================
-    async function deleteParentWithConfirm(mobile) {
-        const parentName = allRecords.find(r => String(r.mobile) === String(mobile))?.parentName || mobile;
-        if (!confirm(`⚠️ Delete all records for "${parentName}"?\n\nThis cannot be undone!`)) return;
-
-        const result = await adminApiPost("deleteParent", { mobile: mobile });
-        if (result && result.success) {
-            showToast(result.message, false);
-            await loadAdminDashboard();
-        } else {
-            showToast(result?.message || "❌ Error", true);
-        }
-    }
-
-    // ============================================================
-    // ADMIN: BULK FEE UPDATE
-    // ============================================================
-    function openBulkFeeForm() {
-        document.getElementById("bulkMonth").value = "";
-        document.getElementById("bulkPaidMonths").value = "";
-        document.getElementById("bulkFeeOverlay").classList.add("active");
-    }
-
-    function closeBulkFeeForm() {
-        document.getElementById("bulkFeeOverlay").classList.remove("active");
-    }
-
-    async function applyBulkUpdate(e) {
-        e.preventDefault();
-        const month = document.getElementById("bulkMonth").value;
-        const paidMonths = document.getElementById("bulkPaidMonths").value;
-
-        if (!month) { showToast("Please select a month", true); return; }
-
-        const payload = { lastPaidMonth: month };
-        if (paidMonths !== "") {
-            const val = parseInt(paidMonths);
-            if (!isNaN(val) && val >= 0) payload.paidMonths = val;
-        }
-
-        const result = await adminApiPost("bulkUpdate", payload);
-        if (result && result.success) {
-            showToast(result.message || "✅ Bulk update complete", false);
-            closeBulkFeeForm();
-            await loadAdminDashboard();
-        } else {
-            showToast(result?.message || "❌ Error", true);
-        }
-    }
-
-    // ============================================================
-    // ADMIN: SETTINGS
-    // ============================================================
-    async function saveSettings(e) {
-        e.preventDefault();
-        const monthlyFee = document.getElementById("setMonthlyFee").value;
-        const upiId = document.getElementById("setUpiId").value.trim();
-        const payeeName = document.getElementById("setPayeeName").value.trim();
-        const supportPhone = document.getElementById("setSupportPhone").value.trim();
-        const supportEmail = document.getElementById("setSupportEmail").value.trim();
-
-        if (!monthlyFee || monthlyFee <= 0) { showToast("Enter valid fee amount", true); return; }
-        if (!upiId) { showToast("Enter UPI ID", true); return; }
-
-        const result = await adminApiPost("updateSettings", {
-            monthlyFee: parseInt(monthlyFee),
-            upiId, payeeName, supportPhone, supportEmail
-        });
-
-        if (result && result.success) {
-            showToast(result.message, false);
-            await loadAdminDashboard();
-        } else {
-            showToast(result?.message || "❌ Error", true);
-        }
-    }
-
-    async function loadSettings() {
-        try {
-            const settings = await adminApiGet("getSettings");
-            if (settings && !settings.error) {
-                document.getElementById("setMonthlyFee").value = settings.monthlyFee || 200;
-                document.getElementById("setUpiId").value = settings.upiId || "";
-                document.getElementById("setPayeeName").value = settings.payeeName || "";
-                document.getElementById("setSupportPhone").value = settings.supportPhone || "";
-                document.getElementById("setSupportEmail").value = settings.supportEmail || "";
-            }
-        } catch(e) {}
-    }
-
-    // ============================================================
-    // KEYBOARD SHORTCUTS
-    // ============================================================
-    document.addEventListener("keydown", function(e) {
-        if (e.key === "Escape") {
-            if (document.getElementById("adminOverlay").classList.contains("active")) closeAdminPanel();
-            if (document.getElementById("studentFormOverlay").classList.contains("active")) closeStudentForm();
-            if (document.getElementById("bulkFeeOverlay").classList.contains("active")) closeBulkFeeForm();
-        }
-    });
-
-    // ============================================================
-    // INIT
-    // ============================================================
-    console.log("🌟 Noorussalam Fee System v6.7 (Full print fixed)");
-    console.log("🔐 Admin: Click 'Admin' in footer or double-tap header.");
-    if (complaintInfoBox && complaintInfoBox.style.display === "block") setupComplaintActions();
-    console.log("📡 API URL:", API_URL);
-</script>
+        // ============================================================
+        // INIT
+        // ============================================================
+        console.log("🌟 Noorussalam Fee System v6.8 (Print fixed: hide student & actions, fit A4)");
+        console.log("🔐 Admin: Click 'Admin' in footer or double-tap header.");
+        if (complaintInfoBox && complaintInfoBox.style.display === "block") setupComplaintActions();
+        console.log("📡 API URL:", API_URL);
+    </script>
 </body>
 </html>
