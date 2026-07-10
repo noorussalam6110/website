@@ -9,7 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
   <style>
-    /* ===== All CSS from original design (unchanged) ===== */
+    /* ===== RESET & BASE ===== */
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     body { font-family:'Anek Malayalam',sans-serif; background:linear-gradient(135deg,#0b1120 0%,#1a2332 40%,#0d1b2a 100%); min-height:100vh; padding:16px; display:flex; justify-content:center; align-items:center; position:relative; overflow-x:hidden; }
     body::before { content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(ellipse at 20% 50%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(251,191,36,0.08) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(236,72,153,0.06) 0%,transparent 50%); animation:rotateBg 30s linear infinite; pointer-events:none; z-index:0; }
@@ -373,7 +373,7 @@
     // ============================================================
     // CONFIGURATION
     // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycby9VDFqePVQkgR9kpxCOxsOKGfsOB4VZLiyyxapbYjqp7njJJw3OZQSFj3K2tu3vgA8/exec"; // REPLACE THIS
+    const API_URL = "https://script.google.com/macros/s/AKfycbzR7rj7wQFOtbMfv_Eu4uw05aAQdiqhGQzuGBVT9D8mz_VUj8R0AiAYuC4UVmv3uGkp/exec"; // REPLACE THIS
     const ADMIN_PASSWORD = "madrasa2026";
     const MONTHLY_FEE = 200;
 
@@ -383,31 +383,105 @@
     // ============================================================
     // STARS, TOAST, HELPERS
     // ============================================================
-    function generateStars() { /* same as original */ }
-    window.onload = function() {
-      generateStars();
-      // check if mobile param in URL
-      const params = new URLSearchParams(window.location.search);
-      const mob = params.get('mobile');
-      if (mob) {
-        document.getElementById('mobile').value = mob;
-        checkFee();
+    function generateStars() {
+      const container = document.getElementById('starContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      const count = window.innerWidth < 700 ? 90 : 140;
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        let sz = Math.random() * 3 + 1;
+        star.style.width = sz + 'px';
+        star.style.height = sz + 'px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 4 + 's';
+        star.style.animationDuration = Math.random() * 2.5 + 1.5 + 's';
+        container.appendChild(star);
       }
-    };
-    function generateStars() { /* ... original ... */ }
-    function showToast(msg, isErr) { /* original */ }
-    function escapeHtml(str) { /* original */ }
-    function formatMonthForDisplay(monthInput) { /* original */ }
-    function formatMonthToEnglish(monthStr) { /* original */ }
-    function formatDateToDDMMYYYY(dateStr) { /* original */ }
-    function getCurrentMonth() { /* original */ }
+    }
+    window.addEventListener('resize', generateStars);
+    generateStars();
+
+    function showToast(msg, isErr = false) {
+      const t = document.getElementById("toastMsg");
+      t.textContent = msg;
+      t.style.background = isErr ? "#dc2626" : "#0f172a";
+      t.classList.add("show");
+      clearTimeout(t._hideTimer);
+      t._hideTimer = setTimeout(() => t.classList.remove("show"), 2600);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/[&<>"]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        if (m === '"') return '&quot;';
+        return m;
+      });
+    }
+
+    function formatMonthForDisplay(monthInput) {
+      if (monthInput == null) return "---";
+      if (monthInput instanceof Date) {
+        const year = monthInput.getFullYear();
+        const month = String(monthInput.getMonth() + 1).padStart(2, '0');
+        monthInput = year + "-" + month;
+      }
+      const str = String(monthInput);
+      if (str === "") return "---";
+      const parts = str.split("-");
+      if (parts.length !== 2) return str;
+      const year = parts[0];
+      const month = parseInt(parts[1]);
+      if (isNaN(month) || month < 1 || month > 12) return str;
+      const monthNames = ["ജനുവരി", "ഫെബ്രുവരി", "മാർച്ച്", "ഏപ്രിൽ", "മേയ്", "ജൂൺ",
+        "ജൂലൈ", "ഓഗസ്റ്റ്", "സെപ്റ്റംബർ", "ഒക്ടോബർ", "നവംബർ", "ഡിസംബർ"
+      ];
+      return monthNames[month - 1] + " " + year;
+    }
+
+    function formatMonthToEnglish(monthStr) {
+      if (!monthStr) return '---';
+      const parts = monthStr.split('-');
+      if (parts.length !== 2) return monthStr;
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      return months[parseInt(parts[1])-1] + ' ' + parts[0];
+    }
+
+    function formatDateToDDMMYYYY(dateStr) {
+      if (!dateStr) return "";
+      try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return String(dateStr);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return day + "/" + month + "/" + year;
+      } catch (e) {
+        return String(dateStr);
+      }
+    }
+
+    function getCurrentMonth() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      return year + "-" + month;
+    }
 
     // ============================================================
-    // JSONP REQUEST (all calls)
+    // JSONP REQUEST (unified)
     // ============================================================
     function jsonpRequest(params, callback) {
       const cbName = "jsonp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
-      window[cbName] = function(data) { delete window[cbName]; callback(data); };
+      window[cbName] = function(data) {
+        delete window[cbName];
+        callback(data);
+      };
       const script = document.createElement('script');
       let url = API_URL + "?" + params + "&callback=" + cbName;
       script.src = url;
@@ -446,10 +520,97 @@
     }
 
     function displayResult(data) {
-      // same as original, uses formatMonthForDisplay
+      const pendingMonths = data.pendingMonths || 0;
+      const previousBalance = data.previousBalance || 0;
+      const totalPending = (pendingMonths * MONTHLY_FEE) + previousBalance;
+      data.totalPending = totalPending;
+
+      let formattedDate = data.lastPaidDateFormatted || "";
+      if (!formattedDate && data.lastPaidDate) {
+        formattedDate = formatDateToDDMMYYYY(data.lastPaidDate);
+      }
+      let lastPaidMonthDisplay = data.lastPaidMonth; // already formatted in Malayalam by backend
+
+      const whatsappMsg = generateWhatsAppMessage(data);
+      const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
+
+      let html = `
+        <div class="result-card">
+          <table class="info-table">
+            <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
+            ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
+            <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td><strong>${escapeHtml(lastPaidMonthDisplay)}</strong></td></tr>
+            <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td><strong style="color:#fbbf24;">${escapeHtml(formattedDate || "---")}</strong></td></tr>
+            <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${data.monthlyFee} = ₹${(pendingMonths * data.monthlyFee).toLocaleString()}</td></tr>
+            ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
+            <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
+            <tr><td><i class="fas fa-clock"></i> മാസങ്ങൾ കഴിഞ്ഞു</td><td><strong>${data.monthsElapsed || 0}</strong></td></tr>
+          </table>
+          <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
+        </div>
+        <div class="gpay-section-wrapper" id="gpaySectionWrapper">
+          <div class="gpay-container">
+            <div style="text-align:center;"><span class="due-amount-badge" id="dueAmountBadge">📋 നിലവിലെ ബാക്കി: ₹${totalPending.toLocaleString()}</span></div>
+            <div class="amount-editor">
+              <div class="amount-label"><i class="fas fa-edit"></i>അടയ്ക്കുന്ന തുക (മാറ്റം വരുത്താം)</div>
+              <div class="amount-input-wrapper"><span class="currency-symbol">₹</span><input type="number" id="payAmount" step="1" min="1" value="${totalPending > 0 ? totalPending : ''}" placeholder="തുക നൽകുക"></div>
+              <div class="amount-hint" style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:6px;"><i class="fas fa-info-circle"></i> ബാക്കി തുകയേക്കാൾ കൂടുതൽ നൽകിയാൽ അത് അഡ്വാൻസ് ആയി രേഖപ്പെടുത്തും.</div>
+              <div id="advanceWarningBox" class="advance-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്.</div>
+            </div>
+            <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
+            <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ${data.upiId}</p>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("result").innerHTML = html;
+
+      const amountInput = document.getElementById("payAmount");
+      if (amountInput) {
+        amountInput.min = 1;
+      }
+      const warnBox = document.getElementById("advanceWarningBox");
+      const checkAdvance = () => {
+        let val = parseFloat(amountInput.value);
+        if (!isNaN(val) && totalPending > 0 && val > totalPending) warnBox.style.display = "flex";
+        else warnBox.style.display = "none";
+      };
+      if (amountInput) {
+        amountInput.removeEventListener("input", checkAdvance);
+        amountInput.addEventListener("input", checkAdvance);
+      }
+      const oldBtn = document.getElementById("googlePayBtn");
+      if (oldBtn) {
+        const newBtn = oldBtn.cloneNode(true);
+        oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+        newBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          let customAmount = parseFloat(document.getElementById("payAmount").value);
+          if (isNaN(customAmount) || customAmount <= 0) { alert("ദയവായി ശരിയായ തുക നൽകുക"); return; }
+          initiateGooglePay(customAmount, data.parentName, data.mobile);
+        });
+      }
     }
-    function initiateGooglePay(amount, studentName, mobile) { /* original */ }
-    function generateWhatsAppMessage(data) { /* original */ }
+
+    function generateWhatsAppMessage(data) {
+      return `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${data.upiId}\n\nവിശദ വിവരങ്ങൾക്ക് ${data.supportPhone} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
+    }
+
+    function initiateGooglePay(amount, studentName, mobile) {
+      if (!amount || amount <= 0) { alert("അടയ്ക്കേണ്ട തുക ശരിയായി നൽകുക."); return false; }
+      const payAmount = parseFloat(amount).toFixed(2);
+      const description = `Madrasa Fee - ${studentName} (${mobile}) - ₹${payAmount}`;
+      const upiId = "ameerpattani786@oksbi";
+      const payeeName = "Noorussalam Madrasa";
+      const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${payAmount}&cu=INR&tn=${encodeURIComponent(description)}`;
+      const anchor = document.createElement('a');
+      anchor.href = upiLink;
+      anchor.target = "_blank";
+      document.body.appendChild(anchor);
+      anchor.click();
+      setTimeout(() => document.body.removeChild(anchor), 300);
+      return true;
+    }
 
     // ============================================================
     // ADMIN LOGIN / LOGOUT
@@ -502,12 +663,42 @@
         document.getElementById("adminLoginError").textContent = "";
       }
     }
+
     function closeAdminPanel() {
       document.getElementById("adminOverlay").classList.remove("active");
     }
 
+    document.getElementById("adminEntryLink").addEventListener("click", function(e) { e.preventDefault(); openAdminPanel(); });
+
+    let headerTapCount = 0, headerTapTimer = null;
+    document.getElementById("headerDoubleTap").addEventListener("click", function() {
+      headerTapCount++;
+      if (headerTapCount === 1) {
+        headerTapTimer = setTimeout(() => { headerTapCount = 0; }, 500);
+      } else if (headerTapCount >= 2) {
+        clearTimeout(headerTapTimer);
+        headerTapCount = 0;
+        openAdminPanel();
+        showToast("🔐 Opening admin panel...", false);
+      }
+    });
+
+    document.getElementById("adminOverlay").addEventListener("click", function(e) {
+      if (e.target === this) closeAdminPanel();
+    });
+    document.getElementById("adminPassword").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") adminLogin();
+    });
+
+    document.getElementById("studentFormOverlay").addEventListener("click", function(e) {
+      if (e.target === this) closeStudentForm();
+    });
+    document.getElementById("bulkFeeOverlay").addEventListener("click", function(e) {
+      if (e.target === this) closeBulkFeeForm();
+    });
+
     // ============================================================
-    // ADMIN DASHBOARD & CRUD (all via JSONP)
+    // ADMIN DASHBOARD
     // ============================================================
     function loadAdminDashboard() {
       jsonpRequest("action=getDashboardData", function(response) {
@@ -540,45 +731,437 @@
       });
     }
 
-    // renderAdminStudents, renderAdminFees, switchAdminTab, generatePDF
-    // All these functions are identical to your original ones, just using jsonpRequest for API calls.
-    // I'll copy them from your original code, but ensure they use jsonpRequest.
+    // ============================================================
+    // RENDER FUNCTIONS
+    // ============================================================
+    function renderAdminStudents() {
+      const wrap = document.getElementById("adminStudentsTableWrap");
+      const search = document.getElementById("adminSearch").value.toLowerCase().trim();
+      const filter = document.getElementById("adminFilter").value;
+      const fee = parseInt(document.getElementById("setMonthlyFee").value) || MONTHLY_FEE;
 
-    // Since you already have the full functions in your original frontend,
-    // you can reuse them exactly as they are, just replace the fetch-based adminApiPost with jsonpRequest equivalents.
-    // For brevity, I'll include the essential ones here.
+      let filtered = allRecords.filter(r => {
+        const match = String(r.parentName || "").toLowerCase().includes(search) ||
+                      String(r.mobile || "").includes(search) ||
+                      String(r.studentName || "").toLowerCase().includes(search);
+        if (!match) return false;
+        if (filter === "all") return true;
+        const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+        if (filter === "pending") return pending > 0;
+        if (filter === "paid") return pending === 0;
+        return true;
+      });
 
-    function renderAdminStudents() { /* same as original */ }
-    function renderAdminFees() { /* same as original */ }
-    function switchAdminTab(tabId) { /* same as original */ }
-    function generatePDF(type) { /* same as original */ }
+      if (!filtered.length) {
+        wrap.innerHTML = `<div class="admin-empty"><i class="fas fa-users"></i><h4>No students found</h4><p style="font-size:0.7rem;margin-top:4px;">Use "Add New" to add a student.</p></div>`;
+        return;
+      }
 
-    // CRUD functions using jsonpRequest
-    function openAddStudentForm() { /* same */ }
-    function openEditStudent(mobile) { /* same */ }
-    function closeStudentForm() { /* same */ }
+      let html = `<table>
+        <thead><tr>
+          <th>#</th><th>Parent</th><th>Student</th><th>Mobile</th>
+          <th>Last Paid Month</th><th>Due (₹)</th><th>Status</th>
+          <th style="text-align:center;">Actions</th>
+        </tr></thead><tbody>`;
+
+      filtered.forEach((r, idx) => {
+        const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+        let statusLabel = '<span class="status-badge paid">Paid</span>';
+        if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
+        else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
+
+        html += `<tr>
+          <td>${idx+1}</td>
+          <td><strong>${escapeHtml(r.parentName)}</strong></td>
+          <td>${escapeHtml(r.studentName || '')}</td>
+          <td>${escapeHtml(r.mobile)}</td>
+          <td>${formatMonthToEnglish(r.lastPaidMonth)}</td>
+          <td>₹${pending.toLocaleString()}</td>
+          <td>${statusLabel}</td>
+          <td style="text-align:center;">
+            <div class="admin-actions" style="justify-content:center;flex-wrap:wrap;">
+              <button class="btn-sm pay" onclick="payMonthlyFee('${escapeHtml(r.mobile)}')" title="Mark fee paid for a month"><i class="fas fa-check"></i></button>
+              <button class="btn-sm history" onclick="viewPaymentHistory('${escapeHtml(r.mobile)}')" title="Payment History"><i class="fas fa-clock"></i></button>
+              <button class="btn-sm edit" onclick="openEditStudent('${escapeHtml(r.mobile)}')"><i class="fas fa-edit"></i></button>
+              <button class="btn-sm del" onclick="deleteParentWithConfirm('${escapeHtml(r.mobile)}')"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
+    }
+
+    function renderAdminFees() {
+      const wrap = document.getElementById("adminFeesTableWrap");
+      const search = document.getElementById("adminFeeSearch").value.toLowerCase().trim();
+      const filter = document.getElementById("adminFeeFilter").value;
+      const fee = parseInt(document.getElementById("setMonthlyFee").value) || MONTHLY_FEE;
+
+      let filtered = allRecords.filter(r => {
+        const match = String(r.mobile || "").includes(search) ||
+                      String(r.parentName || "").toLowerCase().includes(search);
+        if (!match) return false;
+        if (filter === "all") return true;
+        const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+        if (filter === "pending") return pending > 0;
+        if (filter === "paid") return pending === 0;
+        return true;
+      });
+
+      if (!filtered.length) {
+        wrap.innerHTML = `<div class="admin-empty"><i class="fas fa-money-bill-wave"></i><h4>No records found</h4></div>`;
+        return;
+      }
+
+      let html = `<table>
+        <thead><tr>
+          <th>#</th><th>Parent</th><th>Mobile</th>
+          <th>Last Paid Month</th><th>Months Paid</th><th>Months Pending</th>
+          <th>Due (₹)</th><th>Status</th>
+        </tr></thead><tbody>`;
+
+      filtered.forEach((r, idx) => {
+        const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+        let statusLabel = '<span class="status-badge paid">Paid</span>';
+        if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
+        else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
+
+        html += `<tr>
+          <td>${idx+1}</td>
+          <td><strong>${escapeHtml(r.parentName)}</strong></td>
+          <td>${escapeHtml(r.mobile)}</td>
+          <td>${formatMonthToEnglish(r.lastPaidMonth)}</td>
+          <td>${r.paidMonths || 0}</td>
+          <td>${r.pendingMonths || 0}</td>
+          <td>₹${pending.toLocaleString()}</td>
+          <td>${statusLabel}</td>
+        </tr>`;
+      });
+
+      html += `</tbody></table>`;
+      wrap.innerHTML = html;
+    }
+
+    // ============================================================
+    // SWITCH ADMIN TAB
+    // ============================================================
+    function switchAdminTab(tabId) {
+      document.querySelectorAll(".admin-tabs .tab").forEach(t => t.classList.remove("active"));
+      document.querySelector(`.admin-tabs .tab[data-tab="${tabId}"]`)?.classList.add("active");
+      document.querySelectorAll(".admin-tab-content").forEach(c => c.classList.remove("active"));
+      document.getElementById(tabId)?.classList.add("active");
+      if (tabId === "tabStudents") renderAdminStudents();
+      if (tabId === "tabFees") renderAdminFees();
+      if (tabId === "tabSettings") loadSettings();
+    }
+
+    // ============================================================
+    // PDF GENERATION FUNCTION
+    // ============================================================
+    function generatePDF(type) {
+      let filter, data, title, columns, rows;
+      const fee = parseInt(document.getElementById("setMonthlyFee").value) || MONTHLY_FEE;
+
+      if (type === 'students') {
+        filter = document.getElementById("adminFilter").value;
+        data = allRecords.filter(r => {
+          if (filter === "all") return true;
+          const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+          return filter === "pending" ? pending > 0 : pending === 0;
+        });
+        title = "Fee Report - Parents List";
+        columns = ["#", "Parent", "Mobile", "Last Paid Month", "Due (₹)", "Status"];
+        rows = data.map((r, idx) => {
+          const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+          let status = "Paid";
+          if (pending > 0) status = "Pending";
+          else if (pending < 0) status = "Advance";
+          return [
+            idx + 1,
+            r.parentName || "",
+            r.mobile || "",
+            formatMonthToEnglish(r.lastPaidMonth),
+            pending.toLocaleString(),
+            status
+          ];
+        });
+      } else {
+        filter = document.getElementById("adminFeeFilter").value;
+        data = allRecords.filter(r => {
+          if (filter === "all") return true;
+          const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+          return filter === "pending" ? pending > 0 : pending === 0;
+        });
+        title = "Fee Report - Fees List";
+        columns = ["#", "Parent", "Mobile", "Last Paid Month", "Months Paid", "Months Pending", "Due (₹)", "Status"];
+        rows = data.map((r, idx) => {
+          const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
+          let status = "Paid";
+          if (pending > 0) status = "Pending";
+          else if (pending < 0) status = "Advance";
+          return [
+            idx + 1,
+            r.parentName || "",
+            r.mobile || "",
+            formatMonthToEnglish(r.lastPaidMonth),
+            r.paidMonths || 0,
+            r.pendingMonths || 0,
+            pending.toLocaleString(),
+            status
+          ];
+        });
+      }
+
+      if (rows.length === 0) {
+        showToast("⚠️ No data to export for the selected filter.", true);
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const margin = 8;
+      const usableWidth = pageWidth - 2 * margin;
+
+      doc.setFontSize(16);
+      doc.text("Noorussalam Madrasa", margin, 20);
+      doc.setFontSize(10);
+      doc.text(title + " (Filter: " + filter.charAt(0).toUpperCase() + filter.slice(1) + ")", margin, 28);
+      doc.setFontSize(8);
+      doc.text("Generated: " + new Date().toLocaleString('en-IN'), margin, 34);
+
+      const startY = 40;
+      doc.autoTable({
+        head: [columns],
+        body: rows,
+        startY: startY,
+        margin: { left: margin, right: margin },
+        tableWidth: usableWidth,
+        styles: { fontSize: 8, cellPadding: 1.5, lineColor: [180,180,180], lineWidth: 0.1 },
+        headStyles: { fillColor: [200,200,200], textColor: [0,0,0], fontStyle: 'bold', halign: 'left', fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 8 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 28 },
+          4: { cellWidth: 20 },
+          5: { cellWidth: 18 },
+          6: { cellWidth: 22 },
+          7: { cellWidth: 22 }
+        },
+        alternateRowStyles: { fillColor: [245,245,245] },
+        didDrawPage: function(data) {
+          doc.setFontSize(7);
+          doc.text("Page " + data.pageNumber, margin, doc.internal.pageSize.height - 5);
+          doc.text("Noorussalam Madrasa - Fee Management", pageWidth - margin - 40, doc.internal.pageSize.height - 5);
+        }
+      });
+
+      doc.save('Noorussalam_Fee_Report.pdf');
+      showToast("✅ PDF downloaded successfully!", false);
+    }
+
+    // ============================================================
+    // ADMIN CRUD FUNCTIONS (all via jsonpRequest)
+    // ============================================================
+    function openAddStudentForm() {
+      document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-plus"></i> Add Student';
+      document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Save';
+      document.getElementById("editStudentMobile").value = "";
+      document.getElementById("fParentName").value = "";
+      document.getElementById("fStudentName").value = "";
+      document.getElementById("fMobile").value = "";
+      document.getElementById("fLastPaidMonth").value = "";
+      document.getElementById("fPaidMonths").value = "0";
+      document.getElementById("fPrevBalance").value = "0";
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      document.getElementById("fLastPaidDate").value = year + "-" + month + "-" + day;
+      document.getElementById("studentFormOverlay").classList.add("active");
+    }
+
+    function openEditStudent(mobile) {
+      const record = allRecords.find(r => String(r.mobile) === String(mobile));
+      if (!record) { showToast("❌ Record not found", true); return; }
+      document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-edit"></i> Edit Student';
+      document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Update';
+      document.getElementById("editStudentMobile").value = mobile;
+      document.getElementById("fParentName").value = record.parentName || "";
+      document.getElementById("fStudentName").value = record.studentName || "";
+      document.getElementById("fMobile").value = record.mobile || "";
+      document.getElementById("fLastPaidMonth").value = record.lastPaidMonth || "";
+      document.getElementById("fPaidMonths").value = record.paidMonths || 0;
+      document.getElementById("fPrevBalance").value = record.previousBalance || 0;
+      document.getElementById("fLastPaidDate").value = record.lastPaidDate || "";
+      document.getElementById("studentFormOverlay").classList.add("active");
+    }
+
+    function closeStudentForm() {
+      document.getElementById("studentFormOverlay").classList.remove("active");
+    }
+
     function saveStudent(e) {
       e.preventDefault();
-      // build params and call jsonpRequest with action=addNewParent or updateParent
+      const mobile = document.getElementById("fMobile").value.trim();
+      const parentName = document.getElementById("fParentName").value.trim();
+      const studentName = document.getElementById("fStudentName").value.trim();
+      const lastPaidMonth = document.getElementById("fLastPaidMonth").value;
+      const paidMonths = parseInt(document.getElementById("fPaidMonths").value) || 0;
+      const prevBalance = parseInt(document.getElementById("fPrevBalance").value) || 0;
+      const lastPaidDate = document.getElementById("fLastPaidDate").value;
+
+      if (!parentName) { showToast("Parent name required", true); return; }
+      if (!mobile || mobile.length !== 10) { showToast("10-digit mobile required", true); return; }
+
+      const editMobile = document.getElementById("editStudentMobile").value;
+      const action = editMobile ? "updateParent" : "addNewParent";
+      let params = `action=${action}&parentName=${encodeURIComponent(parentName)}&mobile=${encodeURIComponent(editMobile || mobile)}&studentName=${encodeURIComponent(studentName)}&lastPaidMonth=${encodeURIComponent(lastPaidMonth)}&paidMonths=${paidMonths}&previousBalance=${prevBalance}&lastPaidDate=${encodeURIComponent(lastPaidDate)}`;
+
+      jsonpRequest(params, function(response) {
+        if (response && response.success) {
+          showToast(response.message || "✅ Record saved", false);
+          closeStudentForm();
+          loadAdminDashboard();
+        } else {
+          showToast(response?.message || "❌ Error occurred", true);
+        }
+      });
     }
-    function payMonthlyFee(mobile) { /* jsonpRequest with action=updateFeePayment */ }
-    function viewPaymentHistory(mobile) { /* jsonpRequest with action=getPaymentHistory */ }
-    function deleteParentWithConfirm(mobile) { /* jsonpRequest with action=deleteParent */ }
-    function openBulkFeeForm() { /* same */ }
-    function closeBulkFeeForm() { /* same */ }
-    function applyBulkUpdate(e) { /* jsonpRequest with action=bulkUpdate */ }
-    function saveSettings(e) { /* jsonpRequest with action=updateSettings */ }
-    function loadSettings() { /* jsonpRequest with action=getSettings */ }
 
-    // Event listeners (same as original)
-    document.getElementById("adminEntryLink").addEventListener("click", function(e) { e.preventDefault(); openAdminPanel(); });
-    document.getElementById("headerDoubleTap").addEventListener("click", function() { openAdminPanel(); });
-    document.getElementById("adminOverlay").addEventListener("click", function(e) { if (e.target === this) closeAdminPanel(); });
-    document.getElementById("studentFormOverlay").addEventListener("click", function(e) { if (e.target === this) closeStudentForm(); });
-    document.getElementById("bulkFeeOverlay").addEventListener("click", function(e) { if (e.target === this) closeBulkFeeForm(); });
-    document.addEventListener("keydown", function(e) { if (e.key === "Escape") { closeAdminPanel(); closeStudentForm(); closeBulkFeeForm(); } });
+    function payMonthlyFee(mobile) {
+      const month = prompt("Which month's fee? (YYYY-MM format)", getCurrentMonth());
+      if (!month) return;
+      const amount = prompt("Amount paid (₹):", MONTHLY_FEE);
+      if (!amount) return;
+      jsonpRequest(`action=updateFeePayment&mobile=${encodeURIComponent(mobile)}&month=${encodeURIComponent(month)}&amount=${parseInt(amount) || MONTHLY_FEE}`, function(response) {
+        if (response && response.success) {
+          showToast(response.message, false);
+          loadAdminDashboard();
+        } else {
+          showToast(response?.message || "❌ Error", true);
+        }
+      });
+    }
 
-    console.log("🌟 Noorussalam Fee System – JSONP only, dynamic months");
+    function viewPaymentHistory(mobile) {
+      jsonpRequest(`action=getPaymentHistory&mobile=${encodeURIComponent(mobile)}`, function(response) {
+        if (response.success && response.data) {
+          const history = response.data.history || [];
+          let historyStr = history.map(h =>
+            `${formatMonthForDisplay(h.month)}: ₹${h.amount} (${h.date})`
+          ).join('\n');
+          alert("📜 Payment History (" + response.data.parentName + "):\n\n" + (historyStr || "No payments yet"));
+        } else {
+          showToast(response?.message || "❌ Error", true);
+        }
+      });
+    }
+
+    function deleteParentWithConfirm(mobile) {
+      const parentName = allRecords.find(r => String(r.mobile) === String(mobile))?.parentName || mobile;
+      if (!confirm(`⚠️ Delete all records for "${parentName}"?\n\nThis cannot be undone!`)) return;
+      jsonpRequest(`action=deleteParent&mobile=${encodeURIComponent(mobile)}`, function(response) {
+        if (response && response.success) {
+          showToast(response.message, false);
+          loadAdminDashboard();
+        } else {
+          showToast(response?.message || "❌ Error", true);
+        }
+      });
+    }
+
+    function openBulkFeeForm() {
+      document.getElementById("bulkMonth").value = "";
+      document.getElementById("bulkPaidMonths").value = "";
+      document.getElementById("bulkFeeOverlay").classList.add("active");
+    }
+
+    function closeBulkFeeForm() {
+      document.getElementById("bulkFeeOverlay").classList.remove("active");
+    }
+
+    function applyBulkUpdate(e) {
+      e.preventDefault();
+      const month = document.getElementById("bulkMonth").value;
+      const paidMonths = document.getElementById("bulkPaidMonths").value;
+      if (!month) { showToast("Please select a month", true); return; }
+      let params = `action=bulkUpdate&lastPaidMonth=${encodeURIComponent(month)}`;
+      if (paidMonths !== "") {
+        const val = parseInt(paidMonths);
+        if (!isNaN(val) && val >= 0) params += `&paidMonths=${val}`;
+      }
+      jsonpRequest(params, function(response) {
+        if (response && response.success) {
+          showToast(response.message || "✅ Bulk update complete", false);
+          closeBulkFeeForm();
+          loadAdminDashboard();
+        } else {
+          showToast(response?.message || "❌ Error", true);
+        }
+      });
+    }
+
+    function saveSettings(e) {
+      e.preventDefault();
+      const monthlyFee = document.getElementById("setMonthlyFee").value;
+      const upiId = document.getElementById("setUpiId").value.trim();
+      const payeeName = document.getElementById("setPayeeName").value.trim();
+      const startMonth = document.getElementById("setStartMonth").value.trim();
+      const supportPhone = document.getElementById("setSupportPhone").value.trim();
+      const supportEmail = document.getElementById("setSupportEmail").value.trim();
+
+      if (!monthlyFee || monthlyFee <= 0) { showToast("Enter valid fee amount", true); return; }
+      if (!upiId) { showToast("Enter UPI ID", true); return; }
+      if (!startMonth) { showToast("Start Month is required", true); return; }
+
+      let params = `action=updateSettings&monthlyFee=${monthlyFee}&upiId=${encodeURIComponent(upiId)}&payeeName=${encodeURIComponent(payeeName)}&startMonth=${encodeURIComponent(startMonth)}&supportPhone=${encodeURIComponent(supportPhone)}&supportEmail=${encodeURIComponent(supportEmail)}`;
+      jsonpRequest(params, function(response) {
+        if (response && response.success) {
+          showToast(response.message, false);
+          loadAdminDashboard();
+        } else {
+          showToast(response?.message || "❌ Error", true);
+        }
+      });
+    }
+
+    function loadSettings() {
+      jsonpRequest("action=getSettings", function(response) {
+        if (response && !response.error) {
+          document.getElementById("setMonthlyFee").value = response.monthlyFee || 200;
+          document.getElementById("setUpiId").value = response.upiId || "";
+          document.getElementById("setPayeeName").value = response.payeeName || "";
+          document.getElementById("setStartMonth").value = response.startMonth || "";
+          document.getElementById("setSupportPhone").value = response.supportPhone || "";
+          document.getElementById("setSupportEmail").value = response.supportEmail || "";
+        }
+      });
+    }
+
+    // Event listeners and init
+    document.addEventListener("keydown", function(e) {
+      if (e.key === "Escape") {
+        if (document.getElementById("adminOverlay").classList.contains("active")) closeAdminPanel();
+        if (document.getElementById("studentFormOverlay").classList.contains("active")) closeStudentForm();
+        if (document.getElementById("bulkFeeOverlay").classList.contains("active")) closeBulkFeeForm();
+      }
+    });
+
+    // Auto-check from URL param
+    window.addEventListener('load', function() {
+      const params = new URLSearchParams(window.location.search);
+      const mob = params.get('mobile');
+      if (mob) {
+        document.getElementById('mobile').value = mob;
+        checkFee();
+      }
+    });
+
+    console.log("🌟 Noorussalam Fee System – JSONP, Dynamic Months, 20th-day rule");
     console.log("📡 API URL:", API_URL);
   </script>
 </body>
