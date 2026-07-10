@@ -6,15 +6,10 @@
     <title>Noorussalam - Fee Check</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js">
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        /* ===== All CSS from previous version (original design with stars, ring, etc.) ===== */
-        /* To save space, I'm including the same CSS as before – but you can copy from the earlier full version. */
-        /* For brevity, I'll include a minified version here, but you can use the full one from earlier. */
-        /* Actually, to keep the answer complete, I'll include the full CSS again. */
+        /* ===== RESET & BASE (same as original design) ===== */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body { font-family:'Anek Malayalam',sans-serif; background:linear-gradient(135deg,#0b1120 0%,#1a2332 40%,#0d1b2a 100%); min-height:100vh; padding:16px; display:flex; justify-content:center; align-items:center; position:relative; overflow-x:hidden; }
         body::before { content:''; position:fixed; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(ellipse at 20% 50%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse at 80% 20%,rgba(251,191,36,0.08) 0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(236,72,153,0.06) 0%,transparent 50%); animation:rotateBg 30s linear infinite; pointer-events:none; z-index:0; }
@@ -319,7 +314,7 @@
                         <div class="form-group"><label>Payee Name</label><input type="text" id="setPayeeName" /></div>
                         <div class="form-group"><label>Start Month (YYYY-MM) *</label>
                             <input type="month" id="setStartMonth" required />
-                            <small style="color:#94a3b8;font-size:0.6rem;">ആരംഭ മാസം – ഇത് മുതൽ മാസങ്ങൾ കണക്കാക്കും (ഉദാ: 2025-04)</small>
+                            <small style="color:#94a3b8;font-size:0.6rem;">ആരംഭ മാസം – ഇത് മുതൽ മാസങ്ങൾ കണക്കാക്കും (ഉദാ: 2026-04)</small>
                         </div>
                         <div class="form-group"><label>Support Phone</label><input type="text" id="setSupportPhone" /></div>
                         <div class="form-group"><label>Support Email</label><input type="email" id="setSupportEmail" /></div>
@@ -379,18 +374,10 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbwHbg4qS-iJFuWIqUXyGzCodigPu6kUem-dU9LIa5CzZVlN2SxvWQ07LTuzFC3IQz-A/exec"; // REPLACE THIS
+        const API_URL = "https://script.google.com/macros/s/AKfycbzc0uc38PbdpwL3j9Jj2XN32FDS6O3n9wb3WZEhpPrpgbtrR_Y4RA7hhFT9TiF7Qes3/exec"; // REPLACE THIS
         const ADMIN_PASSWORD = "madrasa2026";
         const MONTHLY_FEE = 200;
-        const SUPPORT_EMAIL = "noorussalamhelp@gmail.com";
-        const SUPPORT_PHONE = "9495844382";
-        const UPI_ID = "ameerpattani786@oksbi";
-        const PAYEE_NAME = "Noorussalam Madrasa";
-        const NOTE = "Madrasa Fee Payment";
-        const CURRENCY = "INR";
 
-        let currentStudentData = null;
-        let currentDueAmount = 0;
         let allRecords = [];
         let isAdminLoggedIn = false;
 
@@ -487,24 +474,27 @@
             return year + "-" + month;
         }
 
-        function calculateTotalPending(pendingMonths, previousBalance) {
-            return ((pendingMonths || 0) * MONTHLY_FEE) + (previousBalance || 0);
+        function calculateTotalPending(pendingMonths, previousBalance, monthlyFee) {
+            return ((pendingMonths || 0) * (monthlyFee || MONTHLY_FEE)) + (previousBalance || 0);
         }
 
         // ============================================================
-        // JSONP REQUEST
+        // JSONP REQUEST WITH TODAY PARAMETER
         // ============================================================
         function jsonpRequest(params, callback) {
+            const now = new Date();
+            const today = now.getFullYear() + '-' + 
+                          String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(now.getDate()).padStart(2, '0');
+            const fullParams = params + (params.includes('?') ? '&' : '?') + 'today=' + today;
             const cbName = "jsonp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
             window[cbName] = function(data) {
                 delete window[cbName];
                 callback(data);
             };
             const script = document.createElement('script');
-            let url = API_URL + "?" + params + "&callback=" + cbName;
-            script.src = url;
+            script.src = API_URL + "?" + fullParams + "&callback=" + cbName;
             document.head.appendChild(script);
-            // Timeout safety
             setTimeout(() => {
                 if (window[cbName]) {
                     delete window[cbName];
@@ -518,16 +508,16 @@
         // ============================================================
         function generateWhatsAppMessage(data) {
             let msg =
-                `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${UPI_ID}\n\nവിശദ വിവരങ്ങൾക്ക് ${SUPPORT_PHONE} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
+                `നമസ്കാരം ${data.parentName || "സഹോദരൻ"},\n\nനൂറുസ്സലാം മദ്റസ വരിസംഖ്യ വിവരം:\n📱 മൊബൈൽ: ${data.mobile}\n✅ അവസാനം അടച്ച മാസം: ${data.lastPaidMonth || "---"}\n📆 അവസാനം അടച്ച തീയതി: ${data.lastPaidDateFormatted || "---"}\n📆 ബാക്കി മാസങ്ങൾ: ${data.pendingMonths || 0}\n💰 ആകെ ബാക്കി തുക: ₹${data.totalPending?.toLocaleString() || 0}\n\nദയവായി നിങ്ങളുടെ ബാക്കി തുക അടക്കുക. UPI: ${data.upiId}\n\nവിശദ വിവരങ്ങൾക്ക് ${data.supportPhone} എന്ന നമ്പറിൽ ബന്ധപ്പെടുക.`;
             return msg;
         }
 
-        function initiateGooglePay(amount, studentName, mobile) {
+        function initiateGooglePay(amount, studentName, mobile, upiId, payeeName) {
             if (!amount || amount <= 0) { alert("അടയ്ക്കേണ്ട തുക ശരിയായി നൽകുക."); return false; }
             const payAmount = parseFloat(amount).toFixed(2);
-            const description = `${NOTE} - ${studentName} (${mobile}) - ₹${payAmount}`;
+            const description = `Madrasa Fee - ${studentName} (${mobile}) - ₹${payAmount}`;
             const upiLink =
-                `upi://pay?pa=${encodeURIComponent(UPI_ID)}&pn=${encodeURIComponent(PAYEE_NAME)}&am=${payAmount}&cu=${CURRENCY}&tn=${encodeURIComponent(description)}`;
+                `upi://pay?pa=${encodeURIComponent(upiId || "ameerpattani786@oksbi")}&pn=${encodeURIComponent(payeeName || "Noorussalam Madrasa")}&am=${payAmount}&cu=INR&tn=${encodeURIComponent(description)}`;
             const anchor = document.createElement('a');
             anchor.href = upiLink;
             anchor.target = "_blank";
@@ -540,7 +530,8 @@
         function displayResult(data) {
             const pendingMonths = data.pendingMonths || 0;
             const previousBalance = data.previousBalance || 0;
-            const totalPending = calculateTotalPending(pendingMonths, previousBalance);
+            const monthlyFee = data.monthlyFee || MONTHLY_FEE;
+            const totalPending = calculateTotalPending(pendingMonths, previousBalance, monthlyFee);
             data.totalPending = totalPending;
 
             let formattedDate = data.lastPaidDateFormatted || "";
@@ -552,9 +543,6 @@
             const whatsappMsg = generateWhatsAppMessage(data);
             const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
 
-            currentStudentData = { mobile: data.mobile, parentName: data.parentName, totalPending };
-            currentDueAmount = totalPending;
-
             let html = `
                         <div class="result-card">
                             <table class="info-table">
@@ -562,10 +550,11 @@
                                 ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
                                 <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td><strong>${escapeHtml(lastPaidMonthDisplay)}</strong></td></tr>
                                 <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td><strong style="color:#fbbf24;">${escapeHtml(formattedDate || "---")}</strong></td></tr>
-                                <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${data.monthlyFee} = ₹${(pendingMonths * data.monthlyFee).toLocaleString()}</td></tr>
+                                <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${monthlyFee} = ₹${(pendingMonths * monthlyFee).toLocaleString()}</td></tr>
                                 ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
                                 <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
                                 <tr><td><i class="fas fa-clock"></i> മാസങ്ങൾ കഴിഞ്ഞു</td><td><strong>${data.monthsElapsed || 0}</strong></td></tr>
+                                ${data.debug ? `<tr><td colspan="2" style="font-size:0.6rem; color:rgba(255,255,255,0.3);">Debug: ${JSON.stringify(data.debug)}</td></tr>` : ''}
                             </table>
                             <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
                         </div>
@@ -579,7 +568,7 @@
                                     <div id="advanceWarningBox" class="advance-warning" style="display:none;"><i class="fas fa-exclamation-triangle"></i> <strong>ശ്രദ്ധിക്കുക:</strong> നിങ്ങൾ നൽകുന്ന തുക നിലവിലെ ബാക്കിയേക്കാൾ കൂടുതലാണ്.</div>
                                 </div>
                                 <button id="googlePayBtn" class="gpay-btn"><i class="fab fa-google-pay"></i> 📱 Google Pay-ൽ അടയ്ക്കുക</button>
-                                <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ${UPI_ID}</p>
+                                <p style="font-size:0.7rem; text-align:center; margin-top:14px; color:rgba(255,255,255,0.3);"><i class="fas fa-shield-alt"></i> UPI: ${data.upiId}</p>
                             </div>
                         </div>
                     `;
@@ -608,14 +597,9 @@
                     e.preventDefault();
                     let customAmount = parseFloat(document.getElementById("payAmount").value);
                     if (isNaN(customAmount) || customAmount <= 0) { alert("ദയവായി ശരിയായ തുക നൽകുക"); return; }
-                    initiateGooglePay(customAmount, currentStudentData.parentName, currentStudentData.mobile);
+                    initiateGooglePay(customAmount, data.parentName, data.mobile, data.upiId, data.payeeName);
                 });
             }
-        }
-
-        function showError(msg) {
-            document.getElementById("result").innerHTML =
-                `<div class="result-card"><table class="info-table"><tr><td>⚠️ പിശക്</td><td style="color:#f87171;">${escapeHtml(msg)}</td></tr></table></div>`;
         }
 
         function checkFee() {
@@ -770,7 +754,7 @@
             const wrap = document.getElementById("adminStudentsTableWrap");
             const search = document.getElementById("adminSearch").value.toLowerCase().trim();
             const filter = document.getElementById("adminFilter").value;
-            const fee = parseInt(document.getElementById("setMonthlyFee").value) || 200;
+            const fee = parseInt(document.getElementById("setMonthlyFee").value) || MONTHLY_FEE;
 
             let filtered = allRecords.filter(r => {
                 const match = String(r.parentName || "").toLowerCase().includes(search) ||
@@ -830,7 +814,7 @@
             const wrap = document.getElementById("adminFeesTableWrap");
             const search = document.getElementById("adminFeeSearch").value.toLowerCase().trim();
             const filter = document.getElementById("adminFeeFilter").value;
-            const fee = parseInt(document.getElementById("setMonthlyFee").value) || 200;
+            const fee = parseInt(document.getElementById("setMonthlyFee").value) || MONTHLY_FEE;
 
             let filtered = allRecords.filter(r => {
                 const match = String(r.mobile || "").includes(search) ||
@@ -892,24 +876,18 @@
         }
 
         // ============================================================
-        // PDF GENERATION FUNCTION
+        // PDF GENERATION
         // ============================================================
         function generatePDF(type) {
-            let filter;
-            let data;
-            let title;
-            let columns;
-            let rows;
-            const fee = parseInt(document.getElementById("setMonthlyFee").value) || 200;
+            let filter, data, title, columns, rows;
+            const fee = parseInt(document.getElementById("setMonthlyFee").value) || MONTHLY_FEE;
 
             if (type === 'students') {
                 filter = document.getElementById("adminFilter").value;
                 data = allRecords.filter(r => {
                     if (filter === "all") return true;
                     const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
-                    if (filter === "pending") return pending > 0;
-                    if (filter === "paid") return pending === 0;
-                    return true;
+                    return filter === "pending" ? pending > 0 : pending === 0;
                 });
                 title = "Fee Report - Parents List";
                 columns = ["#", "Parent", "Mobile", "Last Paid Month", "Due (₹)", "Status"];
@@ -932,14 +910,10 @@
                 data = allRecords.filter(r => {
                     if (filter === "all") return true;
                     const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
-                    if (filter === "pending") return pending > 0;
-                    if (filter === "paid") return pending === 0;
-                    return true;
+                    return filter === "pending" ? pending > 0 : pending === 0;
                 });
                 title = "Fee Report - Fees List";
-                columns = ["#", "Parent", "Mobile", "Last Paid Month", "Months Paid", "Months Pending", "Due (₹)",
-                    "Status"
-                ];
+                columns = ["#", "Parent", "Mobile", "Last Paid Month", "Months Paid", "Months Pending", "Due (₹)", "Status"];
                 rows = data.map((r, idx) => {
                     const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                     let status = "Paid";
@@ -983,19 +957,8 @@
                 startY: startY,
                 margin: { left: margin, right: margin },
                 tableWidth: usableWidth,
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 1.5,
-                    lineColor: [180, 180, 180],
-                    lineWidth: 0.1,
-                },
-                headStyles: {
-                    fillColor: [200, 200, 200],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold',
-                    halign: 'left',
-                    fontSize: 8,
-                },
+                styles: { fontSize: 8, cellPadding: 1.5, lineColor: [180,180,180], lineWidth: 0.1 },
+                headStyles: { fillColor: [200,200,200], textColor: [0,0,0], fontStyle: 'bold', halign: 'left', fontSize: 8 },
                 columnStyles: {
                     0: { cellWidth: 8 },
                     1: { cellWidth: 30 },
@@ -1004,16 +967,13 @@
                     4: { cellWidth: 20 },
                     5: { cellWidth: 18 },
                     6: { cellWidth: 22 },
-                    7: { cellWidth: 22 },
+                    7: { cellWidth: 22 }
                 },
-                alternateRowStyles: {
-                    fillColor: [245, 245, 245],
-                },
+                alternateRowStyles: { fillColor: [245,245,245] },
                 didDrawPage: function(data) {
                     doc.setFontSize(7);
                     doc.text("Page " + data.pageNumber, margin, doc.internal.pageSize.height - 5);
-                    doc.text("Noorussalam Madrasa - Fee Management", pageWidth - margin - 40, doc.internal.pageSize
-                        .height - 5);
+                    doc.text("Noorussalam Madrasa - Fee Management", pageWidth - margin - 40, doc.internal.pageSize.height - 5);
                 }
             });
 
@@ -1034,20 +994,17 @@
             document.getElementById("fLastPaidMonth").value = "";
             document.getElementById("fPaidMonths").value = "0";
             document.getElementById("fPrevBalance").value = "0";
-
             const today = new Date();
             const year = today.getFullYear();
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const day = String(today.getDate()).padStart(2, '0');
             document.getElementById("fLastPaidDate").value = year + "-" + month + "-" + day;
-
             document.getElementById("studentFormOverlay").classList.add("active");
         }
 
         function openEditStudent(mobile) {
             const record = allRecords.find(r => String(r.mobile) === String(mobile));
             if (!record) { showToast("❌ Record not found", true); return; }
-
             document.getElementById("studentFormTitle").innerHTML = '<i class="fas fa-user-edit"></i> Edit Student';
             document.getElementById("studentSubmitBtn").innerHTML = '<i class="fas fa-save"></i> Update';
             document.getElementById("editStudentMobile").value = mobile;
@@ -1058,7 +1015,6 @@
             document.getElementById("fPaidMonths").value = record.paidMonths || 0;
             document.getElementById("fPrevBalance").value = record.previousBalance || 0;
             document.getElementById("fLastPaidDate").value = record.lastPaidDate || "";
-
             document.getElementById("studentFormOverlay").classList.add("active");
         }
 
@@ -1082,7 +1038,7 @@
             const editMobile = document.getElementById("editStudentMobile").value;
             const action = editMobile ? "updateParent" : "addParent";
             let params = `action=${action}&parentName=${encodeURIComponent(parentName)}&mobile=${encodeURIComponent(editMobile || mobile)}&studentName=${encodeURIComponent(studentName)}&lastPaidMonth=${encodeURIComponent(lastPaidMonth)}&paidMonths=${paidMonths}&previousBalance=${prevBalance}&lastPaidDate=${encodeURIComponent(lastPaidDate)}`;
-            if (!editMobile) params = params.replace("mobile="+encodeURIComponent(mobile), "mobile="+encodeURIComponent(mobile)); // already set
+            if (!editMobile) params = params.replace("mobile="+encodeURIComponent(mobile), "mobile="+encodeURIComponent(mobile));
 
             jsonpRequest(params, function(response) {
                 if (response && response.success) {
@@ -1100,7 +1056,6 @@
             if (!month) return;
             const amount = prompt("Amount paid (₹):", MONTHLY_FEE);
             if (!amount) return;
-
             jsonpRequest(`action=payFee&mobile=${encodeURIComponent(mobile)}&month=${encodeURIComponent(month)}&amount=${parseInt(amount) || MONTHLY_FEE}`, function(response) {
                 if (response && response.success) {
                     showToast(response.message, false);
@@ -1128,7 +1083,6 @@
         function deleteParentWithConfirm(mobile) {
             const parentName = allRecords.find(r => String(r.mobile) === String(mobile))?.parentName || mobile;
             if (!confirm(`⚠️ Delete all records for "${parentName}"?\n\nThis cannot be undone!`)) return;
-
             jsonpRequest(`action=deleteParent&mobile=${encodeURIComponent(mobile)}`, function(response) {
                 if (response && response.success) {
                     showToast(response.message, false);
@@ -1153,15 +1107,12 @@
             e.preventDefault();
             const month = document.getElementById("bulkMonth").value;
             const paidMonths = document.getElementById("bulkPaidMonths").value;
-
             if (!month) { showToast("Please select a month", true); return; }
-
             let params = `action=bulkUpdate&lastPaidMonth=${encodeURIComponent(month)}`;
             if (paidMonths !== "") {
                 const val = parseInt(paidMonths);
                 if (!isNaN(val) && val >= 0) params += `&paidMonths=${val}`;
             }
-
             jsonpRequest(params, function(response) {
                 if (response && response.success) {
                     showToast(response.message || "✅ Bulk update complete", false);
@@ -1181,11 +1132,9 @@
             const startMonth = document.getElementById("setStartMonth").value.trim();
             const supportPhone = document.getElementById("setSupportPhone").value.trim();
             const supportEmail = document.getElementById("setSupportEmail").value.trim();
-
             if (!monthlyFee || monthlyFee <= 0) { showToast("Enter valid fee amount", true); return; }
             if (!upiId) { showToast("Enter UPI ID", true); return; }
             if (!startMonth) { showToast("Start Month is required", true); return; }
-
             let params = `action=updateSettings&monthlyFee=${monthlyFee}&upiId=${encodeURIComponent(upiId)}&payeeName=${encodeURIComponent(payeeName)}&startMonth=${encodeURIComponent(startMonth)}&supportPhone=${encodeURIComponent(supportPhone)}&supportEmail=${encodeURIComponent(supportEmail)}`;
             jsonpRequest(params, function(response) {
                 if (response && response.success) {
@@ -1218,7 +1167,7 @@
             }
         });
 
-        console.log("🌟 Noorussalam Fee System – JSONP + 20th Day Cycle");
+        console.log("🌟 Noorussalam Fee System – Debug Version with today param");
         console.log("🔐 Admin: Click 'Admin' in footer or double-tap header.");
         console.log("📡 API URL:", API_URL);
     </script>
