@@ -309,7 +309,6 @@
             color: rgba(255, 255, 255, 0.2);
             font-weight: 400;
             letter-spacing: 0.5px;
-            /* static – no animation on the placeholder itself */
         }
 
         .ring-wrapper:focus-within input::placeholder {
@@ -1423,6 +1422,7 @@
                         <div class="admin-stat-card"><div class="stat-num red" id="statPending">0</div><div class="stat-label">Pending</div></div>
                         <div class="admin-stat-card"><div class="stat-num green" id="statPaid">0</div><div class="stat-label">Paid</div></div>
                         <div class="admin-stat-card"><div class="stat-num yellow" id="statAmount">₹0</div><div class="stat-label">Total Due</div></div>
+                        <div class="admin-stat-card"><div class="stat-num blue" id="statMonths">0</div><div class="stat-label">Months Elapsed</div></div>
                     </div>
                     <div style="font-size:0.7rem;color:#94a3b8;text-align:right;" id="adminLastUpdated"></div>
                 </div>
@@ -1468,6 +1468,10 @@
                         <div class="form-group"><label>Monthly Fee (₹)</label><input type="number" id="setMonthlyFee" min="1" step="1" /></div>
                         <div class="form-group"><label>UPI ID</label><input type="text" id="setUpiId" placeholder="example@upi" /></div>
                         <div class="form-group"><label>Payee Name</label><input type="text" id="setPayeeName" /></div>
+                        <div class="form-group"><label>Start Month (YYYY-MM) *</label>
+                            <input type="month" id="setStartMonth" required />
+                            <small style="color:#94a3b8;font-size:0.6rem;">ആരംഭ മാസം – ഇത് മുതൽ മാസങ്ങൾ കണക്കാക്കും (ഉദാ: 2025-04)</small>
+                        </div>
                         <div class="form-group"><label>Support Phone</label><input type="text" id="setSupportPhone" /></div>
                         <div class="form-group"><label>Support Email</label><input type="email" id="setSupportEmail" /></div>
                         <div class="form-actions">
@@ -1526,7 +1530,7 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        const API_URL = "https://script.google.com/macros/s/AKfycbybmkH0BgThKvCnM18-doTeU5yPio1yXebWSTtoyPghC4NndQjwbiW-AUo0qbKTA9Yg/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxrnCvNhB2sPfpL5oFcvINYsDXf_42xeDe4nJcrm75T5Knh2Y4MhRHWkrg957rmJOCH/exec"; // REPLACE THIS
         const ADMIN_PASSWORD = "madrasa2026";
         const MONTHLY_FEE = 200;
         const SUPPORT_EMAIL = "noorussalamhelp@gmail.com";
@@ -1606,6 +1610,14 @@
             return monthNames[month - 1] + " " + year;
         }
 
+        function formatMonthToEnglish(monthStr) {
+            if (!monthStr) return '---';
+            const parts = monthStr.split('-');
+            if (parts.length !== 2) return monthStr;
+            const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            return months[parseInt(parts[1])-1] + ' ' + parts[0];
+        }
+
         function formatDateToDDMMYYYY(dateStr) {
             if (!dateStr) return "";
             try {
@@ -1629,6 +1641,20 @@
 
         function calculateTotalPending(pendingMonths, previousBalance) {
             return ((pendingMonths || 0) * MONTHLY_FEE) + (previousBalance || 0);
+        }
+
+        // ============================================================
+        // API CALL (POST)
+        // ============================================================
+        async function apiCall(action, data = {}) {
+            const payload = { action, ...data };
+            const resp = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            return await resp.json();
         }
 
         // ============================================================
@@ -1665,6 +1691,8 @@
             if (!formattedDate && data.lastPaidDate) {
                 formattedDate = formatDateToDDMMYYYY(data.lastPaidDate);
             }
+            // format last paid month in Malayalam for display
+            let lastPaidMonthDisplay = formatMonthForDisplay(data.lastPaidMonth);
 
             const whatsappMsg = generateWhatsAppMessage(data);
             const whatsappLink = `https://wa.me/91${data.mobile}?text=${encodeURIComponent(whatsappMsg)}`;
@@ -1677,11 +1705,12 @@
                             <table class="info-table">
                                 <tr><td><i class="fas fa-user"></i> രക്ഷിതാവിൻ്റെ പേര്</td><td><strong>${escapeHtml(data.parentName)}</strong></td></tr>
                                 ${data.studentName ? `<tr><td><i class="fas fa-user-graduate"></i> വിദ്യാർത്ഥിയുടെ പേര്</td><td><strong>${escapeHtml(data.studentName)}</strong></td></tr>` : ''}
-                                <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td><strong>${escapeHtml(data.lastPaidMonth || "---")}</strong></td></tr>
+                                <tr><td><i class="fas fa-calendar"></i> അവസാനം അടച്ച മാസം</td><td><strong>${escapeHtml(lastPaidMonthDisplay)}</strong></td></tr>
                                 <tr><td><i class="fas fa-calendar-day"></i> അവസാനം അടച്ച തീയതി</td><td><strong style="color:#fbbf24;">${escapeHtml(formattedDate || "---")}</strong></td></tr>
-                                <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${MONTHLY_FEE} = ₹${(pendingMonths * MONTHLY_FEE).toLocaleString()}</td></tr>
+                                <tr><td><i class="fas fa-hourglass-half"></i> ബാക്കി മാസങ്ങൾ</td><td>${pendingMonths} മാസം × ₹${data.monthlyFee} = ₹${(pendingMonths * data.monthlyFee).toLocaleString()}</td></tr>
                                 ${previousBalance > 0 ? `<tr><td>📌 മുൻ വർഷ ബാക്കി</td><td>₹ ${previousBalance.toLocaleString()}</td></tr>` : ''}
                                 <tr style="background:rgba(251,191,36,0.06);"><td><i class="fas fa-rupee-sign"></i> ആകെ അടക്കേണ്ട തുക</td><td class="${totalPending > 0 ? 'amount-pending' : 'amount-cleared'}"><strong>₹ ${totalPending.toLocaleString()}</strong></td></tr>
+                                <tr><td><i class="fas fa-clock"></i> മാസങ്ങൾ കഴിഞ്ഞു</td><td><strong>${data.monthsElapsed || 0}</strong></td></tr>
                             </table>
                             <a href="${whatsappLink}" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> 📱 WhatsApp-ൽ വിവരം ലഭിക്കാൻ</a>
                         </div>
@@ -1734,7 +1763,7 @@
                 `<div class="result-card"><table class="info-table"><tr><td>⚠️ പിശക്</td><td style="color:#f87171;">${escapeHtml(msg)}</td></tr></table></div>`;
         }
 
-        function checkFee() {
+        async function checkFee() {
             const mobile = document.getElementById("mobile").value.trim();
             if (mobile.length !== 10 || isNaN(mobile)) {
                 showToast("10 അക്ക മൊബൈൽ നമ്പർ ശരിയായി നൽകുക.", true);
@@ -1744,68 +1773,19 @@
             btn.disabled = true;
             document.getElementById("loader").style.display = "block";
             document.getElementById("result").innerHTML = "";
-            if (currentScript && document.head.contains(currentScript)) document.head.removeChild(currentScript);
-            const callbackName = "callback_" + Date.now() + "_" + Math.random().toString(36).substr(2, 6);
-            window[callbackName] = function(data) {
-                delete window[callbackName];
-                btn.disabled = false;
-                document.getElementById("loader").style.display = "none";
-                if (data && data.success === true) {
-                    if (!data.mobile && mobile) data.mobile = mobile;
-                    displayResult(data);
-                    document.getElementById("result").scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                    showToast(data?.message || "❌ വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.", true);
-                }
-            };
-            const script = document.createElement("script");
-            script.src = `${API_URL}?mobile=${mobile}&callback=${callbackName}`;
-            script.onerror = () => {
-                delete window[callbackName];
-                btn.disabled = false;
-                document.getElementById("loader").style.display = "none";
-                showToast("❌ API ബന്ധപെടാനായില്ല. നെറ്റ്വർക്ക് പരിശോധിക്കുക.", true);
-            };
-            currentScript = script;
-            document.head.appendChild(script);
-        }
 
-        // ============================================================
-        // ADMIN API HELPERS
-        // ============================================================
-        function jsonpRequest(params, callback) {
-            return new Promise((resolve, reject) => {
-                const cbName = "jsonp_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4);
-                window[cbName] = function(data) { delete window[cbName];
-                    resolve(data); };
-                const script = document.createElement("script");
-                let url = API_URL + "?" + params + "&callback=" + cbName;
-                script.src = url;
-                script.onerror = () => { delete window[cbName];
-                    reject(new Error("JSONP request failed")); };
-                document.head.appendChild(script);
-                setTimeout(() => { if (window[cbName]) { delete window[cbName];
-                        reject(new Error("JSONP timeout")); } }, 15000);
-            });
-        }
-
-        function adminApiGet(action, extraParams = "") {
-            let params = "action=" + encodeURIComponent(action);
-            if (extraParams) params += "&" + extraParams;
-            return jsonpRequest(params);
-        }
-
-        async function adminApiPost(action, payload) {
             try {
-                const resp = await fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action, ...payload })
-                });
-                return await resp.json();
-            } catch (e) {
-                return { success: false, message: "Network error: " + e.message };
+                const response = await apiCall('checkFee', { mobile });
+                if (response.success && response.data && !response.data.error) {
+                    displayResult(response.data);
+                } else {
+                    showToast(response.data?.error || "❌ വിവരങ്ങൾ ലഭ്യമല്ല. ശരിയായ മൊബൈൽ നമ്പർ നൽകുക.", true);
+                }
+            } catch (err) {
+                showToast("❌ API പിശക്: " + err.message, true);
+            } finally {
+                btn.disabled = false;
+                document.getElementById("loader").style.display = "none";
             }
         }
 
@@ -1818,8 +1798,8 @@
             if (!password) { errorEl.textContent = "❌ Enter password"; return; }
             errorEl.textContent = "⏳ Checking...";
             try {
-                const result = await adminApiGet("verifyAdmin", "password=" + encodeURIComponent(password));
-                if (result === true || result === "true") {
+                const result = await apiCall('adminLogin', { password });
+                if (result.success) {
                     isAdminLoggedIn = true;
                     document.getElementById("adminLoginSection").style.display = "none";
                     document.getElementById("adminPanelSection").style.display = "block";
@@ -1904,24 +1884,26 @@
         // ============================================================
         async function loadAdminDashboard() {
             try {
-                const data = await adminApiGet("getDashboardData");
-                if (data && !data.error) {
-                    allRecords = data.records || [];
-                    document.getElementById("statTotal").textContent = data.totalParents || 0;
-                    document.getElementById("statPending").textContent = data.parentsWithBalance || 0;
-                    document.getElementById("statPaid").textContent = data.parentsFullyPaid || 0;
-                    document.getElementById("statAmount").textContent = "₹" + (data.totalPendingAmount || 0)
+                const data = await apiCall('getDashboard');
+                if (data.success && data.data && !data.data.error) {
+                    allRecords = data.data.records || [];
+                    document.getElementById("statTotal").textContent = data.data.totalParents || 0;
+                    document.getElementById("statPending").textContent = data.data.parentsWithBalance || 0;
+                    document.getElementById("statPaid").textContent = data.data.parentsFullyPaid || 0;
+                    document.getElementById("statAmount").textContent = "₹" + (data.data.totalPendingAmount || 0)
                         .toLocaleString();
+                    document.getElementById("statMonths").textContent = data.data.monthsElapsed || 0;
                     document.getElementById("adminLastUpdated").textContent = "Last updated: " + new Date().toLocaleString(
                         'en-IN');
 
-                    const settings = await adminApiGet("getSettings");
-                    if (settings && !settings.error) {
-                        document.getElementById("setMonthlyFee").value = settings.monthlyFee || 200;
-                        document.getElementById("setUpiId").value = settings.upiId || "";
-                        document.getElementById("setPayeeName").value = settings.payeeName || "";
-                        document.getElementById("setSupportPhone").value = settings.supportPhone || "";
-                        document.getElementById("setSupportEmail").value = settings.supportEmail || "";
+                    const settings = await apiCall('getSettings');
+                    if (settings.success && settings.data) {
+                        document.getElementById("setMonthlyFee").value = settings.data.monthlyFee || 200;
+                        document.getElementById("setUpiId").value = settings.data.upiId || "";
+                        document.getElementById("setPayeeName").value = settings.data.payeeName || "";
+                        document.getElementById("setStartMonth").value = settings.data.startMonth || "";
+                        document.getElementById("setSupportPhone").value = settings.data.supportPhone || "";
+                        document.getElementById("setSupportEmail").value = settings.data.supportEmail || "";
                     }
 
                     renderAdminStudents();
@@ -1941,6 +1923,7 @@
             const wrap = document.getElementById("adminStudentsTableWrap");
             const search = document.getElementById("adminSearch").value.toLowerCase().trim();
             const filter = document.getElementById("adminFilter").value;
+            const fee = parseInt(document.getElementById("setMonthlyFee").value) || 200;
 
             let filtered = allRecords.filter(r => {
                 const match = String(r.parentName || "").toLowerCase().includes(search) ||
@@ -1948,7 +1931,7 @@
                     String(r.studentName || "").toLowerCase().includes(search);
                 if (!match) return false;
                 if (filter === "all") return true;
-                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                 if (filter === "pending") return pending > 0;
                 if (filter === "paid") return pending === 0;
                 return true;
@@ -1968,7 +1951,7 @@
                         </tr></thead><tbody>`;
 
             filtered.forEach((r, idx) => {
-                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                 let statusLabel = '<span class="status-badge paid">Paid</span>';
                 if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
                 else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
@@ -1978,7 +1961,7 @@
                             <td><strong>${escapeHtml(r.parentName)}</strong></td>
                             <td>${escapeHtml(r.studentName || '')}</td>
                             <td>${escapeHtml(r.mobile)}</td>
-                            <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
+                            <td>${formatMonthToEnglish(r.lastPaidMonth)}</td>
                             <td>₹${pending.toLocaleString()}</td>
                             <td>${statusLabel}</td>
                             <td style="text-align:center;">
@@ -2000,13 +1983,14 @@
             const wrap = document.getElementById("adminFeesTableWrap");
             const search = document.getElementById("adminFeeSearch").value.toLowerCase().trim();
             const filter = document.getElementById("adminFeeFilter").value;
+            const fee = parseInt(document.getElementById("setMonthlyFee").value) || 200;
 
             let filtered = allRecords.filter(r => {
                 const match = String(r.mobile || "").includes(search) ||
                     String(r.parentName || "").toLowerCase().includes(search);
                 if (!match) return false;
                 if (filter === "all") return true;
-                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                 if (filter === "pending") return pending > 0;
                 if (filter === "paid") return pending === 0;
                 return true;
@@ -2026,7 +2010,7 @@
                         </tr></thead><tbody>`;
 
             filtered.forEach((r, idx) => {
-                const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                 let statusLabel = '<span class="status-badge paid">Paid</span>';
                 if (pending > 0) statusLabel = '<span class="status-badge pending">Pending</span>';
                 else if (pending < 0) statusLabel = '<span class="status-badge advance">Advance</span>';
@@ -2035,7 +2019,7 @@
                             <td>${idx+1}</td>
                             <td><strong>${escapeHtml(r.parentName)}</strong></td>
                             <td>${escapeHtml(r.mobile)}</td>
-                            <td>${escapeHtml(r.lastPaidMonthFormatted || '---')}</td>
+                            <td>${formatMonthToEnglish(r.lastPaidMonth)}</td>
                             <td>${r.paidMonths || 0}</td>
                             <td>${r.pendingMonths || 0}</td>
                             <td>₹${pending.toLocaleString()}</td>
@@ -2069,12 +2053,13 @@
             let title;
             let columns;
             let rows;
+            const fee = parseInt(document.getElementById("setMonthlyFee").value) || 200;
 
             if (type === 'students') {
                 filter = document.getElementById("adminFilter").value;
                 data = allRecords.filter(r => {
                     if (filter === "all") return true;
-                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                     if (filter === "pending") return pending > 0;
                     if (filter === "paid") return pending === 0;
                     return true;
@@ -2082,7 +2067,7 @@
                 title = "Fee Report - Parents List";
                 columns = ["#", "Parent", "Mobile", "Last Paid Month", "Due (₹)", "Status"];
                 rows = data.map((r, idx) => {
-                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                     let status = "Paid";
                     if (pending > 0) status = "Pending";
                     else if (pending < 0) status = "Advance";
@@ -2090,7 +2075,7 @@
                         idx + 1,
                         r.parentName || "",
                         r.mobile || "",
-                        r.lastPaidMonthFormatted || "---",
+                        formatMonthToEnglish(r.lastPaidMonth),
                         pending.toLocaleString(),
                         status
                     ];
@@ -2099,7 +2084,7 @@
                 filter = document.getElementById("adminFeeFilter").value;
                 data = allRecords.filter(r => {
                     if (filter === "all") return true;
-                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                     if (filter === "pending") return pending > 0;
                     if (filter === "paid") return pending === 0;
                     return true;
@@ -2109,7 +2094,7 @@
                     "Status"
                 ];
                 rows = data.map((r, idx) => {
-                    const pending = (r.pendingMonths || 0) * MONTHLY_FEE + (r.previousBalance || 0);
+                    const pending = (r.pendingMonths || 0) * fee + (r.previousBalance || 0);
                     let status = "Paid";
                     if (pending > 0) status = "Pending";
                     else if (pending < 0) status = "Advance";
@@ -2117,7 +2102,7 @@
                         idx + 1,
                         r.parentName || "",
                         r.mobile || "",
-                        r.lastPaidMonthFormatted || "---",
+                        formatMonthToEnglish(r.lastPaidMonth),
                         r.paidMonths || 0,
                         r.pendingMonths || 0,
                         pending.toLocaleString(),
@@ -2248,28 +2233,19 @@
             if (!mobile || mobile.length !== 10) { showToast("10-digit mobile required", true); return; }
 
             const editMobile = document.getElementById("editStudentMobile").value;
-            let result;
-            if (editMobile) {
-                result = await adminApiPost("updateParent", {
-                    mobile: editMobile,
-                    parentName,
-                    studentName,
-                    lastPaidMonth,
-                    paidMonths,
-                    previousBalance: prevBalance,
-                    lastPaidDate
-                });
-            } else {
-                result = await adminApiPost("addNewParent", {
-                    parentName,
-                    mobile,
-                    studentName,
-                    lastPaidMonth,
-                    paidMonths,
-                    previousBalance: prevBalance,
-                    lastPaidDate
-                });
-            }
+            const action = editMobile ? 'updateParent' : 'addParent';
+            const payload = {
+                mobile: editMobile || mobile,
+                parentName,
+                studentName,
+                lastPaidMonth,
+                paidMonths,
+                previousBalance: prevBalance,
+                lastPaidDate
+            };
+            if (!editMobile) payload.mobile = mobile;
+
+            const result = await apiCall(action, payload);
 
             if (result && result.success) {
                 showToast(result.message || "✅ Record saved", false);
@@ -2286,7 +2262,7 @@
             const amount = prompt("Amount paid (₹):", MONTHLY_FEE);
             if (!amount) return;
 
-            const result = await adminApiPost("updateFeePayment", {
+            const result = await apiCall('payFee', {
                 mobile: mobile,
                 month: month,
                 amount: parseInt(amount) || MONTHLY_FEE
@@ -2301,12 +2277,13 @@
         }
 
         async function viewPaymentHistory(mobile) {
-            const result = await adminApiGet("getPaymentHistory", "mobile=" + encodeURIComponent(mobile));
-            if (result && result.success) {
-                let historyHtml = result.history.map(h =>
-                    `${formatMonthForDisplay(h.month)}: ₹${h.amount} (${h.date})`
+            const result = await apiCall('getPaymentHistory', { mobile });
+            if (result.success && result.data) {
+                const history = result.data.history || [];
+                let historyStr = history.map(h =>
+                    `${formatMonthForDisplay(h.month)}: ₹${h.amount} (${formatDateToDDMMYYYY(h.date)})`
                 ).join('\n');
-                alert("📜 Payment History (" + result.parentName + "):\n\n" + (historyHtml || "No payments yet"));
+                alert("📜 Payment History (" + result.data.parentName + "):\n\n" + (historyStr || "No payments yet"));
             } else {
                 showToast(result?.message || "❌ Error", true);
             }
@@ -2316,7 +2293,7 @@
             const parentName = allRecords.find(r => String(r.mobile) === String(mobile))?.parentName || mobile;
             if (!confirm(`⚠️ Delete all records for "${parentName}"?\n\nThis cannot be undone!`)) return;
 
-            const result = await adminApiPost("deleteParent", { mobile: mobile });
+            const result = await apiCall('deleteParent', { mobile });
             if (result && result.success) {
                 showToast(result.message, false);
                 await loadAdminDashboard();
@@ -2348,7 +2325,7 @@
                 if (!isNaN(val) && val >= 0) payload.paidMonths = val;
             }
 
-            const result = await adminApiPost("bulkUpdate", payload);
+            const result = await apiCall('bulkUpdate', payload);
             if (result && result.success) {
                 showToast(result.message || "✅ Bulk update complete", false);
                 closeBulkFeeForm();
@@ -2363,16 +2340,19 @@
             const monthlyFee = document.getElementById("setMonthlyFee").value;
             const upiId = document.getElementById("setUpiId").value.trim();
             const payeeName = document.getElementById("setPayeeName").value.trim();
+            const startMonth = document.getElementById("setStartMonth").value.trim();
             const supportPhone = document.getElementById("setSupportPhone").value.trim();
             const supportEmail = document.getElementById("setSupportEmail").value.trim();
 
             if (!monthlyFee || monthlyFee <= 0) { showToast("Enter valid fee amount", true); return; }
             if (!upiId) { showToast("Enter UPI ID", true); return; }
+            if (!startMonth) { showToast("Start Month is required", true); return; }
 
-            const result = await adminApiPost("updateSettings", {
+            const result = await apiCall('updateSettings', {
                 monthlyFee: parseInt(monthlyFee),
                 upiId,
                 payeeName,
+                startMonth,
                 supportPhone,
                 supportEmail
             });
@@ -2387,13 +2367,14 @@
 
         async function loadSettings() {
             try {
-                const settings = await adminApiGet("getSettings");
-                if (settings && !settings.error) {
-                    document.getElementById("setMonthlyFee").value = settings.monthlyFee || 200;
-                    document.getElementById("setUpiId").value = settings.upiId || "";
-                    document.getElementById("setPayeeName").value = settings.payeeName || "";
-                    document.getElementById("setSupportPhone").value = settings.supportPhone || "";
-                    document.getElementById("setSupportEmail").value = settings.supportEmail || "";
+                const settings = await apiCall('getSettings');
+                if (settings.success && settings.data) {
+                    document.getElementById("setMonthlyFee").value = settings.data.monthlyFee || 200;
+                    document.getElementById("setUpiId").value = settings.data.upiId || "";
+                    document.getElementById("setPayeeName").value = settings.data.payeeName || "";
+                    document.getElementById("setStartMonth").value = settings.data.startMonth || "";
+                    document.getElementById("setSupportPhone").value = settings.data.supportPhone || "";
+                    document.getElementById("setSupportEmail").value = settings.data.supportEmail || "";
                 }
             } catch (e) {}
         }
@@ -2406,7 +2387,7 @@
             }
         });
 
-        console.log("🌟 Noorussalam Fee System – Fun Pulse Ring (No Rotation)");
+        console.log("🌟 Noorussalam Fee System – 20th Day Cycle");
         console.log("🔐 Admin: Click 'Admin' in footer or double-tap header.");
         console.log("📡 API URL:", API_URL);
     </script>
