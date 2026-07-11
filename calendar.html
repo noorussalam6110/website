@@ -58,7 +58,7 @@
             z-index: 1;
         }
 
-        /* ─── MADRASA HEADER WITH GLOW ─── */
+        /* ─── MADRASA HEADER ─── */
         .madrasa-header {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
@@ -368,7 +368,7 @@
             animation: fa-spin 1s linear infinite;
         }
 
-        /* ─── CALENDAR TABLE ─── */
+        /* ─── CALENDAR GRID ─── */
         .calendar-grid-container {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(20px);
@@ -454,7 +454,7 @@
             opacity: 1;
         }
 
-        /* ─── DATE NUMBER – COLOR CODED BY EVENT TYPE ─── */
+        /* ─── DATE NUMBER – COLOR CODED ─── */
         .calendar-grid .day-cell .day-number {
             font-weight: 700;
             font-size: 1.4rem;
@@ -482,7 +482,6 @@
             color: #8b5cf6;
         }
 
-        /* Date glow effect for events */
         .calendar-grid .day-cell.has-event .day-number {
             text-shadow: 0 0 20px currentColor, 0 0 60px currentColor;
             animation: glowPulse 3s infinite alternate ease-in-out;
@@ -1115,7 +1114,7 @@
                 <span class="legend-item"><span class="legend-dot other"></span> Other</span>
                 <span class="legend-item" style="border-color:transparent;background:transparent;cursor:default;">
                     <i class="fas fa-cloud-upload-alt" style="color:#3b82f6;font-size:0.8rem;"></i>
-                    <span id="statusLabel" style="font-weight:400;color:#9ca3af;">Live from Google Sheets</span>
+                    <span id="statusLabel" style="font-weight:400;color:#9ca3af;">Loading…</span>
                 </span>
             </div>
 
@@ -1152,7 +1151,21 @@
         //  CONFIGURATION
         //  ⚠️ REPLACE WITH YOUR DEPLOYED SCRIPT URL
         // ============================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwyg--X2rFF6FI4q29N13JzAVsuV1pwouD0tX566eTOrlz9oy-Yg53o2ZA5WlfdH6V40A/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXFFWlhQruLICxequp5Z_SsAJ3hcFKDT1hj0cwGeIqxyNEdKcaasEd6Iy-3Ekpv1yBDA/exec';
+
+        // ─── FALLBACK DATA (used if network fails) ──────────────────
+        const FALLBACK_EVENTS = [
+            { date: '2026-01-05', title: '📘 Mid-Term Exams Begin', type: 'exam', description: 'Mid-term exams start.' },
+            { date: '2026-01-26', title: '🇮🇳 Republic Day Celebration', type: 'holiday', description: 'National holiday.' },
+            { date: '2026-02-20', title: '📝 Maths Assignment Submission', type: 'assignment', description: 'Submit your homework.' },
+            { date: '2026-03-01', title: '📘 Final Exams Begin', type: 'exam', description: 'Final exams commence.' },
+            { date: '2026-03-15', title: '🌸 Spring Break – No Classes', type: 'holiday', description: 'Spring vacation.' },
+            { date: '2026-04-05', title: '🌙 Ramadan Mubarak – Holiday', type: 'holiday', description: 'Campus closed.' },
+            { date: '2026-04-15', title: '📘 Unit Test – Week 1', type: 'exam', description: 'Unit test (Day 1).' },
+            { date: '2026-05-01', title: '🌿 Summer Vacation Begins', type: 'holiday', description: 'Summer break starts.' },
+            { date: '2026-06-01', title: '📅 School Reopens – New Session', type: 'event', description: 'New academic year.' },
+            { date: '2026-07-15', title: '📝 Social Studies Project', type: 'assignment', description: 'Submit your project.' },
+        ];
 
         // ============================================================
         //  STATE
@@ -1199,11 +1212,10 @@
             `;
             toastContainer.appendChild(toast);
 
-            // Auto remove after 3 seconds
             setTimeout(() => {
                 toast.classList.add('toast-out');
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, 3500);
         }
 
         // ============================================================
@@ -1245,7 +1257,7 @@
         }
 
         // ============================================================
-        //  FETCH EVENTS FROM GOOGLE SHEET
+        //  FETCH EVENTS FROM GOOGLE SHEET (with fallback)
         // ============================================================
         async function loadEvents() {
             if (isLoading) return;
@@ -1262,43 +1274,41 @@
                     </div>
                 `;
 
-                const resp = await fetch(`${SCRIPT_URL}?action=getEvents&t=${Date.now()}`);
+                const resp = await fetch(`${SCRIPT_URL}?action=getEvents&t=${Date.now()}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!resp.ok) {
+                    throw new Error('HTTP ' + resp.status);
+                }
+
                 const data = await resp.json();
 
-                if (data.result === 'success') {
+                if (data.result === 'success' && data.length > 0) {
                     eventsData = data;
-                    statusLabel.textContent = `✅ ${eventsData.length} events loaded`;
+                    statusLabel.textContent = `✅ ${eventsData.length} events loaded from Sheets`;
                     statusLabel.style.color = '#10b981';
-                    showToast(`Loaded ${eventsData.length} events from Google Sheets`, 'success');
+                    showToast(`✅ Loaded ${eventsData.length} events from Google Sheets`, 'success');
                 } else {
-                    eventsData = [];
-                    statusLabel.textContent = '⚠️ Failed to load';
-                    statusLabel.style.color = '#ef4444';
-                    showToast('Failed to load events: ' + (data.message || 'Unknown error'), 'error');
+                    // No data from sheet – use fallback
+                    eventsData = FALLBACK_EVENTS;
+                    statusLabel.textContent = `📋 Using fallback data (${eventsData.length} events)`;
+                    statusLabel.style.color = '#f59e0b';
+                    showToast('📋 Using fallback sample data', 'info');
                 }
-
-                renderCalendar(currentYear, currentMonth);
-
-                // Select today
-                const today = new Date();
-                if (eventsData.length > 0) {
-                    onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
-                } else {
-                    // If no events, still show today
-                    onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
-                }
-
             } catch (err) {
-                console.error('Network error:', err);
-                eventsData = [];
-                statusLabel.textContent = '⚠️ Network error';
-                statusLabel.style.color = '#ef4444';
-                showToast('Network error loading events. Please refresh.', 'error');
-                renderCalendar(currentYear, currentMonth);
-                const today = new Date();
-                onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
+                console.warn('Network error, using fallback data:', err);
+                // Use fallback data
+                eventsData = FALLBACK_EVENTS;
+                statusLabel.textContent = '⚠️ Offline – using sample data';
+                statusLabel.style.color = '#f59e0b';
+                showToast('⚠️ Network error – using sample data', 'error');
             }
 
+            renderCalendar(currentYear, currentMonth);
+            const today = new Date();
+            onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
             isLoading = false;
         }
 
@@ -1505,10 +1515,16 @@
         if (SCRIPT_URL === 'YOUR_DEPLOYED_SCRIPT_URL_HERE') {
             statusLabel.textContent = '⚠️ Set SCRIPT_URL';
             statusLabel.style.color = '#ef4444';
-            console.warn('Please set your SCRIPT_URL in the JavaScript configuration.');
+            console.warn('⚠️ Please set your SCRIPT_URL in the JavaScript configuration.');
+            // Use fallback data immediately
+            eventsData = FALLBACK_EVENTS;
+            renderCalendar(currentYear, currentMonth);
+            const today = new Date();
+            onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
+            showToast('⚠️ Set SCRIPT_URL in the code', 'error');
+        } else {
+            loadEvents();
         }
-
-        loadEvents();
     </script>
 
 </body>
