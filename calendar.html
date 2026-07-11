@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Academic Calendar | NOORUSSALAM MADRASA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* ─── RESET & BASE ─── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+        }
+
+        body {
+            background: #f0f4fe;
+            min-height: 100vh;
+            padding: 16px;
+            color: #1a1a2e;
+        }
+
+        /* ─── MAIN WRAPPER ─── */
+        .calendar-wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ─── HEADER WITH MADRASA BRANDING ─── */
+        .madrasa-header {
+            background: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
+            border-radius: 2rem;
+            padding: 1.8rem 2rem 1.2rem;
+            margin-bottom: 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.06);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .madrasa-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .madrasa-header .brand-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .madrasa-header .logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #1e3a5f, #3b82f6);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 800;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+            flex-shrink: 0;
+        }
+
+        .madrasa-header .title-group h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a1a2e;
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
+        }
+
+        .madrasa-header .title-group h1 span {
+            background: linear-gradient(135deg, #1e3a5f, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .madrasa-header .title-group .subtitle {
+            font-size: 0.9rem;
+            color: #4b5563;
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .madrasa-header .title-group .reg-info {
+            font-size: 0.75rem;
+            color: #6b7280;
+            background: rgba(59, 130, 246, 0.06);
+            padding: 2px 16px;
+            border-radius: 40px;
+            display: inline-block;
+            margin-top: 4px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .madrasa-header .calendar-headline {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid rgba(59, 130, 246, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .madrasa-header .calendar-headline h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0;
+        }
+
+        .madrasa-header .calendar-headline h2 i {
+            color: #3b82f6;
+            margin-right: 8px;
+        }
+
+        .madrasa-header .calendar-headline .academic-year {
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 2px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            font-weight: 600;
+        }
+
+        /* ─── NAVIGATION BAR ─── */
+        .calendar-nav {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border-radius: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar-nav .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .calendar-nav .nav-left .month-label {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .calendar-nav .nav-btn {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            color: #1a1a2e;
+            font-size: 0.9rem;
+        }
+        .calendar-nav .nav-btn:hover {
+            background: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            border-color: rgba(59, 130, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .calendar-nav .nav-right {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .calendar-nav .btn-today {
+            background: linear-gradient(95deg, #3b82f6, #7c3aed);
+            border: none;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-weight: 700;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.25s;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .calendar-nav .btn-today:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 24px -6px rgba(59, 130, 246, 0.35);
+        }
+
+        .calendar-nav .btn-refresh {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #6b7280;
+        }
+        .calendar-nav .btn-refresh:hover {
+            background: #ffffff;
+            color: #3b82f6;
+            transform: rotate(180deg);
+        }
+
+        /* ─── CALENDAR GRID ─── */
+        .calendar-grid-container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.04);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .calendar-grid .day-name {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: #6b7280;
+            padding: 8px 0 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .calendar-grid .day-cell {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px 2px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+            cursor: default;
+            position: relative;
+            border: 1.5px solid transparent;
+            min-height: 64px;
+        }
+
+        .calendar-grid .day-cell .day-number {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a1a2e;
+            line-height: 1.3;
+        }
+
+        .calendar-grid .day-cell.other-month .day-number {
+            color: #b0b8c8;
+        }
+
+        .calendar-grid .day-cell.today {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+        .calendar-grid .day-cell.today .day-number {
+            color: #3b82f6;
+            font-weight: 800;
+        }
+
+        .calendar-grid .day-cell.selected {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+
+        .calendar-grid .day-cell.has-event {
+            cursor: pointer;
+        }
+        .calendar-grid .day-cell.has-event:hover {
+            background: rgba(59, 130, 246, 0.06);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.06);
+        }
+
+        .calendar-grid .day-cell .event-dots {
+            display: flex;
+            gap: 3px;
+            margin-top: 2px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .calendar-grid .day-cell .event-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .calendar-grid .day-cell .event-dot.exam {
+            background: #ef4444;
+        }
+        .calendar-grid .day-cell .event-dot.holiday {
+            background: #10b981;
+        }
+        .calendar-grid .day-cell .event-dot.assignment {
+            background: #f59e0b;
+        }
+        .calendar-grid .day-cell .event-dot.event {
+            background: #3b82f6;
+        }
+        .calendar-grid .day-cell .event-dot.other {
+            background: #8b5cf6;
+        }
+
+        .calendar-grid .day-cell .event-count-badge {
+            font-size: 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            padding: 0 5px;
+            border-radius: 20px;
+            font-weight: 700;
+            margin-top: 1px;
+            line-height: 1.4;
+        }
+
+        /* ─── LEGEND ─── */
+        .calendar-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 20px;
+            padding: 12px 0 4px;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            margin-top: 12px;
+            justify-content: center;
+        }
+        .calendar-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #4b5563;
+        }
+        .calendar-legend .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* ─── EVENT DETAIL PANEL ─── */
+        .event-detail-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            margin-top: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            display: none;
+            transition: all 0.3s;
+        }
+        .event-detail-panel.visible {
+            display: block;
+            animation: fadeSlide 0.35s ease;
+        }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .event-detail-panel .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .event-detail-panel .panel-header h5 {
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0;
+            font-size: 1rem;
+        }
+        .event-detail-panel .panel-header h5 i {
+            color: #3b82f6;
+            margin-right: 6px;
+        }
+        .event-detail-panel .panel-close {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 0 4px;
+        }
+        .event-detail-panel .panel-close:hover {
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        .event-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            border-left: 3px solid #3b82f6;
+            transition: 0.2s;
+        }
+        .event-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateX(4px);
+        }
+        .event-item .event-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+        .event-item .event-icon.exam {
+            background: rgba(239, 68, 68, 0.12);
+            color: #ef4444;
+        }
+        .event-item .event-icon.holiday {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+        }
+        .event-item .event-icon.assignment {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+        }
+        .event-item .event-icon.event {
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
+        }
+        .event-item .event-icon.other {
+            background: rgba(139, 92, 246, 0.12);
+            color: #8b5cf6;
+        }
+
+        .event-item .event-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .event-item .event-info .event-title {
+            font-weight: 600;
+            color: #1a1a2e;
+            font-size: 0.85rem;
+            word-break: break-word;
+        }
+        .event-item .event-info .event-meta {
+            font-size: 0.7rem;
+            color: #6b7280;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 1px;
+        }
+        .event-item .event-badge {
+            font-size: 0.55rem;
+            font-weight: 700;
+            padding: 1px 10px;
+            border-radius: 40px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        .event-item .event-badge.exam {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        .event-item .event-badge.holiday {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+        .event-item .event-badge.assignment {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        .event-item .event-badge.event {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        .event-item .event-badge.other {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .no-events-msg {
+            text-align: center;
+            color: #9ca3af;
+            padding: 16px 0;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 30px 0;
+            color: #6b7280;
+            grid-column: 1 / -1;
+        }
+
+        /* ─── FOOTER ─── */
+        .calendar-footer {
+            text-align: center;
+            color: #9ca3af;
+            margin-top: 1.8rem;
+            padding-bottom: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+        .calendar-footer i {
+            margin-right: 4px;
+        }
+        .calendar-footer .footer-divider {
+            display: inline-block;
+            width: 4px;
+            height: 4px;
+            background: #d1d5db;
+            border-radius: 50%;
+            margin: 0 8px;
+            vertical-align: middle;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .madrasa-header {
+                padding: 1.2rem 1rem 0.8rem;
+                border-radius: 1.5rem;
+            }
+            .madrasa-header .brand-top {
+                gap: 10px;
+            }
+            .madrasa-header .logo-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+                border-radius: 16px;
+            }
+            .madrasa-header .title-group h1 {
+                font-size: 1.3rem;
+            }
+            .madrasa-header .title-group .subtitle {
+                font-size: 0.75rem;
+            }
+            .madrasa-header .title-group .reg-info {
+                font-size: 0.65rem;
+                padding: 1px 12px;
+            }
+            .madrasa-header .calendar-headline {
+                margin-top: 8px;
+                padding-top: 8px;
+                gap: 8px;
+            }
+            .madrasa-header .calendar-headline h2 {
+                font-size: 1rem;
+            }
+            .madrasa-header .calendar-headline .academic-year {
+                font-size: 0.65rem;
+                padding: 1px 12px;
+            }
+
+            .calendar-nav {
+                padding: 0.6rem 1rem;
+                border-radius: 1.2rem;
+                gap: 6px;
+            }
+            .calendar-nav .nav-left .month-label {
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+            .calendar-nav .nav-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.75rem;
+            }
+            .calendar-nav .btn-today {
+                font-size: 0.7rem;
+                padding: 4px 14px;
+            }
+            .calendar-nav .btn-refresh {
+                width: 32px;
+                height: 32px;
+                font-size: 0.75rem;
+            }
+
+            .calendar-grid-container {
+                padding: 0.8rem;
+                border-radius: 1.5rem;
+            }
+            .calendar-grid {
+                gap: 2px;
+            }
+            .calendar-grid .day-name {
+                font-size: 0.6rem;
+                padding: 4px 0 2px;
+            }
+            .calendar-grid .day-cell {
+                min-height: 48px;
+                padding: 2px 1px;
+                border-radius: 8px;
+            }
+            .calendar-grid .day-cell .day-number {
+                font-size: 0.75rem;
+            }
+            .calendar-grid .day-cell .event-dot {
+                width: 5px;
+                height: 5px;
+            }
+            .calendar-grid .day-cell .event-count-badge {
+                font-size: 0.45rem;
+                padding: 0 4px;
+            }
+
+            .calendar-legend {
+                gap: 6px 12px;
+                padding: 8px 0 2px;
+            }
+            .calendar-legend .legend-item {
+                font-size: 0.6rem;
+                gap: 4px;
+            }
+            .calendar-legend .legend-dot {
+                width: 8px;
+                height: 8px;
+            }
+
+            .event-detail-panel {
+                padding: 0.8rem 1rem;
+                border-radius: 1.2rem;
+                margin-top: 0.8rem;
+            }
+            .event-detail-panel .panel-header h5 {
+                font-size: 0.85rem;
+            }
+            .event-item {
+                padding: 6px 10px;
+                gap: 10px;
+                border-left-width: 3px;
+            }
+            .event-item .event-icon {
+                width: 26px;
+                height: 26px;
+                font-size: 0.65rem;
+            }
+            .event-item .event-info .event-title {
+                font-size: 0.75rem;
+            }
+            .event-item .event-info .event-meta {
+                font-size: 0.6rem;
+                gap: 6px;
+            }
+            .event-item .event-badge {
+                font-size: 0.5rem;
+                padding: 0 8px;
+            }
+
+            .calendar-footer {
+                font-size: 0.6rem;
+                margin-top: 1.2rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .madrasa-header .title-group h1 {
+                font-size: 1.1rem;
+            }
+            .calendar-grid .day-cell {
+                min-height: 40px;
+                border-radius: 6px;
+            }
+            .calendar-grid .day-cell .day-number {
+                font-size: 0.65rem;
+            }
+            .calendar-grid .day-cell .event-dot {
+                width: 4px;
+                height: 4px;
+            }
+            .calendar-nav .nav-left .month-label {
+                font-size: 0.75rem;
+                min-width: 60px;
+            }
+            .calendar-nav .nav-btn {
+                width: 28px;
+                height: 28px;
+                font-size: 0.65rem;
+            }
+            .calendar-nav .btn-today {
+                font-size: 0.6rem;
+                padding: 3px 10px;
+            }
+            .calendar-nav .btn-refresh {
+                width: 28px;
+                height: 28px;
+                font-size: 0.65rem;
+            }
+        }
+
+        /* ─── SCROLLBAR ─── */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calendar-wrapper">
+
+        <!-- ─── MADRASA HEADER ─── -->
+        <header class="madrasa-header">
+            <div class="brand-top">
+                <div class="logo-icon">ن</div>
+                <div class="title-group">
+                    <h1>NOORUSSALAM <span>MADRASA</span></h1>
+                    <div class="subtitle">KAMBIPPALAM · KERALA ESTATE</div>
+                    <div class="reg-info"><i class="fas fa-certificate me-1"></i> under SKIMVB, Reg No: 6110</div>
+                </div>
+            </div>
+            <div class="calendar-headline">
+                <h2><i class="fas fa-calendar-alt"></i> Academic Calendar</h2>
+                <span class="academic-year"><i class="far fa-calendar-alt me-1"></i> 2025 – 2026</span>
+            </div>
+        </header>
+
+        <!-- ─── NAVIGATION ─── -->
+        <nav class="calendar-nav">
+            <div class="nav-left">
+                <button class="nav-btn" id="prevMonthBtn" aria-label="Previous month">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="month-label" id="monthLabel">January 2026</span>
+                <button class="nav-btn" id="nextMonthBtn" aria-label="Next month">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div class="nav-right">
+                <button class="btn-today" id="todayBtn"><i class="fas fa-calendar-day me-1"></i> Today</button>
+                <button class="btn-refresh" id="refreshBtn" aria-label="Refresh events" title="Refresh events">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ─── CALENDAR GRID ─── -->
+        <div class="calendar-grid-container">
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- cells injected by JS -->
+            </div>
+
+            <!-- ─── LEGEND ─── -->
+            <div class="calendar-legend">
+                <span class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span> Exam</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Holiday</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Assignment</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span> Event</span>
+                <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span> Other</span>
+            </div>
+
+            <!-- ─── EVENT DETAIL PANEL ─── -->
+            <div class="event-detail-panel" id="eventDetailPanel">
+                <div class="panel-header">
+                    <h5><i class="fas fa-list-ul"></i> Events for <span id="panelDateLabel">January 15, 2026</span></h5>
+                    <button class="panel-close" id="panelCloseBtn" aria-label="Close panel">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="panelEventList" class="event-list">
+                    <!-- injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── FOOTER ─── -->
+        <div class="calendar-footer">
+            <i class="fas fa-shield-alt"></i> Noorussalam Madrasa
+            <span class="footer-divider"></span>
+            <i class="fas fa-calendar-check"></i> Academic Calendar 2025–26
+            <span class="footer-divider"></span>
+            <i class="fas fa-sync-alt fa-fw"></i> Live from Google Sheets
+        </div>
+    </div>
+
+    <!-- ─── JAVASCRIPT ─── -->
+    <script>
+        // ============================================================
+        //  CONFIGURATION — REPLACE WITH YOUR DEPLOYED SCRIPT URL
+        // ============================================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP9TjNv8dkjcOpjD0bJ6DkajOhZ4Xn-yWF2K2_DMXr38rC0McORQVAC3a2GaJcNbCQ9g/exec'; // <-- PASTE YOUR URL
+
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let eventsData = [];
+        let currentDate = new Date();
+        let currentYear = currentDate.getFullYear();
+        let currentMonth = currentDate.getMonth();
+        let selectedDate = null;
+
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        const gridEl = document.getElementById('calendarGrid');
+        const monthLabel = document.getElementById('monthLabel');
+        const panel = document.getElementById('eventDetailPanel');
+        const panelDateLabel = document.getElementById('panelDateLabel');
+        const panelEventList = document.getElementById('panelEventList');
+        const panelCloseBtn = document.getElementById('panelCloseBtn');
+        const prevBtn = document.getElementById('prevMonthBtn');
+        const nextBtn = document.getElementById('nextMonthBtn');
+        const todayBtn = document.getElementById('todayBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        // ============================================================
+        //  HELPERS
+        // ============================================================
+        function formatDateKey(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        function getEventsForDate(year, month, day) {
+            const key = formatDateKey(year, month, day);
+            return eventsData.filter(e => e.date === key);
+        }
+
+        function getEventTypeIcon(type) {
+            const map = {
+                exam: 'fa-pencil-alt',
+                holiday: 'fa-umbrella-beach',
+                assignment: 'fa-file-alt',
+                event: 'fa-calendar-check',
+                other: 'fa-circle'
+            };
+            return map[type] || 'fa-calendar-day';
+        }
+
+        function getEventTypeLabel(type) {
+            const map = { exam: 'Exam', holiday: 'Holiday', assignment: 'Assignment', event: 'Event', other: 'Other' };
+            return map[type] || 'Event';
+        }
+
+        // ============================================================
+        //  FETCH EVENTS FROM GOOGLE SHEET
+        // ============================================================
+        async function loadEvents() {
+            try {
+                gridEl.innerHTML = `
+                    <div class="loading-spinner" style="grid-column:1/-1;">
+                        <i class="fas fa-spinner fa-pulse fa-2x"></i>
+                        <p style="margin-top:8px;font-weight:500;">Loading events…</p>
+                    </div>
+                `;
+
+                const resp = await fetch(`${SCRIPT_URL}?action=getEvents&t=${Date.now()}`);
+                const data = await resp.json();
+
+                if (data.result === 'success') {
+                    eventsData = data;
+                    renderCalendar(currentYear, currentMonth);
+
+                    if (!selectedDate) {
+                        const today = new Date();
+                        selectedDate = today;
+                        onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
+                    } else {
+                        const selY = selectedDate.getFullYear();
+                        const selM = selectedDate.getMonth();
+                        const selD = selectedDate.getDate();
+                        if (selY === currentYear && selM === currentMonth) {
+                            onDayClick(selY, selM, selD);
+                        } else {
+                            const today = new Date();
+                            selectedDate = today;
+                            onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
+                        }
+                    }
+                } else {
+                    console.warn('Failed to load events:', data.message);
+                    eventsData = [];
+                    renderCalendar(currentYear, currentMonth);
+                }
+            } catch (err) {
+                console.error('Network error:', err);
+                eventsData = [];
+                renderCalendar(currentYear, currentMonth);
+            }
+        }
+
+        // ============================================================
+        //  RENDER CALENDAR
+        // ============================================================
+        function renderCalendar(year, month) {
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const today = new Date();
+            const todayY = today.getFullYear();
+            const todayM = today.getMonth();
+            const todayD = today.getDate();
+
+            let html = '';
+
+            // Day names
+            dayNames.forEach(name => {
+                html += `<div class="day-name">${name}</div>`;
+            });
+
+            // Previous month days
+            const prevMonth = month === 0 ? 11 : month - 1;
+            const prevYear = month === 0 ? year - 1 : year;
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = daysInPrevMonth - i;
+                html += renderDayCell(prevYear, prevMonth, day, true, todayY, todayM, todayD);
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                html += renderDayCell(year, month, day, false, todayY, todayM, todayD);
+            }
+
+            // Next month days (to fill last row)
+            const totalCells = firstDay + daysInMonth;
+            const remaining = (7 - (totalCells % 7)) % 7;
+            const nextMonth = month === 11 ? 0 : month + 1;
+            const nextYear = month === 11 ? year + 1 : year;
+            for (let day = 1; day <= remaining; day++) {
+                html += renderDayCell(nextYear, nextMonth, day, true, todayY, todayM, todayD);
+            }
+
+            gridEl.innerHTML = html;
+            monthLabel.textContent = `${monthNames[month]} ${year}`;
+        }
+
+        function renderDayCell(year, month, day, isOtherMonth, todayY, todayM, todayD) {
+            const dateKey = formatDateKey(year, month, day);
+            const events = getEventsForDate(year, month, day);
+
+            const isToday = (year === todayY && month === todayM && day === todayD);
+            const isSelected = selectedDate && selectedDate.getFullYear() === year &&
+                selectedDate.getMonth() === month &&
+                selectedDate.getDate() === day;
+
+            let classes = 'day-cell';
+            if (isOtherMonth) classes += ' other-month';
+            if (isToday) classes += ' today';
+            if (isSelected) classes += ' selected';
+            if (events.length > 0) classes += ' has-event';
+
+            let dotsHtml = '';
+            const types = events.map(e => e.type);
+            const uniqueTypes = [...new Set(types)];
+            uniqueTypes.forEach(type => {
+                dotsHtml += `<span class="event-dot ${type}"></span>`;
+            });
+
+            let badgeHtml = '';
+            if (events.length > 1) {
+                badgeHtml = `<span class="event-count-badge">${events.length}</span>`;
+            }
+
+            return `
+                <div class="${classes}" data-date="${dateKey}" onclick="onDayClick(${year}, ${month}, ${day})">
+                    <span class="day-number">${day}</span>
+                    ${dotsHtml ? `<div class="event-dots">${dotsHtml}</div>` : ''}
+                    ${badgeHtml}
+                </div>
+            `;
+        }
+
+        // ============================================================
+        //  DAY CLICK & DETAILS
+        // ============================================================
+        window.onDayClick = function(year, month, day) {
+            const dateObj = new Date(year, month, day);
+            selectedDate = dateObj;
+
+            document.querySelectorAll('.day-cell').forEach(el => el.classList.remove('selected'));
+            const target = document.querySelector(`.day-cell[data-date="${formatDateKey(year, month, day)}"]`);
+            if (target) target.classList.add('selected');
+
+            showEventDetails(dateObj);
+        };
+
+        function showEventDetails(dateObj) {
+            const events = getEventsForDate(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth();
+            const day = dateObj.getDate();
+
+            panelDateLabel.textContent = `${monthNames[month]} ${day}, ${year}`;
+
+            if (events.length === 0) {
+                panelEventList.innerHTML = `
+                    <div class="no-events-msg">
+                        <i class="fas fa-calendar-minus me-2"></i>No events on this day.
+                    </div>
+                `;
+            } else {
+                let html = '';
+                events.forEach(ev => {
+                    const iconClass = ev.type || 'event';
+                    const icon = getEventTypeIcon(iconClass);
+                    const label = getEventTypeLabel(iconClass);
+                    html += `
+                        <div class="event-item">
+                            <div class="event-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                            <div class="event-info">
+                                <div class="event-title">${ev.title}</div>
+                                <div class="event-meta">
+                                    ${ev.description ? `<span>${ev.description}</span>` : ''}
+                                    <span class="event-badge ${iconClass}">${label}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                panelEventList.innerHTML = html;
+            }
+
+            panel.classList.add('visible');
+        }
+
+        // ============================================================
+        //  NAVIGATION
+        // ============================================================
+        function navigateMonth(delta) {
+            currentMonth += delta;
+            if (currentMonth < 0) { currentMonth = 11;
+                currentYear--; } else if (currentMonth > 11) { currentMonth = 0;
+                currentYear++; }
+            renderCalendar(currentYear, currentMonth);
+
+            if (selectedDate) {
+                const selY = selectedDate.getFullYear();
+                const selM = selectedDate.getMonth();
+                if (!(selY === currentYear && selM === currentMonth)) {
+                    panel.classList.remove('visible');
+                    document.querySelectorAll('.day-cell').forEach(el => el.classList.remove('selected'));
+                    selectedDate = null;
+                } else {
+                    const selD = selectedDate.getDate();
+                    onDayClick(selY, selM, selD);
+                }
+            }
+        }
+
+        // ============================================================
+        //  EVENT LISTENERS
+        // ============================================================
+        prevBtn.addEventListener('click', () => navigateMonth(-1));
+        nextBtn.addEventListener('click', () => navigateMonth(1));
+
+        todayBtn.addEventListener('click', function() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            renderCalendar(currentYear, currentMonth);
+            onDayClick(currentYear, currentMonth, today.getDate());
+        });
+
+        refreshBtn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            icon.classList.add('fa-spin');
+            loadEvents().finally(() => {
+                setTimeout(() => icon.classList.remove('fa-spin'), 600);
+            });
+        });
+
+        panelCloseBtn.addEventListener('click', function() {
+            panel.classList.remove('visible');
+            document.querySelectorAll('.day-cell').forEach(el => el.classList.remove('selected'));
+            selectedDate = null;
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft') navigateMonth(-1);
+            else if (e.key === 'ArrowRight') navigateMonth(1);
+            else if (e.key === 'Escape') {
+                panel.classList.remove('visible');
+                document.querySelectorAll('.day-cell').forEach(el => el.classList.remove('selected'));
+                selectedDate = null;
+            }
+        });
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        loadEvents();
+    </script>
+
+</body>
+</html>
