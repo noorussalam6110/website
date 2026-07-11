@@ -1147,29 +1147,50 @@
 
     <!-- ─── JAVASCRIPT ─── -->
     <script>
-        // ============================================================
-        //  CONFIGURATION
-        //  ⚠️ REPLACE WITH YOUR DEPLOYED SCRIPT URL
-        // ============================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXFFWlhQruLICxequp5Z_SsAJ3hcFKDT1hj0cwGeIqxyNEdKcaasEd6Iy-3Ekpv1yBDA/exec';
+        // ════════════════════════════════════════════════════════════════
+        //  CONFIGURATION – REPLACE WITH YOUR DEPLOYED URL
+        // ════════════════════════════════════════════════════════════════
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvn4NAK082kw6Z7Og_gEd8vSYpRaWMogEpS-ZKdkNdiK9hsc4ajTD7N5ASWOfPPN3fXw/exec';
 
-        // ─── FALLBACK DATA (used if network fails) ──────────────────
+        // ─── FALLBACK DATA (used when network fails or sheet is empty) ───
         const FALLBACK_EVENTS = [
             { date: '2026-01-05', title: '📘 Mid-Term Exams Begin', type: 'exam', description: 'Mid-term exams start.' },
-            { date: '2026-01-26', title: '🇮🇳 Republic Day Celebration', type: 'holiday', description: 'National holiday.' },
-            { date: '2026-02-20', title: '📝 Maths Assignment Submission', type: 'assignment', description: 'Submit your homework.' },
+            { date: '2026-01-10', title: '🎓 Parent-Teacher Meeting', type: 'event', description: 'Annual PTM, 10 AM – 2 PM.' },
+            { date: '2026-01-15', title: '📝 Science Assignment', type: 'assignment', description: 'Submit your Science project.' },
+            { date: '2026-01-20', title: '🏏 Sports Day', type: 'event', description: 'Inter-house sports competitions.' },
+            { date: '2026-01-26', title: '🇮🇳 Republic Day', type: 'holiday', description: 'National holiday.' },
+            { date: '2026-02-02', title: '📖 Essay Competition', type: 'event', description: 'Topic: "My Vision for India".' },
+            { date: '2026-02-10', title: '📚 Annual Day Rehearsal', type: 'event', description: 'Mandatory rehearsal.' },
+            { date: '2026-02-14', title: '❤️ Valentine\'s Day – No Classes', type: 'holiday', description: 'Campus closed.' },
+            { date: '2026-02-20', title: '📝 Maths Assignment', type: 'assignment', description: 'Submit your homework.' },
+            { date: '2026-02-25', title: '🎭 Annual Day Function', type: 'event', description: 'Grand celebration – 6:00 PM.' },
             { date: '2026-03-01', title: '📘 Final Exams Begin', type: 'exam', description: 'Final exams commence.' },
-            { date: '2026-03-15', title: '🌸 Spring Break – No Classes', type: 'holiday', description: 'Spring vacation.' },
-            { date: '2026-04-05', title: '🌙 Ramadan Mubarak – Holiday', type: 'holiday', description: 'Campus closed.' },
+            { date: '2026-03-10', title: '🏆 Prize Distribution', type: 'event', description: 'Merit certificates & trophies.' },
+            { date: '2026-03-15', title: '🌸 Spring Break', type: 'holiday', description: 'Spring vacation begins.' },
+            { date: '2026-03-25', title: '📅 Classes Resume', type: 'event', description: 'School reopens.' },
+            { date: '2026-04-01', title: '📝 English Assignment', type: 'assignment', description: 'Submit your project.' },
+            { date: '2026-04-05', title: '🌙 Ramadan Mubarak', type: 'holiday', description: 'Campus closed for Ramadan.' },
+            { date: '2026-04-10', title: '📖 Quran Quiz', type: 'event', description: 'Inter-class quiz – 10:00 AM.' },
             { date: '2026-04-15', title: '📘 Unit Test – Week 1', type: 'exam', description: 'Unit test (Day 1).' },
+            { date: '2026-04-16', title: '📘 Unit Test – Week 2', type: 'exam', description: 'Unit test (Day 2).' },
+            { date: '2026-04-20', title: '🎓 Career Counseling', type: 'event', description: 'For Class 9 & 10 – 11:00 AM.' },
             { date: '2026-05-01', title: '🌿 Summer Vacation Begins', type: 'holiday', description: 'Summer break starts.' },
-            { date: '2026-06-01', title: '📅 School Reopens – New Session', type: 'event', description: 'New academic year.' },
+            { date: '2026-06-01', title: '📅 School Reopens', type: 'event', description: 'New academic year.' },
+            { date: '2026-06-10', title: '📘 Orientation Day', type: 'event', description: 'For new students & parents.' },
+            { date: '2026-06-15', title: '📝 Summer Project', type: 'assignment', description: 'Submit your summer project.' },
+            { date: '2026-06-20', title: '🏅 Inter-School Debate', type: 'event', description: 'Team selection & practice.' },
+            { date: '2026-07-01', title: '📘 Mid-Term Exams', type: 'exam', description: 'Mid-term exams (July 1–10).' },
+            { date: '2026-07-05', title: '🇺🇸 Independence Day', type: 'holiday', description: 'National holiday – 8:30 AM.' },
             { date: '2026-07-15', title: '📝 Social Studies Project', type: 'assignment', description: 'Submit your project.' },
+            { date: '2026-07-20', title: '🎭 Drama & Arts Festival', type: 'event', description: 'Annual drama festival.' },
+            { date: '2026-08-01', title: '📘 Final Exams', type: 'exam', description: 'Final exams (Aug 1–15).' },
+            { date: '2026-08-10', title: '🏆 End of Year Ceremony', type: 'event', description: 'Certificate distribution.' },
+            { date: '2026-08-15', title: '🎉 Summer Break', type: 'holiday', description: 'Summer vacation begins.' },
         ];
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  STATE
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         let eventsData = [];
         let currentDate = new Date();
         let currentYear = currentDate.getFullYear();
@@ -1195,9 +1216,9 @@
         const statusLabel = document.getElementById('statusLabel');
         const toastContainer = document.getElementById('toastContainer');
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  TOAST NOTIFICATION
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         function showToast(message, type = 'success') {
             const icons = {
                 success: 'fa-check-circle',
@@ -1218,9 +1239,9 @@
             }, 3500);
         }
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  HELPERS
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         function formatDateKey(year, month, day) {
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
@@ -1256,13 +1277,13 @@
             return map[type] || 'Event';
         }
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  FETCH EVENTS FROM GOOGLE SHEET (with fallback)
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         async function loadEvents() {
             if (isLoading) return;
             isLoading = true;
-            statusLabel.textContent = 'Loading…';
+            statusLabel.textContent = '⏳ Loading…';
             statusLabel.style.color = '#3b82f6';
 
             try {
@@ -1274,36 +1295,48 @@
                     </div>
                 `;
 
+                // ─── Check if URL is configured ──────────────────────────
+                if (SCRIPT_URL === 'YOUR_DEPLOYED_SCRIPT_URL_HERE') {
+                    throw new Error('SCRIPT_URL not configured. Please set your deployed URL.');
+                }
+
                 const resp = await fetch(`${SCRIPT_URL}?action=getEvents&t=${Date.now()}`, {
                     method: 'GET',
                     headers: { 'Accept': 'application/json' }
                 });
 
                 if (!resp.ok) {
-                    throw new Error('HTTP ' + resp.status);
+                    throw new Error(`HTTP ${resp.status} – ${resp.statusText}`);
                 }
 
                 const data = await resp.json();
 
-                if (data.result === 'success' && data.length > 0) {
-                    eventsData = data;
-                    statusLabel.textContent = `✅ ${eventsData.length} events loaded from Sheets`;
-                    statusLabel.style.color = '#10b981';
-                    showToast(`✅ Loaded ${eventsData.length} events from Google Sheets`, 'success');
+                if (data.result === 'success') {
+                    if (data.length > 0) {
+                        eventsData = data;
+                        statusLabel.textContent = `✅ ${eventsData.length} events loaded from Sheets`;
+                        statusLabel.style.color = '#10b981';
+                        showToast(`✅ Loaded ${eventsData.length} events from Google Sheets`, 'success');
+                    } else {
+                        // Sheet exists but has no events → use fallback
+                        eventsData = FALLBACK_EVENTS;
+                        statusLabel.textContent = '📋 No events in sheet – using fallback data';
+                        statusLabel.style.color = '#f59e0b';
+                        showToast('📋 Your sheet is empty – using sample data', 'info');
+                    }
                 } else {
-                    // No data from sheet – use fallback
+                    // Script returned an error
                     eventsData = FALLBACK_EVENTS;
-                    statusLabel.textContent = `📋 Using fallback data (${eventsData.length} events)`;
-                    statusLabel.style.color = '#f59e0b';
-                    showToast('📋 Using fallback sample data', 'info');
+                    statusLabel.textContent = '⚠️ Script error: ' + (data.message || 'Unknown');
+                    statusLabel.style.color = '#ef4444';
+                    showToast('⚠️ Script error – using fallback data', 'error');
                 }
             } catch (err) {
-                console.warn('Network error, using fallback data:', err);
-                // Use fallback data
+                console.error('Network error:', err);
                 eventsData = FALLBACK_EVENTS;
-                statusLabel.textContent = '⚠️ Offline – using sample data';
-                statusLabel.style.color = '#f59e0b';
-                showToast('⚠️ Network error – using sample data', 'error');
+                statusLabel.textContent = '⚠️ ' + err.message;
+                statusLabel.style.color = '#ef4444';
+                showToast('⚠️ ' + err.message + ' – using fallback data', 'error');
             }
 
             renderCalendar(currentYear, currentMonth);
@@ -1312,9 +1345,9 @@
             isLoading = false;
         }
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  RENDER CALENDAR
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         function renderCalendar(year, month) {
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1392,9 +1425,9 @@
             `;
         }
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  DAY CLICK & DETAILS
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         window.onDayClick = function(year, month, day) {
             const dateObj = new Date(year, month, day);
             selectedDate = dateObj;
@@ -1445,9 +1478,9 @@
             panel.classList.add('visible');
         }
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  NAVIGATION
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         function navigateMonth(delta) {
             currentMonth += delta;
             if (currentMonth < 0) { currentMonth = 11;
@@ -1469,9 +1502,9 @@
             }
         }
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  EVENT LISTENERS
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         prevBtn.addEventListener('click', () => navigateMonth(-1));
         nextBtn.addEventListener('click', () => navigateMonth(1));
 
@@ -1508,9 +1541,9 @@
             }
         });
 
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         //  INIT
-        // ============================================================
+        // ════════════════════════════════════════════════════════════════
         // Check if SCRIPT_URL is set
         if (SCRIPT_URL === 'YOUR_DEPLOYED_SCRIPT_URL_HERE') {
             statusLabel.textContent = '⚠️ Set SCRIPT_URL';
