@@ -23,37 +23,91 @@
             min-height: 100vh;
             padding: 16px;
             color: #1a1a2e;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        /* ─── MAIN WRAPPER ─── */
+        /* ─── ANIMATED BACKGROUND ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(124, 58, 237, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(249, 115, 22, 0.02) 0%, transparent 50%);
+            animation: floatBg 30s infinite alternate ease-in-out;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes floatBg {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(2%, -2%) rotate(2deg); }
+            50% { transform: translate(-1%, 3%) rotate(-1deg); }
+            75% { transform: translate(3%, 1%) rotate(3deg); }
+            100% { transform: translate(-2%, -3%) rotate(-2deg); }
+        }
+
         .calendar-wrapper {
             max-width: 1100px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
-        /* ─── HEADER WITH MADRASA BRANDING ─── */
+        /* ─── MADRASA HEADER WITH GLOW ─── */
         .madrasa-header {
-            background: linear-gradient(145deg, #ffffff 0%, #f8faff 100%);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 2rem;
             padding: 1.8rem 2rem 1.2rem;
             margin-bottom: 1.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            box-shadow: 0 8px 32px -12px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 40px -12px rgba(0, 0, 0, 0.06), 0 0 60px rgba(59, 130, 246, 0.04);
             text-align: center;
             position: relative;
             overflow: hidden;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .madrasa-header::before {
             content: '';
             position: absolute;
-            top: -50%;
+            top: -60%;
             right: -20%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.06) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
+            animation: pulseGlow 8s infinite alternate ease-in-out;
+        }
+
+        .madrasa-header::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: pulseGlow 6s infinite alternate-reverse ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.3); opacity: 1; }
         }
 
         .madrasa-header .brand-top {
@@ -62,21 +116,34 @@
             justify-content: center;
             gap: 16px;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
         }
 
         .madrasa-header .logo-icon {
-            width: 64px;
-            height: 64px;
+            width: 68px;
+            height: 68px;
             background: linear-gradient(135deg, #1e3a5f, #3b82f6);
-            border-radius: 20px;
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #fff;
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 800;
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.25);
             flex-shrink: 0;
+            transition: transform 0.3s;
+            animation: logoFloat 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes logoFloat {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-4px) rotate(2deg); }
+        }
+
+        .madrasa-header .logo-icon:hover {
+            transform: scale(1.05) rotate(-2deg);
         }
 
         .madrasa-header .title-group h1 {
@@ -86,13 +153,11 @@
             margin: 0;
             line-height: 1.2;
             letter-spacing: -0.5px;
-        }
-
-        .madrasa-header .title-group h1 span {
-            background: linear-gradient(135deg, #1e3a5f, #3b82f6);
+            background: linear-gradient(135deg, #1a1a2e, #3b82f6);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            display: inline-block;
         }
 
         .madrasa-header .title-group .subtitle {
@@ -112,17 +177,21 @@
             margin-top: 4px;
             font-weight: 500;
             letter-spacing: 0.3px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(59, 130, 246, 0.04);
         }
 
         .madrasa-header .calendar-headline {
             margin-top: 12px;
             padding-top: 12px;
-            border-top: 2px solid rgba(59, 130, 246, 0.08);
+            border-top: 2px solid rgba(59, 130, 246, 0.06);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
         }
 
         .madrasa-header .calendar-headline h2 {
@@ -135,6 +204,13 @@
         .madrasa-header .calendar-headline h2 i {
             color: #3b82f6;
             margin-right: 8px;
+            animation: iconWiggle 3s infinite ease-in-out;
+        }
+
+        @keyframes iconWiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
         }
 
         .madrasa-header .calendar-headline .academic-year {
@@ -145,22 +221,25 @@
             border-radius: 40px;
             border: 1px solid rgba(0, 0, 0, 0.04);
             font-weight: 600;
+            backdrop-filter: blur(8px);
         }
 
-        /* ─── NAVIGATION BAR ─── */
+        /* ─── NAVIGATION ─── */
         .calendar-nav {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border-radius: 1.5rem;
             padding: 0.8rem 1.5rem;
             margin-bottom: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 4px 20px -8px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 24px -8px rgba(0, 0, 0, 0.04);
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
+            animation: slideDown 0.7s ease-out 0.1s both;
         }
 
         .calendar-nav .nav-left {
@@ -175,85 +254,150 @@
             color: #1a1a2e;
             min-width: 120px;
             text-align: center;
+            background: linear-gradient(135deg, #1a1a2e, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .calendar-nav .nav-btn {
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid rgba(0, 0, 0, 0.04);
             border-radius: 50%;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             color: #1a1a2e;
             font-size: 0.9rem;
-        }
-        .calendar-nav .nav-btn:hover {
-            background: #ffffff;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            border-color: rgba(59, 130, 246, 0.2);
-            transform: translateY(-2px);
+            position: relative;
+            overflow: hidden;
         }
 
-        .calendar-nav .nav-right {
-            display: flex;
-            gap: 8px;
-            align-items: center;
+        .calendar-nav .nav-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: 50%;
+        }
+
+        .calendar-nav .nav-btn:hover {
+            background: #ffffff;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .calendar-nav .nav-btn:hover::before {
+            opacity: 1;
+        }
+
+        .calendar-nav .nav-btn:active {
+            transform: scale(0.92);
         }
 
         .calendar-nav .btn-today {
-            background: linear-gradient(95deg, #3b82f6, #7c3aed);
+            background: linear-gradient(135deg, #3b82f6, #7c3aed);
             border: none;
-            padding: 6px 18px;
+            padding: 7px 20px;
             border-radius: 60px;
             font-weight: 700;
             color: #fff;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.25s;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             font-size: 0.8rem;
             white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+            position: relative;
+            overflow: hidden;
         }
+
+        .calendar-nav .btn-today::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
         .calendar-nav .btn-today:hover {
-            transform: scale(1.03);
-            box-shadow: 0 8px 24px -6px rgba(59, 130, 246, 0.35);
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 8px 28px -6px rgba(59, 130, 246, 0.35);
+        }
+
+        .calendar-nav .btn-today:hover::after {
+            opacity: 1;
+        }
+
+        .calendar-nav .btn-today:active {
+            transform: scale(0.95);
         }
 
         .calendar-nav .btn-refresh {
             background: rgba(255, 255, 255, 0.7);
             border: 1px solid rgba(0, 0, 0, 0.04);
             border-radius: 50%;
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: 0.2s;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             color: #6b7280;
         }
+
         .calendar-nav .btn-refresh:hover {
             background: #ffffff;
             color: #3b82f6;
-            transform: rotate(180deg);
+            transform: rotate(180deg) scale(1.05);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.08);
         }
 
-        /* ─── CALENDAR GRID ─── */
+        .calendar-nav .btn-refresh .fa-spin {
+            animation: fa-spin 1s linear infinite;
+        }
+
+        /* ─── CALENDAR TABLE ─── */
         .calendar-grid-container {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 2rem;
             padding: 1.2rem;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 12px 48px -12px rgba(0, 0, 0, 0.04), 0 0 80px rgba(59, 130, 246, 0.02);
+            overflow: hidden;
+            animation: slideDown 0.7s ease-out 0.2s both;
+            position: relative;
+        }
+
+        .calendar-grid-container::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
         }
 
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 3px;
+            gap: 4px;
         }
 
         .calendar-grid .day-name {
@@ -261,9 +405,22 @@
             font-weight: 700;
             font-size: 0.75rem;
             color: #6b7280;
-            padding: 8px 0 4px;
+            padding: 10px 0 8px;
             letter-spacing: 0.5px;
             text-transform: uppercase;
+            border-bottom: 2px solid rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+
+        .calendar-grid .day-name::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 25%;
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.15), transparent);
+            border-radius: 4px;
         }
 
         .calendar-grid .day-cell {
@@ -272,141 +429,251 @@
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 4px 2px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.2s;
+            padding: 8px 4px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             cursor: default;
             position: relative;
             border: 1.5px solid transparent;
-            min-height: 64px;
+            min-height: 76px;
         }
 
+        .calendar-grid .day-cell::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+
+        .calendar-grid .day-cell:hover::before {
+            opacity: 1;
+        }
+
+        /* ─── DATE NUMBER – COLOR CODED BY EVENT TYPE ─── */
         .calendar-grid .day-cell .day-number {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #1a1a2e;
+            font-weight: 700;
+            font-size: 1.4rem;
             line-height: 1.3;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .calendar-grid .day-cell .day-number.color-default {
+            color: #1a1a2e;
+        }
+        .calendar-grid .day-cell .day-number.color-exam {
+            color: #f97316;
+        }
+        .calendar-grid .day-cell .day-number.color-holiday {
+            color: #ef4444;
+        }
+        .calendar-grid .day-cell .day-number.color-event {
+            color: #3b82f6;
+        }
+        .calendar-grid .day-cell .day-number.color-assignment {
+            color: #3b82f6;
+        }
+        .calendar-grid .day-cell .day-number.color-other {
+            color: #8b5cf6;
+        }
+
+        /* Date glow effect for events */
+        .calendar-grid .day-cell.has-event .day-number {
+            text-shadow: 0 0 20px currentColor, 0 0 60px currentColor;
+            animation: glowPulse 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes glowPulse {
+            0% {
+                text-shadow: 0 0 20px currentColor, 0 0 60px currentColor;
+                opacity: 0.9;
+            }
+            100% {
+                text-shadow: 0 0 30px currentColor, 0 0 80px currentColor, 0 0 120px currentColor;
+                opacity: 1;
+            }
         }
 
         .calendar-grid .day-cell.other-month .day-number {
-            color: #b0b8c8;
+            opacity: 0.35;
+            text-shadow: none !important;
+            animation: none !important;
+        }
+
+        .calendar-grid .day-cell.today .day-number {
+            font-weight: 800;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+            text-decoration-thickness: 2.5px;
+            text-decoration-color: currentColor;
         }
 
         .calendar-grid .day-cell.today {
-            background: rgba(59, 130, 246, 0.08);
-            border-color: rgba(59, 130, 246, 0.25);
-        }
-        .calendar-grid .day-cell.today .day-number {
-            color: #3b82f6;
-            font-weight: 800;
+            background: rgba(59, 130, 246, 0.06);
+            border-color: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.04);
         }
 
         .calendar-grid .day-cell.selected {
-            background: rgba(59, 130, 246, 0.12);
+            background: rgba(59, 130, 246, 0.08);
             border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08), 0 8px 32px rgba(59, 130, 246, 0.06);
+            transform: scale(1.02);
         }
 
         .calendar-grid .day-cell.has-event {
             cursor: pointer;
         }
+
         .calendar-grid .day-cell.has-event:hover {
-            background: rgba(59, 130, 246, 0.06);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px -8px rgba(0, 0, 0, 0.06);
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 40px -12px rgba(0, 0, 0, 0.08);
+            border-color: rgba(59, 130, 246, 0.15);
         }
 
         .calendar-grid .day-cell .event-dots {
             display: flex;
-            gap: 3px;
-            margin-top: 2px;
+            gap: 4px;
+            margin-top: 4px;
             flex-wrap: wrap;
             justify-content: center;
         }
+
         .calendar-grid .day-cell .event-dot {
-            width: 6px;
-            height: 6px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             display: inline-block;
+            transition: all 0.3s;
+            animation: dotPulse 2s infinite alternate ease-in-out;
         }
+
+        .calendar-grid .day-cell:hover .event-dot {
+            transform: scale(1.3);
+        }
+
         .calendar-grid .day-cell .event-dot.exam {
-            background: #ef4444;
+            background: #f97316;
+            animation-delay: 0s;
         }
         .calendar-grid .day-cell .event-dot.holiday {
-            background: #10b981;
+            background: #ef4444;
+            animation-delay: 0.3s;
         }
         .calendar-grid .day-cell .event-dot.assignment {
-            background: #f59e0b;
+            background: #3b82f6;
+            animation-delay: 0.6s;
         }
         .calendar-grid .day-cell .event-dot.event {
             background: #3b82f6;
+            animation-delay: 0.9s;
         }
         .calendar-grid .day-cell .event-dot.other {
             background: #8b5cf6;
+            animation-delay: 1.2s;
+        }
+
+        @keyframes dotPulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.2); opacity: 1; }
         }
 
         .calendar-grid .day-cell .event-count-badge {
-            font-size: 0.5rem;
-            background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-            padding: 0 5px;
+            font-size: 0.55rem;
+            background: rgba(0, 0, 0, 0.04);
+            color: #6b7280;
+            padding: 0 7px;
             border-radius: 20px;
             font-weight: 700;
-            margin-top: 1px;
-            line-height: 1.4;
+            margin-top: 2px;
+            line-height: 1.5;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.02);
         }
 
         /* ─── LEGEND ─── */
         .calendar-legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px 20px;
-            padding: 12px 0 4px;
+            gap: 14px 28px;
+            padding: 16px 0 4px;
             border-top: 1px solid rgba(0, 0, 0, 0.04);
-            margin-top: 12px;
+            margin-top: 14px;
             justify-content: center;
+            position: relative;
+            z-index: 1;
         }
+
         .calendar-legend .legend-item {
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 0.7rem;
-            font-weight: 500;
+            gap: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
             color: #4b5563;
+            transition: all 0.3s;
+            cursor: default;
+            padding: 4px 10px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
+
+        .calendar-legend .legend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
         .calendar-legend .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
+            width: 14px;
+            height: 14px;
+            border-radius: 6px;
             flex-shrink: 0;
+            transition: transform 0.3s;
+        }
+
+        .calendar-legend .legend-item:hover .legend-dot {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .calendar-legend .legend-dot.exam {
+            background: #f97316;
+        }
+        .calendar-legend .legend-dot.holiday {
+            background: #ef4444;
+        }
+        .calendar-legend .legend-dot.event {
+            background: #3b82f6;
+        }
+        .calendar-legend .legend-dot.other {
+            background: #8b5cf6;
         }
 
         /* ─── EVENT DETAIL PANEL ─── */
         .event-detail-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 1.5rem;
             padding: 1.2rem 1.5rem;
             margin-top: 1.2rem;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.04);
             display: none;
-            transition: all 0.3s;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideDown 0.5s ease-out;
         }
+
         .event-detail-panel.visible {
             display: block;
-            animation: fadeSlide 0.35s ease;
-        }
-        @keyframes fadeSlide {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .event-detail-panel .panel-header {
@@ -415,70 +682,123 @@
             align-items: center;
             margin-bottom: 10px;
         }
+
         .event-detail-panel .panel-header h5 {
             font-weight: 700;
             color: #1a1a2e;
             margin: 0;
             font-size: 1rem;
+            background: linear-gradient(135deg, #1a1a2e, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
+
         .event-detail-panel .panel-header h5 i {
             color: #3b82f6;
             margin-right: 6px;
         }
+
         .event-detail-panel .panel-close {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #9ca3af;
-            font-size: 1.2rem;
+            font-size: 1rem;
             cursor: pointer;
-            transition: 0.2s;
-            padding: 0 4px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 0;
         }
+
         .event-detail-panel .panel-close:hover {
-            color: #ef4444;
-            transform: rotate(90deg);
+            background: #ef4444;
+            color: #fff;
+            transform: rotate(90deg) scale(1.05);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
         }
 
         .event-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 4px;
         }
+
+        .event-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .event-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 10px;
+        }
+        .event-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #3b82f6, #7c3aed);
+            border-radius: 10px;
+        }
+
         .event-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 8px 12px;
+            padding: 10px 14px;
             background: rgba(255, 255, 255, 0.5);
-            border-radius: 12px;
-            border-left: 3px solid #3b82f6;
-            transition: 0.2s;
+            border-radius: 14px;
+            border-left: 4px solid #3b82f6;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideIn 0.4s ease-out both;
         }
+
+        .event-item:nth-child(1) { animation-delay: 0.05s; }
+        .event-item:nth-child(2) { animation-delay: 0.1s; }
+        .event-item:nth-child(3) { animation-delay: 0.15s; }
+        .event-item:nth-child(4) { animation-delay: 0.2s; }
+        .event-item:nth-child(5) { animation-delay: 0.25s; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         .event-item:hover {
             background: rgba(255, 255, 255, 0.9);
-            transform: translateX(4px);
+            transform: translateX(6px) scale(1.01);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
         }
+
         .event-item .event-icon {
-            width: 30px;
-            height: 30px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             flex-shrink: 0;
+            transition: transform 0.3s;
         }
+
+        .event-item:hover .event-icon {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
         .event-item .event-icon.exam {
+            background: rgba(249, 115, 22, 0.12);
+            color: #f97316;
+        }
+        .event-item .event-icon.holiday {
             background: rgba(239, 68, 68, 0.12);
             color: #ef4444;
         }
-        .event-item .event-icon.holiday {
-            background: rgba(16, 185, 129, 0.12);
-            color: #10b981;
-        }
         .event-item .event-icon.assignment {
-            background: rgba(245, 158, 11, 0.12);
-            color: #f59e0b;
+            background: rgba(59, 130, 246, 0.12);
+            color: #3b82f6;
         }
         .event-item .event-icon.event {
             background: rgba(59, 130, 246, 0.12);
@@ -493,12 +813,14 @@
             flex: 1;
             min-width: 0;
         }
+
         .event-item .event-info .event-title {
             font-weight: 600;
             color: #1a1a2e;
             font-size: 0.85rem;
             word-break: break-word;
         }
+
         .event-item .event-info .event-meta {
             font-size: 0.7rem;
             color: #6b7280;
@@ -507,26 +829,28 @@
             flex-wrap: wrap;
             margin-top: 1px;
         }
+
         .event-item .event-badge {
             font-size: 0.55rem;
             font-weight: 700;
-            padding: 1px 10px;
+            padding: 1px 12px;
             border-radius: 40px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
             white-space: nowrap;
         }
+
         .event-item .event-badge.exam {
+            background: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+        }
+        .event-item .event-badge.holiday {
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
         }
-        .event-item .event-badge.holiday {
-            background: rgba(16, 185, 129, 0.1);
-            color: #10b981;
-        }
         .event-item .event-badge.assignment {
-            background: rgba(245, 158, 11, 0.1);
-            color: #f59e0b;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
         }
         .event-item .event-badge.event {
             background: rgba(59, 130, 246, 0.1);
@@ -540,16 +864,73 @@
         .no-events-msg {
             text-align: center;
             color: #9ca3af;
-            padding: 16px 0;
+            padding: 20px 0;
             font-weight: 500;
             font-size: 0.9rem;
         }
 
-        .loading-spinner {
-            text-align: center;
-            padding: 30px 0;
-            color: #6b7280;
-            grid-column: 1 / -1;
+        /* ─── TOAST NOTIFICATION ─── */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            padding: 12px 20px;
+            border-radius: 14px;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #1a1a2e;
+            animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-width: 200px;
+        }
+
+        .toast.success {
+            border-left-color: #10b981;
+        }
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
+        .toast .toast-icon {
+            font-size: 1.1rem;
+        }
+        .toast.success .toast-icon {
+            color: #10b981;
+        }
+        .toast.error .toast-icon {
+            color: #ef4444;
+        }
+        .toast.info .toast-icon {
+            color: #3b82f6;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(40px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        .toast-out {
+            animation: toastOut 0.3s ease-in forwards;
+        }
+
+        @keyframes toastOut {
+            to { opacity: 0; transform: translateX(40px) scale(0.95); }
         }
 
         /* ─── FOOTER ─── */
@@ -561,10 +942,18 @@
             font-size: 0.7rem;
             font-weight: 500;
             letter-spacing: 0.3px;
+            animation: slideDown 0.7s ease-out 0.3s both;
         }
+
         .calendar-footer i {
             margin-right: 4px;
+            transition: color 0.3s;
         }
+
+        .calendar-footer i:hover {
+            color: #3b82f6;
+        }
+
         .calendar-footer .footer-divider {
             display: inline-block;
             width: 4px;
@@ -577,45 +966,26 @@
 
         /* ─── RESPONSIVE ─── */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
+            body { padding: 10px; }
 
             .madrasa-header {
                 padding: 1.2rem 1rem 0.8rem;
                 border-radius: 1.5rem;
             }
-            .madrasa-header .brand-top {
-                gap: 10px;
-            }
+
+            .madrasa-header .brand-top { gap: 10px; }
             .madrasa-header .logo-icon {
-                width: 48px;
-                height: 48px;
-                font-size: 20px;
-                border-radius: 16px;
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+                border-radius: 18px;
             }
-            .madrasa-header .title-group h1 {
-                font-size: 1.3rem;
-            }
-            .madrasa-header .title-group .subtitle {
-                font-size: 0.75rem;
-            }
-            .madrasa-header .title-group .reg-info {
-                font-size: 0.65rem;
-                padding: 1px 12px;
-            }
-            .madrasa-header .calendar-headline {
-                margin-top: 8px;
-                padding-top: 8px;
-                gap: 8px;
-            }
-            .madrasa-header .calendar-headline h2 {
-                font-size: 1rem;
-            }
-            .madrasa-header .calendar-headline .academic-year {
-                font-size: 0.65rem;
-                padding: 1px 12px;
-            }
+            .madrasa-header .title-group h1 { font-size: 1.3rem; }
+            .madrasa-header .title-group .subtitle { font-size: 0.75rem; }
+            .madrasa-header .title-group .reg-info { font-size: 0.65rem; padding: 1px 12px; }
+            .madrasa-header .calendar-headline { margin-top: 8px; padding-top: 8px; gap: 8px; }
+            .madrasa-header .calendar-headline h2 { font-size: 1rem; }
+            .madrasa-header .calendar-headline .academic-year { font-size: 0.65rem; padding: 1px 12px; }
 
             .calendar-nav {
                 padding: 0.6rem 1rem;
@@ -627,8 +997,8 @@
                 min-width: 80px;
             }
             .calendar-nav .nav-btn {
-                width: 32px;
-                height: 32px;
+                width: 34px;
+                height: 34px;
                 font-size: 0.75rem;
             }
             .calendar-nav .btn-today {
@@ -636,134 +1006,60 @@
                 padding: 4px 14px;
             }
             .calendar-nav .btn-refresh {
-                width: 32px;
-                height: 32px;
+                width: 34px;
+                height: 34px;
                 font-size: 0.75rem;
             }
 
-            .calendar-grid-container {
-                padding: 0.8rem;
-                border-radius: 1.5rem;
-            }
-            .calendar-grid {
-                gap: 2px;
-            }
-            .calendar-grid .day-name {
-                font-size: 0.6rem;
-                padding: 4px 0 2px;
-            }
+            .calendar-grid-container { padding: 0.8rem; border-radius: 1.5rem; }
+            .calendar-grid { gap: 2px; }
+            .calendar-grid .day-name { font-size: 0.6rem; padding: 6px 0 4px; }
             .calendar-grid .day-cell {
-                min-height: 48px;
-                padding: 2px 1px;
-                border-radius: 8px;
+                min-height: 56px;
+                padding: 4px 2px;
+                border-radius: 10px;
             }
-            .calendar-grid .day-cell .day-number {
-                font-size: 0.75rem;
-            }
-            .calendar-grid .day-cell .event-dot {
-                width: 5px;
-                height: 5px;
-            }
-            .calendar-grid .day-cell .event-count-badge {
-                font-size: 0.45rem;
-                padding: 0 4px;
-            }
+            .calendar-grid .day-cell .day-number { font-size: 1.05rem; }
+            .calendar-grid .day-cell .event-dot { width: 6px; height: 6px; }
+            .calendar-grid .day-cell .event-count-badge { font-size: 0.5rem; padding: 0 4px; }
 
-            .calendar-legend {
-                gap: 6px 12px;
-                padding: 8px 0 2px;
-            }
-            .calendar-legend .legend-item {
-                font-size: 0.6rem;
-                gap: 4px;
-            }
-            .calendar-legend .legend-dot {
-                width: 8px;
-                height: 8px;
-            }
+            .calendar-legend { gap: 6px 14px; padding: 10px 0 2px; }
+            .calendar-legend .legend-item { font-size: 0.65rem; gap: 4px; padding: 3px 8px; }
+            .calendar-legend .legend-dot { width: 12px; height: 12px; }
 
-            .event-detail-panel {
-                padding: 0.8rem 1rem;
-                border-radius: 1.2rem;
-                margin-top: 0.8rem;
-            }
-            .event-detail-panel .panel-header h5 {
-                font-size: 0.85rem;
-            }
-            .event-item {
-                padding: 6px 10px;
-                gap: 10px;
-                border-left-width: 3px;
-            }
-            .event-item .event-icon {
-                width: 26px;
-                height: 26px;
-                font-size: 0.65rem;
-            }
-            .event-item .event-info .event-title {
-                font-size: 0.75rem;
-            }
-            .event-item .event-info .event-meta {
-                font-size: 0.6rem;
-                gap: 6px;
-            }
-            .event-item .event-badge {
-                font-size: 0.5rem;
-                padding: 0 8px;
-            }
+            .event-detail-panel { padding: 0.8rem 1rem; border-radius: 1.2rem; margin-top: 0.8rem; }
+            .event-detail-panel .panel-header h5 { font-size: 0.85rem; }
+            .event-item { padding: 6px 10px; gap: 10px; border-left-width: 3px; }
+            .event-item .event-icon { width: 28px; height: 28px; font-size: 0.7rem; }
+            .event-item .event-info .event-title { font-size: 0.75rem; }
+            .event-item .event-info .event-meta { font-size: 0.6rem; gap: 6px; }
+            .event-item .event-badge { font-size: 0.5rem; padding: 0 8px; }
 
-            .calendar-footer {
-                font-size: 0.6rem;
-                margin-top: 1.2rem;
-            }
+            .calendar-footer { font-size: 0.6rem; margin-top: 1.2rem; }
+
+            .toast { font-size: 0.75rem; padding: 10px 16px; min-width: 160px; }
         }
 
         @media (max-width: 400px) {
-            .madrasa-header .title-group h1 {
-                font-size: 1.1rem;
-            }
+            .madrasa-header .title-group h1 { font-size: 1.1rem; }
             .calendar-grid .day-cell {
-                min-height: 40px;
-                border-radius: 6px;
+                min-height: 44px;
+                border-radius: 8px;
+                padding: 3px 1px;
             }
-            .calendar-grid .day-cell .day-number {
-                font-size: 0.65rem;
-            }
-            .calendar-grid .day-cell .event-dot {
-                width: 4px;
-                height: 4px;
-            }
-            .calendar-nav .nav-left .month-label {
-                font-size: 0.75rem;
-                min-width: 60px;
-            }
-            .calendar-nav .nav-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 0.65rem;
-            }
-            .calendar-nav .btn-today {
-                font-size: 0.6rem;
-                padding: 3px 10px;
-            }
-            .calendar-nav .btn-refresh {
-                width: 28px;
-                height: 28px;
-                font-size: 0.65rem;
-            }
+            .calendar-grid .day-cell .day-number { font-size: 0.9rem; }
+            .calendar-grid .day-cell .event-dot { width: 5px; height: 5px; }
+            .calendar-grid .day-cell .event-count-badge { font-size: 0.45rem; padding: 0 4px; }
+            .calendar-nav .nav-left .month-label { font-size: 0.75rem; min-width: 60px; }
+            .calendar-nav .nav-btn { width: 30px; height: 30px; font-size: 0.65rem; }
+            .calendar-nav .btn-today { font-size: 0.6rem; padding: 3px 10px; }
+            .calendar-nav .btn-refresh { width: 30px; height: 30px; font-size: 0.65rem; }
         }
 
         /* ─── SCROLLBAR ─── */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.02);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #3b82f6;
-            border-radius: 10px;
-        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.02); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #3b82f6, #7c3aed); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -775,7 +1071,7 @@
             <div class="brand-top">
                 <div class="logo-icon">ن</div>
                 <div class="title-group">
-                    <h1>NOORUSSALAM <span>MADRASA</span></h1>
+                    <h1>NOORUSSALAM MADRASA</h1>
                     <div class="subtitle">KAMBIPPALAM · KERALA ESTATE</div>
                     <div class="reg-info"><i class="fas fa-certificate me-1"></i> under SKIMVB, Reg No: 6110</div>
                 </div>
@@ -805,7 +1101,7 @@
             </div>
         </nav>
 
-        <!-- ─── CALENDAR GRID ─── -->
+        <!-- ─── CALENDAR TABLE ─── -->
         <div class="calendar-grid-container">
             <div class="calendar-grid" id="calendarGrid">
                 <!-- cells injected by JS -->
@@ -813,11 +1109,14 @@
 
             <!-- ─── LEGEND ─── -->
             <div class="calendar-legend">
-                <span class="legend-item"><span class="legend-dot" style="background:#ef4444;"></span> Exam</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> Holiday</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Assignment</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span> Event</span>
-                <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span> Other</span>
+                <span class="legend-item"><span class="legend-dot exam"></span> Exam</span>
+                <span class="legend-item"><span class="legend-dot holiday"></span> Holiday</span>
+                <span class="legend-item"><span class="legend-dot event"></span> Event / Assignment</span>
+                <span class="legend-item"><span class="legend-dot other"></span> Other</span>
+                <span class="legend-item" style="border-color:transparent;background:transparent;cursor:default;">
+                    <i class="fas fa-cloud-upload-alt" style="color:#3b82f6;font-size:0.8rem;"></i>
+                    <span id="statusLabel" style="font-weight:400;color:#9ca3af;">Live from Google Sheets</span>
+                </span>
             </div>
 
             <!-- ─── EVENT DETAIL PANEL ─── -->
@@ -840,16 +1139,20 @@
             <span class="footer-divider"></span>
             <i class="fas fa-calendar-check"></i> Academic Calendar 2025–26
             <span class="footer-divider"></span>
-            <i class="fas fa-sync-alt fa-fw"></i> Live from Google Sheets
+            <i class="fas fa-cloud"></i> Google Sheets Backend
         </div>
     </div>
+
+    <!-- ─── TOAST CONTAINER ─── -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- ─── JAVASCRIPT ─── -->
     <script>
         // ============================================================
-        //  CONFIGURATION — REPLACE WITH YOUR DEPLOYED SCRIPT URL
+        //  CONFIGURATION
+        //  ⚠️ REPLACE WITH YOUR DEPLOYED SCRIPT URL
         // ============================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzP9TjNv8dkjcOpjD0bJ6DkajOhZ4Xn-yWF2K2_DMXr38rC0McORQVAC3a2GaJcNbCQ9g/exec'; // <-- PASTE YOUR URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwyg--X2rFF6FI4q29N13JzAVsuV1pwouD0tX566eTOrlz9oy-Yg53o2ZA5WlfdH6V40A/exec';
 
         // ============================================================
         //  STATE
@@ -859,6 +1162,7 @@
         let currentYear = currentDate.getFullYear();
         let currentMonth = currentDate.getMonth();
         let selectedDate = null;
+        let isLoading = false;
 
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
@@ -875,6 +1179,32 @@
         const nextBtn = document.getElementById('nextMonthBtn');
         const todayBtn = document.getElementById('todayBtn');
         const refreshBtn = document.getElementById('refreshBtn');
+        const statusLabel = document.getElementById('statusLabel');
+        const toastContainer = document.getElementById('toastContainer');
+
+        // ============================================================
+        //  TOAST NOTIFICATION
+        // ============================================================
+        function showToast(message, type = 'success') {
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                info: 'fa-info-circle'
+            };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></span>
+                <span>${message}</span>
+            `;
+            toastContainer.appendChild(toast);
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('toast-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
 
         // ============================================================
         //  HELPERS
@@ -886,6 +1216,16 @@
         function getEventsForDate(year, month, day) {
             const key = formatDateKey(year, month, day);
             return eventsData.filter(e => e.date === key);
+        }
+
+        function getDayColorClass(events) {
+            if (events.length === 0) return 'color-default';
+            const types = events.map(e => e.type);
+            if (types.includes('exam')) return 'color-exam';
+            if (types.includes('holiday')) return 'color-holiday';
+            if (types.includes('assignment') || types.includes('event')) return 'color-event';
+            if (types.includes('other')) return 'color-other';
+            return 'color-default';
         }
 
         function getEventTypeIcon(type) {
@@ -908,11 +1248,17 @@
         //  FETCH EVENTS FROM GOOGLE SHEET
         // ============================================================
         async function loadEvents() {
+            if (isLoading) return;
+            isLoading = true;
+            statusLabel.textContent = 'Loading…';
+            statusLabel.style.color = '#3b82f6';
+
             try {
+                // Show loading state
                 gridEl.innerHTML = `
-                    <div class="loading-spinner" style="grid-column:1/-1;">
-                        <i class="fas fa-spinner fa-pulse fa-2x"></i>
-                        <p style="margin-top:8px;font-weight:500;">Loading events…</p>
+                    <div class="loading-spinner" style="grid-column:1/-1;text-align:center;padding:40px 0;color:#6b7280;">
+                        <i class="fas fa-spinner fa-pulse fa-2x" style="color:#3b82f6;"></i>
+                        <p style="margin-top:12px;font-weight:500;">Loading events from Google Sheets…</p>
                     </div>
                 `;
 
@@ -921,34 +1267,39 @@
 
                 if (data.result === 'success') {
                     eventsData = data;
-                    renderCalendar(currentYear, currentMonth);
-
-                    if (!selectedDate) {
-                        const today = new Date();
-                        selectedDate = today;
-                        onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
-                    } else {
-                        const selY = selectedDate.getFullYear();
-                        const selM = selectedDate.getMonth();
-                        const selD = selectedDate.getDate();
-                        if (selY === currentYear && selM === currentMonth) {
-                            onDayClick(selY, selM, selD);
-                        } else {
-                            const today = new Date();
-                            selectedDate = today;
-                            onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
-                        }
-                    }
+                    statusLabel.textContent = `✅ ${eventsData.length} events loaded`;
+                    statusLabel.style.color = '#10b981';
+                    showToast(`Loaded ${eventsData.length} events from Google Sheets`, 'success');
                 } else {
-                    console.warn('Failed to load events:', data.message);
                     eventsData = [];
-                    renderCalendar(currentYear, currentMonth);
+                    statusLabel.textContent = '⚠️ Failed to load';
+                    statusLabel.style.color = '#ef4444';
+                    showToast('Failed to load events: ' + (data.message || 'Unknown error'), 'error');
                 }
+
+                renderCalendar(currentYear, currentMonth);
+
+                // Select today
+                const today = new Date();
+                if (eventsData.length > 0) {
+                    onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
+                } else {
+                    // If no events, still show today
+                    onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
+                }
+
             } catch (err) {
                 console.error('Network error:', err);
                 eventsData = [];
+                statusLabel.textContent = '⚠️ Network error';
+                statusLabel.style.color = '#ef4444';
+                showToast('Network error loading events. Please refresh.', 'error');
                 renderCalendar(currentYear, currentMonth);
+                const today = new Date();
+                onDayClick(today.getFullYear(), today.getMonth(), today.getDate());
             }
+
+            isLoading = false;
         }
 
         // ============================================================
@@ -966,12 +1317,10 @@
 
             let html = '';
 
-            // Day names
             dayNames.forEach(name => {
                 html += `<div class="day-name">${name}</div>`;
             });
 
-            // Previous month days
             const prevMonth = month === 0 ? 11 : month - 1;
             const prevYear = month === 0 ? year - 1 : year;
             for (let i = firstDay - 1; i >= 0; i--) {
@@ -979,12 +1328,10 @@
                 html += renderDayCell(prevYear, prevMonth, day, true, todayY, todayM, todayD);
             }
 
-            // Current month days
             for (let day = 1; day <= daysInMonth; day++) {
                 html += renderDayCell(year, month, day, false, todayY, todayM, todayD);
             }
 
-            // Next month days (to fill last row)
             const totalCells = firstDay + daysInMonth;
             const remaining = (7 - (totalCells % 7)) % 7;
             const nextMonth = month === 11 ? 0 : month + 1;
@@ -1012,6 +1359,8 @@
             if (isSelected) classes += ' selected';
             if (events.length > 0) classes += ' has-event';
 
+            const colorClass = getDayColorClass(events);
+
             let dotsHtml = '';
             const types = events.map(e => e.type);
             const uniqueTypes = [...new Set(types)];
@@ -1026,7 +1375,7 @@
 
             return `
                 <div class="${classes}" data-date="${dateKey}" onclick="onDayClick(${year}, ${month}, ${day})">
-                    <span class="day-number">${day}</span>
+                    <span class="day-number ${colorClass}">${day}</span>
                     ${dotsHtml ? `<div class="event-dots">${dotsHtml}</div>` : ''}
                     ${badgeHtml}
                 </div>
@@ -1152,6 +1501,13 @@
         // ============================================================
         //  INIT
         // ============================================================
+        // Check if SCRIPT_URL is set
+        if (SCRIPT_URL === 'YOUR_DEPLOYED_SCRIPT_URL_HERE') {
+            statusLabel.textContent = '⚠️ Set SCRIPT_URL';
+            statusLabel.style.color = '#ef4444';
+            console.warn('Please set your SCRIPT_URL in the JavaScript configuration.');
+        }
+
         loadEvents();
     </script>
 
