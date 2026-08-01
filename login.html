@@ -16,7 +16,10 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js">
+    </script>
     <style>
+        /* ===== FULL CSS (same as your original, plus new additions) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -472,6 +475,18 @@
             cursor: pointer;
             transition: all 0.3s;
             font-family: inherit;
+            position: relative;
+        }
+        .admin-tab .badge-count {
+            background: #ef4444;
+            color: #fff;
+            border-radius: 50%;
+            padding: 0 6px;
+            font-size: 0.6rem;
+            margin-left: 4px;
+            display: inline-block;
+            min-width: 18px;
+            text-align: center;
         }
         .admin-tab.active {
             background: #2563eb;
@@ -570,6 +585,38 @@
         .admin-toolbar input[type="date"]::-webkit-calendar-picker-indicator {
             filter: invert(1);
         }
+        .admin-toolbar input[type="text"] {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 40px;
+            padding: 6px 16px;
+            color: #fff;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.8rem;
+            min-width: 150px;
+        }
+        .admin-toolbar input[type="text"]:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+        }
+        .admin-toolbar select {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 40px;
+            padding: 6px 16px;
+            color: #fff;
+            outline: none;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+        .admin-toolbar select option {
+            background: #0b1a3a;
+        }
+        .admin-toolbar select:focus {
+            border-color: #3b82f6;
+        }
         .btn-load {
             padding: 8px 20px;
             border: none;
@@ -622,6 +669,23 @@
         .btn-cancel:hover {
             background: rgba(255, 255, 255, 0.05);
         }
+        .btn-pdf {
+            background: #dc2626;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .btn-pdf:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+        }
         .admin-summary {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -656,6 +720,7 @@
         .admin-summary .stat .num.orange {
             color: #f59e0b;
         }
+
         .toast-container {
             position: fixed;
             bottom: 20px;
@@ -1015,6 +1080,14 @@
                 font-size: 0.7rem;
                 padding: 4px 8px;
             }
+            .admin-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-toolbar input[type="text"],
+            .admin-toolbar select {
+                min-width: unset;
+            }
         }
         ::-webkit-scrollbar {
             width: 6px;
@@ -1248,9 +1321,14 @@
                 <button id="adminLogoutBtn" class="btn btn-danger rounded-pill px-4"><i class="fas fa-sign-out-alt"></i> Exit Admin</button>
             </div>
 
-            <div class="admin-tabs">
-                <button class="admin-tab active" data-tab="payments" onclick="switchAdminTab('payments')">Payments</button>
-                <button class="admin-tab" data-tab="withdrawals" onclick="switchAdminTab('withdrawals')">Withdrawal Requests</button>
+            <div class="admin-tabs" id="adminTabs">
+                <button class="admin-tab active" data-tab="payments" onclick="switchAdminTab('payments')">
+                    Payments
+                </button>
+                <button class="admin-tab" data-tab="withdrawals" onclick="switchAdminTab('withdrawals')">
+                    Withdrawal Requests
+                    <span class="badge-count" id="withdrawalBadge" style="display:none;">0</span>
+                </button>
                 <button class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">Balances</button>
                 <button class="admin-tab" data-tab="addstudent" onclick="switchAdminTab('addstudent')">Add Student</button>
             </div>
@@ -1258,7 +1336,7 @@
             <!-- Payments Tab -->
             <div id="adminPaymentsTab" class="admin-tab-content">
                 <div class="admin-summary" id="adminSummary">
-                    <div class="stat"><div class="num" id="statStudents">0</div><div class="label">Students</div></div>
+                    <div class="stat"><div class="num" id="statStudents">0</div><div class="label">Total Students</div></div>
                     <div class="stat"><div class="num blue" id="statToday">0</div><div class="label">Today's Payment</div></div>
                     <div class="stat"><div class="num orange" id="statPending">0</div><div class="label">Pending</div></div>
                 </div>
@@ -1266,6 +1344,24 @@
                     <label><i class="fas fa-calendar-day"></i> Date</label>
                     <input type="date" id="adminDate" />
                     <button class="btn-load" onclick="loadPaymentsForDate()"><i class="fas fa-sync-alt"></i> Load</button>
+
+                    <select id="classFilter" onchange="applyPaymentsFilters()">
+                        <option value="all">All Classes</option>
+                        <option value="1">Class 1</option>
+                        <option value="2">Class 2</option>
+                        <option value="3">Class 3</option>
+                        <option value="4">Class 4</option>
+                        <option value="5">Class 5</option>
+                        <option value="6">Class 6</option>
+                        <option value="7">Class 7</option>
+                        <option value="8">Class 8</option>
+                        <option value="9">Class 9</option>
+                        <option value="10">Class 10</option>
+                    </select>
+
+                    <input type="text" id="adminSearch" placeholder="🔍 Search by name..." oninput="applyPaymentsFilters()" />
+
+                    <button class="btn-pdf" onclick="downloadPaymentsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
                 </div>
                 <div class="admin-table-wrap" id="adminTableWrap">
                     <div class="loading-tx"><div class="spinner-sm"></div><p style="color:#94a3b8;">Select date and Load</p></div>
@@ -1276,10 +1372,11 @@
                 </div>
             </div>
 
-            <!-- Withdrawal Requests Tab -->
+            <!-- Withdrawals Tab -->
             <div id="adminWithdrawalsTab" class="admin-tab-content" style="display:none;">
                 <div class="admin-toolbar">
                     <button class="btn-load" onclick="loadPendingWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="btn-pdf" onclick="downloadWithdrawalsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
                 </div>
                 <div class="admin-table-wrap" id="pendingWithdrawalsWrap">
                     <div class="loading-tx"><div class="spinner-sm"></div><p style="color:#94a3b8;">Loading requests...</p></div>
@@ -1290,6 +1387,7 @@
             <div id="adminBalancesTab" class="admin-tab-content" style="display:none;">
                 <div class="admin-toolbar">
                     <button class="btn-load" onclick="loadBalances()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button class="btn-pdf" onclick="downloadBalancesPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
                 </div>
                 <div class="admin-table-wrap" id="balancesWrap">
                     <div class="loading-tx"><div class="spinner-sm"></div><p style="color:#94a3b8;">Loading balances...</p></div>
@@ -1487,15 +1585,16 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT (FULL) -->
     <!-- ============================================================ -->
     <script>
         // ==================== CONFIG ====================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnqmk3i8Jipw5v3Ag2UcCTZueirlR2DXZZuTiuKfXniBcIoHbZZePe2JKFemEDESXa/exec'; // Replace with your Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeM79a9vicO0s2t40ymY09WEvu-PXS1Q9GdmZhByDT0wwacTYuGjfRDdIXSexLTZnz/exec'; // Replace with your Apps Script Web App URL
         let currentUser = null;
         let isAdminMode = false;
         let allStudents = [];
         let currentDatePayments = [];
+        let filteredPayments = [];
         let pendingRequests = [];
         let balancesData = [];
         let cropperInstance = null;
@@ -1852,7 +1951,7 @@
             if (el) el.style.display = 'block';
             if (tab === 'withdrawals') loadPendingWithdrawals();
             if (tab === 'balances') loadBalances();
-            if (tab === 'payments') loadPaymentsForDate();
+            if (tab === 'payments') { loadPaymentsForDate(); }
         }
 
         async function loadAdminData() {
@@ -1882,7 +1981,7 @@
                 const data = await resp.json();
                 if (data.success) {
                     currentDatePayments = data.payments || [];
-                    renderAdminTable();
+                    applyPaymentsFilters();
                     updateAdminStats();
                 } else {
                     wrap.innerHTML =
@@ -1894,16 +1993,27 @@
             }
         }
 
+        function applyPaymentsFilters() {
+            const classFilter = document.getElementById('classFilter').value;
+            const searchText = document.getElementById('adminSearch').value.toLowerCase().trim();
+            filteredPayments = currentDatePayments.filter(item => {
+                if (classFilter !== 'all' && String(item.class) !== classFilter) return false;
+                if (searchText && !item.name.toLowerCase().includes(searchText)) return false;
+                return true;
+            });
+            renderAdminTable();
+        }
+
         function renderAdminTable() {
             const wrap = document.getElementById('adminTableWrap');
-            if (!currentDatePayments || currentDatePayments.length === 0) {
+            if (!filteredPayments || filteredPayments.length === 0) {
                 wrap.innerHTML =
-                    `<div class="empty-state" style="padding:30px;text-align:center;color:#94a3b8;">No students</div>`;
+                    `<div class="empty-state" style="padding:30px;text-align:center;color:#94a3b8;">No students found</div>`;
                 return;
             }
             let html =
                 `<table><thead><tr><th>#</th><th>Student</th><th>Class</th><th>Debit (₹)</th><th>Credit (₹)</th><th>Status</th></tr></thead><tbody>`;
-            currentDatePayments.forEach((item, idx) => {
+            filteredPayments.forEach((item, idx) => {
                 const statusHtml = item.exists ?
                     `<span class="existing-badge ${item.approved ? '' : 'pending'}">${item.approved ? '✅ Approved' : '⏳ Pending'}</span>` :
                     `<span style="color:#94a3b8;font-size:0.65rem;">—</span>`;
@@ -1939,6 +2049,7 @@
                 if (d) d.value = '0';
                 if (c) c.value = '0';
             });
+            applyPaymentsFilters();
             showToast('Fields cleared', 'info');
         }
 
@@ -1986,6 +2097,14 @@
                 const data = await resp.json();
                 if (data.success) {
                     pendingRequests = data.requests || [];
+                    const pendingCount = pendingRequests.filter(r => r.status === 'pending').length;
+                    const badge = document.getElementById('withdrawalBadge');
+                    if (pendingCount > 0) {
+                        badge.style.display = 'inline-block';
+                        badge.textContent = pendingCount;
+                    } else {
+                        badge.style.display = 'none';
+                    }
                     renderPendingRequests();
                 } else {
                     wrap.innerHTML =
@@ -2747,7 +2866,7 @@
             ctx.imageSmoothingQuality = 'high';
             try {
                 const bg = await loadImageForPoster(
-                "https://i.postimg.cc/vBJs8jT4/topper.jpg");
+                    "https://i.postimg.cc/vBJs8jT4/topper.jpg");
                 ctx.drawImage(bg, 0, 0, w, h);
                 const cx = w / 2,
                     cy = 1600,
@@ -2854,6 +2973,102 @@
 
         function hideTopperLoading() { document.getElementById('topperLoading').style.display = 'none'; }
 
+        // ==================== PDF DOWNLOAD FUNCTIONS ====================
+        function downloadPaymentsPDF() {
+            if (!filteredPayments || filteredPayments.length === 0) {
+                showToast('No data to export', 'error');
+                return;
+            }
+            const doc = new jspdf.jsPDF('l', 'mm', 'a4');
+            doc.setFontSize(14);
+            doc.text('Payments Report', 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Date: ${document.getElementById('adminDate').value}`, 14, 28);
+            const rows = filteredPayments.map((item, idx) => [
+                idx + 1,
+                item.name || '',
+                item.class || '',
+                item.studentId || '',
+                (item.debit || 0).toFixed(2),
+                (item.credit || 0).toFixed(2),
+                item.exists ? (item.approved ? 'Approved' : 'Pending') : '—'
+            ]);
+            doc.autoTable({
+                head: [
+                    ['#', 'Student', 'Class', 'ID', 'Debit (₹)', 'Credit (₹)', 'Status']
+                ],
+                body: rows,
+                startY: 35,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [41, 128, 185] }
+            });
+            doc.save('Payments_Report.pdf');
+            showToast('PDF downloaded!', 'success');
+        }
+
+        function downloadWithdrawalsPDF() {
+            if (!pendingRequests || pendingRequests.length === 0) {
+                showToast('No data to export', 'error');
+                return;
+            }
+            const doc = new jspdf.jsPDF('l', 'mm', 'a4');
+            doc.setFontSize(14);
+            doc.text('Withdrawal Requests Report', 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+            const rows = pendingRequests.map(req => [
+                req.studentName || '',
+                req.studentId || '',
+                req.amount.toFixed(2),
+                req.reason || '',
+                formatDate(req.date),
+                (req.balance || 0).toFixed(2),
+                req.status || ''
+            ]);
+            doc.autoTable({
+                head: [
+                    ['Student', 'ID', 'Amount (₹)', 'Reason', 'Date', 'Balance (₹)', 'Status']
+                ],
+                body: rows,
+                startY: 35,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [41, 128, 185] }
+            });
+            doc.save('Withdrawal_Requests.pdf');
+            showToast('PDF downloaded!', 'success');
+        }
+
+        function downloadBalancesPDF() {
+            if (!balancesData || balancesData.length === 0) {
+                showToast('No data to export', 'error');
+                return;
+            }
+            const doc = new jspdf.jsPDF('l', 'mm', 'a4');
+            doc.setFontSize(14);
+            doc.text('Balances Report', 14, 20);
+            doc.setFontSize(10);
+            doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 28);
+            const rows = balancesData.map((item, idx) => [
+                idx + 1,
+                item.name || '',
+                item.studentId || '',
+                item.class || '',
+                (item.balance || 0).toFixed(2),
+                item.balance > 0 ? 'Positive' : item.balance === 0 ? 'Zero' : 'Overdue'
+            ]);
+            doc.autoTable({
+                head: [
+                    ['#', 'Student', 'ID', 'Class', 'Balance (₹)', 'Status']
+                ],
+                body: rows,
+                startY: 35,
+                styles: { fontSize: 8 },
+                headStyles: { fillColor: [41, 128, 185] }
+            });
+            doc.save('Balances_Report.pdf');
+            showToast('PDF downloaded!', 'success');
+        }
+
         // ==================== FORGOT PASSWORD ====================
         const forgotModal = document.getElementById('forgotModal');
         document.getElementById('closeForgotModalBtn').addEventListener('click', function() { forgotModal.style.display =
@@ -2949,6 +3164,10 @@
         window.approveWithdrawal = approveWithdrawal;
         window.rejectWithdrawal = rejectWithdrawal;
         window.submitAddStudent = submitAddStudent;
+        window.applyPaymentsFilters = applyPaymentsFilters;
+        window.downloadPaymentsPDF = downloadPaymentsPDF;
+        window.downloadWithdrawalsPDF = downloadWithdrawalsPDF;
+        window.downloadBalancesPDF = downloadBalancesPDF;
 
         console.log('📒 സഞ്ചയിക - Noorussalam Digital Passbook');
         console.log('🔗 API:', SCRIPT_URL);
