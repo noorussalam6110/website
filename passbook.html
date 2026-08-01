@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
-    <title>സഞ്ചയിക - നൂറുസ്സലാം മദ്റസ</title>
+    <title>SANJAYIKA - NSM</title>
     <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
@@ -269,6 +269,7 @@
                             <label><i class="fas fa-calendar-day"></i> Date</label>
                             <input type="date" id="adminDate" />
                             <button class="btn-load" onclick="loadPaymentsForDate()"><i class="fas fa-sync-alt"></i> Load</button>
+                            <button class="btn-admin primary" onclick="openAddStudentModal()" style="margin-left:auto;"><i class="fas fa-user-plus"></i> Add Student</button>
                         </div>
                         <div class="admin-table-wrap" id="adminTableWrap">
                             <div class="loading-tx"><div class="spinner-sm"></div><p style="margin-top:6px;">Select date and Load</p></div>
@@ -290,7 +291,7 @@
                         </div>
                     </div>
 
-                    <!-- Balances Tab (NEW) -->
+                    <!-- Balances Tab -->
                     <div id="adminBalancesTab" class="admin-tab-content" style="display:none;">
                         <div class="admin-toolbar">
                             <button class="btn-load" onclick="loadBalances()"><i class="fas fa-sync-alt"></i> Refresh</button>
@@ -303,6 +304,50 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Add Student Modal -->
+<div class="modal-overlay" id="addStudentModal">
+    <div class="modal-box">
+        <button class="modal-close" onclick="closeModal('addStudentModal')">&times;</button>
+        <h3><i class="fas fa-user-plus" style="color:#2563eb;"></i> Add New Student</h3>
+        <p class="modal-sub">Fill in the details. Initial transaction is optional.</p>
+        <form id="addStudentForm" onsubmit="submitAddStudent(event)">
+            <div class="form-group">
+                <label>Student ID <span style="color:#dc2626;">*</span></label>
+                <input type="text" id="newStudentId" placeholder="e.g., 1006" required />
+            </div>
+            <div class="form-group">
+                <label>Student Name <span style="color:#dc2626;">*</span></label>
+                <input type="text" id="newStudentName" placeholder="Full name" required />
+            </div>
+            <div class="form-group">
+                <label>Class</label>
+                <input type="text" id="newStudentClass" placeholder="e.g., 5" />
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="newStudentPhone" placeholder="9876543210" />
+            </div>
+            <hr style="border-color:#eef2f6; margin: 16px 0;" />
+            <h4 style="font-size:0.9rem;color:#475569;margin-bottom:10px;">Initial Transaction (Optional)</h4>
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group">
+                    <label>Debit (₹)</label>
+                    <input type="number" id="newStudentDebit" min="0" step="1" placeholder="0" value="0" />
+                </div>
+                <div class="form-group">
+                    <label>Credit (₹)</label>
+                    <input type="number" id="newStudentCredit" min="0" step="1" placeholder="0" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="newStudentDate" />
+            </div>
+            <button type="submit" class="btn-submit" id="addStudentSubmitBtn"><i class="fas fa-save"></i> Add Student</button>
+        </form>
     </div>
 </div>
 
@@ -344,7 +389,7 @@
 // ================================================================
 // CONFIGURATION
 // ================================================================
-const API_BASE = "https://script.google.com/macros/s/AKfycbxlnGrTa77UW1LXlipTaO02NK-5vWWvpe978Ty7rUmaxY7XGIUhMKotzTqx7DQ3W-84/exec"; // Replace with your Apps Script Web App URL
+const API_BASE = "https://script.google.com/macros/s/AKfycbx8oayKpfePW0LQt1ffXKc-rDlj3646VHA0lVCDi4KstAzQAJ43Q3jDBJp0Xmw32Dy6/exec"; // Replace with your Apps Script Web App URL
 const USE_MOCK = false;
 const ADMIN_PASSWORD = "madrasa2026";
 
@@ -430,6 +475,36 @@ function mockApiRequest(params, callback) {
                 });
                 response.saved = saved;
                 response.message = `${saved} ഇടപാടുകൾ അപ്ഡേറ്റ് ചെയ്തു`;
+                break;
+            }
+            case 'addStudent': {
+                const studentId = urlParams.get('studentId');
+                const name = urlParams.get('name');
+                const cls = urlParams.get('class') || '';
+                const phone = urlParams.get('phone') || '';
+                const debit = parseFloat(urlParams.get('debit')) || 0;
+                const credit = parseFloat(urlParams.get('credit')) || 0;
+                const date = urlParams.get('date') || new Date().toISOString().split('T')[0];
+                // Check if exists
+                if (mockData.students.find(s => s.studentId === studentId)) {
+                    response.success = false;
+                    response.error = 'Student ID already exists';
+                    break;
+                }
+                mockData.students.push({ studentId, name, class: cls, phone });
+                if (debit > 0 || credit > 0) {
+                    mockData.transactions.push({
+                        studentId: studentId,
+                        date: date,
+                        debit: debit,
+                        credit: credit,
+                        balance: debit - credit,
+                        approved: true,
+                        reason: 'Initial balance',
+                        type: 'fee'
+                    });
+                }
+                response.message = 'Student added successfully';
                 break;
             }
             case 'withdraw': {
@@ -598,6 +673,51 @@ function renderPassbook() {
 function formatDate(dateStr) {
     if (!dateStr) return '—';
     try { const d = new Date(dateStr); if (isNaN(d)) return dateStr; return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); } catch(e) { return dateStr; }
+}
+
+// ================================================================
+// ADD STUDENT
+// ================================================================
+function openAddStudentModal() {
+    document.getElementById('newStudentId').value = '';
+    document.getElementById('newStudentName').value = '';
+    document.getElementById('newStudentClass').value = '';
+    document.getElementById('newStudentPhone').value = '';
+    document.getElementById('newStudentDebit').value = '0';
+    document.getElementById('newStudentCredit').value = '0';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('newStudentDate').value = today;
+    openModal('addStudentModal');
+}
+
+function submitAddStudent(e) {
+    e.preventDefault();
+    const studentId = document.getElementById('newStudentId').value.trim();
+    const name = document.getElementById('newStudentName').value.trim();
+    const cls = document.getElementById('newStudentClass').value.trim();
+    const phone = document.getElementById('newStudentPhone').value.trim();
+    const debit = parseFloat(document.getElementById('newStudentDebit').value) || 0;
+    const credit = parseFloat(document.getElementById('newStudentCredit').value) || 0;
+    const date = document.getElementById('newStudentDate').value || new Date().toISOString().split('T')[0];
+
+    if (!studentId) { showToast('⚠️ Student ID required', 'error'); return; }
+    if (!name) { showToast('⚠️ Student name required', 'error'); return; }
+
+    const btn = document.getElementById('addStudentSubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-sm"></span> Adding...';
+
+    apiRequest(`action=addStudent&studentId=${encodeURIComponent(studentId)}&name=${encodeURIComponent(name)}&class=${encodeURIComponent(cls)}&phone=${encodeURIComponent(phone)}&debit=${debit}&credit=${credit}&date=${encodeURIComponent(date)}`, function(response) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Add Student';
+        if (response && response.success) {
+            closeModal('addStudentModal');
+            showToast('✅ ' + (response.message || 'Student added successfully'), 'success');
+            loadAdminData(); // Refresh admin data
+        } else {
+            showToast('❌ ' + (response?.error || 'Failed to add student'), 'error');
+        }
+    });
 }
 
 // ================================================================
@@ -879,7 +999,7 @@ function rejectWithdrawal(rowIndex) {
 }
 
 // ================================================================
-// BALANCES TAB (NEW)
+// BALANCES TAB
 // ================================================================
 function loadBalances() {
     const wrap = document.getElementById('balancesWrap');
@@ -900,20 +1020,14 @@ function renderBalances() {
         wrap.innerHTML = `<div class="empty-state"><i class="fas fa-users"></i><h5>No students found</h5><p style="font-size:0.8rem;">Please add students first</p></div>`;
         return;
     }
-    
-    // Calculate total balance
     let totalBalance = 0;
-    let positiveCount = 0;
-    let zeroCount = 0;
-    let negativeCount = 0;
-    
+    let positiveCount = 0, zeroCount = 0, negativeCount = 0;
     balancesData.forEach(item => {
         totalBalance += item.balance;
         if (item.balance > 0) positiveCount++;
         else if (item.balance === 0) zeroCount++;
         else negativeCount++;
     });
-    
     let html = `<div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; background:#f8fafd; padding:12px 16px; border-radius:16px; border:1px solid #eef2f6;">
         <div><strong>Total Students:</strong> ${balancesData.length}</div>
         <div><span style="color:#10b981;font-weight:700;">Positive (${positiveCount})</span></div>
@@ -921,28 +1035,15 @@ function renderBalances() {
         <div><span style="color:#dc2626;font-weight:700;">Negative (${negativeCount})</span></div>
         <div><strong>Total Balance:</strong> <span style="font-weight:700;color:#2563eb;">₹${totalBalance.toLocaleString()}</span></div>
     </div>`;
-    
     html += `<table><thead><tr>
-        <th>#</th>
-        <th>Student</th>
-        <th>ID</th>
-        <th>Class</th>
-        <th style="text-align:right;">Balance (₹)</th>
-        <th>Status</th>
+        <th>#</th><th>Student</th><th>ID</th><th>Class</th><th style="text-align:right;">Balance (₹)</th><th>Status</th>
     </tr></thead><tbody>`;
-    
     balancesData.forEach((item, idx) => {
         const balance = item.balance || 0;
         let balanceClass = 'balance-zero';
         let statusText = 'Zero';
-        if (balance > 0) {
-            balanceClass = 'balance-positive';
-            statusText = '✅ Balance';
-        } else if (balance < 0) {
-            balanceClass = 'balance-negative';
-            statusText = '⚠️ Overdue';
-        }
-        
+        if (balance > 0) { balanceClass = 'balance-positive'; statusText = '✅ Balance'; }
+        else if (balance < 0) { balanceClass = 'balance-negative'; statusText = '⚠️ Overdue'; }
         html += `<tr>
             <td>${idx+1}</td>
             <td><strong>${escapeHtml(item.name)}</strong></td>
@@ -952,13 +1053,12 @@ function renderBalances() {
             <td>${statusText}</td>
         </tr>`;
     });
-    
     html += `</tbody></table>`;
     wrap.innerHTML = html;
 }
 
 // ================================================================
-// PDF GENERATION (Updated with balances)
+// PDF GENERATION
 // ================================================================
 function generatePDF(type) {
     if (type === 'balances') {
@@ -967,16 +1067,13 @@ function generatePDF(type) {
         const doc = new jsPDF('p', 'mm', 'a4');
         const margin = 8;
         const pageWidth = 210;
-        
         doc.setFontSize(16);
         doc.text("Noorussalam Madrasa - Student Balances", margin, 20);
         doc.setFontSize(10);
         doc.text("Generated: " + new Date().toLocaleString('en-IN'), margin, 28);
-        
         let totalBalance = balancesData.reduce((sum, item) => sum + item.balance, 0);
         doc.setFontSize(9);
         doc.text(`Total Students: ${balancesData.length} | Total Balance: ₹${totalBalance.toLocaleString()}`, margin, 36);
-        
         const rows = balancesData.map((item, idx) => [
             idx + 1,
             item.name || '',
@@ -984,7 +1081,6 @@ function generatePDF(type) {
             item.class || '',
             (item.balance || 0).toLocaleString()
         ]);
-        
         doc.autoTable({
             head: [['#', 'Student', 'ID', 'Class', 'Balance (₹)']],
             body: rows,
@@ -992,13 +1088,7 @@ function generatePDF(type) {
             margin: { left: margin, right: margin },
             styles: { fontSize: 8, cellPadding: 1.5 },
             headStyles: { fillColor: [200, 200, 200], textColor: [0, 0, 0], fontStyle: 'bold' },
-            columnStyles: {
-                0: { cellWidth: 10 },
-                1: { cellWidth: 50 },
-                2: { cellWidth: 30 },
-                3: { cellWidth: 25 },
-                4: { cellWidth: 30 }
-            },
+            columnStyles: { 0: { cellWidth: 10 }, 1: { cellWidth: 50 }, 2: { cellWidth: 30 }, 3: { cellWidth: 25 }, 4: { cellWidth: 30 } },
             didDrawPage: function(data) {
                 doc.setFontSize(7);
                 doc.text("Page " + data.pageNumber, margin, doc.internal.pageSize.height - 5);
@@ -1009,18 +1099,15 @@ function generatePDF(type) {
         showToast('✅ PDF downloaded successfully!', 'success');
         return;
     }
-    
     if (type === 'withdrawals') {
         if (pendingRequests.length === 0) { showToast('⚠️ No data to export', 'error'); return; }
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF('p', 'mm', 'a4');
         const margin = 8;
-        
         doc.setFontSize(16);
         doc.text("Noorussalam Madrasa - Withdrawal Requests", margin, 20);
         doc.setFontSize(10);
         doc.text("Generated: " + new Date().toLocaleString('en-IN'), margin, 28);
-        
         const rows = pendingRequests.map(req => [
             req.studentName || '',
             req.studentId || '',
@@ -1030,7 +1117,6 @@ function generatePDF(type) {
             (req.balance || 0).toLocaleString(),
             req.status || ''
         ]);
-        
         doc.autoTable({
             head: [['Student', 'ID', 'Amount (₹)', 'Reason', 'Date', 'Balance (₹)', 'Status']],
             body: rows,
