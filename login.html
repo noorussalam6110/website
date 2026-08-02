@@ -19,7 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js">
     </script>
     <style>
-        /* ===== FULL CSS ===== */
+        /* ===== FULL CSS (same as previous) ===== */
         * {
             margin: 0;
             padding: 0;
@@ -1421,12 +1421,7 @@
                     <h6 class="text-white">📒 പാസ്ബുക്ക്</h6>
                     <small class="text-white-50">View transactions</small>
                 </div>
-                <!-- NEW: Withdrawal action -->
-                <div class="action-tile" onclick="openStudentWithdrawalModal()">
-                    <div class="bg-warning bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-hand-holding-usd fa-2x text-warning"></i></div>
-                    <h6 class="text-white">💸 പിൻവലിക്കുക</h6>
-                    <small class="text-white-50">Request withdrawal</small>
-                </div>
+                <!-- 💸 Withdrawal tile removed – now inside passbook modal -->
             </div>
 
             <div class="row g-4 mt-2">
@@ -1568,25 +1563,33 @@
         </div>
     </div>
 
-    <!-- PASSBOOK MODAL -->
+    <!-- PASSBOOK MODAL (WITH WITHDRAWAL BUTTON INSIDE) -->
     <div id="passbookModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(12px); z-index:1200; align-items:center; justify-content:center; padding:20px;">
         <div class="modal-glass rounded-4 p-4" style="max-width:750px; width:100%; max-height:90vh; overflow-y:auto;">
             <div class="d-flex justify-content-between mb-3">
                 <h3 class="text-white fw-bold"><i class="fas fa-passport text-info"></i> പാസ്ബുക്ക്</h3>
                 <button onclick="closePassbook()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
             </div>
-            <div class="text-white mb-3"><strong>Balance: ₹<span id="modalPassbookBalance">0.00</span></strong></div>
+            
+            <!-- Balance + Withdrawal Button -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="text-white"><strong>Balance: ₹<span id="modalPassbookBalance">0.00</span></strong></div>
+                <button class="btn btn-warning rounded-pill px-4 py-2" onclick="closePassbook(); openStudentWithdrawalModal();">
+                    <i class="fas fa-hand-holding-usd me-2"></i> Request Withdrawal
+                </button>
+            </div>
+
+            <!-- Transactions Table -->
             <div class="table-responsive">
                 <table class="table table-dark table-hover" style="font-size:0.85rem;">
                     <thead><tr><th>Date</th><th>Debit</th><th>Credit</th><th>Balance</th><th>Approved</th></tr></thead>
                     <tbody id="passbookTableBody"></tbody>
                 </table>
             </div>
-            <!-- Remove old withdrawal button – now handled by separate modal -->
         </div>
     </div>
 
-    <!-- NEW: STUDENT WITHDRAWAL MODAL (submit + view previous) -->
+    <!-- STUDENT WITHDRAWAL MODAL (submit + view previous) -->
     <div id="studentWithdrawalModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(12px); z-index:1201; align-items:center; justify-content:center; padding:20px;">
         <div class="modal-glass rounded-4 p-4" style="max-width:600px; width:100%; max-height:90vh; overflow-y:auto;">
             <div class="d-flex justify-content-between mb-3">
@@ -1725,7 +1728,7 @@
         // ================================================================
         // CONFIG
         // ================================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzfNU8t9nTvLbYL53lDFktTij_rCI8Sm7LrhnouZ8D4wjSIZ9SEcMRSvX2TdOd0JKHK/exec'; // Replace with your Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbweUWuiqlxLQU1AOdd3FVVIfrn176bbBtp9zlWZk988Kz0sFc-SJewDdWNO7Qdxrjzc/exec'; // Replace with your Apps Script Web App URL
 
         // ================================================================
         // GLOBALS
@@ -2004,7 +2007,7 @@
         }
 
         // ================================================================
-        // PASSBOOK (fee transactions only)
+        // PASSBOOK (fee transactions only) + WITHDRAWAL BUTTON
         // ================================================================
         function openPassbook() {
             if (!currentUser) return;
@@ -3525,7 +3528,7 @@
         window.downloadBalancesPDF = downloadBalancesPDF;
         window.loadPassbookData = loadPassbookData;
 
-        console.log('📒 സഞ്ചയിക - Noorussalam Digital Passbook (Withdrawal Separate Sheet + Min Balance 100)');
+        console.log('📒 FINAL: Noorussalam Digital Passbook (Withdrawal in separate sheet, min balance 100, button inside passbook)');
         console.log('🔗 API:', SCRIPT_URL);
         console.log('🔐 Admin password: Check Settings sheet');
         console.log('👆 Student login: Enter Student ID');
