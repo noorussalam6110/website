@@ -1450,7 +1450,7 @@
                 </div>
                 <div class="action-tile" onclick="openPassbook()">
                     <div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-passport fa-2x text-info"></i></div>
-                    <h6 class="text-white">📒 പാസ്ബുക്ക്</h6>
+                    <h6 class="text-white">📒 പലതുള്ളി</h6>
                     <small class="text-white-50">View transactions</small>
                 </div>
             </div>
@@ -1737,7 +1737,7 @@
     <!-- JAVASCRIPT -->
     <!-- ============================================================ -->
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNpSafe8Z18RnWyYpaRirUUXLlHtPH2446GGrfxvHOvSQxAfnJswRoCvAn05r2Iwla/exec'; // Replace with your Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx689JhIP9OJ-1TH8OvbYzHgvOxpNJIUZ1NRpZsg940-2OFtzeqW8siahYk_Ql9qfYd/exec'; // Replace with your Apps Script Web App URL
         let currentUser = null;
         let isAdminMode = false;
         let allStudents = [];
@@ -2061,6 +2061,7 @@
                             textColor = tx.approved === 'TRUE' ? '#065f46' : '#991b1b';
                         }
 
+                        // For pending withdrawals, show "Pending" instead of balance
                         const balanceDisplay = isPending ? '⏳ Pending' : '₹' + (tx.balance || 0).toLocaleString();
 
                         html += `<tr>
@@ -2362,8 +2363,8 @@
                 const data = await resp.json();
                 if (data.success) {
                     showToast('✅ Withdrawal approved', 'success');
-                    loadPendingWithdrawals();
-                    loadBalances();
+                    await loadPendingWithdrawals();
+                    await loadBalances();
                 } else {
                     showToast('❌ ' + (data.error || 'Failed'), 'error');
                 }
@@ -2379,7 +2380,7 @@
                 const data = await resp.json();
                 if (data.success) {
                     showToast('🗑️ Withdrawal rejected', 'info');
-                    loadPendingWithdrawals();
+                    await loadPendingWithdrawals();
                 } else {
                     showToast('❌ ' + (data.error || 'Failed'), 'error');
                 }
@@ -3462,7 +3463,7 @@
 
         document.querySelectorAll(
                 '.modal-overlay, #globalModal, #passbookModal, #withdrawModal, #findStudentIdModal, #editProfileModal, #forgotModal, #topperModal, #topperCropModal'
-                )
+            )
             .forEach(el => {
                 if (el) {
                     el.addEventListener('click', function(e) { if (e.target === this) this.style.display = 'none'; });
