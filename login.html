@@ -1280,7 +1280,7 @@
                 <div class="mb-4">
                     <div class="input-group-custom d-flex align-items-center px-3">
                         <i class="fas fa-id-card text-primary me-2"></i>
-                        <input type="text" id="studentId" class="form-control-glass form-control" placeholder="Enter Student ID" autofocus oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" id="studentId" class="form-control-glass form-control" placeholder="Enter Student ID or Admin Password" autofocus oninput="this.value = this.value.toUpperCase();">
                     </div>
                 </div>
                 <button type="submit" class="btn-gradient btn w-100 text-white"><i class="fas fa-arrow-right-to-bracket me-2"></i> Access</button>
@@ -1437,7 +1437,7 @@
                 </div>
                 <div class="action-tile" onclick="openPassbook()">
                     <div class="bg-info bg-opacity-25 rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:55px;height:55px;"><i class="fas fa-passport fa-2x text-info"></i></div>
-                    <h6 class="text-white">📒 പലതുള്ളി</h6>
+                    <h6 class="text-white">📒 പാസ്ബുക്ക്</h6>
                     <small class="text-white-50">View transactions</small>
                 </div>
             </div>
@@ -1469,7 +1469,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- ADMIN PANEL (UPDATED) -->
+    <!-- ADMIN PANEL -->
     <!-- ============================================================ -->
     <div id="adminSection" style="display:none;">
         <div class="container">
@@ -1487,6 +1487,7 @@
                     <span class="badge-count" id="withdrawalBadge" style="display:none;">0</span>
                 </button>
                 <button class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">Balances</button>
+                <button class="admin-tab" data-tab="summary" onclick="switchAdminTab('summary')">Daily Summary</button>
             </div>
 
             <!-- Payments Tab -->
@@ -1542,6 +1543,19 @@
                 </div>
                 <div class="admin-table-wrap" id="balancesWrap">
                     <div class="loading-tx"><div class="spinner-sm"></div><p style="color:#94a3b8;">Loading balances...</p></div>
+                </div>
+            </div>
+
+            <!-- Daily Summary Tab -->
+            <div id="adminSummaryTab" class="admin-tab-content" style="display:none;">
+                <div class="admin-toolbar">
+                    <label><i class="fas fa-calendar-day"></i> Select Date</label>
+                    <input type="date" id="summaryDate" />
+                    <button class="btn-load" onclick="loadDailySummary()"><i class="fas fa-chart-bar"></i> Load Summary</button>
+                    <button class="btn-pdf" onclick="downloadSummaryPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                </div>
+                <div id="summaryContent" style="padding:20px; background:rgba(255,255,255,0.02); border-radius:16px;">
+                    <div class="loading-tx"><div class="spinner-sm"></div><p style="color:#94a3b8;">Select date and Load</p></div>
                 </div>
             </div>
         </div>
@@ -1695,7 +1709,7 @@
     <!-- ============================================================ -->
     <script>
         // ==================== CONFIG ====================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzs4UvtjZ8a62xXapIEg0ksJxpydL0vV1cWfv3cvzjRf9luGnlOhaEsHAMMj_u5X_nT/exec'; // Replace with your Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIcTW2uDnZHfm1QAO_LwBGRbZSC6FaNXgQmMKhMxf7pjhkHwbpUyMbswUQ_8OuvL7F/exec'; // Replace with your Apps Script Web App URL
         let currentUser = null;
         let isAdminMode = false;
         let allStudents = [];
@@ -1972,51 +1986,69 @@
 
         function closePassbook() { closeModal('passbookModal'); }
 
-        async function loadPassbookData() {
-            const tbody = document.getElementById('passbookTableBody');
-            const balanceSpan = document.getElementById('modalPassbookBalance');
-            try {
-                const url =
-                    `${SCRIPT_URL}?action=getPassbook&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
-                const resp = await fetch(url);
-                const data = await resp.json();
-                if (data.success) {
-                    balanceSpan.textContent = (data.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-                    const txs = data.transactions || [];
-                    if (txs.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-white-50">No transactions</td></tr>`;
-                        return;
-                    }
-                    let html = '';
-                    // Sort by date (oldest first)
-                    txs.sort((a, b) => {
-                        const dateA = String(a.date || '');
-                        const dateB = String(b.date || '');
-                        return dateA.localeCompare(dateB);
-                    });
-                    txs.forEach(tx => {
-                        const isPending = tx.type === 'withdrawal' && !tx.approved;
-                        const approved = isPending ? 'Pending' : (tx.approved ? 'Yes' : 'No');
-                        const cls = isPending ? 'pending' : (tx.approved ? 'yes' : 'no');
-                        // Show balance only if approved, else show 0 or placeholder
-                        const displayBalance = tx.approved ? (tx.balance || 0) : (isPending ? 'Pending' : 0);
-                        html += `<tr>
-                            <td>${formatDate(tx.date)}</td>
-                            <td>${tx.debit > 0 ? '₹' + tx.debit.toLocaleString() : '—'}</td>
-                            <td>${tx.credit > 0 ? '₹' + tx.credit.toLocaleString() : '—'}</td>
-                            <td>${isPending ? '⏳ Pending' : '₹' + (tx.balance || 0).toLocaleString()}</td>
-                            <td><span class="approved ${cls}" style="display:inline-block;padding:2px 10px;border-radius:30px;font-size:0.55rem;font-weight:700;text-transform:uppercase;background:${isPending?'#fef3c7':tx.approved?'#d1fae5':'#fee2e2'};color:${isPending?'#92400e':tx.approved?'#065f46':'#991b1b'};">${approved}</span></td>
-                        </tr>`;
-                    });
-                    tbody.innerHTML = html;
-                } else {
-                    tbody.innerHTML =
-                        `<tr><td colspan="5" class="text-center text-white-50">${data.error || 'Error loading'}</td></tr>`;
-                }
-            } catch (e) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-white-50">Network error</td></tr>`;
+async function loadPassbookData() {
+    const tbody = document.getElementById('passbookTableBody');
+    const balanceSpan = document.getElementById('modalPassbookBalance');
+    try {
+        const url = `${SCRIPT_URL}?action=getPassbook&studentId=${encodeURIComponent(currentUser.studentId)}&t=${Date.now()}`;
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.success) {
+            balanceSpan.textContent = (data.balance || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+            const txs = data.transactions || [];
+            if (txs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-white-50">No transactions</td></tr>`;
+                return;
             }
+            let html = '';
+            txs.sort((a, b) => {
+                const dateA = String(a.date || '');
+                const dateB = String(b.date || '');
+                return dateA.localeCompare(dateB);
+            });
+            txs.forEach(tx => {
+                // ✅ FIX: Check for REJECTED status
+                const isPending = tx.type === 'withdrawal' && tx.approved === 'FALSE';
+                const isRejected = tx.type === 'withdrawal' && tx.approved === 'REJECTED';
+                const isApproved = tx.type === 'withdrawal' && tx.approved === 'TRUE';
+                
+                let approvedText = '';
+                let approvedClass = '';
+                if (isPending) {
+                    approvedText = 'Pending';
+                    approvedClass = 'pending';
+                } else if (isRejected) {
+                    approvedText = 'Rejected';
+                    approvedClass = 'no';
+                } else if (isApproved) {
+                    approvedText = 'Approved';
+                    approvedClass = 'yes';
+                } else {
+                    // For regular fee transactions
+                    approvedText = tx.approved ? 'Yes' : 'No';
+                    approvedClass = tx.approved ? 'yes' : 'no';
+                }
+                
+                const balanceDisplay = isPending ? '⏳ Pending' : '₹' + (tx.balance || 0).toLocaleString();
+                const bgColor = isPending ? '#fef3c7' : (isRejected ? '#fee2e2' : (isApproved ? '#d1fae5' : ''));
+                const textColor = isPending ? '#92400e' : (isRejected ? '#991b1b' : (isApproved ? '#065f46' : ''));
+                
+                html += `<tr>
+                    <td>${formatDate(tx.date)}</td>
+                    <td>${tx.debit > 0 ? '₹' + tx.debit.toLocaleString() : '—'}</td>
+                    <td>${tx.credit > 0 ? '₹' + tx.credit.toLocaleString() : '—'}</td>
+                    <td>${balanceDisplay}</td>
+                    <td><span class="approved ${approvedClass}" style="display:inline-block;padding:2px 10px;border-radius:30px;font-size:0.55rem;font-weight:700;text-transform:uppercase;background:${bgColor || '#e2e8f0'};color:${textColor || '#1e293b'};">${approvedText}</span></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        } else {
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-white-50">${data.error || 'Error loading'}</td></tr>`;
         }
+    } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-white-50">Network error</td></tr>`;
+    }
+}
 
         // ==================== WITHDRAWAL (STUDENT) ====================
         function openWithdrawModal() {
@@ -2058,12 +2090,22 @@
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`.admin-tab[data-tab="${tab}"]`)?.classList.add('active');
             document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
-            const map = { 'payments': 'adminPaymentsTab', 'withdrawals': 'adminWithdrawalsTab', 'balances': 'adminBalancesTab' };
+            const map = {
+                'payments': 'adminPaymentsTab',
+                'withdrawals': 'adminWithdrawalsTab',
+                'balances': 'adminBalancesTab',
+                'summary': 'adminSummaryTab'
+            };
             const el = document.getElementById(map[tab]);
             if (el) el.style.display = 'block';
             if (tab === 'withdrawals') loadPendingWithdrawals();
             if (tab === 'balances') loadBalances();
-            if (tab === 'payments') { loadPaymentsForDate(); }
+            if (tab === 'payments') loadPaymentsForDate();
+            if (tab === 'summary') {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('summaryDate').value = today;
+                loadDailySummary();
+            }
         }
 
         async function loadAdminData() {
@@ -2350,6 +2392,67 @@
             });
             html += `</tbody></table>`;
             wrap.innerHTML = html;
+        }
+
+        // ==================== DAILY SUMMARY (ADMIN) ====================
+        async function loadDailySummary() {
+            const date = document.getElementById('summaryDate').value;
+            if (!date) { showToast('Select date', 'error'); return; }
+            const wrap = document.getElementById('summaryContent');
+            wrap.innerHTML =
+                `<div class="loading-tx"><div class="spinner-sm"></div><p style="color:#94a3b8;">Loading summary...</p></div>`;
+            try {
+                const url = `${SCRIPT_URL}?action=getDailySummary&date=${encodeURIComponent(date)}&t=${Date.now()}`;
+                const resp = await fetch(url);
+                const data = await resp.json();
+                if (data.success) {
+                    const { totalDebit, totalCredit, totalBalance, studentCount } = data;
+                    wrap.innerHTML = `
+                        <div class="admin-summary" style="grid-template-columns: repeat(auto-fit, minmax(150px,1fr));">
+                            <div class="stat"><div class="num blue">₹${totalDebit.toLocaleString()}</div><div class="label">Total Debit</div></div>
+                            <div class="stat"><div class="num green">₹${totalCredit.toLocaleString()}</div><div class="label">Total Credit</div></div>
+                            <div class="stat"><div class="num orange">₹${totalBalance.toLocaleString()}</div><div class="label">Overall Balance</div></div>
+                            <div class="stat"><div class="num">${studentCount}</div><div class="label">Students</div></div>
+                        </div>
+                        <div style="margin-top:20px; padding:16px; background:rgba(255,255,255,0.04); border-radius:12px; border:1px solid rgba(255,255,255,0.06);">
+                            <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                                <span><strong>Date:</strong> ${formatDate(date)}</span>
+                                <span><strong>Net Balance:</strong> ₹${(totalCredit - totalDebit).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    wrap.innerHTML =
+                        `<div class="empty-state" style="padding:30px;text-align:center;color:#94a3b8;">${data.error || 'No data'}</div>`;
+                }
+            } catch (e) {
+                wrap.innerHTML =
+                    `<div class="empty-state" style="padding:30px;text-align:center;color:#94a3b8;">Network error</div>`;
+            }
+        }
+
+        function downloadSummaryPDF() {
+            const content = document.getElementById('summaryContent');
+            const date = document.getElementById('summaryDate').value;
+            if (!date) { showToast('Load summary first', 'error'); return; }
+            const numbers = content.querySelectorAll('.num');
+            if (!numbers || numbers.length < 3) { showToast('No data to export', 'error'); return; }
+            const totalDebit = numbers[0].textContent.replace(/[₹,]/g, '');
+            const totalCredit = numbers[1].textContent.replace(/[₹,]/g, '');
+            const totalBalance = numbers[2].textContent.replace(/[₹,]/g, '');
+            const studentCount = numbers[3].textContent;
+
+            const doc = new jspdf.jsPDF('p', 'mm', 'a4');
+            doc.setFontSize(16);
+            doc.text('Daily Summary Report', 14, 20);
+            doc.setFontSize(12);
+            doc.text(`Date: ${formatDate(date)}`, 14, 30);
+            doc.text(`Total Debit: ₹${parseFloat(totalDebit).toLocaleString()}`, 14, 40);
+            doc.text(`Total Credit: ₹${parseFloat(totalCredit).toLocaleString()}`, 14, 48);
+            doc.text(`Overall Balance: ₹${parseFloat(totalBalance).toLocaleString()}`, 14, 56);
+            doc.text(`Number of Students: ${studentCount}`, 14, 64);
+            doc.save('Daily_Summary.pdf');
+            showToast('PDF downloaded!', 'success');
         }
 
         // ==================== FORGOT STUDENT ID ====================
@@ -3236,6 +3339,8 @@
         window.bulkUpdate = bulkUpdate;
         window.approveWithdrawal = approveWithdrawal;
         window.rejectWithdrawal = rejectWithdrawal;
+        window.loadDailySummary = loadDailySummary;
+        window.downloadSummaryPDF = downloadSummaryPDF;
         window.applyPaymentsFilters = applyPaymentsFilters;
         window.downloadPaymentsPDF = downloadPaymentsPDF;
         window.downloadWithdrawalsPDF = downloadWithdrawalsPDF;
@@ -3246,6 +3351,5 @@
         console.log('🔐 Admin password: Check Settings sheet');
         console.log('👆 Student login: Enter Student ID');
     </script>
-
 </body>
 </html>
