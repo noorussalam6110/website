@@ -186,7 +186,7 @@
                 <div class="mb-4">
                     <div class="input-group-custom d-flex align-items-center px-3">
                         <i class="fas fa-id-card text-primary me-2"></i>
-                        <input type="text" id="parentIdInput" class="form-control-glass" placeholder="Enter Parent ID" autofocus oninput="this.value = this.value.toUpperCase();">
+                        <input type="text" id="parentIdInput" class="form-control-glass" placeholder="Enter Parent ID (e.g., ADMIN123)" autofocus oninput="this.value = this.value.toUpperCase();">
                     </div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
@@ -326,7 +326,7 @@
 
             <div class="admin-tabs">
                 <button class="admin-tab active" data-tab="questions" onclick="switchAdminTab('questions')">📋 Questions</button>
-                <button class="admin-tab" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions (Date/Time)</button>
+                <button class="admin-tab" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions (Manage Days)</button>
                 <button class="admin-tab" data-tab="rankings" onclick="switchAdminTab('rankings')">📊 Rankings</button>
             </div>
 
@@ -340,7 +340,7 @@
                     <div id="questionForm" class="hidden mb-3" style="background:rgba(0,0,0,0.2);padding:16px;border-radius:16px;">
                         <h5 id="formTitle" style="color:#fbbf24;">Add Question</h5>
                         <div class="d-flex flex-wrap gap-2 mb-2">
-                            <input type="number" id="qDay" min="1" max="6" value="1" style="width:80px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 14px;color:#fff;" />
+                            <input type="number" id="qDay" min="1" max="99" value="1" style="width:80px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 14px;color:#fff;" />
                             <textarea id="qText" placeholder="Question text" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:8px 14px;color:#fff;min-height:60px;"></textarea>
                         </div>
                         <div class="d-flex flex-wrap gap-2">
@@ -359,32 +359,42 @@
                         </div>
                     </div>
                     <div class="day-tabs">
-                        <button class="day-tab active" data-day="1" onclick="loadAdminQuestions(1)">Day 1</button>
-                        <button class="day-tab" data-day="2" onclick="loadAdminQuestions(2)">Day 2</button>
-                        <button class="day-tab" data-day="3" onclick="loadAdminQuestions(3)">Day 3</button>
-                        <button class="day-tab" data-day="4" onclick="loadAdminQuestions(4)">Day 4</button>
-                        <button class="day-tab" data-day="5" onclick="loadAdminQuestions(5)">Day 5</button>
-                        <button class="day-tab" data-day="6" onclick="loadAdminQuestions(6)">Day 6</button>
+                        <!-- Will be dynamically loaded based on existing days -->
+                        <div id="adminDayTabsContainer" class="d-flex gap-2 flex-wrap"></div>
                     </div>
-                    <div class="admin-table-wrap" id="adminQuestionsTable"><div class="text-center text-white-50 p-3">Select day to load</div></div>
+                    <div class="admin-table-wrap" id="adminQuestionsTable"><div class="text-center text-white-50 p-3">Select a day to load questions</div></div>
                 </div>
             </div>
 
-            <!-- Sessions Tab – with Quick Set -->
+            <!-- Sessions Tab – with Add/Delete Day -->
             <div id="adminSessionsTab" class="admin-tab-content hidden">
                 <div class="glass-card p-3">
-                    <h4 style="color:#fbbf24;">⏰ Manage Sessions (Date, Time & Duration)</h4>
-                    <p class="text-white-50">Set Start Date/Time, End Date/Time (IST) and Duration (minutes) for each day.</p>
+                    <h4 style="color:#fbbf24;">⏰ Manage Days (Sessions)</h4>
+                    <p class="text-white-50">Add new days, edit times, or delete existing days.</p>
 
-                    <!-- Quick Set Section -->
+                    <!-- Add Day Form -->
+                    <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:16px;padding:16px;margin-bottom:16px;">
+                        <h5 style="color:#3b82f6;">➕ Add New Day</h5>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <label style="color:#94a3b8;">Day #:</label>
+                            <input type="number" id="newDay" min="1" max="99" style="width:80px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 14px;color:#fff;" placeholder="#" />
+                            <label style="color:#94a3b8;">Start:</label>
+                            <input type="datetime-local" id="newStart" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 16px;color:#fff;" />
+                            <label style="color:#94a3b8;">End:</label>
+                            <input type="datetime-local" id="newEnd" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 16px;color:#fff;" />
+                            <label style="color:#94a3b8;">Duration (min):</label>
+                            <input type="number" id="newDuration" value="15" min="1" max="120" style="width:80px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 14px;color:#fff;" />
+                            <button class="btn btn-success btn-sm" onclick="addSession()">➕ Add Day</button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Set (Edit existing) -->
                     <div style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.15);border-radius:16px;padding:16px;margin-bottom:16px;">
-                        <h5 style="color:#fbbf24;">⚡ Quick Set</h5>
-                        <p class="text-white-50" style="font-size:0.85rem;">Select day and set time instantly.</p>
+                        <h5 style="color:#fbbf24;">⚡ Quick Set (Edit Existing Day)</h5>
                         <div class="d-flex flex-wrap gap-2 align-items-center">
                             <label style="color:#94a3b8;">Day:</label>
                             <select id="quickDay" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 16px;color:#fff;">
-                                <option value="1">Day 1</option><option value="2">Day 2</option><option value="3">Day 3</option>
-                                <option value="4">Day 4</option><option value="5">Day 5</option><option value="6">Day 6</option>
+                                <!-- will be populated -->
                             </select>
                             <label style="color:#94a3b8;">Start:</label>
                             <input type="datetime-local" id="quickStart" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:30px;padding:6px 16px;color:#fff;" />
@@ -405,15 +415,10 @@
                 <div class="glass-card p-3">
                     <h4 style="color:#fbbf24;">🏆 Day-wise Rankings (with Submit Time)</h4>
                     <p class="text-white-50">Ranked by Score (High) → Time Taken (Low). Shows submission time.</p>
-                    <div class="day-tabs">
-                        <button class="day-tab active" data-day="1" onclick="loadAdminRankings(1)">Day 1</button>
-                        <button class="day-tab" data-day="2" onclick="loadAdminRankings(2)">Day 2</button>
-                        <button class="day-tab" data-day="3" onclick="loadAdminRankings(3)">Day 3</button>
-                        <button class="day-tab" data-day="4" onclick="loadAdminRankings(4)">Day 4</button>
-                        <button class="day-tab" data-day="5" onclick="loadAdminRankings(5)">Day 5</button>
-                        <button class="day-tab" data-day="6" onclick="loadAdminRankings(6)">Day 6</button>
+                    <div class="day-tabs" id="adminRankDayTabs">
+                        <!-- populated dynamically -->
                     </div>
-                    <div id="adminRankListContainer"><div class="text-center text-white-50 p-3">Select day</div></div>
+                    <div id="adminRankListContainer"><div class="text-center text-white-50 p-3">Select a day</div></div>
                 </div>
             </div>
         </div>
@@ -438,7 +443,7 @@
         let questions = [], answers = {};
         let timerInterval = null, pubInterval = null;
         let timeLeft = 0, isSubmitted = false;
-        let currentAdminDay = 1, questionsCache = [];
+        let adminCurrentDay = 1, questionsCache = [];
 
         // ================================================================
         // DOM REFS
@@ -468,8 +473,8 @@
         function openHelp() {
             alert(
                 '📘 സഹായം / HELP\n\n' +
-                '1. Admin: Login with "id"\n' +
-                '2. Quick Set: Select day, set Start/End time & Duration\n' +
+                '1. Admin: Login with "ADMIN123"\n' +
+                '2. Sessions Tab: Add/Delete days, edit times\n' +
                 '3. Parents: Register to get ID\n' +
                 '4. Rankings appear after session ends (+5 min)\n' +
                 '5. Rankings show Submit Time'
@@ -1026,17 +1031,72 @@
 
         async function loadAdminData() {
             loadAdminSessionSummary();
+            loadAdminSessions(); // this will also load day tabs
             loadAdminQuestions(1);
-            loadAdminSessions();
         }
 
-        // ---- QUICK SET ----
+        // ---- ADD / DELETE SESSIONS ----
+        window.addSession = async function() {
+            const day = parseInt($('newDay').value);
+            const start = $('newStart').value;
+            const end = $('newEnd').value;
+            const duration = parseInt($('newDuration').value);
+            if (!day || !start || !end || !duration) {
+                showToast('Fill all fields', 'error');
+                return;
+            }
+            // Check if day already exists
+            const { data: existing } = await _supabase.from('QuizSession').select('day').eq('day', day).maybeSingle();
+            if (existing) {
+                showToast('Day ' + day + ' already exists! Use Quick Set to edit.', 'error');
+                return;
+            }
+            try {
+                await _supabase.from('QuizSession').insert({
+                    day: day,
+                    startTime: start,
+                    endTime: end,
+                    duration: duration
+                });
+                showToast('✅ Day ' + day + ' added!', 'success');
+                loadAdminSessions();
+                loadAdminSessionSummary();
+                // Reset fields
+                $('newDay').value = '';
+                $('newStart').value = '';
+                $('newEnd').value = '';
+                $('newDuration').value = '15';
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        };
+
+        window.deleteSession = async function(day) {
+            if (!confirm('Delete Day ' + day + ' and all its questions? This cannot be undone.')) return;
+            try {
+                await _supabase.from('QuizSession').delete().eq('day', day);
+                showToast('🗑️ Day ' + day + ' deleted', 'success');
+                loadAdminSessions();
+                loadAdminSessionSummary();
+                // If the deleted day is the current admin day, reset to first available
+                const { data: sessions } = await _supabase.from('QuizSession').select('day').order('day');
+                if (sessions && sessions.length > 0) {
+                    adminCurrentDay = sessions[0].day;
+                } else {
+                    adminCurrentDay = 1;
+                }
+                loadAdminQuestions(adminCurrentDay);
+            } catch (err) {
+                showToast('Error: ' + err.message, 'error');
+            }
+        };
+
         window.quickSetSession = async function() {
             const day = parseInt($('quickDay').value);
             const start = $('quickStart').value;
             const end = $('quickEnd').value;
             const duration = parseInt($('quickDuration').value);
-            if (!start || !end || !duration) {
+            if (!day || !start || !end || !duration) {
                 showToast('Fill all fields', 'error');
                 return;
             }
@@ -1057,6 +1117,109 @@
                 showToast('Error: ' + err.message, 'error');
             }
         };
+
+        // ---- LOAD SESSIONS ----
+        async function loadAdminSessions() {
+            const table = $('adminSessionsTable');
+            table.innerHTML = '<div class="text-center text-white-50 p-3">Loading...</div>';
+            const { data: sessions, error } = await _supabase
+                .from('QuizSession')
+                .select('*')
+                .order('day', { ascending: true });
+            if (error) {
+                table.innerHTML = '<div class="text-danger text-center p-3">Error loading</div>';
+                return;
+            }
+            if (!sessions || sessions.length === 0) {
+                table.innerHTML = '<div class="text-center text-white-50 p-3">No days added yet. Use "Add New Day" above.</div>';
+                // Update quick day dropdown
+                const quickDay = $('quickDay');
+                quickDay.innerHTML = '<option value="">No days</option>';
+                // Update rank day tabs
+                document.getElementById('adminRankDayTabs').innerHTML = '';
+                // Update question day tabs
+                document.getElementById('adminDayTabsContainer').innerHTML = '';
+                return;
+            }
+
+            // Build table
+            let html = `<table><thead><tr>
+                <th>Day</th>
+                <th>Start Date & Time (IST)</th>
+                <th>End Date & Time (IST)</th>
+                <th>Duration (min)</th>
+                <th>Actions</th>
+            </tr></thead><tbody>`;
+            sessions.forEach(s => {
+                const st = s.startTime ? new Date(s.startTime).toISOString().slice(0, 16) : '';
+                const en = s.endTime ? new Date(s.endTime).toISOString().slice(0, 16) : '';
+                html += `<tr>
+                    <td><strong>Day ${s.day}</strong></td>
+                    <td><input type="datetime-local" class="session-start" value="${st}" style="width:180px;" /></td>
+                    <td><input type="datetime-local" class="session-end" value="${en}" style="width:180px;" /></td>
+                    <td><input type="number" class="session-duration" value="${s.duration}" min="1" max="120" style="width:80px;" /></td>
+                    <td>
+                        <button class="btn btn-primary btn-sm update-session-btn" data-day="${s.day}">💾 Update</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSession(${s.day})">🗑️</button>
+                    </td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+            table.innerHTML = html;
+
+            // Update quick day dropdown
+            const quickDay = $('quickDay');
+            quickDay.innerHTML = sessions.map(s => `<option value="${s.day}">Day ${s.day}</option>`).join('');
+
+            // Update rank day tabs
+            const rankTabs = document.getElementById('adminRankDayTabs');
+            rankTabs.innerHTML = sessions.map(s =>
+                `<button class="day-tab ${s.day === 1 ? 'active' : ''}" data-day="${s.day}" onclick="loadAdminRankings(${s.day})">Day ${s.day}</button>`
+            ).join('');
+
+            // Update question day tabs
+            const qTabs = document.getElementById('adminDayTabsContainer');
+            qTabs.innerHTML = sessions.map(s =>
+                `<button class="day-tab ${s.day === adminCurrentDay ? 'active' : ''}" data-day="${s.day}" onclick="loadAdminQuestions(${s.day})">Day ${s.day}</button>`
+            ).join('');
+
+            // Attach update listeners
+            table.querySelectorAll('.update-session-btn').forEach(btn => {
+                btn.onclick = async function() {
+                    const row = this.closest('tr');
+                    const day = parseInt(this.dataset.day);
+                    const start = row.querySelector('.session-start').value;
+                    const end = row.querySelector('.session-end').value;
+                    const dur = parseInt(row.querySelector('.session-duration').value);
+                    if (!start || !end || !dur) {
+                        showToast('Fill all fields', 'error');
+                        return;
+                    }
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-sm"></span>';
+                    try {
+                        await _supabase
+                            .from('QuizSession')
+                            .update({
+                                startTime: start,
+                                endTime: end,
+                                duration: dur,
+                                updatedAt: new Date()
+                            })
+                            .eq('day', day);
+                        showToast('✅ Updated!', 'success');
+                        loadAdminSessionSummary();
+                        // Refresh table to reflect changes
+                        loadAdminSessions();
+                    } catch (err) {
+                        showToast('Error: ' + err.message, 'error');
+                    } finally {
+                        this.disabled = false;
+                        this.innerHTML = '💾 Update';
+                    }
+                };
+            });
+        }
 
         // ---- QUESTIONS ----
         async function loadAdminQuestions(day) {
@@ -1092,6 +1255,11 @@
             });
             html += `</tbody></table>`;
             table.innerHTML = html;
+
+            // Update active tab
+            document.querySelectorAll('#adminDayTabsContainer .day-tab').forEach(tab => {
+                tab.classList.toggle('active', parseInt(tab.dataset.day) === day);
+            });
         }
 
         function showAddQuestionForm() {
@@ -1121,6 +1289,12 @@
             const editId = $('editQuestionId').value;
             if (!text || opts.some(o => !o)) {
                 showToast('Fill all fields', 'error');
+                return;
+            }
+            // Check if day exists
+            const { data: dayExists } = await _supabase.from('QuizSession').select('day').eq('day', day).maybeSingle();
+            if (!dayExists) {
+                showToast('Day ' + day + ' does not exist. Add it first in Sessions tab.', 'error');
                 return;
             }
             const btn = $('saveQuestionBtn');
@@ -1184,82 +1358,14 @@
             }
         };
 
-        // ---- SESSIONS ----
-        async function loadAdminSessions() {
-            const table = $('adminSessionsTable');
-            table.innerHTML = '<div class="text-center text-white-50 p-3">Loading...</div>';
-            const { data, error } = await _supabase
-                .from('QuizSession')
-                .select('*')
-                .order('day', { ascending: true });
-            if (error) {
-                table.innerHTML = '<div class="text-danger text-center p-3">Error loading</div>';
-                return;
-            }
-            if (!data || data.length === 0) {
-                table.innerHTML = '<div class="text-center text-white-50 p-3">No sessions. Please set up.</div>';
-                return;
-            }
-            let html = `<table><thead><tr>
-                <th>Day</th>
-                <th>Start Date & Time (IST)</th>
-                <th>End Date & Time (IST)</th>
-                <th>Duration (min)</th>
-                <th>Action</th>
-            </tr></thead><tbody>`;
-            data.forEach(s => {
-                const st = s.startTime ? new Date(s.startTime).toISOString().slice(0, 16) : '';
-                const en = s.endTime ? new Date(s.endTime).toISOString().slice(0, 16) : '';
-                html += `<tr>
-                    <td><strong>Day ${s.day}</strong></td>
-                    <td><input type="datetime-local" class="session-start" value="${st}" style="width:180px;" /></td>
-                    <td><input type="datetime-local" class="session-end" value="${en}" style="width:180px;" /></td>
-                    <td><input type="number" class="session-duration" value="${s.duration}" min="1" max="120" style="width:80px;" /></td>
-                    <td><button class="btn btn-primary btn-sm update-session-btn" data-day="${s.day}">💾 Update</button></td>
-                </tr>`;
-            });
-            html += `</tbody></table>`;
-            table.innerHTML = html;
-
-            table.querySelectorAll('.update-session-btn').forEach(btn => {
-                btn.onclick = async function() {
-                    const row = this.closest('tr');
-                    const day = parseInt(this.dataset.day);
-                    const start = row.querySelector('.session-start').value;
-                    const end = row.querySelector('.session-end').value;
-                    const dur = parseInt(row.querySelector('.session-duration').value);
-                    if (!start || !end || !dur) {
-                        showToast('Fill all fields', 'error');
-                        return;
-                    }
-                    this.disabled = true;
-                    this.innerHTML = '<span class="spinner-sm"></span>';
-                    try {
-                        await _supabase
-                            .from('QuizSession')
-                            .update({
-                                startTime: start,
-                                endTime: end,
-                                duration: dur,
-                                updatedAt: new Date()
-                            })
-                            .eq('day', day);
-                        showToast('✅ Updated!', 'success');
-                        loadAdminSessionSummary();
-                    } catch (err) {
-                        showToast('Error: ' + err.message, 'error');
-                    } finally {
-                        this.disabled = false;
-                        this.innerHTML = '💾 Update';
-                    }
-                };
-            });
-        }
-
         // ---- ADMIN RANKINGS ----
         async function loadAdminRankings(day) {
             const container = $('adminRankListContainer');
             container.innerHTML = '<div class="text-center text-white-50 p-3">Loading...</div>';
+            // Update active tab
+            document.querySelectorAll('#adminRankDayTabs .day-tab').forEach(tab => {
+                tab.classList.toggle('active', parseInt(tab.dataset.day) === day);
+            });
             try {
                 const { data: attempts, error } = await _supabase
                     .from('Attempt')
@@ -1311,7 +1417,8 @@
         parentDashboard.classList.add('hidden');
         adminDashboard.classList.add('hidden');
 
-        console.log('🚀 Admin Panel v4.0 – With Quick Set');
+        console.log('🚀 Admin Panel v5.0 – Add/Delete Days');
+        console.log('🔑 Use "ADMIN123" for Admin Panel');
 
         window.switchAdminTab = switchAdminTab;
         window.loadAdminQuestions = loadAdminQuestions;
@@ -1331,6 +1438,8 @@
         window.copyId = copyId;
         window.formatDateTime = formatDateTime;
         window.quickSetSession = quickSetSession;
+        window.addSession = addSession;
+        window.deleteSession = deleteSession;
     </script>
 
 </body>
