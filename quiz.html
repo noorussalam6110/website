@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Meelad Quiz</title>
+    <!-- Supabase CDN (Browser-ൽ നേരിട്ട് ഉപയോഗിക്കാൻ) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        /* 🌟 മനോഹരമായ UI - Mobile Friendly */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: linear-gradient(145deg, #0f3b2c, #1a5e44);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 40px;
+            padding: 30px 25px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(251, 191, 36, 0.3);
+        }
+        .header p {
+            color: #a7f3d0;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .card {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 24px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .input-group {
+            margin-bottom: 18px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #d1fae5;
+            margin-bottom: 6px;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.07);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #fbbf24;
+            background: rgba(255,255,255,0.12);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
+        }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            background: #fbbf24;
+            color: #1a1a1a;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(251, 191, 36, 0.3);
+        }
+        .btn:hover { transform: scale(1.02); background: #fcd34d; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-danger { background: #ef4444; color: white; box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: #10b981; color: white; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3); }
+        .btn-success:hover { background: #059669; }
+
+        .hidden { display: none !important; }
+        
+        .quiz-timer {
+            font-size: 48px;
+            font-weight: 800;
+            text-align: center;
+            color: #fbbf24;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 0;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        .question-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 18px;
+            border-left: 4px solid #fbbf24;
+        }
+        .question-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width: 500px) { .options-grid { grid-template-columns: 1fr; } }
+        .opt-btn {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 16px;
+            border-radius: 14px;
+            color: white;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+            font-size: 15px;
+        }
+        .opt-btn:hover { background: rgba(255,255,255,0.15); }
+        .opt-btn.selected { background: #fbbf24; color: black; font-weight: bold; border-color: #fbbf24; }
+        .opt-btn:disabled { opacity: 0.5; cursor: default; }
+
+        .welcome-msg {
+            background: rgba(251, 191, 36, 0.15);
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px dashed #fbbf24;
+            color: #fde68a;
+        }
+        .status-msg {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .status-msg .icon { font-size: 60px; margin-bottom: 15px; }
+        .status-msg h2 { font-size: 24px; margin-bottom: 10px; }
+        .status-msg p { color: #d1d5db; }
+        
+        .parent-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .parent-modal-content {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 1px solid #fbbf24;
+        }
+        .parent-modal-content h2 { color: #fbbf24; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <div class="header">
+        <h1>🌟 Daily Meelad Quiz</h1>
+        <p>നൂറുസ്സലാം മദ്‌റസ SKSBV യൂണിറ്റ്</p>
+    </div>
+
+    <!-- ========== LOGIN SCREEN ========== -->
+    <div id="loginScreen">
+        <div class="card">
+            <div class="input-group">
+                <label>👤 Student ID</label>
+                <input type="text" id="studentIdInput" placeholder="ഉദാ: STU001 അല്ലെങ്കിൽ admin" />
+            </div>
+            <button class="btn" id="loginBtn">🚪 Login / പ്രവേശിക്കുക</button>
+            <div id="loginError" style="color:#fca5a5; margin-top:12px; text-align:center; font-weight:bold;"></div>
+        </div>
+    </div>
+
+    <!-- ========== DASHBOARD (Main) ========== -->
+    <div id="dashboardScreen" class="hidden">
+        <!-- Welcome Message -->
+        <div id="welcomeBanner" class="welcome-msg">👋 സ്വാഗതം, <span id="userNameDisplay">...</span></div>
+        
+        <!-- Timer -->
+        <div id="timerArea" class="hidden">
+            <div class="quiz-timer" id="timerDisplay">15:00</div>
+        </div>
+
+        <!-- Status: Waiting / Ended / Quiz -->
+        <div id="statusArea">
+            <div class="status-msg" id="waitingMsg">
+                <div class="icon">⏳</div>
+                <h2>മത്സരത്തിന് ഇതുവരെ സമയമായിട്ടില്ല</h2>
+                <p id="waitingTimeText">ദയവായി കാത്തിരിക്കുക...</p>
+            </div>
+            <div class="status-msg hidden" id="endedMsg">
+                <div class="icon">🚫</div>
+                <h2>ഇന്നത്തെ മത്സരം അവസാനിച്ചു</h2>
+                <p>നാളെ വീണ്ടും വരൂ!</p>
+            </div>
+        </div>
+
+        <!-- Start Button -->
+        <div id="startArea" class="hidden" style="text-align:center; margin:20px 0;">
+            <button class="btn" id="startQuizBtn">🚀 ക്വിസ് ആരംഭിക്കുക</button>
+        </div>
+
+        <!-- Questions Area -->
+        <div id="questionsArea" class="hidden">
+            <div id="questionsContainer"></div>
+            <button class="btn btn-success" id="submitQuizBtn" style="margin-top:20px;">📤 ഉത്തരങ്ങൾ സമർപ്പിക്കുക</button>
+        </div>
+
+        <!-- Submitted State -->
+        <div id="submittedArea" class="hidden">
+            <div class="status-msg">
+                <div class="icon">✅</div>
+                <h2>നന്ദി!</h2>
+                <p>നിങ്ങളുടെ ഉത്തരങ്ങൾ വിജയകരമായി രേഖപ്പെടുത്തി.</p>
+                <p style="color:#fbbf24; font-size:20px; font-weight:bold;" id="scoreDisplay"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== PARENT NAME MODAL ========== -->
+<div id="parentModal" class="parent-modal hidden">
+    <div class="parent-modal-content">
+        <h2>👪 രക്ഷിതാവിന്റെ പേര്</h2>
+        <p style="color:#94a3b8; margin-bottom:15px;">Day 1-ൽ മാത്രം ഒരു തവണ നൽകുക</p>
+        <input type="text" id="parentNameInput" placeholder="ഉദാ: അബ്ദുറഹ്മാൻ" style="width:100%; padding:12px; border-radius:12px; border:1px solid #475569; background:#0f172a; color:white; margin-bottom:15px;" />
+        <button class="btn" id="saveParentBtn">✅ സേവ് ചെയ്യുക</button>
+    </div>
+</div>
+
+<script>
+    // ========================================
+    // 1. SUPABASE CONFIGURATION
+    // ========================================
+    const SUPABASE_URL = "YOUR_SUPABASE_URL"; // ⚠️ ഇവിടെ URL ഇടുക
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY"; // ⚠️ ഇവിടെ KEY ഇടുക
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ========================================
+    // 2. GLOBALS
+    // ========================================
+    let currentUser = null;        // { id, studentId, name, parentName, role }
+    let currentSession = null;    // { day, startTime, endTime, duration }
+    let currentAttemptId = null;
+    let questions = [];
+    let answers = {};            // { questionId: selectedOptionIndex }
+    let timerInterval = null;
+    let timeLeft = 0;
+    let isSubmitted = false;
+
+    // DOM Refs
+    const $ = id => document.getElementById(id);
+    const loginScreen = $('loginScreen');
+    const dashboardScreen = $('dashboardScreen');
+    const studentIdInput = $('studentIdInput');
+    const loginBtn = $('loginBtn');
+    const loginError = $('loginError');
+    const welcomeBanner = $('welcomeBanner');
+    const userNameDisplay = $('userNameDisplay');
+    const timerArea = $('timerArea');
+    const timerDisplay = $('timerDisplay');
+    const statusArea = $('statusArea');
+    const waitingMsg = $('waitingMsg');
+    const waitingTimeText = $('waitingTimeText');
+    const endedMsg = $('endedMsg');
+    const startArea = $('startArea');
+    const startQuizBtn = $('startQuizBtn');
+    const questionsArea = $('questionsArea');
+    const questionsContainer = $('questionsContainer');
+    const submitQuizBtn = $('submitQuizBtn');
+    const submittedArea = $('submittedArea');
+    const scoreDisplay = $('scoreDisplay');
+    const parentModal = $('parentModal');
+    const parentNameInput = $('parentNameInput');
+    const saveParentBtn = $('saveParentBtn');
+
+    // ========================================
+    // 3. HELPER FUNCTIONS
+    // ========================================
+    function showScreen(screen) {
+        loginScreen.classList.add('hidden');
+        dashboardScreen.classList.add('hidden');
+        if (screen === 'login') loginScreen.classList.remove('hidden');
+        else if (screen === 'dashboard') dashboardScreen.classList.remove('hidden');
+    }
+
+    function formatDate(d) {
+        if (!d) return '';
+        const date = new Date(d);
+        return date.toLocaleString('ml-IN', { timeZone: 'Asia/Kolkata' });
+    }
+
+    function getTodayStart() {
+        const d = new Date();
+        d.setHours(0,0,0,0);
+        return d.toISOString();
+    }
+
+    // ========================================
+    // 4. LOGIN
+    // ========================================
+    loginBtn.addEventListener('click', async () => {
+        const studentId = studentIdInput.value.trim();
+        if (!studentId) return loginError.innerText = 'Student ID നൽകുക.';
+        loginError.innerText = '';
+        loginBtn.disabled = true;
+        loginBtn.innerText = '⏳ ലോഗിൻ ചെയ്യുന്നു...';
+
+        try {
+            // 1. Check Student
+            const { data: student, error: sErr } = await supabase
+                .from('Student')
+                .select('*')
+                .eq('studentId', studentId)
+                .single();
+
+            if (sErr || !student) throw new Error('തെറ്റായ Student ID. ദയവായി ശരിയാക്കുക.');
+
+            // 2. Check Daily Login (Today)
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const { data: loginTrack, error: lErr } = await supabase
+                .from('LoginTrack')
+                .select('id')
+                .eq('studentId', student.id)
+                .gte('loginDate', today.toISOString())
+                .lt('loginDate', tomorrow.toISOString())
+                .maybeSingle();
+
+            if (loginTrack) throw new Error('ഇന്ന് നിങ്ങൾ ഇതിനകം ലോഗിൻ ചെയ്തു. നാളെ വീണ്ടും ശ്രമിക്കുക.');
+
+            // 3. Get Current Session Day (find which day is active or upcoming)
+            const { data: sessions, error: sessErr } = await supabase
+                .from('QuizSession')
+                .select('*')
+                .order('day', { ascending: true });
+
+            if (sessErr) throw new Error('Session data ലഭ്യമല്ല.');
+
+            const now = new Date();
+            let activeSession = null;
+            for (const s of sessions) {
+                const start = new Date(s.startTime);
+                const end = new Date(s.endTime);
+                // Check if now is within start and end OR if it's the next upcoming
+                if (now >= start && now <= end) {
+                    activeSession = s;
+                    break;
+                }
+            }
+            // If no active session, maybe the day hasn't started yet. We pick the first upcoming or last.
+            if (!activeSession) {
+                for (const s of sessions) {
+                    if (new Date(s.startTime) > now) {
+                        activeSession = s;
+                        break;
+                    }
+                }
+                if (!activeSession) activeSession = sessions[sessions.length - 1]; // fallback
+            }
+
+            const day = activeSession?.day || 1;
+
+            // 4. Create Login Track
+            await supabase.from('LoginTrack').insert({ studentId: student.id, day: day });
+
+            // 5. Set user & session
+            currentUser = student;
+            currentSession = activeSession;
+            
+            // 6. Check if Parent Name needed (Day 1 and no parent name)
+            if (day === 1 && !student.parentName) {
+                parentModal.classList.remove('hidden');
+                // We'll handle save button later.
+            }
+
+            // 7. Show dashboard
+            showScreen('dashboard');
+            renderDashboard();
+
+        } catch (err) {
+            loginError.innerText = err.message || 'Login failed.';
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.innerText = '🚪 Login / പ്രവേശിക്കുക';
+        }
+    });
+
+    // ========================================
+    // 5. PARENT NAME SAVE
+    // ========================================
+    saveParentBtn.addEventListener('click', async () => {
+        const name = parentNameInput.value.trim();
+        if (!name) return alert('ദയവായി പേര് നൽകുക.');
+        if (!currentUser) return;
+
+        await supabase
+            .from('Student')
+            .update({ parentName: name })
+            .eq('id', currentUser.id);
+
+        currentUser.parentName = name;
+        parentModal.classList.add('hidden');
+        renderDashboard(); // refresh welcome message
+    });
+
+    // ========================================
+    // 6. DASHBOARD RENDER
+    // ========================================
+    async function renderDashboard() {
+        if (!currentUser || !currentSession) return;
+
+        // Welcome
+        userNameDisplay.innerText = currentUser.parentName || currentUser.name;
+
+        // Check Status
+        const now = new Date();
+        const start = new Date(currentSession.startTime);
+        const end = new Date(currentSession.endTime);
+
+        // Hide all statuses first
+        waitingMsg.classList.add('hidden');
+        endedMsg.classList.add('hidden');
+        startArea.classList.add('hidden');
+        questionsArea.classList.add('hidden');
+        timerArea.classList.add('hidden');
+        submittedArea.classList.add('hidden');
+
+        if (now < start) {
+            // WAITING
+            waitingMsg.classList.remove('hidden');
+            waitingTimeText.innerText = `ദയവായി ${formatDate(currentSession.startTime)} വരെ കാത്തിരിക്കുക.`;
+            return;
+        } else if (now > end) {
+            // ENDED
+            endedMsg.classList.remove('hidden');
+            return;
+        }
+
+        // ACTIVE SESSION
+        // Check if already submitted today
+        const { data: attempt } = await supabase
+            .from('Attempt')
+            .select('id, status, score')
+            .eq('studentId', currentUser.id)
+            .eq('sessionDay', currentSession.day)
+            .maybeSingle();
+
+        if (attempt && (attempt.status === 'COMPLETED' || attempt.status === 'TIMED_OUT')) {
+            // Already submitted
+            submittedArea.classList.remove('hidden');
+            if (attempt.score !== null) {
+                scoreDisplay.innerText = `നിങ്ങളുടെ സ്കോർ: ${attempt.score} / ${questions.length || '?'}`;
+            } else {
+                scoreDisplay.innerText = 'നിങ്ങൾ ഇതിനകം സമർപ്പിച്ചു.';
+            }
+            return;
+        }
+
+        // If attempt exists but not completed (STARTED), resume?
+        if (attempt) {
+            currentAttemptId = attempt.id;
+        }
+
+        // Load Questions
+        const { data: qs, error: qErr } = await supabase
+            .from('Question')
+            .select('*')
+            .eq('sessionDay', currentSession.day)
+            .order('id', { ascending: true });
+
+        if (qErr || !qs || qs.length === 0) {
+            alert('ചോദ്യങ്ങൾ ലഭ്യമല്ല. അഡ്മിനെ ബന്ധപ്പെടുക.');
+            return;
+        }
+        questions = qs;
+        // Reset answers
+        answers = {};
+
+        // Show start button if not started
+        if (!attempt) {
+            startArea.classList.remove('hidden');
+            startQuizBtn.onclick = startQuiz;
+        } else {
+            // If attempt exists, resume directly
+            startQuiz(true); // resume = true
+        }
+    }
+
+    // ========================================
+    // 7. START QUIZ
+    // ========================================
+    async function startQuiz(resume = false) {
+        try {
+            if (!resume) {
+                // Create new attempt
+                const { data: att, error: aErr } = await supabase
+                    .from('Attempt')
+                    .insert({ studentId: currentUser.id, sessionDay: currentSession.day, status: 'STARTED' })
+                    .select()
+                    .single();
+                if (aErr) throw new Error('Attempt create failed.');
+                currentAttemptId = att.id;
+            }
+
+            // Show Questions
+            startArea.classList.add('hidden');
+            questionsArea.classList.remove('hidden');
+            timerArea.classList.remove('hidden');
+            renderQuestions();
+
+            // Start Timer
+            const durationSecs = currentSession.duration * 60;
+            // If resuming, check if time already passed? For simplicity, we start fresh timer.
+            timeLeft = durationSecs;
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert('⏰ സമയം തീർന്നു. ഉത്തരങ്ങൾ യാന്ത്രികമായി സമർപ്പിക്കുന്നു...');
+                    submitQuiz(true); // force submit on timeout
+                }
+            }, 1000);
+
+        } catch (err) {
+            alert('Error starting quiz: ' + err.message);
+        }
+    }
+
+    function updateTimerDisplay() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerDisplay.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        if (timeLeft < 60) timerDisplay.style.color = '#f87171';
+        else timerDisplay.style.color = '#fbbf24';
+    }
+
+    // ========================================
+    // 8. RENDER QUESTIONS
+    // ========================================
+    function renderQuestions() {
+        questionsContainer.innerHTML = '';
+        questions.forEach((q, idx) => {
+            const div = document.createElement('div');
+            div.className = 'question-card';
+            div.innerHTML = `
+                <div class="question-title">${idx+1}. ${q.questionText}</div>
+                <div class="options-grid" id="options-${q.id}">
+                    ${q.options.map((opt, oi) => `
+                        <button class="opt-btn" data-qid="${q.id}" data-optidx="${oi}" ${isSubmitted ? 'disabled' : ''}>
+                            ${String.fromCharCode(65 + oi)}. ${opt}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+            questionsContainer.appendChild(div);
+
+            // Add click listeners
+            div.querySelectorAll('.opt-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (isSubmitted) return;
+                    const qid = this.dataset.qid;
+                    const optIdx = parseInt(this.dataset.optidx);
+                    // Deselect others in same group
+                    const parent = this.closest('.options-grid');
+                    parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    answers[qid] = optIdx;
+                });
+            });
+        });
+
+        // Submit button
+        submitQuizBtn.onclick = () => {
+            if (Object.keys(answers).length === 0) {
+                return alert('ഒരു ഉത്തരവും തിരഞ്ഞെടുത്തിട്ടില്ല. ദയവായി ഉത്തരങ്ങൾ തിരഞ്ഞെടുക്കുക.');
+            }
+            if (confirm('നിങ്ങളുടെ ഉത്തരങ്ങൾ സേവ് ചെയ്യണോ? (തിരഞ്ഞെടുത്ത ശേഷം മാറ്റാൻ സാധിക്കില്ല)')) {
+                submitQuiz(false);
+            }
+        };
+    }
+
+    // ========================================
+    // 9. SUBMIT QUIZ
+    // ========================================
+    async function submitQuiz(isTimeout = false) {
+        if (isSubmitted) return;
+        isSubmitted = true;
+        clearInterval(timerInterval);
+        submitQuizBtn.disabled = true;
+
+        try {
+            // 1. Calculate Score
+            let score = 0;
+            const answerEntries = [];
+            for (const q of questions) {
+                const selected = answers[q.id];
+                const isCorrect = (selected !== undefined && selected === q.correctAnswer);
+                if (isCorrect) score++;
+                if (selected !== undefined) {
+                    answerEntries.push({
+                        attemptId: currentAttemptId,
+                        questionId: q.id,
+                        selectedOpt: selected
+                    });
+                }
+            }
+
+            // 2. Save Answers
+            if (answerEntries.length > 0) {
+                await supabase.from('Answer').insert(answerEntries);
+            }
+
+            // 3. Update Attempt
+            const status = isTimeout ? 'TIMED_OUT' : 'COMPLETED';
+            await supabase
+                .from('Attempt')
+                .update({ endTime: new Date().toISOString(), score: score, status: status })
+                .eq('id', currentAttemptId);
+
+            // 4. Show Submitted UI
+            questionsArea.classList.add('hidden');
+            timerArea.classList.add('hidden');
+            submittedArea.classList.remove('hidden');
+            scoreDisplay.innerText = `നിങ്ങളുടെ സ്കോർ: ${score} / ${questions.length}`;
+
+        } catch (err) {
+            alert('Submit error: ' + err.message);
+            isSubmitted = false;
+            submitQuizBtn.disabled = false;
+        }
+    }
+
+    // ========================================
+    // 10. ENTER KEY SUPPORT
+    // ========================================
+    studentIdInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') loginBtn.click();
+    });
+    parentNameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveParentBtn.click();
+    });
+
+    // ========================================
+    // 11. INIT - Show Login by default
+    // ========================================
+    showScreen('login');
+    console.log('✅ HTML Quiz App loaded. Connect to Supabase!');
+</script>
+
+</body>
+</html>
