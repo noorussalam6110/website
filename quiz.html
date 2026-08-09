@@ -186,6 +186,10 @@
             font-size: 13px; color: #94a3b8; background: rgba(0,0,0,0.2);
             padding: 2px 12px; border-radius: 30px;
         }
+        .rank-item .rank-submit-time {
+            font-size: 12px; color: #94a3b8; background: rgba(0,0,0,0.15);
+            padding: 2px 12px; border-radius: 30px;
+        }
 
         /* ===== ADMIN PANEL ===== */
         .admin-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -199,7 +203,7 @@
             overflow-x: auto; margin: 12px 0; border: 1px solid rgba(255,255,255,0.06);
             border-radius: 16px; background: rgba(255,255,255,0.03);
         }
-        .admin-table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.78rem; min-width: 300px; color: #e8edf4; }
+        .admin-table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.78rem; min-width: 350px; color: #e8edf4; }
         .admin-table-wrap th {
             padding: 10px 12px; text-align: left; font-weight: 600; font-size: 0.6rem;
             text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8;
@@ -290,11 +294,14 @@
             .stat-value { font-size: 2rem; }
             .login-panel { padding: 1.5rem; }
             .login-title { font-size: 1.6rem; }
+            .admin-table-wrap table { font-size: 0.7rem; min-width: 320px; }
         }
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
             .stat-card { padding: 0.8rem; }
             .stat-value { font-size: 1.6rem; }
+            .admin-table-wrap table { font-size: 0.65rem; min-width: 280px; }
+            .admin-table-wrap td input[type="datetime-local"] { width: 80px; font-size: 0.65rem; }
         }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
@@ -473,9 +480,15 @@
                 <button class="btn btn-danger btn-sm" id="adminLogoutBtn"><i class="fas fa-sign-out-alt"></i> Exit</button>
             </div>
 
+            <!-- Admin Summary: Today's Session Info -->
+            <div class="glass-card p-3 mb-4" id="adminSessionSummary">
+                <h4 style="color:#fbbf24;">📅 Today's Session Overview</h4>
+                <div id="todaySessionInfo" class="text-white-50">Loading session info...</div>
+            </div>
+
             <div class="admin-tabs">
                 <button class="admin-tab active" data-tab="questions" onclick="switchAdminTab('questions')">📋 Questions</button>
-                <button class="admin-tab" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions</button>
+                <button class="admin-tab" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions (Date/Time)</button>
                 <button class="admin-tab" data-tab="rankings" onclick="switchAdminTab('rankings')">📊 Rankings</button>
             </div>
 
@@ -519,19 +532,20 @@
                 </div>
             </div>
 
-            <!-- Sessions Tab – HERE YOU CAN CHANGE DATE, TIME, DURATION -->
+            <!-- Sessions Tab – DATE & TIME MANAGEMENT -->
             <div id="adminSessionsTab" class="admin-tab-content hidden">
                 <div class="glass-card p-3">
-                    <h4 style="color:#fbbf24;">Manage Sessions</h4>
-                    <p class="text-white-50">Set Start Time, End Time (IST) and Duration (minutes) for each day.</p>
+                    <h4 style="color:#fbbf24;">⏰ Manage Sessions (Date, Time & Duration)</h4>
+                    <p class="text-white-50">Set Start Date/Time, End Date/Time (IST) and Duration (minutes) for each day.</p>
                     <div class="admin-table-wrap" id="adminSessionsTable"><div class="text-center text-white-50 p-3">Loading...</div></div>
                 </div>
             </div>
 
-            <!-- Rankings Tab -->
+            <!-- Rankings Tab – with Submit Time -->
             <div id="adminRankingsTab" class="admin-tab-content hidden">
                 <div class="glass-card p-3">
-                    <h4 style="color:#fbbf24;">Day-wise Rankings</h4>
+                    <h4 style="color:#fbbf24;">🏆 Day-wise Rankings (with Submit Time)</h4>
+                    <p class="text-white-50">Ranked by Score (High) → Time Taken (Low). Shows submission time.</p>
                     <div class="day-tabs">
                         <button class="day-tab active" data-day="1" onclick="loadAdminRankings(1)">Day 1</button>
                         <button class="day-tab" data-day="2" onclick="loadAdminRankings(2)">Day 2</button>
@@ -588,9 +602,7 @@
             setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
         }
 
-        function showLoading(show) {
-            loadingOverlay.style.display = show ? 'flex' : 'none';
-        }
+        function showLoading(show) { loadingOverlay.style.display = show ? 'flex' : 'none'; }
 
         // ================================================================
         // HELP
@@ -600,10 +612,11 @@
                 '📘 സഹായം / HELP\n\n' +
                 '1. Admin: Login with "ADMIN123"\n' +
                 '2. Parents: Click "New? Register" to get an ID\n' +
-                '3. Use "Forgot Parent ID?" to find your ID\n' +
+                '3. "Forgot Parent ID?" to find your ID\n' +
                 '4. Answer questions and Submit\n' +
                 '5. Rankings appear after session ends (+5 min)\n' +
-                '6. Admin can change timings in Sessions tab'
+                '6. Admin can change Date/Time in Sessions tab\n' +
+                '7. Rankings show Submit Time'
             );
         }
 
@@ -851,7 +864,7 @@
 
             if (now < start) {
                 $('waitingMsg').classList.remove('hidden');
-                $('waitingTimeText').textContent = `ദയവായി ${formatDate(start)} വരെ കാത്തിരിക്കുക.`;
+                $('waitingTimeText').textContent = `ദയവായി ${formatDateTime(start)} വരെ കാത്തിരിക്കുക.`;
                 return;
             } else if (now > end) {
                 await loadParentRanking(pubTime);
@@ -902,9 +915,16 @@
             }
         }
 
-        function formatDate(d) {
+        function formatDateTime(d) {
             if (!d) return '';
-            return new Date(d).toLocaleString('ml-IN', { timeZone: 'Asia/Kolkata' });
+            return new Date(d).toLocaleString('ml-IN', {
+                timeZone: 'Asia/Kolkata',
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         // ================================================================
@@ -1157,6 +1177,42 @@
         let adminCurrentDay = 1;
         let adminQuestionsCache = [];
 
+        // ---- Admin Session Summary ----
+        async function loadAdminSessionSummary() {
+            const container = $('todaySessionInfo');
+            try {
+                const { data: sessions, error } = await _supabase
+                    .from('QuizSession')
+                    .select('*')
+                    .order('day', { ascending: true });
+
+                if (error || !sessions) {
+                    container.innerHTML = 'No sessions found.';
+                    return;
+                }
+
+                const now = new Date();
+                let active = sessions.find(s => now >= new Date(s.startTime) && now <= new Date(s.endTime));
+                if (!active) active = sessions.find(s => new Date(s.startTime) > now) || sessions[sessions.length - 1];
+
+                if (active) {
+                    container.innerHTML = `
+                        <div class="d-flex flex-wrap gap-3">
+                            <span><strong>Day:</strong> ${active.day}</span>
+                            <span><strong>Date:</strong> ${formatDateTime(active.startTime)}</span>
+                            <span><strong>Start:</strong> ${new Date(active.startTime).toLocaleTimeString('ml-IN', {timeZone:'Asia/Kolkata', hour:'2-digit', minute:'2-digit'})}</span>
+                            <span><strong>End:</strong> ${new Date(active.endTime).toLocaleTimeString('ml-IN', {timeZone:'Asia/Kolkata', hour:'2-digit', minute:'2-digit'})}</span>
+                            <span><strong>Duration:</strong> ${active.duration} min</span>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = 'No active session found.';
+                }
+            } catch (err) {
+                container.innerHTML = 'Error loading session info.';
+            }
+        }
+
         function switchAdminTab(tab) {
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
             document.querySelector(`.admin-tab[data-tab="${tab}"]`).classList.add('active');
@@ -1170,6 +1226,7 @@
         }
 
         async function loadAdminData() {
+            loadAdminSessionSummary();
             loadAdminQuestions(1);
             loadAdminSessions();
         }
@@ -1306,7 +1363,7 @@
             }
         };
 
-        // ---- SESSIONS ----
+        // ---- SESSIONS (with Date & Time) ----
         async function loadAdminSessions() {
             const table = $('adminSessionsTable');
             table.innerHTML = '<div class="text-center text-white-50 p-3">Loading...</div>';
@@ -1325,14 +1382,20 @@
                 return;
             }
 
-            let html = `<table><thead><tr><th>Day</th><th>Start Time</th><th>End Time</th><th>Duration (min)</th><th>Action</th></tr></thead><tbody>`;
+            let html = `<table><thead><tr>
+                <th>Day</th>
+                <th>Start Date & Time (IST)</th>
+                <th>End Date & Time (IST)</th>
+                <th>Duration (min)</th>
+                <th>Action</th>
+            </tr></thead><tbody>`;
             data.forEach(s => {
                 const st = s.startTime ? new Date(s.startTime).toISOString().slice(0, 16) : '';
                 const en = s.endTime ? new Date(s.endTime).toISOString().slice(0, 16) : '';
                 html += `<tr>
                     <td><strong>Day ${s.day}</strong></td>
-                    <td><input type="datetime-local" class="session-start" value="${st}" /></td>
-                    <td><input type="datetime-local" class="session-end" value="${en}" /></td>
+                    <td><input type="datetime-local" class="session-start" value="${st}" style="width:180px;" /></td>
+                    <td><input type="datetime-local" class="session-end" value="${en}" style="width:180px;" /></td>
                     <td><input type="number" class="session-duration" value="${s.duration}" min="1" max="120" style="width:80px;" /></td>
                     <td><button class="btn btn-primary btn-sm update-session-btn" data-day="${s.day}">💾 Update</button></td>
                 </tr>`;
@@ -1363,7 +1426,8 @@
                                 updatedAt: new Date()
                             })
                             .eq('day', day);
-                        showToast('✅ Updated', 'success');
+                        showToast('✅ Updated!', 'success');
+                        loadAdminSessionSummary();
                     } catch (err) {
                         showToast('Error: ' + err.message, 'error');
                     } finally {
@@ -1374,7 +1438,7 @@
             });
         }
 
-        // ---- ADMIN RANKINGS ----
+        // ---- ADMIN RANKINGS (with Submit Time) ----
         async function loadAdminRankings(day) {
             const container = $('adminRankListContainer');
             container.innerHTML = '<div class="text-center text-white-50 p-3">Loading...</div>';
@@ -1402,23 +1466,27 @@
                     return (a.timeTaken || 9999) - (b.timeTaken || 9999);
                 });
 
-                let html = '<div class="rank-list">';
+                let html = `<table><thead><tr>
+                    <th>Rank</th><th>Parent</th><th>Score</th>
+                    <th>Time Taken</th>
+                    <th>Submitted At</th>
+                </tr></thead><tbody>`;
                 ranked.forEach((r, idx) => {
                     const rank = idx + 1;
-                    let medal = '', cls = '';
-                    if (rank === 1) { medal = '🥇'; cls = 'gold'; }
-                    else if (rank === 2) { medal = '🥈'; cls = 'silver'; }
-                    else if (rank === 3) { medal = '🥉'; cls = 'bronze'; }
-                    html += `
-                        <div class="rank-item">
-                            <div class="rank-num ${cls}">${medal || rank}</div>
-                            <div class="rank-name">${r.Student?.name || 'Unknown'}</div>
-                            <div class="rank-score">${r.score ?? 0} മാർക്ക്</div>
-                            <div class="rank-time">⏱️ ${r.timeTaken || 0} സെ</div>
-                        </div>
-                    `;
+                    let medal = '';
+                    if (rank === 1) medal = '🥇 ';
+                    else if (rank === 2) medal = '🥈 ';
+                    else if (rank === 3) medal = '🥉 ';
+                    const submitTime = r.endTime ? formatDateTime(r.endTime) : '—';
+                    html += `<tr>
+                        <td><strong>${medal}${rank}</strong></td>
+                        <td>${r.Student?.name || 'Unknown'}</td>
+                        <td><span style="color:#fbbf24;font-weight:700;">${r.score ?? 0}</span></td>
+                        <td>${r.timeTaken || 0} സെ</td>
+                        <td style="font-size:0.7rem;color:#94a3b8;">${submitTime}</td>
+                    </tr>`;
                 });
-                html += '</div>';
+                html += `</tbody></table>`;
                 container.innerHTML = html;
 
             } catch (err) {
@@ -1434,10 +1502,10 @@
         parentDashboard.classList.add('hidden');
         adminDashboard.classList.add('hidden');
 
-        console.log('🚀 Daily Meelad Quiz – Parent System v2.0 (ADMIN123)');
+        console.log('🚀 Daily Meelad Quiz – Parent System v3.0 (With Date/Time & Submit Time)');
         console.log('🔑 Use "ADMIN123" for Admin Panel');
         console.log('📝 Register as Parent to get an ID');
-        console.log('⏰ Quiz sessions controlled by Admin');
+        console.log('⏰ Admin can manage Date/Time in Sessions tab');
 
         window.switchAdminTab = switchAdminTab;
         window.loadAdminQuestions = loadAdminQuestions;
@@ -1455,7 +1523,7 @@
         window.openFindId = openFindId;
         window.closeFindId = closeFindId;
         window.copyId = copyId;
-        window.formatDate = formatDate;
+        window.formatDateTime = formatDateTime;
     </script>
 
 </body>
