@@ -1,0 +1,3562 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>NOORUSSALAM MADRASA – Daily Meelad Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* ===== GLOBAL RESET ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --gold: #fbbf24;
+            --gold-dark: #f59e0b;
+            --dark: #0a0f1e;
+            --slate: #1e293b;
+            --slate-light: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #d1d5db;
+            --text-muted: #9ca3af;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            --radius: 2rem;
+            --radius-sm: 1rem;
+            --header-height: 80px;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: radial-gradient(ellipse at 30% 20%, #0f1a2e, #050a14);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 16px;
+            color: #fff;
+            padding-top: 16px;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 12px 20px;
+        }
+
+        /* ===== LOADING OVERLAY ===== */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: radial-gradient(ellipse at 30% 20%, #0f1a2e, #050a14);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 28px;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+            opacity: 1;
+            visibility: visible;
+            padding: 24px;
+        }
+
+        #loadingOverlay.hidden-loading {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 60px rgba(251, 191, 36, 0.15);
+            animation: floatLogo 3s ease-in-out infinite;
+        }
+
+        .loading-logo i {
+            font-size: 38px;
+            color: #0a0f1e;
+        }
+
+        @keyframes floatLogo {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-10px) scale(1.02);
+            }
+        }
+
+        .loading-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .loading-subtitle {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+
+        .loading-spinner-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .loading-spinner {
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-progress {
+            width: 180px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+            border-radius: 10px;
+            animation: progressFill 2.2s ease-in-out forwards;
+        }
+
+        @keyframes progressFill {
+            0% {
+                width: 0%;
+            }
+            30% {
+                width: 35%;
+            }
+            60% {
+                width: 70%;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        .loading-wishing {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            max-width: 320px;
+            line-height: 1.6;
+            animation: pulseText 2.4s ease-in-out infinite;
+        }
+
+        .loading-wishing i {
+            color: var(--gold);
+            margin: 0 4px;
+        }
+
+        @keyframes pulseText {
+            0%,
+            100% {
+                opacity: 0.6;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.02);
+            }
+        }
+
+        .loading-deco {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .loading-deco span {
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: dotPulse 1.6s ease-in-out infinite;
+        }
+
+        .loading-deco span:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        .loading-deco span:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes dotPulse {
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.3);
+            }
+        }
+
+        /* ===== GLASS CARD ===== */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: all 0.25s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(251, 191, 36, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* ===== LOGIN PANEL ===== */
+        #loginSection {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-panel {
+            background: rgba(10, 20, 40, 0.92);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border-radius: 2.8rem;
+            padding: 2.2rem 1.8rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .login-panel::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.06), transparent 60%);
+            pointer-events: none;
+        }
+
+        .institution-header {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .institution-name {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            background: linear-gradient(135deg, #ffffff 20%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+            font-family: 'Inter', 'Anek Malayalam', sans-serif;
+            text-shadow: 0 0 40px rgba(251, 191, 36, 0.1);
+        }
+
+        .institution-sub {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .institution-sub i {
+            color: var(--gold);
+            margin: 0 4px;
+        }
+
+        .institution-deco {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+            margin: 8px auto 0;
+            border-radius: 4px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-header .logo-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 2px;
+        }
+
+        .login-header .logo-icon {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.15);
+            flex-shrink: 0;
+        }
+
+        .login-header .logo-icon i {
+            font-size: 24px;
+            color: #0a0f1e;
+        }
+
+        .login-header .title-main {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 30%, var(--gold) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .login-header .title-sub {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 2px;
+            font-weight: 400;
+        }
+
+        .login-header .title-sub i {
+            color: var(--gold);
+            margin: 0 4px;
+        }
+
+        .login-field-group {
+            position: relative;
+            z-index: 1;
+            margin-bottom: 2px;
+        }
+
+        .login-field-label {
+            display: block;
+            color: #e5e7eb;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            padding-left: 4px;
+            opacity: 0.9;
+        }
+
+        .login-input-wrap {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 1.2rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            transition: 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-input-wrap:focus-within {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+        }
+
+        .login-input-wrap i {
+            color: var(--gold);
+            margin-right: 12px;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+
+        .login-input-wrap input {
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            color: #fff;
+            width: 100%;
+            outline: none;
+            font-size: 1rem;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+        }
+
+        .login-input-wrap input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .login-remember {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 12px 0 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-remember input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--gold);
+            cursor: pointer;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .login-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+            margin-top: 4px;
+        }
+
+        .login-actions .btn {
+            min-height: 50px;
+            font-size: 1rem;
+        }
+
+        .login-forgot {
+            text-align: center;
+            margin-top: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-forgot a {
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .login-forgot a:hover {
+            color: var(--gold);
+        }
+
+        #loginMessage {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 1;
+            min-height: 24px;
+            color: #fca5a5;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+            padding: 10px 22px;
+            border-radius: 60px;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            min-height: 48px;
+            flex-shrink: 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(95deg, #3b82f6, #8b5cf6);
+            color: #fff;
+            box-shadow: 0 8px 20px -8px rgba(59, 130, 246, 0.25);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 28px -6px #3b82f6;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-register-blink {
+            animation: blinkGold 1.6s ease-in-out infinite;
+            border: 1.5px solid rgba(251, 191, 36, 0.25);
+            background: rgba(251, 191, 36, 0.06);
+            color: var(--gold);
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .btn-register-blink:hover {
+            background: var(--gold);
+            color: #0a0f1e;
+            transform: scale(1.02);
+            animation: none;
+            box-shadow: 0 8px 32px -4px rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-register-blink i {
+            color: var(--gold);
+            transition: 0.3s;
+        }
+
+        .btn-register-blink:hover i {
+            color: #0a0f1e;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: #fff;
+            box-shadow: 0 8px 20px -8px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: scale(1.02);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: #fff;
+            box-shadow: 0 8px 20px -8px rgba(239, 68, 68, 0.25);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--gold);
+            color: #fff;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            color: #0a0f1e;
+            box-shadow: 0 8px 24px -6px rgba(251, 191, 36, 0.25);
+        }
+
+        .btn-gold:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 32px -4px rgba(251, 191, 36, 0.4);
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            min-height: 36px;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-expired {
+            background: #334155;
+            color: #b0b8c5;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn-expired:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        @keyframes blinkGold {
+            0%,
+            100% {
+                box-shadow: 0 0 8px rgba(251, 191, 36, 0.1), 0 0 20px rgba(251, 191, 36, 0.02);
+                border-color: rgba(251, 191, 36, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 24px rgba(251, 191, 36, 0.3), 0 0 60px rgba(251, 191, 36, 0.08);
+                border-color: var(--gold);
+            }
+        }
+
+        /* ===== MODALS ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 20px;
+        }
+
+        .modal-glass {
+            background: #111c2e;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 2rem;
+            padding: 28px;
+            max-width: 520px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-glass h3 {
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .modal-glass p {
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.6;
+        }
+
+        .modal-glass input,
+        .modal-glass select,
+        .modal-glass textarea {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 40px;
+            padding: 10px 16px;
+            color: #fff;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+            transition: 0.2s;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+        }
+
+        .modal-glass input:focus,
+        .modal-glass select:focus,
+        .modal-glass textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-glass input::placeholder,
+        .modal-glass textarea::placeholder {
+            color: rgba(255, 255, 255, 0.35);
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 4px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--gold);
+            color: #0a0f1e;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .text-muted {
+            color: var(--text-muted);
+        }
+
+        .mt-2 {
+            margin-top: 8px;
+        }
+        .mt-3 {
+            margin-top: 16px;
+        }
+        .mt-4 {
+            margin-top: 24px;
+        }
+        .mb-2 {
+            margin-bottom: 8px;
+        }
+        .mb-3 {
+            margin-bottom: 16px;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .flex {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .flex-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .fw-bold {
+            font-weight: 700;
+        }
+        .w-100 {
+            width: 100%;
+        }
+
+        /* ================================================================
+           STICKY DASHBOARD HEADER
+           ================================================================ */
+        .dashboard-header {
+            background: rgba(10, 20, 40, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 2rem;
+            padding: 16px 24px;
+            margin-bottom: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-header.scrolled {
+            background: rgba(10, 20, 40, 0.96);
+            border-radius: 1.2rem;
+            padding: 12px 20px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+        }
+
+        .avatar-neon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #f97316, #ef4444);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 800;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.15);
+            flex-shrink: 0;
+        }
+
+        /* ===== STATS GRID ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 1.5rem;
+            padding: 18px 16px;
+            transition: 0.2s;
+        }
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(251, 191, 36, 0.15);
+        }
+        .stat-value {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+        }
+        .stat-value.gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* ===== TIMER ===== */
+        .timer-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .timer-ring-container {
+            position: relative;
+            width: 140px;
+            height: 140px;
+        }
+        .timer-ring-container svg {
+            transform: rotate(-90deg);
+            width: 140px;
+            height: 140px;
+        }
+        .timer-ring-container .bg-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 6;
+        }
+        .timer-ring-container .progress-circle {
+            fill: none;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke: var(--gold);
+            transition: stroke-dashoffset 0.5s ease, stroke 0.5s ease;
+            filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.15));
+        }
+        .timer-ring-container .timer-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 36px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+        .timer-ring-container .timer-label {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            white-space: nowrap;
+        }
+        .timer-ring-container.warning .progress-circle {
+            stroke: #f87171;
+            filter: drop-shadow(0 0 20px rgba(248, 113, 113, 0.3));
+            animation: glow-pulse 1s infinite;
+        }
+        .timer-ring-container.warning .timer-text {
+            color: #f87171;
+        }
+        @keyframes glow-pulse {
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.1));
+            }
+            50% {
+                filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.3));
+            }
+        }
+
+        /* ===== QUESTIONS ===== */
+        .question-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 1.2rem;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--gold);
+            transition: 0.2s;
+        }
+        .question-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .question-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 14px;
+            color: #f1f5f9;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        @media (max-width:550px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .opt-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 16px;
+            border-radius: 14px;
+            color: #e2e8f0;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: 0.15s;
+        }
+        .opt-btn:hover {
+            background: rgba(255, 255, 255, 0.10);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        .opt-btn.selected {
+            background: var(--gold);
+            color: #0a0f1e;
+            font-weight: 700;
+            border-color: var(--gold);
+            box-shadow: 0 4px 16px rgba(251, 191, 36, 0.15);
+        }
+        .opt-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        /* ===== RANKING ===== */
+        .rank-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            gap: 14px;
+        }
+        .rank-item .rank-num {
+            font-weight: 800;
+            font-size: 18px;
+            min-width: 36px;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .rank-item .rank-num.gold {
+            color: var(--gold);
+        }
+        .rank-item .rank-num.silver {
+            color: #94a3b8;
+        }
+        .rank-item .rank-num.bronze {
+            color: #d97706;
+        }
+        .rank-item .rank-name {
+            flex: 1;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .rank-item .rank-score {
+            font-weight: 700;
+            color: var(--gold);
+            margin-right: 8px;
+        }
+        .rank-item .rank-time {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 12px;
+            border-radius: 30px;
+        }
+
+        /* ================================================================
+           ADMIN PANEL — TABLES & IMPROVED ALIGNMENT
+           ================================================================ */
+
+        .admin-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 20px;
+            justify-content: flex-start;
+        }
+
+        .admin-tab {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #b0b8c5;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 0 1 auto;
+            min-width: 80px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .admin-tab.active {
+            background: #2563eb;
+            color: #fff;
+        }
+        .admin-tab:hover {
+            background: rgba(37, 99, 235, 0.2);
+            color: #fff;
+        }
+
+        /* ---- Admin Tables ---- */
+        .admin-table-wrap {
+            overflow-x: auto;
+            margin: 12px 0;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(0, 0, 0, 0.2);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .admin-table-wrap table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            min-width: 320px;
+            color: #e2e8f0;
+        }
+
+        .admin-table-wrap th {
+            text-align: left;
+            padding: 12px 14px;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .admin-table-wrap td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            vertical-align: middle;
+        }
+
+        .admin-table-wrap tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* ---- Admin Form Rows ---- */
+        .admin-form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 12px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .admin-form-row>* {
+            flex: 1 1 auto;
+            min-width: 80px;
+        }
+
+        .admin-form-row .flex-grow {
+            flex: 2 1 160px;
+        }
+
+        .admin-form-row label {
+            flex: 0 0 auto;
+            min-width: 60px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .admin-form-row input,
+        .admin-form-row select,
+        .admin-form-row textarea {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 40px;
+            padding: 8px 14px;
+            color: #fff;
+            font-size: 0.85rem;
+            outline: none;
+            transition: 0.2s;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .admin-form-row input:focus,
+        .admin-form-row select:focus,
+        .admin-form-row textarea:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.08);
+        }
+
+        .admin-form-row textarea {
+            border-radius: 16px;
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .admin-form-row .btn,
+        .admin-form-row .btn-sm {
+            flex: 0 1 auto;
+            min-width: 60px;
+            white-space: nowrap;
+        }
+
+        .admin-section-box {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .admin-section-box h5 {
+            color: var(--gold);
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .day-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+            justify-content: flex-start;
+        }
+
+        .day-tab {
+            padding: 7px 18px;
+            border-radius: 30px;
+            background: #1e293b;
+            color: #94a3b8;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: 0.2s;
+            flex: 0 1 auto;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .day-tab.active {
+            background: var(--gold);
+            color: #0a0f1e;
+        }
+        .day-tab:hover {
+            background: #334155;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .status-box .icon {
+            font-size: 56px;
+            margin-bottom: 14px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        .status-box h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: #f1f5f9;
+        }
+        .status-box p {
+            color: var(--text-muted);
+        }
+
+        .publication-box {
+            text-align: center;
+            padding: 16px;
+            background: rgba(251, 191, 36, 0.06);
+            border-radius: 16px;
+            border: 1px dashed rgba(251, 191, 36, 0.15);
+            margin-bottom: 16px;
+        }
+        .publication-box .pub-timer {
+            font-size: 28px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            color: var(--gold);
+        }
+
+        .overall-rank-btn-wrap {
+            text-align: center;
+            margin: 16px 0 20px;
+        }
+        .overall-rank-btn-wrap .btn {
+            min-width: 200px;
+            border-radius: 60px;
+            font-size: 0.95rem;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            color: #fff;
+            box-shadow: 0 8px 24px -6px rgba(59, 130, 246, 0.3);
+            transition: 0.3s;
+        }
+        .overall-rank-btn-wrap .btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 8px 32px -4px rgba(59, 130, 246, 0.5);
+        }
+
+        .history-btn-wrap {
+            margin-top: 16px;
+            text-align: center;
+        }
+
+        /* ===== TOAST ===== */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: 90%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast-item {
+            background: rgba(10, 20, 40, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 12px 18px;
+            color: #f1f5f9;
+            font-size: 0.85rem;
+            font-weight: 500;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
+            animation: slideUp 0.35s ease;
+        }
+
+        .toast-item.success {
+            border-left: 4px solid #10b981;
+        }
+        .toast-item.error {
+            border-left: 4px solid #ef4444;
+        }
+        .toast-item.info {
+            border-left: 4px solid #3b82f6;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== HELP BUTTON ===== */
+        .help-btn {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 40px;
+            padding: 8px 16px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            font-family: 'Anek Malayalam', 'Inter', sans-serif;
+        }
+
+        .help-btn:hover {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: #3b82f6;
+            color: #93c5fd;
+        }
+
+        /* ================================================================
+           RESPONSIVE
+           ================================================================ */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 6px 12px;
+            }
+            .glass-card {
+                padding: 16px;
+                border-radius: 1.5rem;
+            }
+
+            .admin-form-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .admin-form-row>* {
+                min-width: unset;
+                width: 100%;
+            }
+            .admin-form-row .flex-grow {
+                flex: unset;
+            }
+            .admin-form-row input,
+            .admin-form-row select,
+            .admin-form-row textarea {
+                width: 100%;
+            }
+            .admin-form-row .btn,
+            .admin-form-row .btn-sm {
+                width: 100%;
+                justify-content: center;
+                flex: 1 1 auto;
+            }
+            .admin-form-row label {
+                min-width: unset;
+                width: 100%;
+            }
+
+            .admin-section-box {
+                padding: 12px 14px;
+            }
+
+            .admin-tabs {
+                justify-content: center;
+                gap: 4px;
+            }
+            .admin-tab {
+                font-size: 0.7rem;
+                padding: 6px 12px;
+                flex: 1 1 auto;
+                text-align: center;
+                min-width: 60px;
+                white-space: nowrap;
+            }
+
+            .day-tabs {
+                justify-content: center;
+                gap: 4px;
+            }
+            .day-tab {
+                font-size: 0.7rem;
+                padding: 5px 12px;
+                flex: 1 1 auto;
+                text-align: center;
+                min-width: 50px;
+                white-space: nowrap;
+            }
+
+            .admin-table-wrap table {
+                font-size: 0.75rem;
+                min-width: 280px;
+            }
+            .admin-table-wrap th,
+            .admin-table-wrap td {
+                padding: 8px 10px;
+            }
+
+            .overall-rank-btn-wrap .btn {
+                min-width: 140px;
+                font-size: 0.85rem;
+                padding: 10px 20px;
+                width: 100%;
+            }
+
+            .dashboard-header {
+                padding: 12px 16px;
+                border-radius: 1.2rem;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                position: sticky;
+                top: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+                align-items: flex-start;
+            }
+            .container {
+                padding: 0 4px 10px;
+            }
+
+            .login-panel {
+                padding: 1.4rem 1rem 1.4rem;
+                border-radius: 2rem;
+            }
+            .institution-name {
+                font-size: 1.2rem;
+            }
+            .institution-sub {
+                font-size: 0.55rem;
+                letter-spacing: 2px;
+            }
+            .institution-deco {
+                width: 30px;
+                height: 2px;
+            }
+            .login-header .title-main {
+                font-size: 1.1rem;
+            }
+            .login-header .logo-icon {
+                width: 38px;
+                height: 38px;
+                border-radius: 12px;
+            }
+            .login-header .logo-icon i {
+                font-size: 16px;
+            }
+            .login-input-wrap {
+                padding: 0 12px;
+                border-radius: 1rem;
+            }
+            .login-input-wrap input {
+                padding: 12px 0;
+                font-size: 0.9rem;
+            }
+            .login-actions .btn {
+                min-height: 42px;
+                font-size: 0.85rem;
+            }
+            .btn-register-blink {
+                font-size: 0.8rem;
+                padding: 8px 14px;
+            }
+
+            .loading-title {
+                font-size: 1.3rem;
+            }
+            .loading-logo {
+                width: 56px;
+                height: 56px;
+                border-radius: 18px;
+            }
+            .loading-logo i {
+                font-size: 26px;
+            }
+            .loading-wishing {
+                font-size: 0.85rem;
+                max-width: 220px;
+            }
+            .loading-spinner {
+                width: 38px;
+                height: 38px;
+                border-width: 3px;
+            }
+            .loading-progress {
+                width: 120px;
+            }
+
+            .modal-glass {
+                padding: 16px;
+                border-radius: 1.2rem;
+            }
+            .modal-glass h3 {
+                font-size: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            .stat-card {
+                padding: 12px;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding: 12px 14px;
+                border-radius: 1.2rem;
+                position: sticky;
+                top: 0;
+            }
+
+            .timer-ring-container {
+                width: 100px;
+                height: 100px;
+            }
+            .timer-ring-container svg {
+                width: 100px;
+                height: 100px;
+            }
+            .timer-ring-container .timer-text {
+                font-size: 22px;
+            }
+
+            .help-btn {
+                bottom: 10px;
+                right: 10px;
+                padding: 5px 10px;
+                font-size: 0.65rem;
+            }
+            .help-btn span {
+                display: none;
+            }
+
+            .glass-card {
+                padding: 12px;
+                border-radius: 1.2rem;
+            }
+            .question-card {
+                padding: 14px;
+            }
+            .question-title {
+                font-size: 0.95rem;
+            }
+            .opt-btn {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+
+            .admin-tab {
+                font-size: 0.6rem;
+                padding: 5px 8px;
+                min-width: 50px;
+                white-space: nowrap;
+            }
+            .day-tab {
+                font-size: 0.6rem;
+                padding: 4px 8px;
+                min-width: 44px;
+                white-space: nowrap;
+            }
+            .admin-form-row input,
+            .admin-form-row select,
+            .admin-form-row textarea {
+                font-size: 0.8rem;
+                padding: 7px 12px;
+            }
+            .admin-table-wrap table {
+                font-size: 0.7rem;
+                min-width: 240px;
+            }
+            .admin-table-wrap th,
+            .admin-table-wrap td {
+                padding: 6px 8px;
+            }
+            .admin-section-box {
+                padding: 10px 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            body {
+                padding: 8px;
+                align-items: flex-start;
+            }
+            .login-panel {
+                padding: 1rem 0.7rem 1rem;
+                border-radius: 1.4rem;
+            }
+            .institution-name {
+                font-size: 1rem;
+            }
+            .login-header .title-main {
+                font-size: 0.95rem;
+            }
+            .login-header .logo-icon {
+                width: 30px;
+                height: 30px;
+            }
+            .login-header .logo-icon i {
+                font-size: 12px;
+            }
+            .login-input-wrap input {
+                font-size: 0.8rem;
+                padding: 10px 0;
+            }
+            .login-actions .btn {
+                min-height: 36px;
+                font-size: 0.75rem;
+            }
+            .btn-register-blink {
+                font-size: 0.7rem;
+                padding: 5px 10px;
+            }
+
+            .loading-title {
+                font-size: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 4px;
+            }
+            .stat-card {
+                padding: 8px;
+            }
+            .stat-value {
+                font-size: 1.2rem;
+            }
+
+            .admin-tab {
+                font-size: 0.55rem;
+                padding: 4px 6px;
+                min-width: 44px;
+            }
+            .day-tab {
+                font-size: 0.55rem;
+                padding: 3px 6px;
+                min-width: 38px;
+            }
+            .admin-table-wrap table {
+                font-size: 0.65rem;
+                min-width: 200px;
+            }
+            .admin-table-wrap th,
+            .admin-table-wrap td {
+                padding: 4px 6px;
+            }
+            .dashboard-header {
+                padding: 8px 10px;
+                border-radius: 1rem;
+                position: sticky;
+                top: 0;
+            }
+            .avatar-neon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                border-radius: 14px;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(251, 191, 36, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LOADING OVERLAY ===== -->
+    <div id="loadingOverlay">
+        <div class="loading-logo">
+            <i class="fas fa-star"></i>
+        </div>
+        <div class="loading-title">NOORUSSALAM MADRASA</div>
+        <div class="loading-subtitle"><i class="fas fa-book-open"></i> Daily Meelad Quiz</div>
+        <div class="loading-spinner-wrap">
+            <div class="loading-spinner"></div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+        <div class="loading-wishing">
+            <i class="fas fa-hand-sparkles"></i>
+            സ്വാഗതം! നിങ്ങളുടെ ജ്ഞാനയാത്രയ്ക്ക് ആശംസകൾ
+            <i class="fas fa-heart" style="color:#f472b6;"></i>
+        </div>
+        <div class="loading-deco">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- ===== MAIN CONTAINER ===== -->
+    <div class="container">
+
+        <!-- ===== LOGIN SECTION ===== -->
+        <div id="loginSection">
+            <div class="login-panel">
+                <div class="institution-header">
+                    <div class="institution-name">SKSBV NOORUSSALAM MADRASA</div>
+                    <div class="institution-sub"><i class="fas fa-ribbon"></i> മിസ്‌കെ കമാൽ-2 <i class="fas fa-ribbon"></i></div>
+                    <div class="institution-deco"></div>
+                </div>
+                <div class="login-header">
+                    <div class="logo-wrap">
+                        <div class="logo-icon"><i class="fas fa-users"></i></div>
+                        <span class="title-main">രക്ഷിതാക്കൾക്കായുള്ള മത്സരം</span>
+                    </div>
+                    <div class="title-sub"><i class="fas fa-lock"></i>LOG IN</div>
+                </div>
+                <form id="loginForm">
+                    <div class="login-field-group">
+                        <label class="login-field-label"><i class="fas fa-id-card" style="margin-right:6px;opacity:0.5;"></i>PARENT ID</label>
+                        <div class="login-input-wrap">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text" id="loginIdInput" placeholder="ID നൽകുക (PAR...)" autofocus oninput="this.value = this.value.toUpperCase();" />
+                        </div>
+                    </div>
+                    <div class="login-remember">
+                        <input type="checkbox" id="rememberMe" checked />
+                        <label for="rememberMe">Remember Me</label>
+                    </div>
+                    <div class="login-actions">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-key"></i> പ്രവേശിക്കുക
+                        </button>
+                        <button type="button" class="btn btn-block btn-register-blink" id="showRegisterBtn">
+                            <i class="fas fa-user-plus"></i> പുതിയ രക്ഷിതാവ് രജിസ്ട്രേഷൻ
+                        </button>
+                    </div>
+                    <div class="login-forgot">
+                        <a onclick="openFindId()">
+                            <i class="fas fa-question-circle" style="color:#f59e0b;"></i> പാരന്റ് ID മറന്നോ?
+                        </a>
+                    </div>
+                    <div id="loginMessage"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== REGISTER MODAL ===== -->
+        <div id="registerModal" class="modal-overlay hidden">
+            <div class="modal-glass">
+                <div class="flex-between" style="margin-bottom:16px;">
+                    <h3><i class="fas fa-user-plus" style="color:#10b981;"></i> രക്ഷിതാവ് രജിസ്ട്രേഷൻ</h3>
+                    <button class="btn btn-outline btn-sm" id="closeRegisterModalBtn"><i class="fas fa-times"></i></button>
+                </div>
+                <p class="text-muted">വിവരങ്ങൾ നൽകുക. പുതിയ Parent ID ലഭിക്കും.</p>
+                <form id="registerForm" style="margin-top:16px;">
+                    <div style="margin-bottom:12px;">
+                        <label class="text-muted" style="font-size:0.8rem;">രക്ഷിതാവിന്റെ പേര് *</label>
+                        <input type="text" id="regParentName" placeholder="മുഴുവൻ പേര്" required />
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label class="text-muted" style="font-size:0.8rem;">കുട്ടിയുടെ പേര് *</label>
+                        <input type="text" id="regChildName" placeholder="കുട്ടിയുടെ മുഴുവൻ പേര്" required />
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label class="text-muted" style="font-size:0.8rem;">കുട്ടിയുടെ ക്ലാസ് *</label>
+                        <input type="text" id="regChildClass" placeholder="ഉദാ: 5A" required />
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block" id="registerBtn">
+                        <i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക
+                    </button>
+                    <div id="registerMessage" class="mt-2"></div>
+                    <div id="newIdDisplay" class="hidden mt-3 text-center" style="background:rgba(0,0,0,0.25); padding:16px; border-radius:14px; border:1px solid var(--gold);">
+                        <p class="text-muted">✅ നിങ്ങളുടെ പുതിയ Parent ID</p>
+                        <p style="font-size:28px; font-weight:800; color:var(--gold); font-family:monospace;" id="generatedIdText"></p>
+                        <button type="button" class="copy-btn" id="copyIdBtn">📋 ID പകർത്തുക</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== FIND ID MODAL ===== -->
+        <div id="findIdModal" class="modal-overlay hidden">
+            <div class="modal-glass">
+                <div class="flex-between" style="margin-bottom:16px;">
+                    <h3><i class="fas fa-search" style="color:#3b82f6;"></i> Parent ID കണ്ടെത്തുക</h3>
+                    <button class="btn btn-outline btn-sm" id="closeFindIdBtn"><i class="fas fa-times"></i></button>
+                </div>
+                <form id="findIdForm">
+                    <div style="margin-bottom:12px;">
+                        <label class="text-muted">കുട്ടിയുടെ ക്ലാസ്</label>
+                        <select id="findClass" required>
+                            <option value="">തിരഞ്ഞെടുക്കുക</option>
+                            <option value="1">ക്ലാസ് 1</option>
+                            <option value="2">ക്ലാസ് 2</option>
+                            <option value="3">ക്ലാസ് 3</option>
+                            <option value="4">ക്ലാസ് 4</option>
+                            <option value="5">ക്ലാസ് 5</option>
+                            <option value="6">ക്ലാസ് 6</option>
+                            <option value="7">ക്ലാസ് 7</option>
+                            <option value="8">ക്ലാസ് 8</option>
+                            <option value="9">ക്ലാസ് 9</option>
+                            <option value="10">ക്ലാസ് 10</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom:16px;">
+                        <label class="text-muted">രക്ഷിതാവിന്റെ പേര് (ആദ്യ 3 അക്ഷരങ്ങൾ)</label>
+                        <input type="text" id="findName" placeholder="ഉദാ: ABD" maxlength="3" oninput="this.value = this.value.toUpperCase();" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> തിരയുക</button>
+                </form>
+                <div id="findResult" class="mt-3"></div>
+            </div>
+        </div>
+
+        <!-- ===== PARENT DASHBOARD ===== -->
+        <div id="parentDashboard" class="hidden">
+            <!-- STICKY HEADER -->
+            <div class="dashboard-header" id="parentHeader">
+                <div class="flex" style="gap:14px;">
+                    <div class="avatar-neon"><span id="avatarText">P</span></div>
+                    <div>
+                        <h2 class="fw-bold" style="font-size:1.2rem; margin:0; color:#f1f5f9;" id="userNameDisplay">രക്ഷിതാവിന്റെ പേര്</h2>
+                        <div class="text-muted" style="font-size:0.85rem;"><i class="fas fa-id-card"></i> <span id="displayParentId">ID</span> • <i class="fas fa-child"></i> <span id="childNameDisplay">കുട്ടി</span> • <i class="fas fa-graduation-cap"></i> <span id="childClassDisplay">ക്ലാസ്</span></div>
+                    </div>
+                </div>
+                <div class="flex" style="gap:8px;">
+                    <button class="btn btn-danger btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> പുറത്തുകടക്കുക</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card"><div><span class="stat-value" id="quizDayDisplay">ദിവസം 1</span><div class="text-muted" style="font-size:0.8rem;">ഇന്നത്തെ ക്വിസ്</div></div></div>
+                <div class="stat-card"><div><span class="stat-value" id="questionCountDisplay">0</span><div class="text-muted" style="font-size:0.8rem;">ചോദ്യങ്ങൾ</div></div></div>
+            </div>
+
+            <div id="timerArea" class="hidden timer-wrapper">
+                <div class="timer-ring-container" id="timerRingContainer">
+                    <svg viewBox="0 0 140 140">
+                        <circle class="bg-circle" cx="70" cy="70" r="60" />
+                        <circle class="progress-circle" id="timerProgress" cx="70" cy="70" r="60" stroke-dasharray="376.99" stroke-dashoffset="0" />
+                    </svg>
+                    <div class="timer-text" id="timerDisplay">15:00</div>
+                    <div class="timer-label">⏱️ ശേഷിക്കുന്ന സമയം</div>
+                </div>
+            </div>
+
+            <div id="statusArea">
+                <div class="status-box" id="waitingMsg">
+                    <div class="icon">⏳</div>
+                    <h2>മത്സരത്തിന് സമയമായിട്ടില്ല</h2>
+                    <p id="waitingTimeText">ദയവായി കാത്തിരിക്കുക...</p>
+                </div>
+                <div class="status-box hidden" id="endedMsg">
+                    <div class="icon">🚫</div>
+                    <h2>ഇന്നത്തെ മത്സരം അവസാനിച്ചു</h2>
+                    <p id="endedMsgText">നാളെ വീണ്ടും വരൂ!</p>
+                </div>
+                <div class="status-box hidden" id="resultsExpiredMsg">
+                    <div class="icon">⏰</div>
+                    <h2>ഫലം ഇനി ലഭ്യമല്ല</h2>
+                    <p>അടുത്ത മത്സരത്തിന് 30 മിനിറ്റ് മുമ്പ് മുതൽ ഫലം കാണാൻ സാധിക്കില്ല.</p>
+                </div>
+                <div class="status-box hidden" id="preStartMsg">
+                    <div class="icon">⏳</div>
+                    <h2>മത്സരം തുടങ്ങാറായി</h2>
+                    <p id="preStartText">തുടങ്ങാൻ <strong>--:--</strong> ശേഷിക്കുന്നു</p>
+                </div>
+            </div>
+
+            <div id="viewQuestionsArea" class="hidden text-center mt-3">
+                <button class="btn btn-gold" id="viewQuestionsBtn" style="max-width:360px; margin:0 auto; width:100%;">
+                    📝 ചോദ്യങ്ങൾ കാണുക
+                </button>
+                <div id="quizStatusMessage" class="mt-2 text-muted" style="font-size:0.9rem;"></div>
+            </div>
+
+            <div id="questionsArea" class="hidden">
+                <div id="questionsContainer"></div>
+                <button class="btn btn-success btn-block mt-3" id="submitQuizBtn">📤 സമർപ്പിക്കുക</button>
+            </div>
+
+            <div id="submittedArea" class="hidden">
+                <div class="status-box">
+                    <div class="icon">✅</div>
+                    <h2>നന്ദി!</h2>
+                    <p>നിങ്ങളുടെ ഉത്തരങ്ങൾ രേഖപ്പെടുത്തി. ഫലപ്രഖ്യാപന സമയത്ത് റാങ്കിംഗ് ലഭ്യമാകും.</p>
+                </div>
+            </div>
+
+            <!-- RANKING AREA — hidden during active quiz -->
+            <div id="rankingArea" class="hidden">
+                <div class="glass-card">
+                    <div class="flex-between">
+                        <h3 style="color:var(--gold); font-size:1.2rem;">🏆 നിങ്ങളുടെ സ്കോർ</h3>
+                        <span class="badge" style="display:none;" id="rankCountBadge">—</span>
+                    </div>
+                    <div id="publicationCountdown" class="publication-box hidden">
+                        <p class="text-muted">📢 ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക</p>
+                        <div class="pub-timer" id="publicationTimer">05:00</div>
+                    </div>
+                    <div id="resultsExpiryCountdown" class="publication-box hidden">
+                        <p class="text-muted">⏳ ഫലം ലഭ്യമാകുന്ന സമയപരിധി</p>
+                        <div class="pub-timer" id="resultsExpiryTimer">--:--</div>
+                    </div>
+                    <div id="rankListContainer"><div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div></div>
+                    <div class="parent-rank-hint"></div>
+                </div>
+            </div>
+
+            <!-- HISTORY BUTTON — hidden during active quiz -->
+            <div class="history-btn-wrap" id="historyBtnWrap">
+                <button class="btn btn-outline" id="showHistoryBtn" style="border-color:rgba(251,191,36,0.2); color:var(--gold);">
+                    <i class="fas fa-clock-rotate-left"></i> Results
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== HISTORY MODAL ===== -->
+        <div id="historyModal" class="modal-overlay hidden">
+            <div class="modal-glass" style="max-width:640px;">
+                <div class="flex-between" style="margin-bottom:16px;">
+                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i>Results</h3>
+                    <button class="btn btn-outline btn-sm" id="closeHistoryBtn"><i class="fas fa-times"></i></button>
+                </div>
+                <p class="text-muted">ഓരോ ദിവസത്തിലെയും നിങ്ങളുടെ പോയിന്റ്, റാങ്ക്, സമയം എന്നിവ.</p>
+                <div class="history-table-wrap" id="historyContainer">
+                    <div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== CONFIRMATION MODAL ===== -->
+        <div id="confirmModal" class="modal-overlay hidden">
+            <div class="modal-glass">
+                <h3>⚠️ ശ്രദ്ധിക്കുക</h3>
+                <p>
+                    <strong>ചോദ്യങ്ങളിലേക്ക് പ്രവേശിച്ചാൽ പിന്നീട് ഇന്ന് വീണ്ടും പ്രവേശിക്കാൻ സാധിക്കുകയില്ല.</strong>
+                    <br><br>
+                    ദയവായി ഉറപ്പാക്കുക:
+                    <br>• നിങ്ങൾ തയ്യാറാണോ?
+                    <br>• സമയപരിധി മനസ്സിലാക്കിയിട്ടുണ്ടോ?
+                    <br><br>
+                    <span style="color:var(--gold);">"തുടങ്ങുക" ക്ലിക്ക് ചെയ്താൽ ക്വിസ് ആരംഭിക്കും.</span>
+                </p>
+                <div style="display:flex; gap:12px; margin-top:24px; justify-content:center; flex-wrap:wrap;">
+                    <button class="btn btn-outline btn-sm" id="cancelConfirmBtn" style="min-width:120px;">❌ ഇല്ല</button>
+                    <button class="btn btn-success btn-sm" id="proceedConfirmBtn" style="min-width:120px;">✅ അതെ, തുടങ്ങുക</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================
+        ADMIN DASHBOARD — with sticky header & tables
+        ================================================================ -->
+        <div id="adminDashboard" class="hidden">
+            <!-- STICKY ADMIN HEADER -->
+            <div class="dashboard-header" id="adminHeader">
+                <h2 class="fw-bold" style="color:var(--gold); font-size:1.4rem;"><i class="fas fa-user-shield"></i> Admin Panel</h2>
+                <button class="btn btn-danger btn-sm" id="adminLogoutBtn"><i class="fas fa-sign-out-alt"></i> Exit</button>
+            </div>
+
+            <div class="glass-card" style="margin-bottom:20px; padding:16px 20px;">
+                <h4 style="color:var(--gold); font-size:1rem;">📅 Today's Session</h4>
+                <div id="todaySessionInfo" class="text-muted">Loading...</div>
+            </div>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions</button>
+                <button class="admin-tab" data-tab="questions" onclick="switchAdminTab('questions')">📋 Questions</button>
+                <button class="admin-tab" data-tab="rankings" onclick="switchAdminTab('rankings')">📊 Rankings</button>
+            </div>
+
+            <!-- Sessions Tab — Table -->
+            <div id="tab-sessions" class="tab-content">
+                <div class="glass-card">
+                    <h4 style="color:var(--gold);">⏰ Manage Days</h4>
+
+                    <div class="admin-section-box" style="border-color:rgba(59,130,246,0.15);">
+                        <h5 style="color:#3b82f6;">➕ Add New Day</h5>
+                        <div class="admin-form-row">
+                            <input type="number" id="newDay" placeholder="Day #" style="max-width:120px;" />
+                            <input type="datetime-local" id="newStart" class="flex-grow" />
+                            <input type="datetime-local" id="newEnd" class="flex-grow" />
+                            <input type="number" id="newDuration" placeholder="min" style="max-width:90px;" value="15" />
+                            <button class="btn btn-success btn-sm" id="addDayBtn">➕ Add</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-section-box" style="border-color:rgba(251,191,36,0.10);">
+                        <h5 style="color:var(--gold);">⚡ Quick Set</h5>
+                        <div class="admin-form-row">
+                            <select id="quickDay" style="max-width:160px;"><option value="">Select</option></select>
+                            <input type="datetime-local" id="quickStart" class="flex-grow" />
+                            <input type="datetime-local" id="quickEnd" class="flex-grow" />
+                            <input type="number" id="quickDuration" style="max-width:90px;" value="15" />
+                            <button class="btn-gold btn-sm" id="quickSetBtn">✅ Set</button>
+                        </div>
+                    </div>
+
+                    <!-- Sessions Table -->
+                    <div class="admin-table-wrap" id="adminSessionsTableWrap">
+                        <div id="adminSessionsTable"><div class="text-center text-muted">Loading...</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Tab — Table -->
+            <div id="tab-questions" class="tab-content hidden">
+                <div class="glass-card">
+                    <div class="flex-between" style="margin-bottom:16px;">
+                        <h4 style="color:var(--gold);">📋 Questions</h4>
+                        <button class="btn btn-success btn-sm" id="showAddQuestionBtn">+ Add</button>
+                    </div>
+
+                    <div id="questionForm" class="hidden admin-section-box">
+                        <h5 id="formTitle" style="color:var(--gold);">Add Question</h5>
+                        <div class="admin-form-row">
+                            <input type="number" id="qDay" placeholder="Day" style="max-width:120px;" />
+                            <textarea id="qText" placeholder="Question" class="flex-grow" style="min-height:44px;"></textarea>
+                        </div>
+                        <div class="admin-form-row">
+                            <input type="text" id="qOpt0" placeholder="Opt1" />
+                            <input type="text" id="qOpt1" placeholder="Opt2" />
+                            <input type="text" id="qOpt2" placeholder="Opt3" />
+                            <input type="text" id="qOpt3" placeholder="Opt4" />
+                            <select id="qCorrect" style="max-width:140px;"><option value="0">Opt1</option><option value="1">Opt2</option><option value="2">Opt3</option><option value="3">Opt4</option></select>
+                        </div>
+                        <div class="flex" style="margin-top:12px; gap:8px;">
+                            <button class="btn btn-primary btn-sm" id="saveQuestionBtn">💾 Save</button>
+                            <button class="btn btn-outline btn-sm" id="cancelQuestionBtn">Cancel</button>
+                            <input type="hidden" id="editQuestionId" />
+                        </div>
+                    </div>
+
+                    <div id="adminDayTabsContainer" class="day-tabs"></div>
+
+                    <!-- Questions Table -->
+                    <div class="admin-table-wrap">
+                        <div id="adminQuestionsTable"><div class="text-center text-muted">Select day</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rankings Tab — Table -->
+            <div id="tab-rankings" class="tab-content hidden">
+                <div class="glass-card">
+                    <h4 style="color:var(--gold);">🏆 Rankings</h4>
+                    <div class="day-tabs" id="rankDayTabs"></div>
+
+                    <div class="overall-rank-btn-wrap">
+                        <button class="btn" id="overallRankBtn"><i class="fas fa-trophy"></i> Overall Rank</button>
+                    </div>
+
+                    <!-- Rankings Table -->
+                    <div class="admin-table-wrap">
+                        <div id="adminRankListContainer"><div class="text-center text-muted">Select day</div></div>
+                    </div>
+
+                    <div id="overallRankContainer" class="overall-rank-container hidden">
+                        <h5 style="color:var(--gold); text-align:center; margin-bottom:12px;">📊 Overall Rankings (All Days)</h5>
+                        <div class="admin-table-wrap">
+                            <div id="overallRankList"><div class="text-center text-muted">Loading...</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== OVERALL RANK MODAL ===== -->
+        <div id="overallRankModal" class="modal-overlay hidden overall-rank-modal">
+            <div class="modal-glass">
+                <div class="flex-between" style="margin-bottom:16px;">
+                    <h3><i class="fas fa-trophy" style="color:var(--gold);"></i> Overall Rankings</h3>
+                    <button class="btn btn-outline btn-sm" id="closeOverallRankBtn"><i class="fas fa-times"></i></button>
+                </div>
+                <p class="text-muted">All days combined — top performers</p>
+                <div class="admin-table-wrap">
+                    <div id="overallRankModalContent" style="margin-top:16px;">
+                        <div class="text-center text-muted">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TOAST CONTAINER ===== -->
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- ===== HELP BUTTON ===== -->
+        <button class="help-btn" onclick="openHelp()">
+            <i class="fas fa-circle-question"></i> <span>സഹായം</span>
+        </button>
+
+    </div>
+
+    <!-- ================================================================
+    JAVASCRIPT
+    ================================================================ -->
+    <script>
+        // ================================================================
+        // SECURE ADMIN CONFIG
+        // ================================================================
+        const ADMIN_CONFIG = {
+            password: 'ADMIN123'
+        };
+
+        // ================================================================
+        // SUPABASE CONFIG
+        // ================================================================
+        const SUPABASE_URL = "https://iaaazjetelndkroignrd.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_7BNVf0qnhk8xlpGh0Vts5w_viVZ1kpc";
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const CIRCUMFERENCE = 2 * Math.PI * 60;
+
+        // ================================================================
+        // LOADING OVERLAY
+        // ================================================================
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.classList.add('hidden-loading');
+                setTimeout(function() {
+                    overlay.style.display = 'none';
+                }, 800);
+            }, 2200);
+        });
+
+        // ================================================================
+        // TIMEZONE HELPERS
+        // ================================================================
+        function localToUTC(localDateTime) {
+            if (!localDateTime) return '';
+            const d = new Date(localDateTime);
+            if (isNaN(d)) return '';
+            return d.toISOString();
+        }
+
+        function utcToLocal(utcISO) {
+            if (!utcISO) return '';
+            const d = new Date(utcISO);
+            if (isNaN(d)) return '';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function formatDate(d) {
+            if (!d) return '';
+            return new Date(d).toLocaleString('ml-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short',
+                hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatCountdown(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+        }
+
+        function formatDateShort(d) {
+            if (!d) return '';
+            return new Date(d).toLocaleString('ml-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short' });
+        }
+
+        // ================================================================
+        // HELPERS
+        // ================================================================
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `toast-item ${type}`;
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+            toast.innerHTML = `${icon} ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3200);
+        }
+
+        function saveId(id) {
+            const remember = document.getElementById('rememberMe');
+            if (remember && remember.checked) localStorage.setItem('lastId', id);
+            else localStorage.removeItem('lastId');
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => showToast('പകർത്തി: ' + text, 'success'))
+                    .catch(() => fallbackCopy(text));
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('പകർത്തി: ' + text, 'success');
+        }
+
+        // ================================================================
+        // LOGIN
+        // ================================================================
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('loginIdInput').value.trim().toUpperCase();
+            const msg = document.getElementById('loginMessage');
+            msg.innerHTML = '';
+            if (!id) { showToast('ID നൽകുക', 'error'); return; }
+            saveId(id);
+
+            try {
+                const { data: user, error } = await _supabase
+                    .from('Student')
+                    .select('*')
+                    .eq('studentId', id)
+                    .single();
+
+                if (error || !user) throw new Error('അസാധുവായ ID. ദയവായി വീണ്ടും ശ്രമിക്കുക.');
+
+                if (user.role === 'admin') {
+                    if (id !== ADMIN_CONFIG.password) {
+                        throw new Error('അസാധുവായ അഡ്മിൻ ഐഡി.');
+                    }
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminDashboard').classList.remove('hidden');
+                    document.getElementById('parentDashboard').classList.add('hidden');
+                    loadAdminData();
+                    showToast('👋 Admin Panel തുറന്നു', 'success');
+                    return;
+                }
+
+                const { data: sessions } = await _supabase
+                    .from('QuizSession')
+                    .select('*')
+                    .order('day');
+
+                if (!sessions || sessions.length === 0) throw new Error('സെഷനുകൾ ലഭ്യമല്ല.');
+
+                const now = new Date();
+                let active = sessions.find(s => now >= new Date(s.startTime) && now <= new Date(s.endTime));
+                if (!active) {
+                    active = sessions.find(s => {
+                        const start = new Date(s.startTime);
+                        const diff = (start - now) / 60000;
+                        return diff > 0 && diff <= 30;
+                    });
+                }
+                if (!active) {
+                    active = sessions.find(s => new Date(s.startTime) > now) || sessions[sessions.length - 1];
+                }
+
+                await _supabase.from('LoginTrack').insert({ studentId: user.id, day: active.day });
+
+                window.currentUser = user;
+                window.currentSession = active;
+                window.allSessions = sessions;
+
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('parentDashboard').classList.remove('hidden');
+                document.getElementById('adminDashboard').classList.add('hidden');
+
+                document.getElementById('userNameDisplay').textContent = user.name;
+                document.getElementById('avatarText').textContent = user.name.charAt(0).toUpperCase();
+                document.getElementById('childNameDisplay').textContent = user.parentName || 'N/A';
+                document.getElementById('childClassDisplay').textContent = user.className || 'N/A';
+                document.getElementById('displayParentId').textContent = user.studentId;
+                document.getElementById('quizDayDisplay').textContent = 'ദിവസം ' + active.day;
+
+                renderParentDashboard();
+                showToast('👋 സ്വാഗതം, ' + user.name + '!', 'success');
+
+            } catch (err) {
+                showToast(err.message, 'error');
+                msg.innerHTML = `<div style="color:#fca5a5;">❌ ${err.message}</div>`;
+            }
+        });
+
+        // ================================================================
+        // LOGOUT
+        // ================================================================
+        function logout() {
+            if (window.timerInterval) clearInterval(window.timerInterval);
+            if (window.pubInterval) clearInterval(window.pubInterval);
+            if (window.expiryInterval) clearInterval(window.expiryInterval);
+            window.currentUser = null;
+            window.currentSession = null;
+            window.allSessions = null;
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('parentDashboard').classList.add('hidden');
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('loginIdInput').value = '';
+            showToast('പുറത്തുകടന്നു', 'info');
+        }
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('adminLogoutBtn').addEventListener('click', logout);
+
+        // ================================================================
+        // REGISTRATION
+        // ================================================================
+        document.getElementById('showRegisterBtn').addEventListener('click', function() {
+            document.getElementById('registerModal').classList.remove('hidden');
+            document.getElementById('registerMessage').innerHTML = '';
+            document.getElementById('newIdDisplay').classList.add('hidden');
+        });
+        document.getElementById('closeRegisterModalBtn').addEventListener('click', function() {
+            document.getElementById('registerModal').classList.add('hidden');
+        });
+        document.getElementById('registerModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.add('hidden');
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const parentName = document.getElementById('regParentName').value.trim();
+            const childName = document.getElementById('regChildName').value.trim();
+            const childClass = document.getElementById('regChildClass').value.trim();
+            const msg = document.getElementById('registerMessage');
+            const newIdDiv = document.getElementById('newIdDisplay');
+            msg.innerHTML = '';
+            newIdDiv.classList.add('hidden');
+
+            if (!parentName || !childName || !childClass) {
+                msg.innerHTML = '<div style="color:#fca5a5;">എല്ലാ വിവരങ്ങളും നൽകുക.</div>';
+                return;
+            }
+
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span style="display:inline-block;width:1.2rem;height:1.2rem;border:2px solid rgba(255,255,255,0.1);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></span>';
+
+            try {
+                const prefix = 'PAR';
+                const random = Math.floor(100000 + Math.random() * 900000);
+                const parentId = prefix + random;
+
+                const { error } = await _supabase
+                    .from('Student')
+                    .insert({
+                        studentId: parentId,
+                        name: parentName,
+                        parentName: childName,
+                        className: childClass,
+                        role: 'parent'
+                    });
+
+                if (error) throw error;
+
+                newIdDiv.classList.remove('hidden');
+                document.getElementById('generatedIdText').textContent = parentId;
+                msg.innerHTML = '<div style="color:#6ee7b7;">✅ രജിസ്ട്രേഷൻ വിജയകരം!</div>';
+                document.getElementById('loginIdInput').value = parentId;
+                saveId(parentId);
+                showToast('✅ രജിസ്റ്റർ ചെയ്തു! ID: ' + parentId, 'success');
+                setTimeout(() => document.getElementById('registerModal').classList.add('hidden'), 800);
+
+            } catch (err) {
+                msg.innerHTML = '<div style="color:#fca5a5;">❌ പിശക്: ' + err.message + '</div>';
+                showToast(err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക';
+            }
+        });
+
+        document.getElementById('copyIdBtn').addEventListener('click', function() {
+            const text = document.getElementById('generatedIdText').textContent;
+            copyToClipboard(text);
+            this.textContent = '✅ പകർത്തി!';
+            setTimeout(() => this.textContent = '📋 ID പകർത്തുക', 2500);
+        });
+
+        // ================================================================
+        // FIND ID
+        // ================================================================
+        function openFindId() {
+            document.getElementById('findIdModal').classList.remove('hidden');
+            document.getElementById('findResult').innerHTML = '';
+        }
+        document.getElementById('closeFindIdBtn').addEventListener('click', function() {
+            document.getElementById('findIdModal').classList.add('hidden');
+        });
+        document.getElementById('findIdModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.add('hidden');
+        });
+
+        document.getElementById('findIdForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const cls = document.getElementById('findClass').value;
+            const name = document.getElementById('findName').value.trim();
+            const result = document.getElementById('findResult');
+            result.innerHTML = '<div class="text-muted"><i class="fas fa-spinner fa-pulse"></i> തിരയുന്നു...</div>';
+            if (!cls || !name) {
+                result.innerHTML = '<div style="color:#fca5a5;">ക്ലാസും പേരും നൽകുക</div>';
+                return;
+            }
+
+            try {
+                const { data, error } = await _supabase
+                    .from('Student')
+                    .select('studentId, name')
+                    .eq('className', cls)
+                    .ilike('name', name + '%')
+                    .eq('role', 'parent');
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    let html =
+                        `<div style="color:#6ee7b7;">✅ കണ്ടെത്തിയത് ${data.length} രക്ഷിതാവ്(ക്കൾ):</div><ul style="list-style:none;padding:0;margin-top:10px;">`;
+                    data.forEach(s => {
+                        html += `<li style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+                            <span style="color:#e2e8f0;">${s.name}</span>
+                            <span style="background:#2563eb;padding:4px 14px;border-radius:30px;cursor:pointer;font-size:0.85rem;color:#fff;" onclick="copyToClipboard('${s.studentId}')">${s.studentId} <i class="fas fa-copy"></i></span>
+                        </li>`;
+                    });
+                    html += `</ul><p class="text-muted" style="font-size:0.75rem;margin-top:6px;">ID യിൽ ക്ലിക്ക് ചെയ്ത് പകർത്തുക.</p>`;
+                    result.innerHTML = html;
+                } else {
+                    result.innerHTML = '<div style="color:#fca5a5;">❌ ഒത്തുപോകുന്ന രക്ഷിതാക്കളെ കണ്ടെത്തിയില്ല.</div>';
+                }
+            } catch (err) {
+                result.innerHTML = '<div style="color:#fca5a5;">❌ പിശക്: ' + err.message + '</div>';
+            }
+        });
+
+        // ================================================================
+        // PARENT DASHBOARD
+        // ================================================================
+        window.questions = [];
+        window.answers = {};
+        window.isSubmitted = false;
+        window.currentAttemptId = null;
+        window.hasViewedQuestions = false;
+        window.quizStarted = false;
+        window.allSessions = [];
+
+        function getNextSession(currentDay) {
+            if (!window.allSessions || window.allSessions.length === 0) return null;
+            const idx = window.allSessions.findIndex(s => s.day === currentDay);
+            if (idx !== -1 && idx < window.allSessions.length - 1) {
+                return window.allSessions[idx + 1];
+            }
+            return null;
+        }
+
+        async function renderParentDashboard() {
+            if (!window.currentUser || !window.currentSession) return;
+
+            const now = new Date();
+            const start = new Date(window.currentSession.startTime);
+            const end = new Date(window.currentSession.endTime);
+            const rankRevealTime = new Date(end.getTime() + 3 * 60000);
+
+            const nextSession = getNextSession(window.currentSession.day);
+            let expiryTime = null;
+            if (nextSession) {
+                expiryTime = new Date(new Date(nextSession.startTime).getTime() - 30 * 60000);
+            } else {
+                expiryTime = new Date(rankRevealTime.getTime() + 12 * 3600000);
+            }
+
+            const visibilityStart = new Date(start.getTime() - 30 * 60000);
+
+            // Hide all status areas first
+            ['waitingMsg', 'endedMsg', 'resultsExpiredMsg', 'preStartMsg', 'viewQuestionsArea', 'questionsArea', 'timerArea',
+                'submittedArea', 'rankingArea'
+            ].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById('publicationCountdown').classList.add('hidden');
+            document.getElementById('resultsExpiryCountdown').classList.add('hidden');
+
+            // Hide history button by default — will be shown only when results are visible
+            const historyWrap = document.getElementById('historyBtnWrap');
+            historyWrap.classList.add('hidden');
+
+            if (now < visibilityStart) {
+                document.getElementById('waitingMsg').classList.remove('hidden');
+                const diff = Math.floor((visibilityStart - now) / 1000);
+                if (diff <= 3600) {
+                    document.getElementById('waitingTimeText').innerHTML =
+                        `⏳ മത്സരം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${formatCountdown(diff)}</strong> ശേഷിക്കുന്നു.`;
+                    startCountdownTimer(visibilityStart, 'visibility');
+                } else {
+                    document.getElementById('waitingTimeText').textContent =
+                        `ദയവായി ${formatDate(visibilityStart)} ന് ശേഷം വീണ്ടും പരിശോധിക്കുക.`;
+                }
+                return;
+            }
+
+            if (now >= visibilityStart && now < start) {
+                document.getElementById('preStartMsg').classList.remove('hidden');
+                const diff = Math.floor((start - now) / 1000);
+                document.getElementById('preStartText').innerHTML =
+                    `തുടങ്ങാൻ <strong style="color:var(--gold);">${formatCountdown(diff)}</strong> ശേഷിക്കുന്നു`;
+                startCountdownTimer(start, 'preStart');
+
+                const { data: qs } = await _supabase
+                    .from('Question')
+                    .select('*')
+                    .eq('sessionDay', window.currentSession.day)
+                    .order('id', { ascending: true });
+                if (qs && qs.length > 0) {
+                    window.questions = qs;
+                    document.getElementById('questionCountDisplay').textContent = qs.length;
+                }
+                document.getElementById('viewQuestionsArea').classList.remove('hidden');
+                document.getElementById('viewQuestionsBtn').textContent = '⏳ മത്സരം തുടങ്ങുന്നത് വരെ കാത്തിരിക്കുക';
+                document.getElementById('viewQuestionsBtn').className = 'btn btn-expired';
+                document.getElementById('viewQuestionsBtn').disabled = true;
+                document.getElementById('quizStatusMessage').textContent =
+                    `⏳ ${formatCountdown(diff)} ശേഷിക്കുന്നു`;
+                return;
+            }
+
+            // ===== ACTIVE QUIZ — hide results and history =====
+            if (now >= start && now <= end) {
+                // History button is hidden during active quiz
+                historyWrap.classList.add('hidden');
+
+                const { data: attempt } = await _supabase
+                    .from('Attempt')
+                    .select('id, status, score')
+                    .eq('studentId', window.currentUser.id)
+                    .eq('sessionDay', window.currentSession.day)
+                    .maybeSingle();
+
+                if (attempt && (attempt.status === 'COMPLETED' || attempt.status === 'TIMED_OUT')) {
+                    document.getElementById('submittedArea').classList.remove('hidden');
+                    return;
+                }
+
+                if (attempt && attempt.status === 'STARTED') {
+                    window.currentAttemptId = attempt.id;
+                    window.hasViewedQuestions = true;
+                    window.quizStarted = true;
+                    document.getElementById('viewQuestionsArea').classList.remove('hidden');
+                    document.getElementById('viewQuestionsBtn').textContent = '🔒 കാലഹരണപ്പെട്ടു (ആരംഭിച്ചു)';
+                    document.getElementById('viewQuestionsBtn').className = 'btn btn-expired';
+                    document.getElementById('viewQuestionsBtn').disabled = true;
+                    document.getElementById('quizStatusMessage').textContent =
+                        '⚠️ നിങ്ങൾ ഇതിനകം ക്വിസ് ആരംഭിച്ചു. ഇന്ന് വീണ്ടും പ്രവേശിക്കാൻ സാധിക്കുകയില്ല.';
+                    await loadQuestionsAndStart(true);
+                    return;
+                }
+
+                const { data: anyAttempt } = await _supabase
+                    .from('Attempt')
+                    .select('id')
+                    .eq('studentId', window.currentUser.id)
+                    .eq('sessionDay', window.currentSession.day)
+                    .maybeSingle();
+
+                if (anyAttempt) {
+                    window.hasViewedQuestions = true;
+                    window.currentAttemptId = anyAttempt.id;
+                    document.getElementById('viewQuestionsArea').classList.remove('hidden');
+                    document.getElementById('viewQuestionsBtn').textContent = '🔒 കാലഹരണപ്പെട്ടു';
+                    document.getElementById('viewQuestionsBtn').className = 'btn btn-expired';
+                    document.getElementById('viewQuestionsBtn').disabled = true;
+                    document.getElementById('quizStatusMessage').textContent =
+                        '⚠️ നിങ്ങൾ ഇതിനകം ചോദ്യങ്ങൾ കണ്ടു. ഇന്ന് വീണ്ടും പ്രവേശിക്കാൻ സാധിക്കുകയില്ല.';
+                    await loadQuestionsAndStart(true);
+                    return;
+                }
+
+                document.getElementById('viewQuestionsArea').classList.remove('hidden');
+                document.getElementById('viewQuestionsBtn').textContent = '📝 ചോദ്യങ്ങൾ കാണുക';
+                document.getElementById('viewQuestionsBtn').className = 'btn btn-gold';
+                document.getElementById('viewQuestionsBtn').disabled = false;
+                document.getElementById('quizStatusMessage').textContent =
+                    '⏳ ക്വിസ് ആരംഭിക്കാൻ തയ്യാറാണോ? "ചോദ്യങ്ങൾ കാണുക" ക്ലിക്ക് ചെയ്യുക.';
+
+                const { data: qs } = await _supabase
+                    .from('Question')
+                    .select('*')
+                    .eq('sessionDay', window.currentSession.day)
+                    .order('id', { ascending: true });
+                if (qs && qs.length > 0) {
+                    window.questions = qs;
+                    document.getElementById('questionCountDisplay').textContent = qs.length;
+                } else {
+                    showToast('ഈ ദിവസത്തേക്ക് ചോദ്യങ്ങളില്ല', 'error');
+                }
+
+                document.getElementById('viewQuestionsBtn').onclick = function() {
+                    if (this.disabled) return;
+                    document.getElementById('confirmModal').classList.remove('hidden');
+                };
+                return;
+            }
+
+            // ===== QUIZ ENDED — show results and history =====
+            if (now > end) {
+                if (now < rankRevealTime) {
+                    document.getElementById('endedMsg').classList.remove('hidden');
+                    document.getElementById('endedMsg').querySelector('h2').textContent =
+                        '📢 ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക';
+                    document.getElementById('endedMsgText').innerHTML =
+                        `⏳ ഫലം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${formatCountdown(Math.floor((rankRevealTime - now)/1000))}</strong> ശേഷിക്കുന്നു.`;
+                    startCountdownTimer(rankRevealTime, 'rankReveal');
+                    document.getElementById('rankingArea').classList.add('hidden');
+                    // History hidden until results are shown
+                    historyWrap.classList.add('hidden');
+                    return;
+                }
+
+                if (now >= rankRevealTime && now < expiryTime) {
+                    document.getElementById('rankingArea').classList.remove('hidden');
+                    document.getElementById('resultsExpiryCountdown').classList.remove('hidden');
+                    startCountdownTimer(expiryTime, 'expiry');
+                    await loadParentRankingData();
+                    document.getElementById('endedMsg').classList.remove('hidden');
+                    document.getElementById('endedMsg').querySelector('h2').textContent =
+                        '🏁 മത്സരം അവസാനിച്ചു';
+                    document.getElementById('endedMsgText').textContent =
+                        `📊 ഫലങ്ങൾ ലഭ്യമാണ് (${formatDate(expiryTime)} വരെ)`;
+                    // Show history button when results are visible
+                    historyWrap.classList.remove('hidden');
+                    return;
+                }
+
+                if (now >= expiryTime) {
+                    document.getElementById('resultsExpiredMsg').classList.remove('hidden');
+                    document.getElementById('rankingArea').classList.add('hidden');
+                    // Hide history when results are expired
+                    historyWrap.classList.add('hidden');
+                    return;
+                }
+            }
+        }
+
+        function startCountdownTimer(targetTime, type) {
+            if (window.pubInterval) clearInterval(window.pubInterval);
+            window.pubInterval = setInterval(() => {
+                const diff = Math.max(0, Math.floor((targetTime - new Date()) / 1000));
+                let display = formatCountdown(diff);
+                if (type === 'visibility') {
+                    const el = document.getElementById('waitingTimeText');
+                    if (el) el.innerHTML = `⏳ മത്സരം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു.`;
+                } else if (type === 'preStart') {
+                    const el = document.getElementById('preStartText');
+                    if (el) el.innerHTML = `തുടങ്ങാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു`;
+                    const btnMsg = document.getElementById('quizStatusMessage');
+                    if (btnMsg) btnMsg.textContent = `⏳ ${display} ശേഷിക്കുന്നു`;
+                } else if (type === 'rankReveal') {
+                    const el = document.getElementById('endedMsgText');
+                    if (el) el.innerHTML =
+                        `⏳ ഫലം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു.`;
+                } else if (type === 'expiry') {
+                    document.getElementById('resultsExpiryTimer').textContent = display;
+                }
+                if (diff <= 0) {
+                    clearInterval(window.pubInterval);
+                    if (type === 'visibility' || type === 'preStart' || type === 'rankReveal' || type === 'expiry') {
+                        location.reload();
+                    }
+                }
+            }, 1000);
+        }
+
+        // ================================================================
+        // PARENT RANKING
+        // ================================================================
+        async function loadParentRankingData() {
+            const container = document.getElementById('rankListContainer');
+            container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> ലോഡ് ചെയ്യുന്നു...</div>';
+
+            try {
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('sessionDay', window.currentSession.day)
+                    .eq('status', 'COMPLETED');
+
+                if (!attempts || attempts.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">📭 ഇതുവരെ ആരും പങ്കെടുത്തിട്ടില്ല.</div>';
+                    return;
+                }
+
+                const myAttempt = attempts.find(a => a.studentId === window.currentUser.id);
+                if (!myAttempt) {
+                    container.innerHTML = '<div class="text-center text-muted">നിങ്ങളുടെ ഉത്തരങ്ങൾ ഇതുവരെ രേഖപ്പെടുത്തിയിട്ടില്ല.</div>';
+                    return;
+                }
+
+                const ranked = attempts.map(a => ({
+                    ...a,
+                    timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+                }));
+                ranked.sort((a, b) => {
+                    if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
+                    return (a.timeTaken || 9999) - (b.timeTaken || 9999);
+                });
+
+                const rank = ranked.findIndex(a => a.id === myAttempt.id) + 1;
+                const score = myAttempt.score || 0;
+                const timeTaken = ranked.find(a => a.id === myAttempt.id).timeTaken || 0;
+
+                container.innerHTML = `
+                    <div class="rank-item" style="border-color:var(--gold);background:rgba(251,191,36,0.05);">
+                        <div class="rank-num gold">#${rank}</div>
+                        <div class="rank-name">${window.currentUser.name}</div>
+                        <div class="rank-score">${score} മാർക്ക്</div>
+                        <div class="rank-time">⏱️ ${timeTaken} സെ</div>
+                    </div>
+                    <p style="text-align:center;color:var(--text-secondary);margin-top:12px;">🏅 നിങ്ങളുടെ റാങ്ക്</p>
+                `;
+
+                const badge = document.getElementById('rankCountBadge');
+                if (badge) badge.style.display = 'none';
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-danger text-center">റാങ്കിംഗ് ലോഡ് ചെയ്യുന്നതിൽ പിശക്.</div>';
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // PARENT HISTORY
+        // ================================================================
+        document.getElementById('showHistoryBtn').addEventListener('click', async function() {
+            document.getElementById('historyModal').classList.remove('hidden');
+            await loadParentHistory();
+        });
+        document.getElementById('closeHistoryBtn').addEventListener('click', function() {
+            document.getElementById('historyModal').classList.add('hidden');
+        });
+        document.getElementById('historyModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.add('hidden');
+        });
+
+        async function loadParentHistory() {
+            const container = document.getElementById('historyContainer');
+            container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> ലോഡ് ചെയ്യുന്നു...</div>';
+
+            try {
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('studentId', window.currentUser.id)
+                    .eq('status', 'COMPLETED')
+                    .order('sessionDay', { ascending: true });
+
+                if (!attempts || attempts.length === 0) {
+                    container.innerHTML =
+                        '<div class="text-center text-muted">📭 നിങ്ങൾ ഇതുവരെ ഒരു മത്സരത്തിലും പങ്കെടുത്തിട്ടില്ല.</div>';
+                    return;
+                }
+
+                const { data: sessions } = await _supabase
+                    .from('QuizSession')
+                    .select('*')
+                    .order('day', { ascending: true });
+                const sessionMap = {};
+                if (sessions) sessions.forEach(s => sessionMap[s.day] = s);
+
+                let html =
+                    `<table><thead><tr><th>ദിവസം</th><th>തീയതി</th><th>സ്കോർ</th><th>റാങ്ക്</th><th>എടുത്ത സമയം</th></tr></thead><tbody>`;
+
+                for (const att of attempts) {
+                    const { data: allDay } = await _supabase
+                        .from('Attempt')
+                        .select('*, Student(name)')
+                        .eq('sessionDay', att.sessionDay)
+                        .eq('status', 'COMPLETED');
+
+                    let rank = '—';
+                    if (allDay && allDay.length > 0) {
+                        const sorted = allDay.map(a => ({
+                            ...a,
+                            timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+                        }));
+                        sorted.sort((a, b) => {
+                            if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
+                            return (a.timeTaken || 9999) - (b.timeTaken || 9999);
+                        });
+                        const idx = sorted.findIndex(a => a.id === att.id);
+                        if (idx !== -1) rank = idx + 1;
+                    }
+
+                    const session = sessionMap[att.sessionDay];
+                    const dateStr = session ? formatDateShort(session.startTime) : '—';
+                    const timeTaken = Math.floor((new Date(att.endTime) - new Date(att.startTime)) / 1000);
+
+                    html += `<tr>
+                        <td><strong>ദിവസം ${att.sessionDay}</strong></td>
+                        <td>${dateStr}</td>
+                        <td style="color:var(--gold);font-weight:700;">${att.score ?? 0}</td>
+                        <td>#${rank}</td>
+                        <td>${timeTaken} സെ</td>
+                    </tr>`;
+                }
+
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-danger text-center">ചരിത്രം ലോഡ് ചെയ്യുന്നതിൽ പിശക്.</div>';
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // CONFIRMATION MODAL
+        // ================================================================
+        document.getElementById('cancelConfirmBtn').addEventListener('click', function() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        });
+
+        document.getElementById('proceedConfirmBtn').addEventListener('click', async function() {
+            document.getElementById('confirmModal').classList.add('hidden');
+            await startParentQuiz(false);
+        });
+
+        // ================================================================
+        // PARENT QUIZ
+        // ================================================================
+        async function loadQuestionsAndStart(resume = false) {
+            if (window.questions.length === 0) {
+                const { data: qs } = await _supabase
+                    .from('Question')
+                    .select('*')
+                    .eq('sessionDay', window.currentSession.day)
+                    .order('id', { ascending: true });
+                if (qs && qs.length > 0) {
+                    window.questions = qs;
+                    document.getElementById('questionCountDisplay').textContent = qs.length;
+                } else {
+                    showToast('ഈ ദിവസത്തേക്ക് ചോദ്യങ്ങളില്ല', 'error');
+                    return;
+                }
+            }
+            if (!window.quizStarted && window.questions.length > 0) {
+                await startParentQuiz(resume);
+            }
+        }
+
+        async function startParentQuiz(resume = false) {
+            try {
+                if (!resume && !window.currentAttemptId) {
+                    const { data: att, error: aErr } = await _supabase
+                        .from('Attempt')
+                        .insert({
+                            studentId: window.currentUser.id,
+                            sessionDay: window.currentSession.day,
+                            status: 'STARTED'
+                        })
+                        .select()
+                        .single();
+
+                    if (aErr) throw new Error('ക്വിസ് ആരംഭിക്കുന്നതിൽ പരാജയം.');
+                    window.currentAttemptId = att.id;
+                    window.hasViewedQuestions = true;
+                    window.quizStarted = true;
+                }
+
+                document.getElementById('viewQuestionsArea').classList.remove('hidden');
+                document.getElementById('viewQuestionsBtn').textContent = '🔒 കാലഹരണപ്പെട്ടു';
+                document.getElementById('viewQuestionsBtn').className = 'btn btn-expired';
+                document.getElementById('viewQuestionsBtn').disabled = true;
+                document.getElementById('quizStatusMessage').textContent =
+                    '⚠️ നിങ്ങൾ ക്വിസ് ആരംഭിച്ചു. ഇന്ന് വീണ്ടും പ്രവേശിക്കാൻ സാധിക്കുകയില്ല.';
+
+                document.getElementById('questionsArea').classList.remove('hidden');
+                document.getElementById('timerArea').classList.remove('hidden');
+
+                renderQuestions();
+
+                const durationSecs = window.currentSession.duration * 60;
+                window.timeLeft = durationSecs;
+                updateTimerDisplay();
+                clearInterval(window.timerInterval);
+                window.timerInterval = setInterval(() => {
+                    window.timeLeft--;
+                    updateTimerDisplay();
+                    if (window.timeLeft <= 0) {
+                        clearInterval(window.timerInterval);
+                        showToast('⏰ സമയം കഴിഞ്ഞു! ഓട്ടോ-സബ്മിറ്റ് ചെയ്യുന്നു...', 'error');
+                        submitParentQuiz(true);
+                    }
+                }, 1000);
+
+                showToast('✅ ക്വിസ് ആരംഭിച്ചു. ഭാഗ്യം!', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(window.timeLeft / 60);
+            const secs = window.timeLeft % 60;
+            document.getElementById('timerDisplay').textContent =
+                `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+            const progress = window.timeLeft / (window.currentSession ? window.currentSession.duration * 60 : 600);
+            const offset = CIRCUMFERENCE * (1 - progress);
+            document.getElementById('timerProgress').style.strokeDashoffset = offset;
+            if (window.timeLeft < 60) document.getElementById('timerRingContainer').classList.add('warning');
+            else document.getElementById('timerRingContainer').classList.remove('warning');
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            window.questions.forEach((q, idx) => {
+                const div = document.createElement('div');
+                div.className = 'question-card';
+                div.innerHTML = `
+                    <div class="question-title">${idx+1}. ${q.questionText}</div>
+                    <div class="options-grid" id="options-${q.id}">
+                        ${q.options.map((opt, oi) => `<button class="opt-btn" data-qid="${q.id}" data-optidx="${oi}">${String.fromCharCode(65+oi)}. ${opt}</button>`).join('')}
+                    </div>
+                `;
+                container.appendChild(div);
+                div.querySelectorAll('.opt-btn').forEach(btn => {
+                    btn.onclick = function() {
+                        if (window.isSubmitted) return;
+                        const parent = this.closest('.options-grid');
+                        parent.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+                        this.classList.add('selected');
+                        window.answers[this.dataset.qid] = parseInt(this.dataset.optidx);
+                    };
+                });
+            });
+
+            document.getElementById('submitQuizBtn').onclick = () => {
+                if (Object.keys(window.answers).length === 0) { showToast('കുറഞ്ഞത് ഒരു ഉത്തരം തിരഞ്ഞെടുക്കുക',
+                        'error'); return; }
+                if (confirm('തീർച്ചയായും സമർപ്പിക്കണോ? ഇത് പഴയപടിയാക്കാനാവില്ല.')) {
+                    submitParentQuiz(false);
+                }
+            };
+        }
+
+        async function submitParentQuiz(isTimeout = false) {
+            if (window.isSubmitted) return;
+            window.isSubmitted = true;
+            clearInterval(window.timerInterval);
+            document.getElementById('submitQuizBtn').disabled = true;
+
+            try {
+                let score = 0;
+                const entries = [];
+                for (const q of window.questions) {
+                    const sel = window.answers[q.id];
+                    if (sel !== undefined) {
+                        if (sel === q.correctAnswer) score++;
+                        entries.push({ attemptId: window.currentAttemptId, questionId: q.id, selectedOpt: sel });
+                    }
+                }
+                if (entries.length) await _supabase.from('Answer').insert(entries);
+                await _supabase
+                    .from('Attempt')
+                    .update({
+                        endTime: new Date().toISOString(),
+                        score: score,
+                        status: isTimeout ? 'TIMED_OUT' : 'COMPLETED'
+                    })
+                    .eq('id', window.currentAttemptId);
+
+                document.getElementById('questionsArea').classList.add('hidden');
+                document.getElementById('timerArea').classList.add('hidden');
+                document.getElementById('submittedArea').classList.remove('hidden');
+                showToast('✅ വിജയകരമായി സമർപ്പിച്ചു!', 'success');
+
+                setTimeout(() => renderParentDashboard(), 1000);
+            } catch (err) {
+                showToast('സമർപ്പിക്കുന്നതിൽ പിശക്: ' + err.message, 'error');
+                window.isSubmitted = false;
+                document.getElementById('submitQuizBtn').disabled = false;
+            }
+        }
+
+        // ================================================================
+        // ADMIN PANEL
+        // ================================================================
+        window.adminCurrentDay = 1;
+        window.questionsCache = [];
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.admin-tab[data-tab="${tab}"]`).classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            if (tab === 'sessions') loadSessions();
+            if (tab === 'questions') loadAdminQuestions(window.adminCurrentDay);
+            if (tab === 'rankings') loadAdminRankings(1);
+        }
+
+        async function loadAdminData() {
+            await loadSessions();
+            await loadAdminQuestions(1);
+            await loadAdminRankings(1);
+            await loadSessionSummary();
+        }
+
+        async function loadSessionSummary() {
+            try {
+                const { data: sessions } = await _supabase
+                    .from('QuizSession')
+                    .select('*')
+                    .order('day', { ascending: true });
+                if (!sessions || sessions.length === 0) {
+                    document.getElementById('todaySessionInfo').innerHTML = 'No sessions. Add one below.';
+                    return;
+                }
+                const now = new Date();
+                let active = sessions.find(s => now >= new Date(s.startTime) && now <= new Date(s.endTime));
+                if (!active) active = sessions.find(s => new Date(s.startTime) > now) || sessions[sessions.length - 1];
+                document.getElementById('todaySessionInfo').innerHTML =
+                    `Day ${active.day} | ${formatDate(active.startTime)} → ${formatDate(active.endTime)} | ${active.duration} min`;
+            } catch (err) {
+                document.getElementById('todaySessionInfo').innerHTML = 'Error loading.';
+            }
+        }
+
+        // ---- Sessions ----
+        document.getElementById('addDayBtn').addEventListener('click', async function() {
+            const day = parseInt(document.getElementById('newDay').value);
+            const startLocal = document.getElementById('newStart').value;
+            const endLocal = document.getElementById('newEnd').value;
+            const duration = parseInt(document.getElementById('newDuration').value);
+            if (!day || !startLocal || !endLocal || !duration) { showToast('Fill all fields', 'error'); return; }
+
+            const startUTC = localToUTC(startLocal);
+            const endUTC = localToUTC(endLocal);
+            if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+
+            try {
+                const { data: existing } = await _supabase
+                    .from('QuizSession')
+                    .select('day')
+                    .eq('day', day)
+                    .maybeSingle();
+                if (existing) { showToast('Day ' + day + ' already exists', 'error'); return; }
+                await _supabase.from('QuizSession').insert({
+                    day,
+                    startTime: startUTC,
+                    endTime: endUTC,
+                    duration
+                });
+                showToast('✅ Day ' + day + ' added', 'success');
+                document.getElementById('newDay').value = '';
+                document.getElementById('newStart').value = '';
+                document.getElementById('newEnd').value = '';
+                document.getElementById('newDuration').value = '15';
+                await loadSessions();
+                await loadSessionSummary();
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        });
+
+        window.deleteDay = async function(day) {
+            if (!confirm('Delete Day ' + day + ' and all its questions?')) return;
+            try {
+                await _supabase.from('QuizSession').delete().eq('day', day);
+                showToast('🗑️ Day ' + day + ' deleted', 'success');
+                await loadSessions();
+                await loadSessionSummary();
+                await loadAdminQuestions(window.adminCurrentDay);
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        };
+
+        document.getElementById('quickSetBtn').addEventListener('click', async function() {
+            const day = parseInt(document.getElementById('quickDay').value);
+            const startLocal = document.getElementById('quickStart').value;
+            const endLocal = document.getElementById('quickEnd').value;
+            const duration = parseInt(document.getElementById('quickDuration').value);
+            if (!day || !startLocal || !endLocal || !duration) { showToast('Fill all fields', 'error'); return; }
+
+            const startUTC = localToUTC(startLocal);
+            const endUTC = localToUTC(endLocal);
+            if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+
+            try {
+                await _supabase
+                    .from('QuizSession')
+                    .update({ startTime: startUTC, endTime: endUTC, duration, updatedAt: new Date() })
+                    .eq('day', day);
+                showToast('✅ Day ' + day + ' updated', 'success');
+                await loadSessions();
+                await loadSessionSummary();
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        });
+
+        async function loadSessions() {
+            const table = document.getElementById('adminSessionsTable');
+            table.innerHTML = '<div class="text-center text-muted">Loading...</div>';
+            try {
+                const { data: sessions } = await _supabase
+                    .from('QuizSession')
+                    .select('*')
+                    .order('day', { ascending: true });
+                if (!sessions || sessions.length === 0) {
+                    table.innerHTML = '<div class="text-center text-muted">No days. Add one above.</div>';
+                    document.getElementById('quickDay').innerHTML = '<option value="">No days</option>';
+                    document.getElementById('adminDayTabsContainer').innerHTML = '';
+                    document.getElementById('rankDayTabs').innerHTML = '';
+                    return;
+                }
+
+                let opts = '';
+                sessions.forEach(s => opts += `<option value="${s.day}">Day ${s.day}</option>`);
+                document.getElementById('quickDay').innerHTML = opts;
+                const first = sessions[0];
+                document.getElementById('quickDay').value = first.day;
+                document.getElementById('quickStart').value = utcToLocal(first.startTime);
+                document.getElementById('quickEnd').value = utcToLocal(first.endTime);
+                document.getElementById('quickDuration').value = first.duration || 15;
+
+                let html = `<table><thead><tr><th>Day</th><th>Start</th><th>End</th><th>Duration</th><th>Actions</th></tr></thead><tbody>`;
+                sessions.forEach(s => {
+                    const localStart = utcToLocal(s.startTime);
+                    const localEnd = utcToLocal(s.endTime);
+                    html += `<tr>
+                        <td><strong style="color:#e2e8f0;">Day ${s.day}</strong></td>
+                        <td><input type="datetime-local" class="edit-start" value="${localStart}" style="min-width:140px;" /></td>
+                        <td><input type="datetime-local" class="edit-end" value="${localEnd}" style="min-width:140px;" /></td>
+                        <td><input type="number" class="edit-duration" value="${s.duration}" style="width:70px;" /></td>
+                        <td>
+                            <button class="btn btn-primary btn-sm update-row-btn" data-day="${s.day}">💾 Update</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteDay(${s.day})">🗑️</button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                table.innerHTML = html;
+
+                table.querySelectorAll('.update-row-btn').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const row = this.closest('tr');
+                        const day = parseInt(this.dataset.day);
+                        const startLocal = row.querySelector('.edit-start').value;
+                        const endLocal = row.querySelector('.edit-end').value;
+                        const dur = parseInt(row.querySelector('.edit-duration').value);
+                        if (!startLocal || !endLocal || !dur) { showToast('Fill all fields', 'error'); return; }
+
+                        const startUTC = localToUTC(startLocal);
+                        const endUTC = localToUTC(endLocal);
+                        if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+
+                        this.disabled = true;
+                        this.innerHTML = '⏳';
+                        try {
+                            await _supabase
+                                .from('QuizSession')
+                                .update({ startTime: startUTC, endTime: endUTC, duration: dur, updatedAt: new Date() })
+                                .eq('day', day);
+                            showToast('✅ Day ' + day + ' updated', 'success');
+                            await loadSessions();
+                            await loadSessionSummary();
+                        } catch (err) { showToast('Error: ' + err.message, 'error'); } finally { this.disabled = false;
+                            this.innerHTML = '💾 Update'; }
+                    });
+                });
+
+                const days = sessions.map(s => s.day);
+                const aContainer = document.getElementById('adminDayTabsContainer');
+                if (aContainer) {
+                    aContainer.innerHTML = days.map(d =>
+                        `<button class="day-tab ${d === window.adminCurrentDay ? 'active' : ''}" data-day="${d}" onclick="loadAdminQuestions(${d})">Day ${d}</button>`
+                    ).join('');
+                }
+
+                const rContainer = document.getElementById('rankDayTabs');
+                if (rContainer) {
+                    rContainer.innerHTML = days.map(d =>
+                        `<button class="day-tab ${d === 1 ? 'active' : ''}" data-day="${d}" onclick="loadAdminRankings(${d})">Day ${d}</button>`
+                    ).join('');
+                }
+
+                window.allSessions = sessions;
+
+            } catch (err) {
+                table.innerHTML = '<div class="text-center text-muted">Error loading</div>';
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ---- Questions ----
+        document.getElementById('showAddQuestionBtn').addEventListener('click', function() {
+            document.getElementById('questionForm').classList.remove('hidden');
+            document.getElementById('formTitle').textContent = 'Add Question';
+            document.getElementById('editQuestionId').value = '';
+            document.getElementById('qDay').value = window.adminCurrentDay;
+            document.getElementById('qText').value = '';
+            document.getElementById('qOpt0').value = document.getElementById('qOpt1').value = document.getElementById(
+                'qOpt2').value = document.getElementById('qOpt3').value = '';
+            document.getElementById('qCorrect').value = '0';
+        });
+
+        document.getElementById('cancelQuestionBtn').addEventListener('click', function() {
+            document.getElementById('questionForm').classList.add('hidden');
+        });
+
+        document.getElementById('saveQuestionBtn').addEventListener('click', async function() {
+            const day = parseInt(document.getElementById('qDay').value);
+            const text = document.getElementById('qText').value.trim();
+            const opts = [
+                document.getElementById('qOpt0').value.trim(),
+                document.getElementById('qOpt1').value.trim(),
+                document.getElementById('qOpt2').value.trim(),
+                document.getElementById('qOpt3').value.trim()
+            ];
+            const correct = parseInt(document.getElementById('qCorrect').value);
+            const editId = document.getElementById('editQuestionId').value;
+
+            if (!day || !text || opts.some(o => !o)) { showToast('Fill all fields', 'error'); return; }
+
+            const { data: dayExists } = await _supabase
+                .from('QuizSession')
+                .select('day')
+                .eq('day', day)
+                .maybeSingle();
+            if (!dayExists) { showToast('Day ' + day + ' does not exist.', 'error'); return; }
+
+            this.disabled = true;
+            this.innerHTML = '⏳';
+            try {
+                if (editId) {
+                    await _supabase
+                        .from('Question')
+                        .update({ sessionDay: day, questionText: text, options: opts, correctAnswer: correct })
+                        .eq('id', editId);
+                } else {
+                    await _supabase
+                        .from('Question')
+                        .insert({ sessionDay: day, questionText: text, options: opts, correctAnswer: correct });
+                }
+                showToast('✅ Question saved!', 'success');
+                document.getElementById('questionForm').classList.add('hidden');
+                await loadAdminQuestions(window.adminCurrentDay);
+            } catch (err) { showToast('Error: ' + err.message, 'error'); } finally { this.disabled = false;
+                this.innerHTML = '💾 Save'; }
+        });
+
+        window.editQuestion = function(id) {
+            const q = window.questionsCache.find(x => x.id === id);
+            if (!q) return;
+            document.getElementById('editQuestionId').value = id;
+            document.getElementById('formTitle').textContent = 'Edit Question';
+            document.getElementById('qDay').value = q.sessionDay;
+            document.getElementById('qText').value = q.questionText;
+            document.getElementById('qOpt0').value = q.options[0] || '';
+            document.getElementById('qOpt1').value = q.options[1] || '';
+            document.getElementById('qOpt2').value = q.options[2] || '';
+            document.getElementById('qOpt3').value = q.options[3] || '';
+            document.getElementById('qCorrect').value = q.correctAnswer;
+            document.getElementById('questionForm').classList.remove('hidden');
+        };
+
+        window.deleteQuestion = async function(id) {
+            if (!confirm('Delete this question?')) return;
+            try {
+                await _supabase.from('Question').delete().eq('id', id);
+                showToast('Deleted', 'success');
+                await loadAdminQuestions(window.adminCurrentDay);
+            } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        };
+
+        async function loadAdminQuestions(day) {
+            window.adminCurrentDay = day;
+            const table = document.getElementById('adminQuestionsTable');
+            table.innerHTML = '<div class="text-center text-muted">Loading...</div>';
+            try {
+                const { data: qs } = await _supabase
+                    .from('Question')
+                    .select('*')
+                    .eq('sessionDay', day)
+                    .order('id', { ascending: true });
+                window.questionsCache = qs || [];
+                if (window.questionsCache.length === 0) {
+                    table.innerHTML = '<div class="text-center text-muted">No questions for this day.</div>';
+                    return;
+                }
+                let html = `<table><thead><tr><th>#</th><th>Question</th><th>Options</th><th>Correct</th><th>Actions</th></tr></thead><tbody>`;
+                window.questionsCache.forEach((q, i) => {
+                    html += `<tr>
+                        <td>${i+1}</td>
+                        <td>${q.questionText}</td>
+                        <td>${q.options.map((o,j)=>String.fromCharCode(65+j)+'. '+o).join(' | ')}</td>
+                        <td><span style="color:#10b981;font-weight:700;">${q.options[q.correctAnswer]}</span></td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="editQuestion('${q.id}')">✏️</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${q.id}')">🗑️</button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                table.innerHTML = html;
+
+                document.querySelectorAll('#adminDayTabsContainer .day-tab').forEach(tab => {
+                    tab.classList.toggle('active', parseInt(tab.dataset.day) === day);
+                });
+
+            } catch (err) {
+                table.innerHTML = '<div class="text-center text-muted">Error loading</div>';
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ---- ADMIN RANKINGS ----
+        async function loadAdminRankings(day) {
+            const container = document.getElementById('adminRankListContainer');
+            container.innerHTML = '<div class="text-center text-muted">Loading...</div>';
+            document.getElementById('overallRankContainer').classList.add('hidden');
+
+            try {
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('sessionDay', day)
+                    .eq('status', 'COMPLETED');
+
+                if (!attempts || attempts.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">No submissions for this day.</div>';
+                    return;
+                }
+
+                const ranked = attempts.map(a => ({
+                    ...a,
+                    timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+                }));
+                ranked.sort((a, b) => {
+                    if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
+                    return (a.timeTaken || 9999) - (b.timeTaken || 9999);
+                });
+
+                let html = `<table><thead><tr><th>Rank</th><th>Parent</th><th>Score</th><th>Time Taken</th><th>Submitted</th></tr></thead><tbody>`;
+                ranked.forEach((r, idx) => {
+                    const rank = idx + 1;
+                    let medal = '';
+                    if (rank === 1) medal = '🥇 ';
+                    else if (rank === 2) medal = '🥈 ';
+                    else if (rank === 3) medal = '🥉 ';
+                    html += `<tr>
+                        <td><strong>${medal}${rank}</strong></td>
+                        <td>${r.Student?.name || 'Unknown'}</td>
+                        <td style="color:#fbbf24;font-weight:700;">${r.score ?? 0}</td>
+                        <td>${r.timeTaken || 0} sec</td>
+                        <td style="font-size:0.7rem;color:var(--text-muted);">${formatDate(r.endTime)}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
+                document.querySelectorAll('#rankDayTabs .day-tab').forEach(tab => {
+                    tab.classList.toggle('active', parseInt(tab.dataset.day) === day);
+                });
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-center text-muted">Error loading</div>';
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ---- OVERALL RANK ----
+        document.getElementById('overallRankBtn').addEventListener('click', function() {
+            document.getElementById('overallRankModal').classList.remove('hidden');
+            loadOverallRank();
+        });
+
+        document.getElementById('closeOverallRankBtn').addEventListener('click', function() {
+            document.getElementById('overallRankModal').classList.add('hidden');
+        });
+        document.getElementById('overallRankModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.add('hidden');
+        });
+
+        async function loadOverallRank() {
+            const container = document.getElementById('overallRankModalContent');
+            container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>';
+
+            try {
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('status', 'COMPLETED');
+
+                if (!attempts || attempts.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">No submissions yet.</div>';
+                    return;
+                }
+
+                const studentMap = {};
+                attempts.forEach(a => {
+                    const id = a.studentId;
+                    if (!studentMap[id]) {
+                        studentMap[id] = {
+                            studentId: id,
+                            name: a.Student?.name || 'Unknown',
+                            totalScore: 0,
+                            totalTime: 0,
+                            count: 0
+                        };
+                    }
+                    studentMap[id].totalScore += (a.score || 0);
+                    const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
+                    studentMap[id].totalTime += timeTaken;
+                    studentMap[id].count += 1;
+                });
+
+                const ranked = Object.values(studentMap).map(s => ({
+                    ...s,
+                    avgTime: Math.round(s.totalTime / s.count)
+                }));
+
+                ranked.sort((a, b) => {
+                    if (a.totalScore !== b.totalScore) return b.totalScore - a.totalScore;
+                    return a.avgTime - b.avgTime;
+                });
+
+                let html = `<table><thead><tr><th>Rank</th><th>Parent</th><th>Total Score</th><th>Avg Time</th><th>Attempts</th></tr></thead><tbody>`;
+                ranked.forEach((r, idx) => {
+                    const rank = idx + 1;
+                    let medal = '';
+                    if (rank === 1) medal = '🥇 ';
+                    else if (rank === 2) medal = '🥈 ';
+                    else if (rank === 3) medal = '🥉 ';
+                    html += `<tr>
+                        <td><strong>${medal}${rank}</strong></td>
+                        <td>${r.name}</td>
+                        <td style="color:#fbbf24;font-weight:700;">${r.totalScore}</td>
+                        <td>${r.avgTime} sec</td>
+                        <td>${r.count}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-danger text-center">Error loading overall rank.</div>';
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ================================================================
+        // HELP
+        // ================================================================
+        function openHelp() {
+            alert(
+                '📘 രക്ഷിതാക്കൾക്കുള്ള നിർദ്ദേശങ്ങൾ\n\n' +
+                '1. രജിസ്റ്റർ ചെയ്ത് നിങ്ങളുടെ Parent ID നേടുക.\n' +
+                '2. ID ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക.\n' +
+                '3. ID മറന്നാൽ "പാരന്റ് ID മറന്നോ?" എന്നതിൽ ക്ലിക്ക് ചെയ്യുക.\n' +
+                '4. ക്വിസ് സമയത്ത് "ചോദ്യങ്ങൾ കാണുക" ക്ലിക്ക് ചെയ്ത് ആരംഭിക്കുക.\n' +
+                '5. ഓരോ ചോദ്യത്തിനും ശരിയായ ഉത്തരം തിരഞ്ഞെടുക്കുക.\n' +
+                '6. സമയപരിധിക്കുള്ളിൽ എല്ലാ ഉത്തരങ്ങളും സമർപ്പിക്കുക.\n' +
+                '7. സമർപ്പിച്ച ശേഷം ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക.\n' +
+                '8. "Results" വഴി മുൻ ദിവസങ്ങളിലെ സ്കോറുകൾ കാണാം.\n' +
+                '9. ഓരോ ദിവസവും ഒരു ക്വിസ് മാത്രമേ പങ്കെടുക്കാൻ സാധിക്കൂ.'
+            );
+        }
+
+        // ================================================================
+        // RESTORE SAVED ID
+        // ================================================================
+        const savedId = localStorage.getItem('lastId');
+        if (savedId) document.getElementById('loginIdInput').value = savedId;
+
+        // ================================================================
+        // STICKY HEADER SCROLL EFFECT
+        // ================================================================
+        document.addEventListener('scroll', function() {
+            const headers = document.querySelectorAll('.dashboard-header');
+            headers.forEach(header => {
+                if (window.scrollY > 10) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
+            });
+        });
+
+        console.log('🚀 NOORUSSALAM MADRASA — Full Backend Connected');
+        console.log('✅ Loading screen with wishing message');
+        console.log('✅ Sticky header for both parent and admin dashboards');
+        console.log('✅ Admin panel uses tables for Sessions, Questions, Rankings');
+        console.log('✅ Previous results hidden during active quiz');
+        console.log('✅ History button hidden during active quiz');
+    </script>
+</body>
+</html>
