@@ -44,11 +44,17 @@
         body {
             background: radial-gradient(ellipse at 30% 20%, #0f1a2e, #050a14);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            align-items: center;
             padding: 16px;
             color: #fff;
+            transition: align-items 0.3s ease;
+        }
+
+        body.dashboard-mode {
+            align-items: flex-start;
             padding-top: 16px;
         }
 
@@ -57,6 +63,26 @@
             width: 100%;
             margin: 0 auto;
             padding: 0 12px 20px;
+            transition: min-height 0.3s ease;
+        }
+
+        body.login-mode .container {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body.login-mode #loginSection {
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        body.dashboard-mode .container {
+            min-height: auto;
+            display: block;
         }
 
         /* ===== LOADING OVERLAY ===== */
@@ -266,6 +292,7 @@
             max-width: 440px;
             margin: 0 auto;
             animation: fadeInUp 0.8s ease;
+            padding: 0 4px;
         }
 
         @keyframes fadeInUp {
@@ -1477,10 +1504,37 @@
             }
         }
 
+        @media (max-width: 550px) {
+            body.login-mode .container {
+                min-height: 100vh;
+                min-height: 100dvh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 12px;
+            }
+
+            body.login-mode #loginSection {
+                width: 100%;
+                max-width: 440px;
+                margin: 0 auto;
+                padding: 0;
+            }
+
+            body.login-mode .login-panel {
+                padding: 1.6rem 1.2rem 1.4rem;
+                border-radius: 2rem;
+            }
+
+            body.dashboard-mode {
+                padding-top: 8px;
+                align-items: flex-start;
+            }
+        }
+
         @media (max-width: 480px) {
             body {
                 padding: 12px;
-                align-items: flex-start;
             }
             .container {
                 padding: 0 4px 10px;
@@ -1648,12 +1702,15 @@
             .admin-section-box {
                 padding: 10px 12px;
             }
+
+            body.login-mode .login-panel {
+                padding: 1.2rem 0.8rem 1rem;
+            }
         }
 
         @media (max-width: 380px) {
             body {
                 padding: 8px;
-                align-items: flex-start;
             }
             .login-panel {
                 padding: 1rem 0.7rem 1rem;
@@ -1728,6 +1785,10 @@
                 height: 40px;
                 font-size: 18px;
                 border-radius: 14px;
+            }
+
+            body.login-mode .login-panel {
+                padding: 0.8rem 0.5rem 0.8rem;
             }
         }
 
@@ -1829,18 +1890,19 @@
                     <button class="btn btn-outline btn-sm" id="closeRegisterModalBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">വിവരങ്ങൾ നൽകുക. പുതിയ Parent ID ലഭിക്കും.</p>
+                <p class="text-muted" style="font-size:0.75rem;color:rgba(255,255,255,0.3);">* ഇംഗ്ലീഷ് വലിയ അക്ഷരങ്ങളും (A-Z) അക്കങ്ങളും (0-9) മാത്രം</p>
                 <form id="registerForm" style="margin-top:16px;">
                     <div style="margin-bottom:12px;">
                         <label class="text-muted" style="font-size:0.8rem;">രക്ഷിതാവിന്റെ പേര് *</label>
-                        <input type="text" id="regParentName" placeholder="മുഴുവൻ പേര്" required />
+                        <input type="text" id="regParentName" placeholder="മുഴുവൻ പേര് (ENGLISH ONLY)" required oninput="filterEnglishUppercase(this)" />
                     </div>
                     <div style="margin-bottom:12px;">
                         <label class="text-muted" style="font-size:0.8rem;">കുട്ടിയുടെ പേര് *</label>
-                        <input type="text" id="regChildName" placeholder="കുട്ടിയുടെ മുഴുവൻ പേര്" required />
+                        <input type="text" id="regChildName" placeholder="കുട്ടിയുടെ മുഴുവൻ പേര് (ENGLISH ONLY)" required oninput="filterEnglishUppercase(this)" />
                     </div>
                     <div style="margin-bottom:16px;">
                         <label class="text-muted" style="font-size:0.8rem;">കുട്ടിയുടെ ക്ലാസ് *</label>
-                        <input type="text" id="regChildClass" placeholder="ഉദാ: 5A" required />
+                        <input type="text" id="regChildClass" placeholder="ഉദാ: 5A" required oninput="filterEnglishUppercaseNoSpace(this)" />
                     </div>
                     <button type="submit" class="btn btn-success btn-block" id="registerBtn">
                         <i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക
@@ -1881,7 +1943,7 @@
                     </div>
                     <div style="margin-bottom:16px;">
                         <label class="text-muted">രക്ഷിതാവിന്റെ പേര് (ആദ്യ 3 അക്ഷരങ്ങൾ)</label>
-                        <input type="text" id="findName" placeholder="ഉദാ: ABD" maxlength="3" oninput="this.value = this.value.toUpperCase();" required />
+                        <input type="text" id="findName" placeholder="ഉദാ: ABD" maxlength="3" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g,'');" required />
                     </div>
                     <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> തിരയുക</button>
                 </form>
@@ -2174,6 +2236,21 @@
     ================================================================ -->
     <script>
         // ================================================================
+        // REGISTRATION INPUT FILTERS — English Uppercase Only
+        // ================================================================
+        function filterEnglishUppercase(input) {
+            let val = input.value.toUpperCase();
+            val = val.replace(/[^A-Z0-9 ]/g, '');
+            input.value = val;
+        }
+
+        function filterEnglishUppercaseNoSpace(input) {
+            let val = input.value.toUpperCase();
+            val = val.replace(/[^A-Z0-9]/g, '');
+            input.value = val;
+        }
+
+        // ================================================================
         // SECURE ADMIN CONFIG
         // ================================================================
         const ADMIN_CONFIG = {
@@ -2306,6 +2383,8 @@
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('adminDashboard').classList.remove('hidden');
                     document.getElementById('parentDashboard').classList.add('hidden');
+                    document.body.classList.remove('login-mode');
+                    document.body.classList.add('dashboard-mode');
                     loadAdminData();
                     showToast('👋 Admin Panel തുറന്നു', 'success');
                     return;
@@ -2340,6 +2419,8 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('parentDashboard').classList.remove('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
+                document.body.classList.remove('login-mode');
+                document.body.classList.add('dashboard-mode');
 
                 document.getElementById('userNameDisplay').textContent = user.name;
                 document.getElementById('avatarText').textContent = user.name.charAt(0).toUpperCase();
@@ -2370,6 +2451,8 @@
             document.getElementById('loginSection').style.display = 'block';
             document.getElementById('parentDashboard').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
+            document.body.classList.remove('dashboard-mode');
+            document.body.classList.add('login-mode');
             document.getElementById('loginIdInput').value = '';
             showToast('പുറത്തുകടന്നു', 'info');
         }
@@ -2400,6 +2483,17 @@
             const newIdDiv = document.getElementById('newIdDisplay');
             msg.innerHTML = '';
             newIdDiv.classList.add('hidden');
+
+            const namePattern = /^[A-Z0-9 ]+$/;
+            const classPattern = /^[A-Z0-9]+$/;
+            if (!namePattern.test(parentName) || !namePattern.test(childName)) {
+                msg.innerHTML = '<div style="color:#fca5a5;">❌ ഇംഗ്ലീഷ് വലിയ അക്ഷരങ്ങളും (A-Z) അക്കങ്ങളും (0-9) മാത്രം അനുവദനീയം.</div>';
+                return;
+            }
+            if (!classPattern.test(childClass)) {
+                msg.innerHTML = '<div style="color:#fca5a5;">❌ ക്ലാസിൽ ഇംഗ്ലീഷ് വലിയ അക്ഷരങ്ങളും (A-Z) അക്കങ്ങളും (0-9) മാത്രം.</div>';
+                return;
+            }
 
             if (!parentName || !childName || !childClass) {
                 msg.innerHTML = '<div style="color:#fca5a5;">എല്ലാ വിവരങ്ങളും നൽകുക.</div>';
@@ -2506,7 +2600,7 @@
         });
 
         // ================================================================
-        // PARENT DASHBOARD
+        // PARENT DASHBOARD (FIXED LOGIC)
         // ================================================================
         window.questions = [];
         window.answers = {};
@@ -2529,10 +2623,65 @@
             if (!window.currentUser || !window.currentSession) return;
 
             const now = new Date();
+
+            // ================================================================
+            // FIX: CHECK FOR PREVIOUS SESSION RESULTS FIRST
+            // ================================================================
+            let prevSession = null;
+            if (window.allSessions && window.allSessions.length > 0) {
+                for (let i = window.allSessions.length - 1; i >= 0; i--) {
+                    if (new Date(window.allSessions[i].endTime) < now) {
+                        prevSession = window.allSessions[i];
+                        break;
+                    }
+                }
+            }
+
+            if (prevSession) {
+                const nextSession = getNextSession(prevSession.day);
+                let expiryTime = null;
+                const endPrev = new Date(prevSession.endTime);
+                const rankRevealTime = new Date(endPrev.getTime() + 3 * 60000);
+                if (nextSession) {
+                    expiryTime = new Date(new Date(nextSession.startTime).getTime() - 30 * 60000);
+                } else {
+                    expiryTime = new Date(rankRevealTime.getTime() + 12 * 3600000);
+                }
+
+                // If we are within the result viewing window of the previous session
+                if (now >= rankRevealTime && now < expiryTime) {
+                    // Override currentSession to previous for this render cycle
+                    window.currentSession = prevSession;
+                    document.getElementById('quizDayDisplay').textContent = 'ദിവസം ' + prevSession.day;
+
+                    // Hide all irrelevant sections
+                    ['waitingMsg', 'endedMsg', 'resultsExpiredMsg', 'preStartMsg', 'viewQuestionsArea', 'questionsArea', 'timerArea', 'submittedArea']
+                    .forEach(id => document.getElementById(id).classList.add('hidden'));
+
+                    // Show Ranking and Results
+                    document.getElementById('rankingArea').classList.remove('hidden');
+                    document.getElementById('resultsExpiryCountdown').classList.remove('hidden');
+                    startCountdownTimer(expiryTime, 'expiry');
+                    await loadParentRankingData(); // Uses window.currentSession.day
+
+                    // Show the 'ended' message with results info
+                    document.getElementById('endedMsg').classList.remove('hidden');
+                    document.getElementById('endedMsg').querySelector('h2').textContent = '🏁 മത്സരം അവസാനിച്ചു';
+                    document.getElementById('endedMsgText').textContent = `📊 ഫലങ്ങൾ ലഭ്യമാണ് (${formatDate(expiryTime)} വരെ)`;
+
+                    // Show history button
+                    document.getElementById('historyBtnWrap').classList.remove('hidden');
+                    return; // IMPORTANT: Exit here so we don't show the 'waiting' state
+                }
+            }
+            // ================================================================
+            // END OF FIX
+            // ================================================================
+
+            // If we reach here, proceed with the NORMAL currentSession logic
             const start = new Date(window.currentSession.startTime);
             const end = new Date(window.currentSession.endTime);
             const rankRevealTime = new Date(end.getTime() + 3 * 60000);
-
             const nextSession = getNextSession(window.currentSession.day);
             let expiryTime = null;
             if (nextSession) {
@@ -2540,7 +2689,6 @@
             } else {
                 expiryTime = new Date(rankRevealTime.getTime() + 12 * 3600000);
             }
-
             const visibilityStart = new Date(start.getTime() - 30 * 60000);
 
             // Hide all status areas first
@@ -2550,7 +2698,6 @@
             document.getElementById('publicationCountdown').classList.add('hidden');
             document.getElementById('resultsExpiryCountdown').classList.add('hidden');
 
-            // Hide history button by default — will be shown only when results are visible
             const historyWrap = document.getElementById('historyBtnWrap');
             historyWrap.classList.add('hidden');
 
@@ -2593,9 +2740,8 @@
                 return;
             }
 
-            // ===== ACTIVE QUIZ — hide results and history =====
+            // ===== ACTIVE QUIZ =====
             if (now >= start && now <= end) {
-                // History button is hidden during active quiz
                 historyWrap.classList.add('hidden');
 
                 const { data: attempt } = await _supabase
@@ -2670,7 +2816,7 @@
                 return;
             }
 
-            // ===== QUIZ ENDED — show results and history =====
+            // ===== QUIZ ENDED =====
             if (now > end) {
                 if (now < rankRevealTime) {
                     document.getElementById('endedMsg').classList.remove('hidden');
@@ -2680,7 +2826,6 @@
                         `⏳ ഫലം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${formatCountdown(Math.floor((rankRevealTime - now)/1000))}</strong> ശേഷിക്കുന്നു.`;
                     startCountdownTimer(rankRevealTime, 'rankReveal');
                     document.getElementById('rankingArea').classList.add('hidden');
-                    // History hidden until results are shown
                     historyWrap.classList.add('hidden');
                     return;
                 }
@@ -2695,7 +2840,6 @@
                         '🏁 മത്സരം അവസാനിച്ചു';
                     document.getElementById('endedMsgText').textContent =
                         `📊 ഫലങ്ങൾ ലഭ്യമാണ് (${formatDate(expiryTime)} വരെ)`;
-                    // Show history button when results are visible
                     historyWrap.classList.remove('hidden');
                     return;
                 }
@@ -2703,7 +2847,6 @@
                 if (now >= expiryTime) {
                     document.getElementById('resultsExpiredMsg').classList.remove('hidden');
                     document.getElementById('rankingArea').classList.add('hidden');
-                    // Hide history when results are expired
                     historyWrap.classList.add('hidden');
                     return;
                 }
@@ -3532,10 +3675,13 @@
         }
 
         // ================================================================
-        // RESTORE SAVED ID
+        // RESTORE SAVED ID & SET INITIAL MODE
         // ================================================================
         const savedId = localStorage.getItem('lastId');
         if (savedId) document.getElementById('loginIdInput').value = savedId;
+
+        document.body.classList.add('login-mode');
+        document.body.classList.remove('dashboard-mode');
 
         // ================================================================
         // STICKY HEADER SCROLL EFFECT
@@ -3552,11 +3698,9 @@
         });
 
         console.log('🚀 NOORUSSALAM MADRASA — Full Backend Connected');
-        console.log('✅ Loading screen with wishing message');
-        console.log('✅ Sticky header for both parent and admin dashboards');
-        console.log('✅ Admin panel uses tables for Sessions, Questions, Rankings');
-        console.log('✅ Previous results hidden during active quiz');
-        console.log('✅ History button hidden during active quiz');
+        console.log('✅ FIX APPLIED: Previous session results now shown until 30 mins before next session.');
+        console.log('✅ Login page centered on mobile.');
+        console.log('✅ Registration: English uppercase letters only (A-Z, 0-9).');
     </script>
 </body>
 </html>
