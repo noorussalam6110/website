@@ -37,7 +37,6 @@
         body {
             height: 100%;
             margin: 0;
-            overflow: visible;
             font-family: 'Anek Malayalam', 'Inter', sans-serif;
             scroll-behavior: smooth;
         }
@@ -45,17 +44,11 @@
         body {
             background: radial-gradient(ellipse at 30% 20%, #0f1a2e, #050a14);
             min-height: 100vh;
-            min-height: 100dvh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             padding: 16px;
             color: #fff;
-            transition: align-items 0.3s ease;
-        }
-
-        body.dashboard-mode {
-            align-items: flex-start;
             padding-top: 16px;
         }
 
@@ -64,27 +57,6 @@
             width: 100%;
             margin: 0 auto;
             padding: 0 12px 20px;
-            overflow: visible;
-            transition: min-height 0.3s ease;
-        }
-
-        body.login-mode .container {
-            min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        body.login-mode #loginSection {
-            width: 100%;
-            max-width: 440px;
-            margin: 0 auto;
-        }
-
-        body.dashboard-mode .container {
-            min-height: auto;
-            display: block;
         }
 
         /* ===== LOADING OVERLAY ===== */
@@ -294,7 +266,6 @@
             max-width: 440px;
             margin: 0 auto;
             animation: fadeInUp 0.8s ease;
-            padding: 0 4px;
         }
 
         @keyframes fadeInUp {
@@ -829,12 +800,10 @@
             width: 100%;
         }
 
-        /* ===== STICKY DASHBOARD HEADER ===== */
+        /* ================================================================
+           STICKY DASHBOARD HEADER
+           ================================================================ */
         .dashboard-header {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 0;
-            z-index: 999;
             background: rgba(10, 20, 40, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -847,9 +816,11 @@
             justify-content: space-between;
             align-items: center;
             gap: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
-            will-change: transform;
         }
 
         .dashboard-header.scrolled {
@@ -857,11 +828,6 @@
             border-radius: 1.2rem;
             padding: 12px 20px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
-        }
-
-        /* ===== HIDE RESULTS EXPIRY TIMER COMPLETELY ===== */
-        #resultsExpiryCountdown {
-            display: none !important;
         }
 
         .avatar-neon {
@@ -892,6 +858,7 @@
             border-radius: 1.5rem;
             padding: 18px 16px;
             transition: 0.2s;
+            text-align: center;
         }
         .stat-card:hover {
             background: rgba(255, 255, 255, 0.06);
@@ -911,6 +878,85 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+        }
+
+        /* ---- Overall Rank Card (Attractive) ---- */
+        .stat-card.overall-rank-card {
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.03));
+            border: 1.5px solid rgba(251, 191, 36, 0.25);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        .stat-card.overall-rank-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.08), transparent 70%);
+            pointer-events: none;
+            animation: rotateGlow 8s linear infinite;
+        }
+        @keyframes rotateGlow {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .stat-card.overall-rank-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.15);
+        }
+        .stat-card.overall-rank-card .stat-value {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #fff 10%, var(--gold) 90%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card.overall-rank-card .rank-icon {
+            font-size: 2rem;
+            display: inline-block;
+            animation: bounceTrophy 2s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes bounceTrophy {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-5px) scale(1.1);
+            }
+        }
+        .stat-card.overall-rank-card .rank-sub {
+            font-size: 0.7rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card.overall-rank-card .rank-detail {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 1;
+            margin-top: 4px;
+        }
+        .stat-card.overall-rank-card .rank-detail span {
+            color: var(--gold);
+            font-weight: 600;
         }
 
         /* ===== TIMER ===== */
@@ -1039,7 +1085,55 @@
             cursor: default;
         }
 
-        /* ===== ADMIN PANEL ===== */
+        /* ===== RANKING ===== */
+        .rank-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 14px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            gap: 14px;
+        }
+        .rank-item .rank-num {
+            font-weight: 800;
+            font-size: 18px;
+            min-width: 36px;
+            text-align: center;
+            color: #94a3b8;
+        }
+        .rank-item .rank-num.gold {
+            color: var(--gold);
+        }
+        .rank-item .rank-num.silver {
+            color: #94a3b8;
+        }
+        .rank-item .rank-num.bronze {
+            color: #d97706;
+        }
+        .rank-item .rank-name {
+            flex: 1;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        .rank-item .rank-score {
+            font-weight: 700;
+            color: var(--gold);
+            margin-right: 8px;
+        }
+        .rank-item .rank-time {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 12px;
+            border-radius: 30px;
+        }
+
+        /* ================================================================
+           ADMIN PANEL — TABLES & IMPROVED ALIGNMENT
+           ================================================================ */
+
         .admin-tabs {
             display: flex;
             flex-wrap: wrap;
@@ -1073,6 +1167,7 @@
             color: #fff;
         }
 
+        /* ---- Admin Tables ---- */
         .admin-table-wrap {
             overflow-x: auto;
             margin: 12px 0;
@@ -1112,6 +1207,7 @@
             background: rgba(255, 255, 255, 0.03);
         }
 
+        /* ---- Admin Form Rows ---- */
         .admin-form-row {
             display: flex;
             flex-wrap: wrap;
@@ -1364,240 +1460,6 @@
             color: #93c5fd;
         }
 
-        /* ===== RANK CARD & ANSWER DETAILS ===== */
-        .rank-card {
-            background: linear-gradient(145deg, rgba(251, 191, 36, 0.10), rgba(251, 191, 36, 0.02));
-            border-radius: 28px;
-            padding: 28px 20px 24px;
-            text-align: center;
-            margin: 8px auto;
-            max-width: 460px;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .rank-card::before {
-            content: '';
-            position: absolute;
-            top: -60%;
-            left: -60%;
-            width: 220%;
-            height: 220%;
-            background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.04), transparent 70%);
-            pointer-events: none;
-        }
-
-        .rank-card.top-1 {
-            border-color: #fbbf24;
-            box-shadow: 0 8px 48px rgba(251, 191, 36, 0.15), inset 0 1px 0 rgba(251, 191, 36, 0.08);
-        }
-        .rank-card.top-2 {
-            border-color: #c0c0c0;
-            box-shadow: 0 8px 40px rgba(192, 192, 192, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
-        .rank-card.top-3 {
-            border-color: #cd7f32;
-            box-shadow: 0 8px 40px rgba(205, 127, 50, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
-
-        .rank-card .rank-label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            font-weight: 500;
-            text-transform: uppercase;
-            position: relative;
-            z-index: 1;
-        }
-
-        .rank-card .rank-number {
-            font-size: 4rem;
-            font-weight: 900;
-            line-height: 1.1;
-            margin: 2px 0 4px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .rank-card .rank-number .medal {
-            font-size: 2.6rem;
-            margin-right: 6px;
-            display: inline-block;
-        }
-
-        .rank-card .rank-number .num {
-            background: linear-gradient(135deg, #fff, #cbd5e1);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .rank-card.top-1 .rank-number .num {
-            background: linear-gradient(135deg, #fbbf24, #f59e0b);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .rank-card .rank-name {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-            margin-bottom: 16px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .rank-card .rank-stats {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            padding-top: 16px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .rank-card .rank-stats .stat-item {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 10px 24px;
-            min-width: 100px;
-            text-align: center;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .rank-card .rank-stats .stat-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(251, 191, 36, 0.25);
-            transform: translateY(-2px);
-        }
-
-        .rank-card .rank-stats .stat-item .stat-label {
-            color: var(--text-muted);
-            font-size: 0.6rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-        }
-
-        .rank-card .rank-stats .stat-item .stat-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.3;
-        }
-
-        .rank-card .rank-stats .stat-item .stat-value.gold {
-            color: var(--gold);
-        }
-
-        .rank-card .rank-celebration {
-            margin-top: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--gold);
-            position: relative;
-            z-index: 1;
-        }
-
-        .rank-card .rank-glow {
-            position: absolute;
-            top: -30%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80%;
-            height: 80%;
-            background: radial-gradient(ellipse, rgba(251, 191, 36, 0.06), transparent 70%);
-            pointer-events: none;
-            border-radius: 50%;
-        }
-
-        .rank-card .rank-detail-btn {
-            margin-top: 14px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .parent-rank-hint {
-            text-align: center;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            margin-top: 12px;
-            opacity: 0.5;
-            letter-spacing: 0.5px;
-        }
-        .parent-rank-hint i {
-            color: var(--gold);
-            margin: 0 4px;
-        }
-
-        /* ===== ANSWER DETAIL MODAL — SMALL FONT ===== */
-        #answerDetailsContainer {
-            font-size: 0.75rem;
-        }
-        #answerDetailsContainer .answer-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-            flex-wrap: wrap;
-        }
-        #answerDetailsContainer .answer-item .qnum {
-            font-weight: 600;
-            color: var(--text-muted);
-            min-width: 26px;
-            font-size: 0.65rem;
-        }
-        #answerDetailsContainer .answer-item .qtext {
-            flex: 1;
-            color: #e2e8f0;
-            font-size: 0.75rem;
-            min-width: 100px;
-        }
-        #answerDetailsContainer .answer-item .selected-opt {
-            color: #cbd5e1;
-            font-size: 0.7rem;
-        }
-        #answerDetailsContainer .answer-item .result {
-            font-weight: 700;
-            padding: 0px 10px;
-            border-radius: 30px;
-            font-size: 0.6rem;
-            white-space: nowrap;
-        }
-        #answerDetailsContainer .answer-item .result.correct {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-        }
-        #answerDetailsContainer .answer-item .result.wrong {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-        }
-        #answerDetailsContainer .correct-opt {
-            color: #34d399;
-            font-weight: 600;
-            font-size: 0.7rem;
-        }
-        #answerDetailsContainer .summary-text {
-            font-size: 0.8rem;
-            color: var(--gold);
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-        .answer-detail-sub {
-            font-size: 0.7rem !important;
-        }
-
         /* ================================================================
            RESPONSIVE
            ================================================================ */
@@ -1609,6 +1471,7 @@
                 padding: 16px;
                 border-radius: 1.5rem;
             }
+
             .admin-form-row {
                 flex-direction: column;
                 align-items: stretch;
@@ -1636,9 +1499,11 @@
                 min-width: unset;
                 width: 100%;
             }
+
             .admin-section-box {
                 padding: 12px 14px;
             }
+
             .admin-tabs {
                 justify-content: center;
                 gap: 4px;
@@ -1651,6 +1516,7 @@
                 min-width: 60px;
                 white-space: nowrap;
             }
+
             .day-tabs {
                 justify-content: center;
                 gap: 4px;
@@ -1663,6 +1529,7 @@
                 min-width: 50px;
                 white-space: nowrap;
             }
+
             .admin-table-wrap table {
                 font-size: 0.75rem;
                 min-width: 280px;
@@ -1671,78 +1538,44 @@
             .admin-table-wrap td {
                 padding: 8px 10px;
             }
+
             .overall-rank-btn-wrap .btn {
                 min-width: 140px;
                 font-size: 0.85rem;
                 padding: 10px 20px;
                 width: 100%;
             }
+
             .dashboard-header {
                 padding: 12px 16px;
                 border-radius: 1.2rem;
                 flex-direction: column;
                 align-items: stretch;
                 gap: 10px;
-                position: -webkit-sticky;
                 position: sticky;
                 top: 0;
             }
-            .rank-card .rank-stats {
-                gap: 10px;
-            }
-            .rank-card .rank-stats .stat-item {
-                padding: 8px 16px;
-                min-width: 70px;
-            }
-            .rank-card .rank-stats .stat-item .stat-value {
-                font-size: 1.3rem;
-            }
-        }
 
-        @media (max-width: 550px) {
-            body.login-mode .container {
-                min-height: 100vh;
-                min-height: 100dvh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 12px;
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
             }
-            body.login-mode #loginSection {
-                width: 100%;
-                max-width: 440px;
-                margin: 0 auto;
-                padding: 0;
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
             }
-            body.login-mode .login-panel {
-                padding: 1.6rem 1.2rem 1.4rem;
-                border-radius: 2rem;
-            }
-            body.dashboard-mode {
-                padding-top: 8px;
-                align-items: flex-start;
-            }
-            .modal-glass {
-                padding: 16px;
-                max-width: 100%;
-            }
-            #answerDetailsContainer .answer-item {
-                gap: 4px;
-            }
-            #answerDetailsContainer .answer-item .qtext {
-                flex-basis: 100%;
-                margin-left: 30px;
-                font-size: 0.7rem;
+            .stat-card.overall-rank-card .stat-value {
+                font-size: 2.2rem;
             }
         }
 
         @media (max-width: 480px) {
             body {
                 padding: 12px;
+                align-items: flex-start;
             }
             .container {
                 padding: 0 4px 10px;
             }
+
             .login-panel {
                 padding: 1.4rem 1rem 1.4rem;
                 border-radius: 2rem;
@@ -1785,6 +1618,7 @@
                 font-size: 0.8rem;
                 padding: 8px 14px;
             }
+
             .loading-title {
                 font-size: 1.3rem;
             }
@@ -1808,6 +1642,7 @@
             .loading-progress {
                 width: 120px;
             }
+
             .modal-glass {
                 padding: 16px;
                 border-radius: 1.2rem;
@@ -1815,6 +1650,7 @@
             .modal-glass h3 {
                 font-size: 1rem;
             }
+
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 8px;
@@ -1825,16 +1661,23 @@
             .stat-card {
                 padding: 12px;
             }
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
+            }
+            .stat-card.overall-rank-card .stat-value {
+                font-size: 1.8rem;
+            }
+
             .dashboard-header {
                 flex-direction: column;
                 align-items: stretch;
                 gap: 10px;
                 padding: 12px 14px;
                 border-radius: 1.2rem;
-                position: -webkit-sticky;
                 position: sticky;
                 top: 0;
             }
+
             .timer-ring-container {
                 width: 100px;
                 height: 100px;
@@ -1846,6 +1689,7 @@
             .timer-ring-container .timer-text {
                 font-size: 22px;
             }
+
             .help-btn {
                 bottom: 10px;
                 right: 10px;
@@ -1855,6 +1699,7 @@
             .help-btn span {
                 display: none;
             }
+
             .glass-card {
                 padding: 12px;
                 border-radius: 1.2rem;
@@ -1869,6 +1714,7 @@
                 padding: 10px 12px;
                 font-size: 0.85rem;
             }
+
             .admin-tab {
                 font-size: 0.6rem;
                 padding: 5px 8px;
@@ -1898,20 +1744,12 @@
             .admin-section-box {
                 padding: 10px 12px;
             }
-            body.login-mode .login-panel {
-                padding: 1.2rem 0.8rem 1rem;
-            }
-            .rank-card .rank-number {
-                font-size: 3rem;
-            }
-            .rank-card .rank-number .medal {
-                font-size: 2rem;
-            }
         }
 
         @media (max-width: 380px) {
             body {
                 padding: 8px;
+                align-items: flex-start;
             }
             .login-panel {
                 padding: 1rem 0.7rem 1rem;
@@ -1942,6 +1780,7 @@
                 font-size: 0.7rem;
                 padding: 5px 10px;
             }
+
             .loading-title {
                 font-size: 1rem;
             }
@@ -1955,6 +1794,13 @@
             .stat-value {
                 font-size: 1.2rem;
             }
+            .stat-card.overall-rank-card .stat-value {
+                font-size: 1.5rem;
+            }
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
+            }
+
             .admin-tab {
                 font-size: 0.55rem;
                 padding: 4px 6px;
@@ -1976,7 +1822,6 @@
             .dashboard-header {
                 padding: 8px 10px;
                 border-radius: 1rem;
-                position: -webkit-sticky;
                 position: sticky;
                 top: 0;
             }
@@ -1985,16 +1830,6 @@
                 height: 40px;
                 font-size: 18px;
                 border-radius: 14px;
-            }
-            body.login-mode .login-panel {
-                padding: 0.8rem 0.5rem 0.8rem;
-            }
-            .rank-card .rank-stats .stat-item {
-                padding: 6px 12px;
-                min-width: 60px;
-            }
-            .rank-card .rank-stats .stat-item .stat-value {
-                font-size: 1.1rem;
             }
         }
 
@@ -2010,31 +1845,6 @@
         }
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(251, 191, 36, 0.5);
-        }
-
-        /* ===== PDF PREVIEW MODAL ===== */
-        #pdfPreviewModal .modal-glass {
-            max-width: 95%;
-            max-height: 95vh;
-            padding: 12px;
-            width: 95%;
-        }
-        #pdfPreviewModal iframe {
-            width: 100%;
-            height: 75vh;
-            border: none;
-            border-radius: 8px;
-            background: #1a1a2e;
-        }
-        @media (max-width: 768px) {
-            #pdfPreviewModal .modal-glass {
-                padding: 8px;
-                max-width: 100%;
-                max-height: 98vh;
-            }
-            #pdfPreviewModal iframe {
-                height: 65vh;
-            }
         }
     </style>
 </head>
@@ -2055,7 +1865,7 @@
         </div>
         <div class="loading-wishing">
             <i class="fas fa-hand-sparkles"></i>
-            സ്വാഗതം! നിങ്ങൾ തയ്യാറല്ലേ... ആശംസകൾ
+            സ്വാഗതം! നിങ്ങളുടെ ജ്ഞാനയാത്രയ്ക്ക് ആശംസകൾ
             <i class="fas fa-heart" style="color:#f472b6;"></i>
         </div>
         <div class="loading-deco">
@@ -2079,7 +1889,7 @@
                 <div class="login-header">
                     <div class="logo-wrap">
                         <div class="logo-icon"><i class="fas fa-users"></i></div>
-                        <span class="title-main">ടാലെന്റ് ഫെസ്റ്റ് ഫോർ പാരെന്റ്സ്</span>
+                        <span class="title-main">രക്ഷിതാക്കൾക്കായുള്ള മത്സരം</span>
                     </div>
                     <div class="title-sub"><i class="fas fa-lock"></i>LOG IN</div>
                 </div>
@@ -2121,19 +1931,18 @@
                     <button class="btn btn-outline btn-sm" id="closeRegisterModalBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">വിവരങ്ങൾ നൽകുക. പുതിയ Parent ID ലഭിക്കും.</p>
-                <p class="text-muted" style="font-size:0.75rem;color:rgba(255,255,255,0.3);">* ഇംഗ്ലീഷ് വലിയ അക്ഷരങ്ങളും (A-Z) അക്കങ്ങളും (0-9) മാത്രം</p>
                 <form id="registerForm" style="margin-top:16px;">
                     <div style="margin-bottom:12px;">
                         <label class="text-muted" style="font-size:0.8rem;">രക്ഷിതാവിന്റെ പേര് *</label>
-                        <input type="text" id="regParentName" placeholder="മുഴുവൻ പേര് (ENGLISH ONLY)" required oninput="filterEnglishUppercase(this)" />
+                        <input type="text" id="regParentName" placeholder="മുഴുവൻ പേര്" required />
                     </div>
                     <div style="margin-bottom:12px;">
                         <label class="text-muted" style="font-size:0.8rem;">കുട്ടിയുടെ പേര് *</label>
-                        <input type="text" id="regChildName" placeholder="കുട്ടിയുടെ മുഴുവൻ പേര് (ENGLISH ONLY)" required oninput="filterEnglishUppercase(this)" />
+                        <input type="text" id="regChildName" placeholder="കുട്ടിയുടെ മുഴുവൻ പേര്" required />
                     </div>
                     <div style="margin-bottom:16px;">
                         <label class="text-muted" style="font-size:0.8rem;">കുട്ടിയുടെ ക്ലാസ് *</label>
-                        <input type="text" id="regChildClass" placeholder="ഉദാ: 5A" required oninput="filterEnglishUppercaseNoSpace(this)" />
+                        <input type="text" id="regChildClass" placeholder="ഉദാ: 5A" required />
                     </div>
                     <button type="submit" class="btn btn-success btn-block" id="registerBtn">
                         <i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക
@@ -2174,7 +1983,7 @@
                     </div>
                     <div style="margin-bottom:16px;">
                         <label class="text-muted">രക്ഷിതാവിന്റെ പേര് (ആദ്യ 3 അക്ഷരങ്ങൾ)</label>
-                        <input type="text" id="findName" placeholder="ഉദാ: ABD" maxlength="3" oninput="this.value = this.value.toUpperCase().replace(/[^A-Z]/g,'');" required />
+                        <input type="text" id="findName" placeholder="ഉദാ: ABD" maxlength="3" oninput="this.value = this.value.toUpperCase();" required />
                     </div>
                     <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> തിരയുക</button>
                 </form>
@@ -2198,9 +2007,27 @@
                 </div>
             </div>
 
+            <!-- STATS GRID with Overall Rank -->
             <div class="stats-grid">
-                <div class="stat-card"><div><span class="stat-value" id="quizDayDisplay">ദിവസം 1</span><div class="text-muted" style="font-size:0.8rem;">ഇന്നത്തെ ക്വിസ്</div></div></div>
-                <div class="stat-card"><div><span class="stat-value" id="questionCountDisplay">0</span><div class="text-muted" style="font-size:0.8rem;">ചോദ്യങ്ങൾ</div></div></div>
+                <div class="stat-card">
+                    <div><span class="stat-value" id="quizDayDisplay">ദിവസം 1</span>
+                        <div class="text-muted" style="font-size:0.8rem;">ഇന്നത്തെ ക്വിസ്</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div><span class="stat-value" id="questionCountDisplay">0</span>
+                        <div class="text-muted" style="font-size:0.8rem;">ചോദ്യങ്ങൾ</div>
+                    </div>
+                </div>
+                <!-- Overall Rank Card - Attractive -->
+                <div class="stat-card overall-rank-card" id="overallRankCard">
+                    <div>
+                        <div class="rank-icon">🏆</div>
+                        <span class="stat-value gold" id="overallRankDisplay">—</span>
+                        <div class="rank-sub">Overall Rank</div>
+                        <div class="rank-detail" id="overallRankDetail">Total Score: <span id="totalScoreDisplay">—</span>  •  Days: <span id="totalDaysDisplay">—</span></div>
+                    </div>
+                </div>
             </div>
 
             <div id="timerArea" class="hidden timer-wrapper">
@@ -2257,25 +2084,30 @@
                 </div>
             </div>
 
-            <!-- RANKING AREA -->
+            <!-- RANKING AREA — hidden during active quiz -->
             <div id="rankingArea" class="hidden">
                 <div class="glass-card">
                     <div class="flex-between">
-                        <h3 style="color:var(--gold); font-size:1.2rem;">🏆 Results</h3>
+                        <h3 style="color:var(--gold); font-size:1.2rem;">🏆 നിങ്ങളുടെ സ്കോർ</h3>
+                        <span class="badge" style="display:none;" id="rankCountBadge">—</span>
                     </div>
                     <div id="publicationCountdown" class="publication-box hidden">
                         <p class="text-muted">📢 ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക</p>
                         <div class="pub-timer" id="publicationTimer">05:00</div>
                     </div>
+                    <div id="resultsExpiryCountdown" class="publication-box hidden">
+                        <p class="text-muted">⏳ ഫലം ലഭ്യമാകുന്ന സമയപരിധി</p>
+                        <div class="pub-timer" id="resultsExpiryTimer">--:--</div>
+                    </div>
                     <div id="rankListContainer"><div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div></div>
-                    <div class="parent-rank-hint"><i class="fas fa-star"></i>പിശക് തോന്നുന്നുവെങ്കിൽ അഡ്മിൻ സുഹൈൽ ഉസ്താദിനെ ബന്ധപ്പെടുക.<i class="fas fa-star"></i></div>
+                    <div class="parent-rank-hint"></div>
                 </div>
             </div>
 
-            <!-- HISTORY BUTTON -->
+            <!-- HISTORY BUTTON — hidden during active quiz -->
             <div class="history-btn-wrap" id="historyBtnWrap">
                 <button class="btn btn-outline" id="showHistoryBtn" style="border-color:rgba(251,191,36,0.2); color:var(--gold);">
-                    <i class="fas fa-clock-rotate-left"></i> ഇതുവരെയുള്ള  Results
+                    <i class="fas fa-clock-rotate-left"></i> Results
                 </button>
             </div>
         </div>
@@ -2284,25 +2116,11 @@
         <div id="historyModal" class="modal-overlay hidden">
             <div class="modal-glass" style="max-width:640px;">
                 <div class="flex-between" style="margin-bottom:16px;">
-                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i> Results</h3>
+                    <h3><i class="fas fa-clock-rotate-left" style="color:var(--gold);"></i>Results</h3>
                     <button class="btn btn-outline btn-sm" id="closeHistoryBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">ഓരോ ദിവസത്തിലെയും നിങ്ങളുടെ പോയിന്റ്, റാങ്ക്, സമയം എന്നിവ.</p>
                 <div class="history-table-wrap" id="historyContainer">
-                    <div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== ANSWER DETAILS MODAL ===== -->
-        <div id="answerDetailsModal" class="modal-overlay hidden">
-            <div class="modal-glass" style="max-width:600px;">
-                <div class="flex-between" style="margin-bottom:16px;">
-                    <h3><i class="fas fa-list-check" style="color:var(--gold);"></i> ഉത്തരങ്ങളുടെ വിശദാംശങ്ങൾ</h3>
-                    <button class="btn btn-outline btn-sm" id="closeAnswerDetailsBtn"><i class="fas fa-times"></i></button>
-                </div>
-                <p class="text-muted answer-detail-sub" id="answerDetailsSub">ഓരോ ചോദ്യത്തിനും നിങ്ങൾ നൽകിയ ഉത്തരവും ശരിയായ ഉത്തരവും</p>
-                <div id="answerDetailsContainer" style="margin-top:8px; max-height:400px; overflow-y:auto;">
                     <div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div>
                 </div>
             </div>
@@ -2318,7 +2136,6 @@
                     ദയവായി ഉറപ്പാക്കുക:
                     <br>• നിങ്ങൾ തയ്യാറാണോ?
                     <br>• സമയപരിധി മനസ്സിലാക്കിയിട്ടുണ്ടോ?
-                    <br>• സമയത്തിന് മുമ്പ് Submit ചെയ്യാൻ മറക്കരുത്.
                     <br><br>
                     <span style="color:var(--gold);">"തുടങ്ങുക" ക്ലിക്ക് ചെയ്താൽ ക്വിസ് ആരംഭിക്കും.</span>
                 </p>
@@ -2330,25 +2147,31 @@
         </div>
 
         <!-- ================================================================
-        ADMIN DASHBOARD
+        ADMIN DASHBOARD — with sticky header & tables
         ================================================================ -->
         <div id="adminDashboard" class="hidden">
+            <!-- STICKY ADMIN HEADER -->
             <div class="dashboard-header" id="adminHeader">
                 <h2 class="fw-bold" style="color:var(--gold); font-size:1.4rem;"><i class="fas fa-user-shield"></i> Admin Panel</h2>
                 <button class="btn btn-danger btn-sm" id="adminLogoutBtn"><i class="fas fa-sign-out-alt"></i> Exit</button>
             </div>
+
             <div class="glass-card" style="margin-bottom:20px; padding:16px 20px;">
                 <h4 style="color:var(--gold); font-size:1rem;">📅 Today's Session</h4>
                 <div id="todaySessionInfo" class="text-muted">Loading...</div>
             </div>
+
             <div class="admin-tabs">
                 <button class="admin-tab active" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions</button>
                 <button class="admin-tab" data-tab="questions" onclick="switchAdminTab('questions')">📋 Questions</button>
                 <button class="admin-tab" data-tab="rankings" onclick="switchAdminTab('rankings')">📊 Rankings</button>
             </div>
+
+            <!-- Sessions Tab — Table -->
             <div id="tab-sessions" class="tab-content">
                 <div class="glass-card">
                     <h4 style="color:var(--gold);">⏰ Manage Days</h4>
+
                     <div class="admin-section-box" style="border-color:rgba(59,130,246,0.15);">
                         <h5 style="color:#3b82f6;">➕ Add New Day</h5>
                         <div class="admin-form-row">
@@ -2359,6 +2182,7 @@
                             <button class="btn btn-success btn-sm" id="addDayBtn">➕ Add</button>
                         </div>
                     </div>
+
                     <div class="admin-section-box" style="border-color:rgba(251,191,36,0.10);">
                         <h5 style="color:var(--gold);">⚡ Quick Set</h5>
                         <div class="admin-form-row">
@@ -2369,17 +2193,22 @@
                             <button class="btn-gold btn-sm" id="quickSetBtn">✅ Set</button>
                         </div>
                     </div>
+
+                    <!-- Sessions Table -->
                     <div class="admin-table-wrap" id="adminSessionsTableWrap">
                         <div id="adminSessionsTable"><div class="text-center text-muted">Loading...</div></div>
                     </div>
                 </div>
             </div>
+
+            <!-- Questions Tab — Table -->
             <div id="tab-questions" class="tab-content hidden">
                 <div class="glass-card">
                     <div class="flex-between" style="margin-bottom:16px;">
                         <h4 style="color:var(--gold);">📋 Questions</h4>
                         <button class="btn btn-success btn-sm" id="showAddQuestionBtn">+ Add</button>
                     </div>
+
                     <div id="questionForm" class="hidden admin-section-box">
                         <h5 id="formTitle" style="color:var(--gold);">Add Question</h5>
                         <div class="admin-form-row">
@@ -2399,25 +2228,31 @@
                             <input type="hidden" id="editQuestionId" />
                         </div>
                     </div>
+
                     <div id="adminDayTabsContainer" class="day-tabs"></div>
+
+                    <!-- Questions Table -->
                     <div class="admin-table-wrap">
                         <div id="adminQuestionsTable"><div class="text-center text-muted">Select day</div></div>
                     </div>
                 </div>
             </div>
+
+            <!-- Rankings Tab — Table -->
             <div id="tab-rankings" class="tab-content hidden">
                 <div class="glass-card">
                     <h4 style="color:var(--gold);">🏆 Rankings</h4>
                     <div class="day-tabs" id="rankDayTabs"></div>
-                    <div class="flex" style="justify-content:center; gap:12px; margin:12px 0;">
-                        <button class="btn btn-primary btn-sm" id="downloadDayRankBtn"><i class="fas fa-file-pdf"></i> Download Day PDF</button>
-                    </div>
+
                     <div class="overall-rank-btn-wrap">
                         <button class="btn" id="overallRankBtn"><i class="fas fa-trophy"></i> Overall Rank</button>
                     </div>
+
+                    <!-- Rankings Table -->
                     <div class="admin-table-wrap">
                         <div id="adminRankListContainer"><div class="text-center text-muted">Select day</div></div>
                     </div>
+
                     <div id="overallRankContainer" class="overall-rank-container hidden">
                         <h5 style="color:var(--gold); text-align:center; margin-bottom:12px;">📊 Overall Rankings (All Days)</h5>
                         <div class="admin-table-wrap">
@@ -2425,20 +2260,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- ===== PDF PREVIEW MODAL ===== -->
-        <div id="pdfPreviewModal" class="modal-overlay hidden">
-            <div class="modal-glass">
-                <div class="flex-between" style="margin-bottom:10px;">
-                    <h3 style="color:var(--gold);"><i class="fas fa-file-pdf"></i> PDF Preview</h3>
-                    <div class="flex" style="gap:8px;">
-                        <button class="btn btn-success btn-sm" id="pdfDownloadBtn"><i class="fas fa-download"></i> Download</button>
-                        <button class="btn btn-outline btn-sm" id="closePdfPreviewBtn"><i class="fas fa-times"></i></button>
-                    </div>
-                </div>
-                <iframe id="pdfPreviewFrame" style="width:100%; height:75vh; border:none; border-radius:8px; background:#1a1a2e;"></iframe>
             </div>
         </div>
 
@@ -2450,9 +2271,6 @@
                     <button class="btn btn-outline btn-sm" id="closeOverallRankBtn"><i class="fas fa-times"></i></button>
                 </div>
                 <p class="text-muted">All days combined — top performers</p>
-                <div class="flex" style="justify-content:center; margin:12px 0;">
-                    <button class="btn btn-primary btn-sm" id="downloadOverallRankBtn"><i class="fas fa-file-pdf"></i> Download Overall PDF</button>
-                </div>
                 <div class="admin-table-wrap">
                     <div id="overallRankModalContent" style="margin-top:16px;">
                         <div class="text-center text-muted">Loading...</div>
@@ -2475,21 +2293,6 @@
     JAVASCRIPT
     ================================================================ -->
     <script>
-        // ================================================================
-        // REGISTRATION INPUT FILTERS
-        // ================================================================
-        function filterEnglishUppercase(input) {
-            let val = input.value.toUpperCase();
-            val = val.replace(/[^A-Z0-9 ]/g, '');
-            input.value = val;
-        }
-
-        function filterEnglishUppercaseNoSpace(input) {
-            let val = input.value.toUpperCase();
-            val = val.replace(/[^A-Z0-9]/g, '');
-            input.value = val;
-        }
-
         // ================================================================
         // SECURE ADMIN CONFIG
         // ================================================================
@@ -2547,10 +2350,9 @@
         }
 
         function formatCountdown(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
+            const m = Math.floor(seconds / 60);
             const s = seconds % 60;
-            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
         }
 
         function formatDateShort(d) {
@@ -2624,8 +2426,6 @@
                     document.getElementById('loginSection').style.display = 'none';
                     document.getElementById('adminDashboard').classList.remove('hidden');
                     document.getElementById('parentDashboard').classList.add('hidden');
-                    document.body.classList.remove('login-mode');
-                    document.body.classList.add('dashboard-mode');
                     loadAdminData();
                     showToast('👋 Admin Panel തുറന്നു', 'success');
                     return;
@@ -2660,8 +2460,6 @@
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('parentDashboard').classList.remove('hidden');
                 document.getElementById('adminDashboard').classList.add('hidden');
-                document.body.classList.remove('login-mode');
-                document.body.classList.add('dashboard-mode');
 
                 document.getElementById('userNameDisplay').textContent = user.name;
                 document.getElementById('avatarText').textContent = user.name.charAt(0).toUpperCase();
@@ -2669,6 +2467,9 @@
                 document.getElementById('childClassDisplay').textContent = user.className || 'N/A';
                 document.getElementById('displayParentId').textContent = user.studentId;
                 document.getElementById('quizDayDisplay').textContent = 'ദിവസം ' + active.day;
+
+                // Load overall rank after login
+                await updateOverallRankForParent();
 
                 renderParentDashboard();
                 showToast('👋 സ്വാഗതം, ' + user.name + '!', 'success');
@@ -2692,8 +2493,6 @@
             document.getElementById('loginSection').style.display = 'block';
             document.getElementById('parentDashboard').classList.add('hidden');
             document.getElementById('adminDashboard').classList.add('hidden');
-            document.body.classList.remove('dashboard-mode');
-            document.body.classList.add('login-mode');
             document.getElementById('loginIdInput').value = '';
             showToast('പുറത്തുകടന്നു', 'info');
         }
@@ -2725,17 +2524,6 @@
             msg.innerHTML = '';
             newIdDiv.classList.add('hidden');
 
-            const namePattern = /^[A-Z0-9 ]+$/;
-            const classPattern = /^[A-Z0-9]+$/;
-            if (!namePattern.test(parentName) || !namePattern.test(childName)) {
-                msg.innerHTML = '<div style="color:#fca5a5;">❌ ഇംഗ്ലീഷ് വലിയ അക്ഷരങ്ങളും (A-Z) അക്കങ്ങളും (0-9) മാത്രം അനുവദനീയം.</div>';
-                return;
-            }
-            if (!classPattern.test(childClass)) {
-                msg.innerHTML = '<div style="color:#fca5a5;">❌ ക്ലാസിൽ ഇംഗ്ലീഷ് വലിയ അക്ഷരങ്ങളും (A-Z) അക്കങ്ങളും (0-9) മാത്രം.</div>';
-                return;
-            }
-
             if (!parentName || !childName || !childClass) {
                 msg.innerHTML = '<div style="color:#fca5a5;">എല്ലാ വിവരങ്ങളും നൽകുക.</div>';
                 return;
@@ -2743,8 +2531,7 @@
 
             const btn = document.getElementById('registerBtn');
             btn.disabled = true;
-            btn.innerHTML =
-                '<span style="display:inline-block;width:1.2rem;height:1.2rem;border:2px solid rgba(255,255,255,0.1);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></span>';
+            btn.innerHTML = '<span style="display:inline-block;width:1.2rem;height:1.2rem;border:2px solid rgba(255,255,255,0.1);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;"></span>';
 
             try {
                 const prefix = 'PAR';
@@ -2842,6 +2629,85 @@
         });
 
         // ================================================================
+        // OVERALL RANK FOR PARENT (Attractive Display)
+        // ================================================================
+        async function updateOverallRankForParent() {
+            const rankDisplay = document.getElementById('overallRankDisplay');
+            const scoreDisplay = document.getElementById('totalScoreDisplay');
+            const daysDisplay = document.getElementById('totalDaysDisplay');
+
+            if (!window.currentUser) return;
+
+            try {
+                // Fetch all COMPLETED attempts
+                const { data: allAttempts, error } = await _supabase
+                    .from('Attempt')
+                    .select('studentId, score, sessionDay')
+                    .eq('status', 'COMPLETED');
+
+                if (error) throw error;
+                if (!allAttempts || allAttempts.length === 0) {
+                    rankDisplay.textContent = '—';
+                    scoreDisplay.textContent = '—';
+                    daysDisplay.textContent = '—';
+                    return;
+                }
+
+                // Group by studentId: sum scores, count days
+                const studentMap = {};
+                allAttempts.forEach(a => {
+                    if (!studentMap[a.studentId]) {
+                        studentMap[a.studentId] = { totalScore: 0, days: new Set() };
+                    }
+                    studentMap[a.studentId].totalScore += (a.score || 0);
+                    studentMap[a.studentId].days.add(a.sessionDay);
+                });
+
+                // Convert to array and sort by totalScore descending
+                const ranked = Object.entries(studentMap).map(([id, data]) => ({
+                    studentId: id,
+                    totalScore: data.totalScore,
+                    days: data.days.size
+                }));
+                ranked.sort((a, b) => b.totalScore - a.totalScore);
+
+                // Find current user's rank
+                const currentId = window.currentUser.id;
+                const myData = ranked.find(r => r.studentId === currentId);
+
+                if (!myData) {
+                    rankDisplay.textContent = '—';
+                    scoreDisplay.textContent = '—';
+                    daysDisplay.textContent = '—';
+                    return;
+                }
+
+                const rank = ranked.findIndex(r => r.studentId === currentId) + 1;
+                const totalScore = myData.totalScore;
+                const days = myData.days;
+
+                // Update the attractive card
+                rankDisplay.textContent = `#${rank}`;
+                scoreDisplay.textContent = totalScore;
+                daysDisplay.textContent = days;
+
+                // Add a subtle animation effect when rank updates
+                const card = document.getElementById('overallRankCard');
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                }, 300);
+
+            } catch (err) {
+                console.error('Error fetching overall rank:', err);
+                rankDisplay.textContent = '—';
+                scoreDisplay.textContent = '—';
+                daysDisplay.textContent = '—';
+            }
+        }
+
+        // ================================================================
         // PARENT DASHBOARD
         // ================================================================
         window.questions = [];
@@ -2865,54 +2731,10 @@
             if (!window.currentUser || !window.currentSession) return;
 
             const now = new Date();
-
-            // Check for previous session results
-            let prevSession = null;
-            if (window.allSessions && window.allSessions.length > 0) {
-                for (let i = window.allSessions.length - 1; i >= 0; i--) {
-                    if (new Date(window.allSessions[i].endTime) < now) {
-                        prevSession = window.allSessions[i];
-                        break;
-                    }
-                }
-            }
-
-            if (prevSession) {
-                const nextSession = getNextSession(prevSession.day);
-                let expiryTime = null;
-                const endPrev = new Date(prevSession.endTime);
-                const rankRevealTime = new Date(endPrev.getTime() + 3 * 60000);
-                if (nextSession) {
-                    expiryTime = new Date(new Date(nextSession.startTime).getTime() - 30 * 60000);
-                } else {
-                    expiryTime = new Date(rankRevealTime.getTime() + 12 * 3600000);
-                }
-
-                if (now >= rankRevealTime && now < expiryTime) {
-                    window.currentSession = prevSession;
-                    document.getElementById('quizDayDisplay').textContent = 'ദിവസം ' + prevSession.day;
-
-                    ['waitingMsg', 'endedMsg', 'resultsExpiredMsg', 'preStartMsg', 'viewQuestionsArea', 'questionsArea',
-                        'timerArea', 'submittedArea'
-                    ].forEach(id => document.getElementById(id).classList.add('hidden'));
-
-                    document.getElementById('rankingArea').classList.remove('hidden');
-                    await loadParentRankingData();
-
-                    document.getElementById('endedMsg').classList.remove('hidden');
-                    document.getElementById('endedMsg').querySelector('h2').textContent = '🏁 മത്സരം അവസാനിച്ചു';
-                    document.getElementById('endedMsgText').textContent =
-                        `📊 ഫലങ്ങൾ ലഭ്യമാണ് (${formatDate(expiryTime)} വരെ)`;
-
-                    document.getElementById('historyBtnWrap').classList.remove('hidden');
-                    return;
-                }
-            }
-
-            // Normal current session logic
             const start = new Date(window.currentSession.startTime);
             const end = new Date(window.currentSession.endTime);
             const rankRevealTime = new Date(end.getTime() + 3 * 60000);
+
             const nextSession = getNextSession(window.currentSession.day);
             let expiryTime = null;
             if (nextSession) {
@@ -2920,13 +2742,17 @@
             } else {
                 expiryTime = new Date(rankRevealTime.getTime() + 12 * 3600000);
             }
+
             const visibilityStart = new Date(start.getTime() - 30 * 60000);
 
-            ['waitingMsg', 'endedMsg', 'resultsExpiredMsg', 'preStartMsg', 'viewQuestionsArea', 'questionsArea',
-                'timerArea', 'submittedArea', 'rankingArea'
+            // Hide all status areas first
+            ['waitingMsg', 'endedMsg', 'resultsExpiredMsg', 'preStartMsg', 'viewQuestionsArea', 'questionsArea', 'timerArea',
+                'submittedArea', 'rankingArea'
             ].forEach(id => document.getElementById(id).classList.add('hidden'));
             document.getElementById('publicationCountdown').classList.add('hidden');
+            document.getElementById('resultsExpiryCountdown').classList.add('hidden');
 
+            // Hide history button by default — will be shown only when results are visible
             const historyWrap = document.getElementById('historyBtnWrap');
             historyWrap.classList.add('hidden');
 
@@ -2969,8 +2795,9 @@
                 return;
             }
 
-            // Active Quiz
+            // ===== ACTIVE QUIZ — hide results and history =====
             if (now >= start && now <= end) {
+                // History button is hidden during active quiz
                 historyWrap.classList.add('hidden');
 
                 const { data: attempt } = await _supabase
@@ -3045,7 +2872,7 @@
                 return;
             }
 
-            // Ended
+            // ===== QUIZ ENDED — show results and history =====
             if (now > end) {
                 if (now < rankRevealTime) {
                     document.getElementById('endedMsg').classList.remove('hidden');
@@ -3055,18 +2882,22 @@
                         `⏳ ഫലം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${formatCountdown(Math.floor((rankRevealTime - now)/1000))}</strong> ശേഷിക്കുന്നു.`;
                     startCountdownTimer(rankRevealTime, 'rankReveal');
                     document.getElementById('rankingArea').classList.add('hidden');
+                    // History hidden until results are shown
                     historyWrap.classList.add('hidden');
                     return;
                 }
 
                 if (now >= rankRevealTime && now < expiryTime) {
                     document.getElementById('rankingArea').classList.remove('hidden');
+                    document.getElementById('resultsExpiryCountdown').classList.remove('hidden');
+                    startCountdownTimer(expiryTime, 'expiry');
                     await loadParentRankingData();
                     document.getElementById('endedMsg').classList.remove('hidden');
                     document.getElementById('endedMsg').querySelector('h2').textContent =
                         '🏁 മത്സരം അവസാനിച്ചു';
                     document.getElementById('endedMsgText').textContent =
                         `📊 ഫലങ്ങൾ ലഭ്യമാണ് (${formatDate(expiryTime)} വരെ)`;
+                    // Show history button when results are visible
                     historyWrap.classList.remove('hidden');
                     return;
                 }
@@ -3074,15 +2905,13 @@
                 if (now >= expiryTime) {
                     document.getElementById('resultsExpiredMsg').classList.remove('hidden');
                     document.getElementById('rankingArea').classList.add('hidden');
+                    // Hide history when results are expired
                     historyWrap.classList.add('hidden');
                     return;
                 }
             }
         }
 
-        // ================================================================
-        // COUNTDOWN TIMER
-        // ================================================================
         function startCountdownTimer(targetTime, type) {
             if (window.pubInterval) clearInterval(window.pubInterval);
             window.pubInterval = setInterval(() => {
@@ -3090,8 +2919,7 @@
                 let display = formatCountdown(diff);
                 if (type === 'visibility') {
                     const el = document.getElementById('waitingTimeText');
-                    if (el) el.innerHTML =
-                        `⏳ മത്സരം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു.`;
+                    if (el) el.innerHTML = `⏳ മത്സരം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു.`;
                 } else if (type === 'preStart') {
                     const el = document.getElementById('preStartText');
                     if (el) el.innerHTML = `തുടങ്ങാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു`;
@@ -3101,10 +2929,12 @@
                     const el = document.getElementById('endedMsgText');
                     if (el) el.innerHTML =
                         `⏳ ഫലം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${display}</strong> ശേഷിക്കുന്നു.`;
+                } else if (type === 'expiry') {
+                    document.getElementById('resultsExpiryTimer').textContent = display;
                 }
                 if (diff <= 0) {
                     clearInterval(window.pubInterval);
-                    if (type === 'visibility' || type === 'preStart' || type === 'rankReveal') {
+                    if (type === 'visibility' || type === 'preStart' || type === 'rankReveal' || type === 'expiry') {
                         location.reload();
                     }
                 }
@@ -3112,92 +2942,11 @@
         }
 
         // ================================================================
-        // ANSWER DETAILS — Show correct/incorrect for each question (Small Font)
-        // ================================================================
-        async function showAnswerDetails(attemptId) {
-            const modal = document.getElementById('answerDetailsModal');
-            const container = document.getElementById('answerDetailsContainer');
-            const sub = document.getElementById('answerDetailsSub');
-
-            modal.classList.remove('hidden');
-            container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> ലോഡ് ചെയ്യുന്നു...</div>';
-            sub.textContent = 'ഓരോ ചോദ്യത്തിനും നിങ്ങൾ നൽകിയ ഉത്തരവും ശരിയായ ഉത്തരവും';
-
-            try {
-                const { data: answers, error: aErr } = await _supabase
-                    .from('Answer')
-                    .select('*')
-                    .eq('attemptId', attemptId);
-
-                if (aErr) throw aErr;
-                if (!answers || answers.length === 0) {
-                    container.innerHTML = '<div class="text-center text-muted">ഉത്തരങ്ങളൊന്നും കണ്ടെത്തിയില്ല.</div>';
-                    return;
-                }
-
-                const questionIds = answers.map(a => a.questionId);
-                const { data: questions, error: qErr } = await _supabase
-                    .from('Question')
-                    .select('*')
-                    .in('id', questionIds)
-                    .order('id', { ascending: true });
-
-                if (qErr) throw qErr;
-
-                const qMap = {};
-                questions.forEach(q => qMap[q.id] = q);
-
-                let html = '';
-                let correctCount = 0;
-                let total = 0;
-
-                answers.forEach((a, idx) => {
-                    const q = qMap[a.questionId];
-                    if (!q) return;
-                    total++;
-                    const isCorrect = (a.selectedOpt === q.correctAnswer);
-                    if (isCorrect) correctCount++;
-
-                    const selectedText = q.options[a.selectedOpt] || '—';
-                    const correctText = q.options[q.correctAnswer] || '—';
-
-                    html += `
-                        <div class="answer-item">
-                            <span class="qnum">#${idx+1}</span>
-                            <span class="qtext">${q.questionText}</span>
-                            <span class="selected-opt">YOUR ANSWER: ${selectedText}</span>
-                            <span class="result ${isCorrect ? 'correct' : 'wrong'}">${isCorrect ? '✅ ശരി' : '❌ തെറ്റ്'}</span>
-                        </div>
-                        <div style="font-size:0.65rem; color:var(--text-muted); margin-left:32px; margin-bottom:6px; padding-left:4px;">
-                            ✅ ശരിയുത്തരം: <span class="correct-opt">${correctText}</span>
-                        </div>
-                    `;
-                });
-
-                const summary = `<div class="summary-text">${correctCount} / ${total} ശരി (${Math.round((correctCount/total)*100)}%)</div>`;
-                container.innerHTML = summary + html;
-
-            } catch (err) {
-                container.innerHTML = '<div class="text-danger text-center">വിശദാംശങ്ങൾ ലഭിക്കുന്നതിൽ പിശക്.</div>';
-                showToast(err.message, 'error');
-            }
-        }
-
-        // Close answer details modal
-        document.getElementById('closeAnswerDetailsBtn').addEventListener('click', function() {
-            document.getElementById('answerDetailsModal').classList.add('hidden');
-        });
-        document.getElementById('answerDetailsModal').addEventListener('click', function(e) {
-            if (e.target === this) this.classList.add('hidden');
-        });
-
-        // ================================================================
-        // PARENT RANKING — with "ഉത്തരങ്ങൾ കാണുക" button
+        // PARENT RANKING
         // ================================================================
         async function loadParentRankingData() {
             const container = document.getElementById('rankListContainer');
-            container.innerHTML =
-                '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> ലോഡ് ചെയ്യുന്നു...</div>';
+            container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> ലോഡ് ചെയ്യുന്നു...</div>';
 
             try {
                 const { data: attempts } = await _supabase
@@ -3226,63 +2975,22 @@
                     return (a.timeTaken || 9999) - (b.timeTaken || 9999);
                 });
 
-                const userRank = ranked.findIndex(a => a.id === myAttempt.id) + 1;
+                const rank = ranked.findIndex(a => a.id === myAttempt.id) + 1;
                 const score = myAttempt.score || 0;
-                const timeTaken = Math.floor((new Date(myAttempt.endTime) - new Date(myAttempt.startTime)) / 1000);
-
-                let medalEmoji = '';
-                let rankClass = '';
-                let celebrationText = '';
-
-                if (userRank === 1) {
-                    medalEmoji = '🥇';
-                    rankClass = 'top-1';
-                    celebrationText = '🏆 ഒന്നാം സ്ഥാനം — അഭിനന്ദനങ്ങൾ!';
-                } else if (userRank === 2) {
-                    medalEmoji = '🥈';
-                    rankClass = 'top-2';
-                    celebrationText = '🥈 രണ്ടാം സ്ഥാനം — അഭിനന്ദനങ്ങൾ!';
-                } else if (userRank === 3) {
-                    medalEmoji = '🥉';
-                    rankClass = 'top-3';
-                    celebrationText = '🥉 മൂന്നാം സ്ഥാനം — അഭിനന്ദനങ്ങൾ!';
-                } else {
-                    medalEmoji = '🏅';
-                    rankClass = '';
-                    celebrationText = 'ശ്രമിച്ചുകൊണ്ടേയിരിക്കുക..';
-                }
-
-                const mins = Math.floor(timeTaken / 60);
-                const secs = timeTaken % 60;
-                const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                const timeTaken = ranked.find(a => a.id === myAttempt.id).timeTaken || 0;
 
                 container.innerHTML = `
-                    <div class="rank-card ${rankClass}">
-                        <div class="rank-glow"></div>
-                        <div class="rank-label">📊 താങ്കളുടെ ഇന്നത്തെ റാങ്ക്</div>
-                        <div class="rank-number">
-                            <span class="medal">${medalEmoji}</span>
-                            <span class="num">#${userRank}</span>
-                        </div>
+                    <div class="rank-item" style="border-color:var(--gold);background:rgba(251,191,36,0.05);">
+                        <div class="rank-num gold">#${rank}</div>
                         <div class="rank-name">${window.currentUser.name}</div>
-                        <div class="rank-stats">
-                            <div class="stat-item">
-                                <div class="stat-label">🌟 സ്കോർ</div>
-                                <div class="stat-value gold">${score}</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">⏱️ സമയം</div>
-                                <div class="stat-value">${timeStr}</div>
-                            </div>
-                        </div>
-                        ${celebrationText ? `<div class="rank-celebration">${celebrationText}</div>` : ''}
-                        <div class="rank-detail-btn">
-                            <button class="btn btn-outline btn-sm" onclick="showAnswerDetails('${myAttempt.id}')" style="border-color:rgba(251,191,36,0.3); color:var(--gold);">
-                                <i class="fas fa-list-check"></i> 📋 നിങ്ങൾ നൽകിയ ഉത്തരങ്ങൾ..
-                            </button>
-                        </div>
+                        <div class="rank-score">${score} മാർക്ക്</div>
+                        <div class="rank-time">⏱️ ${timeTaken} സെ</div>
                     </div>
+                    <p style="text-align:center;color:var(--text-secondary);margin-top:12px;">🏅 നിങ്ങളുടെ റാങ്ക്</p>
                 `;
+
+                const badge = document.getElementById('rankCountBadge');
+                if (badge) badge.style.display = 'none';
 
             } catch (err) {
                 container.innerHTML = '<div class="text-danger text-center">റാങ്കിംഗ് ലോഡ് ചെയ്യുന്നതിൽ പിശക്.</div>';
@@ -3330,7 +3038,7 @@
                 if (sessions) sessions.forEach(s => sessionMap[s.day] = s);
 
                 let html =
-                    `<div class="admin-table-wrap"><table><thead><tr><th>ദിവസം</th><th>തീയതി</th><th>സ്കോർ</th><th>റാങ്ക്</th><th>എടുത്ത സമയം</th></tr></thead><tbody>`;
+                    `<table><thead><tr><th>ദിവസം</th><th>തീയതി</th><th>സ്കോർ</th><th>റാങ്ക്</th><th>എടുത്ത സമയം</th></tr></thead><tbody>`;
 
                 for (const att of attempts) {
                     const { data: allDay } = await _supabase
@@ -3356,20 +3064,17 @@
                     const session = sessionMap[att.sessionDay];
                     const dateStr = session ? formatDateShort(session.startTime) : '—';
                     const timeTaken = Math.floor((new Date(att.endTime) - new Date(att.startTime)) / 1000);
-                    const mins = Math.floor(timeTaken / 60);
-                    const secs = timeTaken % 60;
-                    const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
                     html += `<tr>
                         <td><strong>ദിവസം ${att.sessionDay}</strong></td>
                         <td>${dateStr}</td>
                         <td style="color:var(--gold);font-weight:700;">${att.score ?? 0}</td>
                         <td>#${rank}</td>
-                        <td>${timeStr}</td>
+                        <td>${timeTaken} സെ</td>
                     </tr>`;
                 }
 
-                html += `</tbody></table></div>`;
+                html += `</tbody></table>`;
                 container.innerHTML = html;
 
             } catch (err) {
@@ -3458,14 +3163,17 @@
                     }
                 }, 1000);
 
-                showToast('✅ ക്വിസ് ആരംഭിച്ചു.!', 'success');
+                showToast('✅ ക്വിസ് ആരംഭിച്ചു. ഭാഗ്യം!', 'success');
             } catch (err) {
                 showToast(err.message, 'error');
             }
         }
 
         function updateTimerDisplay() {
-            document.getElementById('timerDisplay').textContent = formatCountdown(window.timeLeft);
+            const mins = Math.floor(window.timeLeft / 60);
+            const secs = window.timeLeft % 60;
+            document.getElementById('timerDisplay').textContent =
+                `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
             const progress = window.timeLeft / (window.currentSession ? window.currentSession.duration * 60 : 600);
             const offset = CIRCUMFERENCE * (1 - progress);
             document.getElementById('timerProgress').style.strokeDashoffset = offset;
@@ -3506,9 +3214,6 @@
             };
         }
 
-        // ================================================================
-        // SUBMIT QUIZ
-        // ================================================================
         async function submitParentQuiz(isTimeout = false) {
             if (window.isSubmitted) return;
             window.isSubmitted = true;
@@ -3537,17 +3242,13 @@
 
                 document.getElementById('questionsArea').classList.add('hidden');
                 document.getElementById('timerArea').classList.add('hidden');
+                document.getElementById('submittedArea').classList.remove('hidden');
+                showToast('✅ വിജയകരമായി സമർപ്പിച്ചു!', 'success');
 
-                if (isTimeout) {
-                    showToast('⏰ സമയം കഴിഞ്ഞു. ഫലങ്ങൾ ലഭ്യമാകും...', 'info');
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else {
-                    document.getElementById('submittedArea').classList.remove('hidden');
-                    showToast('✅ വിജയകരമായി സമർപ്പിച്ചു!', 'success');
-                    setTimeout(() => renderParentDashboard(), 1000);
-                }
+                // Update overall rank after submission
+                await updateOverallRankForParent();
+
+                setTimeout(() => renderParentDashboard(), 1000);
             } catch (err) {
                 showToast('സമർപ്പിക്കുന്നതിൽ പിശക്: ' + err.message, 'error');
                 window.isSubmitted = false;
@@ -3598,15 +3299,18 @@
             }
         }
 
+        // ---- Sessions ----
         document.getElementById('addDayBtn').addEventListener('click', async function() {
             const day = parseInt(document.getElementById('newDay').value);
             const startLocal = document.getElementById('newStart').value;
             const endLocal = document.getElementById('newEnd').value;
             const duration = parseInt(document.getElementById('newDuration').value);
             if (!day || !startLocal || !endLocal || !duration) { showToast('Fill all fields', 'error'); return; }
+
             const startUTC = localToUTC(startLocal);
             const endUTC = localToUTC(endLocal);
             if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+
             try {
                 const { data: existing } = await _supabase
                     .from('QuizSession')
@@ -3614,7 +3318,12 @@
                     .eq('day', day)
                     .maybeSingle();
                 if (existing) { showToast('Day ' + day + ' already exists', 'error'); return; }
-                await _supabase.from('QuizSession').insert({ day, startTime: startUTC, endTime: endUTC, duration });
+                await _supabase.from('QuizSession').insert({
+                    day,
+                    startTime: startUTC,
+                    endTime: endUTC,
+                    duration
+                });
                 showToast('✅ Day ' + day + ' added', 'success');
                 document.getElementById('newDay').value = '';
                 document.getElementById('newStart').value = '';
@@ -3642,9 +3351,11 @@
             const endLocal = document.getElementById('quickEnd').value;
             const duration = parseInt(document.getElementById('quickDuration').value);
             if (!day || !startLocal || !endLocal || !duration) { showToast('Fill all fields', 'error'); return; }
+
             const startUTC = localToUTC(startLocal);
             const endUTC = localToUTC(endLocal);
             if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+
             try {
                 await _supabase
                     .from('QuizSession')
@@ -3671,6 +3382,7 @@
                     document.getElementById('rankDayTabs').innerHTML = '';
                     return;
                 }
+
                 let opts = '';
                 sessions.forEach(s => opts += `<option value="${s.day}">Day ${s.day}</option>`);
                 document.getElementById('quickDay').innerHTML = opts;
@@ -3680,8 +3392,7 @@
                 document.getElementById('quickEnd').value = utcToLocal(first.endTime);
                 document.getElementById('quickDuration').value = first.duration || 15;
 
-                let html =
-                    `<table><thead><tr><th>Day</th><th>Start</th><th>End</th><th>Duration</th><th>Actions</th></tr></thead><tbody>`;
+                let html = `<table><thead><tr><th>Day</th><th>Start</th><th>End</th><th>Duration</th><th>Actions</th></tr></thead><tbody>`;
                 sessions.forEach(s => {
                     const localStart = utcToLocal(s.startTime);
                     const localEnd = utcToLocal(s.endTime);
@@ -3707,9 +3418,11 @@
                         const endLocal = row.querySelector('.edit-end').value;
                         const dur = parseInt(row.querySelector('.edit-duration').value);
                         if (!startLocal || !endLocal || !dur) { showToast('Fill all fields', 'error'); return; }
+
                         const startUTC = localToUTC(startLocal);
                         const endUTC = localToUTC(endLocal);
                         if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+
                         this.disabled = true;
                         this.innerHTML = '⏳';
                         try {
@@ -3732,19 +3445,23 @@
                         `<button class="day-tab ${d === window.adminCurrentDay ? 'active' : ''}" data-day="${d}" onclick="loadAdminQuestions(${d})">Day ${d}</button>`
                     ).join('');
                 }
+
                 const rContainer = document.getElementById('rankDayTabs');
                 if (rContainer) {
                     rContainer.innerHTML = days.map(d =>
                         `<button class="day-tab ${d === 1 ? 'active' : ''}" data-day="${d}" onclick="loadAdminRankings(${d})">Day ${d}</button>`
                     ).join('');
                 }
+
                 window.allSessions = sessions;
+
             } catch (err) {
                 table.innerHTML = '<div class="text-center text-muted">Error loading</div>';
                 showToast(err.message, 'error');
             }
         }
 
+        // ---- Questions ----
         document.getElementById('showAddQuestionBtn').addEventListener('click', function() {
             document.getElementById('questionForm').classList.remove('hidden');
             document.getElementById('formTitle').textContent = 'Add Question';
@@ -3771,13 +3488,16 @@
             ];
             const correct = parseInt(document.getElementById('qCorrect').value);
             const editId = document.getElementById('editQuestionId').value;
+
             if (!day || !text || opts.some(o => !o)) { showToast('Fill all fields', 'error'); return; }
+
             const { data: dayExists } = await _supabase
                 .from('QuizSession')
                 .select('day')
                 .eq('day', day)
                 .maybeSingle();
             if (!dayExists) { showToast('Day ' + day + ' does not exist.', 'error'); return; }
+
             this.disabled = true;
             this.innerHTML = '⏳';
             try {
@@ -3837,8 +3557,7 @@
                     table.innerHTML = '<div class="text-center text-muted">No questions for this day.</div>';
                     return;
                 }
-                let html =
-                    `<table><thead><tr><th>#</th><th>Question</th><th>Options</th><th>Correct</th><th>Actions</th></tr></thead><tbody>`;
+                let html = `<table><thead><tr><th>#</th><th>Question</th><th>Options</th><th>Correct</th><th>Actions</th></tr></thead><tbody>`;
                 window.questionsCache.forEach((q, i) => {
                     html += `<tr>
                         <td>${i+1}</td>
@@ -3853,36 +3572,35 @@
                 });
                 html += `</tbody></table>`;
                 table.innerHTML = html;
+
                 document.querySelectorAll('#adminDayTabsContainer .day-tab').forEach(tab => {
                     tab.classList.toggle('active', parseInt(tab.dataset.day) === day);
                 });
+
             } catch (err) {
                 table.innerHTML = '<div class="text-center text-muted">Error loading</div>';
                 showToast(err.message, 'error');
             }
         }
 
-        // ================================================================
-        // ADMIN RANKINGS – CLEAN PDF (Portrait, Light Theme)
-        // ================================================================
-        let currentRankingDay = 1;
-        let pdfBlobForPreview = null;
-
+        // ---- ADMIN RANKINGS ----
         async function loadAdminRankings(day) {
-            currentRankingDay = day;
             const container = document.getElementById('adminRankListContainer');
             container.innerHTML = '<div class="text-center text-muted">Loading...</div>';
             document.getElementById('overallRankContainer').classList.add('hidden');
+
             try {
                 const { data: attempts } = await _supabase
                     .from('Attempt')
                     .select('*, Student(name)')
                     .eq('sessionDay', day)
                     .eq('status', 'COMPLETED');
+
                 if (!attempts || attempts.length === 0) {
                     container.innerHTML = '<div class="text-center text-muted">No submissions for this day.</div>';
                     return;
                 }
+
                 const ranked = attempts.map(a => ({
                     ...a,
                     timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
@@ -3891,8 +3609,8 @@
                     if (a.score !== b.score) return (b.score || 0) - (a.score || 0);
                     return (a.timeTaken || 9999) - (b.timeTaken || 9999);
                 });
-                let html =
-                    `<table><thead><tr><th>Rank</th><th>Parent</th><th>Score</th><th>Time Taken</th><th>Submitted</th></tr></thead><tbody>`;
+
+                let html = `<table><thead><tr><th>Rank</th><th>Parent</th><th>Score</th><th>Time Taken</th><th>Submitted</th></tr></thead><tbody>`;
                 ranked.forEach((r, idx) => {
                     const rank = idx + 1;
                     let medal = '';
@@ -3909,364 +3627,23 @@
                 });
                 html += `</tbody></table>`;
                 container.innerHTML = html;
+
                 document.querySelectorAll('#rankDayTabs .day-tab').forEach(tab => {
                     tab.classList.toggle('active', parseInt(tab.dataset.day) === day);
                 });
+
             } catch (err) {
                 container.innerHTML = '<div class="text-center text-muted">Error loading</div>';
                 showToast(err.message, 'error');
             }
         }
 
-        // ================================================================
-        // PDF LOADER (jsPDF only)
-        // ================================================================
-        let pdfReady = false;
-
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.async = true;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-
-        async function loadPDFLibraries() {
-            if (pdfReady) return true;
-            if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
-                pdfReady = true;
-                return true;
-            }
-            const cdnList = [
-                'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-                'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
-                'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
-            ];
-            // Also try to load autoTable for better styling, but not required
-            const autoTableCDNs = [
-                'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js',
-                'https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js',
-                'https://unpkg.com/jspdf-autotable@3.5.31/dist/jspdf.plugin.autotable.js'
-            ];
-
-            for (const src of cdnList) {
-                try {
-                    await loadScript(src);
-                    await new Promise(r => setTimeout(r, 150));
-                    if (typeof window.jspdf !== 'undefined' && window.jspdf.jsPDF) {
-                        for (const atSrc of autoTableCDNs) {
-                            try {
-                                await loadScript(atSrc);
-                                await new Promise(r => setTimeout(r, 200));
-                                if (typeof window.jspdf.jsPDF.prototype.autoTable === 'function') break;
-                            } catch (e) { /* ignore */ }
-                        }
-                        pdfReady = true;
-                        return true;
-                    }
-                } catch (e) { /* ignore */ }
-            }
-            return false;
-        }
-
-        (async function preloadPDF() {
-            const loaded = await loadPDFLibraries();
-            if (loaded) console.log('✅ PDF libraries ready.');
-            else console.warn('⚠️ jsPDF not loaded. CSV fallback.');
-        })();
-
-        async function ensurePDFLibraries() {
-            if (pdfReady) return true;
-            const loaded = await loadPDFLibraries();
-            if (loaded) return true;
-            await new Promise(r => setTimeout(r, 500));
-            return await loadPDFLibraries();
-        }
-
-        // ---- CSV fallback ----
-        function downloadCSV(data, filename) {
-            const header = Object.keys(data[0] || {}).join(',');
-            const rows = data.map(row => Object.values(row).join(','));
-            const csv = [header, ...rows].join('\n');
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // ---- PDF Preview ----
-        function showPdfPreview(blob) {
-            pdfBlobForPreview = blob;
-            const url = URL.createObjectURL(blob);
-            document.getElementById('pdfPreviewFrame').src = url;
-            document.getElementById('pdfPreviewModal').classList.remove('hidden');
-        }
-
-        document.getElementById('closePdfPreviewBtn').addEventListener('click', function() {
-            document.getElementById('pdfPreviewModal').classList.add('hidden');
-            const iframe = document.getElementById('pdfPreviewFrame');
-            if (iframe.src) { URL.revokeObjectURL(iframe.src);
-                iframe.src = ''; }
-        });
-        document.getElementById('pdfPreviewModal').addEventListener('click', function(e) {
-            if (e.target === this) document.getElementById('closePdfPreviewBtn').click();
-        });
-        document.getElementById('pdfDownloadBtn').addEventListener('click', function() {
-            if (pdfBlobForPreview) {
-                const url = URL.createObjectURL(pdfBlobForPreview);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'Rankings.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showToast('✅ PDF downloaded', 'success');
-            }
-        });
-
-        // ================================================================
-        // GENERATE STYLED PDF (Portrait, Clean Light Theme)
-        // ================================================================
-        function generateStyledPDF(tableData, title, subtitle) {
-            if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
-                throw new Error('jsPDF not available');
-            }
-
-            const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-
-            // Header
-            doc.setFontSize(18);
-            doc.setTextColor(0, 0, 0);
-            doc.text('SKSBV NOORUSSALAM MADRASA', pageWidth / 2, 20, { align: 'center' });
-
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.text('ONLINE QUIZ COMPETITION FOR PARENTS', pageWidth / 2, 28, { align: 'center' });
-
-            doc.setDrawColor(0, 0, 0);
-            doc.setLineWidth(0.5);
-            doc.line(20, 32, pageWidth - 20, 32);
-
-            doc.setFontSize(14);
-            doc.setTextColor(0, 0, 0);
-            doc.text(title, pageWidth / 2, 40, { align: 'center' });
-
-            doc.setFontSize(10);
-            doc.setTextColor(80, 80, 80);
-            doc.text(subtitle, pageWidth / 2, 47, { align: 'center' });
-
-            // Table using autoTable if available
-            if (typeof doc.autoTable === 'function') {
-                doc.autoTable({
-                    head: [['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted']],
-                    body: tableData,
-                    startY: 54,
-                    theme: 'striped',
-                    headStyles: {
-                        fillColor: [220, 220, 220],
-                        textColor: [0, 0, 0],
-                        fontStyle: 'bold',
-                        halign: 'center'
-                    },
-                    bodyStyles: {
-                        textColor: [0, 0, 0],
-                        halign: 'center',
-                        fontSize: 9
-                    },
-                    alternateRowStyles: {
-                        fillColor: [240, 240, 240]
-                    },
-                    margin: { left: 15, right: 15 },
-                    didDrawPage: function(data) {
-                        const pageNumber = doc.internal.getCurrentPageInfo().pageNumber;
-                        const totalPages = doc.internal.getNumberOfPages();
-                        doc.setFontSize(8);
-                        doc.setTextColor(150, 150, 150);
-                        doc.text(`Page ${pageNumber} of ${totalPages}`, pageWidth - 15, pageHeight - 10, { align: 'right' });
-                    }
-                });
-                return doc;
-            }
-
-            // ===== MANUAL TABLE FALLBACK (Clean, Light) =====
-            console.warn('autoTable not available, using manual table drawing.');
-            const startX = 15;
-            let startY = 54;
-            const rowHeight = 7;
-            const colWidths = [15, 55, 25, 25, 40];
-            const totalWidth = colWidths.reduce((a, b) => a + b, 0);
-            const headers = ['Rank', 'Parent', 'Score', 'Time (sec)', 'Submitted'];
-
-            // Headers
-            doc.setFontSize(9);
-            doc.setTextColor(0, 0, 0);
-            doc.setFillColor(220, 220, 220);
-            doc.rect(startX, startY - 4, totalWidth, rowHeight + 1, 'F');
-            let xPos = startX;
-            headers.forEach((h, i) => {
-                doc.text(h, xPos + 2, startY + 1);
-                xPos += colWidths[i];
-            });
-            startY += rowHeight + 1;
-
-            // Rows
-            doc.setFontSize(8);
-            doc.setTextColor(0, 0, 0);
-            tableData.forEach((row, idx) => {
-                const yPos = startY + idx * rowHeight;
-                if (idx % 2 === 0) {
-                    doc.setFillColor(240, 240, 240);
-                } else {
-                    doc.setFillColor(255, 255, 255);
-                }
-                doc.rect(startX, yPos - 4, totalWidth, rowHeight, 'F');
-                xPos = startX;
-                row.forEach((cell, i) => {
-                    doc.text(String(cell), xPos + 2, yPos + 1);
-                    xPos += colWidths[i];
-                });
-            });
-
-            doc.setFontSize(8);
-            doc.setTextColor(150, 150, 150);
-            doc.text('Page 1 of 1', pageWidth - 15, pageHeight - 10, { align: 'right' });
-            return doc;
-        }
-
-        // ================================================================
-        // DOWNLOAD FUNCTIONS
-        // ================================================================
-        document.getElementById('downloadDayRankBtn').addEventListener('click', function() {
-            downloadDayRanking(currentRankingDay);
-        });
-
-        async function downloadDayRanking(day) {
-            const btn = document.getElementById('downloadDayRankBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Preparing...';
-            try {
-                const loaded = await ensurePDFLibraries();
-                if (!loaded) {
-                    showToast('jsPDF not loaded. Downloading CSV...', 'info');
-                    const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('sessionDay',
-                        day).eq('status', 'COMPLETED');
-                    if (!attempts || attempts.length === 0) { showToast('No data', 'error');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF'; return; }
-                    const ranked = attempts.map(a => ({ ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a
-                            .startTime)) / 1000) }));
-                    ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
-                    const csvData = ranked.map((r, idx) => ({ Rank: idx + 1, Parent: r.Student?.name || 'Unknown',
-                        Score: r.score || 0, 'Time (sec)': r.timeTaken || 0, Submitted: formatDate(r.endTime) }));
-                    downloadCSV(csvData, `Rankings_Day${day}.csv`);
-                    showToast('CSV downloaded', 'success');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF';
-                    return;
-                }
-
-                const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('sessionDay',
-                    day).eq('status', 'COMPLETED');
-                if (!attempts || attempts.length === 0) { showToast('No data', 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF'; return; }
-                const ranked = attempts.map(a => ({ ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a
-                        .startTime)) / 1000) }));
-                ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
-                const tableData = ranked.map((r, idx) => [idx + 1, r.Student?.name || 'Unknown', r.score || 0, r
-                    .timeTaken || 0, formatDate(r.endTime)
-                ]);
-
-                const doc = generateStyledPDF(tableData, `Day ${day} Rankings`, `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
-                const blob = doc.output('blob');
-                showPdfPreview(blob);
-                showToast('📄 PDF ready', 'success');
-            } catch (err) { showToast('Error: ' + err.message, 'error');
-                console.error(err); } finally { btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Day PDF'; }
-        }
-
-        document.getElementById('downloadOverallRankBtn').addEventListener('click', function() {
-            downloadOverallRanking();
-        });
-
-        async function downloadOverallRanking() {
-            const btn = document.getElementById('downloadOverallRankBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Preparing...';
-            try {
-                const loaded = await ensurePDFLibraries();
-                if (!loaded) {
-                    showToast('jsPDF not loaded. Downloading CSV...', 'info');
-                    const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('status',
-                        'COMPLETED');
-                    if (!attempts || attempts.length === 0) { showToast('No data', 'error');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF'; return; }
-                    const studentMap = {};
-                    attempts.forEach(a => {
-                        const id = a.studentId;
-                        if (!studentMap[id]) studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown',
-                            totalScore: 0, totalTime: 0, count: 0 };
-                        studentMap[id].totalScore += (a.score || 0);
-                        studentMap[id].totalTime += Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
-                        studentMap[id].count += 1;
-                    });
-                    const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s
-                            .count) }));
-                    ranked.sort((a, b) => (b.totalScore - a.totalScore) || (a.avgTime - b.avgTime));
-                    const csvData = ranked.map((r, idx) => ({ Rank: idx + 1, Parent: r.name, 'Total Score': r
-                            .totalScore, 'Avg Time (sec)': r.avgTime, Attempts: r.count }));
-                    downloadCSV(csvData, 'Overall_Rankings.csv');
-                    showToast('CSV downloaded', 'success');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF';
-                    return;
-                }
-
-                const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('status',
-                    'COMPLETED');
-                if (!attempts || attempts.length === 0) { showToast('No data', 'error');
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF'; return; }
-                const studentMap = {};
-                attempts.forEach(a => {
-                    const id = a.studentId;
-                    if (!studentMap[id]) studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown',
-                        totalScore: 0, totalTime: 0, count: 0 };
-                    studentMap[id].totalScore += (a.score || 0);
-                    studentMap[id].totalTime += Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
-                    studentMap[id].count += 1;
-                });
-                const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s.count) }));
-                ranked.sort((a, b) => (b.totalScore - a.totalScore) || (a.avgTime - b.avgTime));
-                const tableData = ranked.map((r, idx) => [idx + 1, r.name, r.totalScore, r.avgTime, r.count]);
-
-                const doc = generateStyledPDF(tableData, 'Overall Rankings (All Days)', `Generated on ${new Date().toLocaleDateString('ml-IN', { timeZone: 'Asia/Kolkata' })}`);
-                const blob = doc.output('blob');
-                showPdfPreview(blob);
-                showToast('📄 Overall PDF ready', 'success');
-            } catch (err) { showToast('Error: ' + err.message, 'error');
-                console.error(err); } finally { btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-file-pdf"></i> Download Overall PDF'; }
-        }
-
-        // ---- Overall Rank Modal ----
+        // ---- OVERALL RANK ----
         document.getElementById('overallRankBtn').addEventListener('click', function() {
             document.getElementById('overallRankModal').classList.remove('hidden');
             loadOverallRank();
         });
+
         document.getElementById('closeOverallRankBtn').addEventListener('click', function() {
             document.getElementById('overallRankModal').classList.add('hidden');
         });
@@ -4277,37 +3654,68 @@
         async function loadOverallRank() {
             const container = document.getElementById('overallRankModalContent');
             container.innerHTML = '<div class="text-center text-muted"><i class="fas fa-spinner fa-pulse"></i> Loading...</div>';
+
             try {
-                const { data: attempts } = await _supabase.from('Attempt').select('*, Student(name)').eq('status',
-                    'COMPLETED');
-                if (!attempts || attempts.length === 0) { container.innerHTML =
-                        '<div class="text-center text-muted">No submissions yet.</div>'; return; }
+                const { data: attempts } = await _supabase
+                    .from('Attempt')
+                    .select('*, Student(name)')
+                    .eq('status', 'COMPLETED');
+
+                if (!attempts || attempts.length === 0) {
+                    container.innerHTML = '<div class="text-center text-muted">No submissions yet.</div>';
+                    return;
+                }
+
                 const studentMap = {};
                 attempts.forEach(a => {
                     const id = a.studentId;
-                    if (!studentMap[id]) studentMap[id] = { studentId: id, name: a.Student?.name || 'Unknown',
-                        totalScore: 0, totalTime: 0, count: 0 };
+                    if (!studentMap[id]) {
+                        studentMap[id] = {
+                            studentId: id,
+                            name: a.Student?.name || 'Unknown',
+                            totalScore: 0,
+                            totalTime: 0,
+                            count: 0
+                        };
+                    }
                     studentMap[id].totalScore += (a.score || 0);
-                    studentMap[id].totalTime += Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
+                    const timeTaken = Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000);
+                    studentMap[id].totalTime += timeTaken;
                     studentMap[id].count += 1;
                 });
-                const ranked = Object.values(studentMap).map(s => ({ ...s, avgTime: Math.round(s.totalTime / s.count) }));
-                ranked.sort((a, b) => (b.totalScore - a.totalScore) || (a.avgTime - b.avgTime));
-                let html =
-                    `<table><thead><tr><th>Rank</th><th>Parent</th><th>Total Score</th><th>Avg Time</th><th>Attempts</th></tr></thead><tbody>`;
+
+                const ranked = Object.values(studentMap).map(s => ({
+                    ...s,
+                    avgTime: Math.round(s.totalTime / s.count)
+                }));
+
+                ranked.sort((a, b) => {
+                    if (a.totalScore !== b.totalScore) return b.totalScore - a.totalScore;
+                    return a.avgTime - b.avgTime;
+                });
+
+                let html = `<table><thead><tr><th>Rank</th><th>Parent</th><th>Total Score</th><th>Avg Time</th><th>Attempts</th></tr></thead><tbody>`;
                 ranked.forEach((r, idx) => {
                     const rank = idx + 1;
                     let medal = '';
                     if (rank === 1) medal = '🥇 ';
                     else if (rank === 2) medal = '🥈 ';
                     else if (rank === 3) medal = '🥉 ';
-                    html += `<tr><td><strong>${medal}${rank}</strong></td><td>${r.name}</td><td style="color:#fbbf24;font-weight:700;">${r.totalScore}</td><td>${r.avgTime} sec</td><td>${r.count}</td></tr>`;
+                    html += `<tr>
+                        <td><strong>${medal}${rank}</strong></td>
+                        <td>${r.name}</td>
+                        <td style="color:#fbbf24;font-weight:700;">${r.totalScore}</td>
+                        <td>${r.avgTime} sec</td>
+                        <td>${r.count}</td>
+                    </tr>`;
                 });
                 html += `</tbody></table>`;
                 container.innerHTML = html;
-            } catch (err) { container.innerHTML =
-                '<div class="text-danger text-center">Error loading overall rank.</div>';
-                showToast(err.message, 'error'); }
+
+            } catch (err) {
+                container.innerHTML = '<div class="text-danger text-center">Error loading overall rank.</div>';
+                showToast(err.message, 'error');
+            }
         }
 
         // ================================================================
@@ -4323,27 +3731,38 @@
                 '5. ഓരോ ചോദ്യത്തിനും ശരിയായ ഉത്തരം തിരഞ്ഞെടുക്കുക.\n' +
                 '6. സമയപരിധിക്കുള്ളിൽ എല്ലാ ഉത്തരങ്ങളും സമർപ്പിക്കുക.\n' +
                 '7. സമർപ്പിച്ച ശേഷം ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക.\n' +
-                '8. "Results" വഴി മുൻ ദിവസങ്ങളിലെ സ്കോറുകൾ കാണാം.\n' +
-                '9. ഓരോ ദിവസവും ഒരു ക്വിസ് മാത്രമേ പങ്കെടുക്കാൻ സാധിക്കൂ.\n' +
-                '10. ഫലം കാണുമ്പോൾ "📋 ഉത്തരങ്ങൾ കാണുക" ക്ലിക്ക് ചെയ്ത് ഓരോ ചോദ്യത്തിന്റെയും ശരി/തെറ്റ് പരിശോധിക്കാം.'
+                '8. "എന്റെ മത്സര ചരിത്രം" വഴി മുൻ ദിവസങ്ങളിലെ സ്കോറുകൾ കാണാം.\n' +
+                '9. ഓരോ ദിവസവും ഒരു ക്വിസ് മാത്രമേ പങ്കെടുക്കാൻ സാധിക്കൂ.'
             );
         }
 
         // ================================================================
-        // RESTORE SAVED ID & SET INITIAL MODE
+        // RESTORE SAVED ID
         // ================================================================
         const savedId = localStorage.getItem('lastId');
         if (savedId) document.getElementById('loginIdInput').value = savedId;
-        document.body.classList.add('login-mode');
-        document.body.classList.remove('dashboard-mode');
 
+        // ================================================================
+        // STICKY HEADER SCROLL EFFECT
+        // ================================================================
         document.addEventListener('scroll', function() {
-            document.querySelectorAll('.dashboard-header').forEach(h => {
-                h.classList.toggle('scrolled', window.scrollY > 10);
+            const headers = document.querySelectorAll('.dashboard-header');
+            headers.forEach(header => {
+                if (window.scrollY > 10) {
+                    header.classList.add('scrolled');
+                } else {
+                    header.classList.remove('scrolled');
+                }
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF: Portrait, Light Theme, Clean Table.');
+        console.log('🚀 NOORUSSALAM MADRASA — Full Backend Connected');
+        console.log('✅ Loading screen with wishing message');
+        console.log('✅ Sticky header for both parent and admin dashboards');
+        console.log('✅ Admin panel uses tables for Sessions, Questions, Rankings');
+        console.log('✅ Previous results hidden during active quiz');
+        console.log('✅ History button hidden during active quiz');
+        console.log('✅ Attractive Overall Rank card for parents with trophy animation');
     </script>
 </body>
 </html>
