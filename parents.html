@@ -913,6 +913,85 @@
             color: transparent;
         }
 
+        /* ---- Overall Rank Card (Attractive) ---- */
+        .stat-card.overall-rank-card {
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.12), rgba(251, 191, 36, 0.03));
+            border: 1.5px solid rgba(251, 191, 36, 0.25);
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        .stat-card.overall-rank-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.08), transparent 70%);
+            pointer-events: none;
+            animation: rotateGlow 8s linear infinite;
+        }
+        @keyframes rotateGlow {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        .stat-card.overall-rank-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 0 50px rgba(251, 191, 36, 0.15);
+        }
+        .stat-card.overall-rank-card .stat-value {
+            font-size: 2.8rem;
+            background: linear-gradient(135deg, #fff 10%, var(--gold) 90%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card.overall-rank-card .rank-icon {
+            font-size: 2rem;
+            display: inline-block;
+            animation: bounceTrophy 2s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes bounceTrophy {
+            0%,
+            100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-5px) scale(1.1);
+            }
+        }
+        .stat-card.overall-rank-card .rank-sub {
+            font-size: 0.7rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 1;
+        }
+        .stat-card.overall-rank-card .rank-detail {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            position: relative;
+            z-index: 1;
+            margin-top: 4px;
+        }
+        .stat-card.overall-rank-card .rank-detail span {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
         /* ===== TIMER ===== */
         .timer-wrapper {
             display: flex;
@@ -1697,6 +1776,15 @@
             .rank-card .rank-stats .stat-item .stat-value {
                 font-size: 1.3rem;
             }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
+            }
+            .stat-card.overall-rank-card .stat-value {
+                font-size: 2.2rem;
+            }
         }
 
         @media (max-width: 550px) {
@@ -1733,6 +1821,12 @@
                 flex-basis: 100%;
                 margin-left: 30px;
                 font-size: 0.7rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
             }
         }
 
@@ -1824,6 +1918,12 @@
             }
             .stat-card {
                 padding: 12px;
+            }
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
+            }
+            .stat-card.overall-rank-card .stat-value {
+                font-size: 1.8rem;
             }
             .dashboard-header {
                 flex-direction: column;
@@ -1954,6 +2054,12 @@
             }
             .stat-value {
                 font-size: 1.2rem;
+            }
+            .stat-card.overall-rank-card .stat-value {
+                font-size: 1.5rem;
+            }
+            .stat-card.overall-rank-card {
+                grid-column: 1 / -1;
             }
             .admin-tab {
                 font-size: 0.55rem;
@@ -2198,9 +2304,27 @@
                 </div>
             </div>
 
+            <!-- STATS GRID with Overall Rank -->
             <div class="stats-grid">
-                <div class="stat-card"><div><span class="stat-value" id="quizDayDisplay">ദിവസം 1</span><div class="text-muted" style="font-size:0.8rem;">ഇന്നത്തെ ക്വിസ്</div></div></div>
-                <div class="stat-card"><div><span class="stat-value" id="questionCountDisplay">0</span><div class="text-muted" style="font-size:0.8rem;">ചോദ്യങ്ങൾ</div></div></div>
+                <div class="stat-card">
+                    <div><span class="stat-value" id="quizDayDisplay">ദിവസം 1</span>
+                        <div class="text-muted" style="font-size:0.8rem;">ഇന്നത്തെ ക്വിസ്</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div><span class="stat-value" id="questionCountDisplay">0</span>
+                        <div class="text-muted" style="font-size:0.8rem;">ചോദ്യങ്ങൾ</div>
+                    </div>
+                </div>
+                <!-- Overall Rank Card - Attractive -->
+                <div class="stat-card overall-rank-card" id="overallRankCard">
+                    <div>
+                        <div class="rank-icon">🏆</div>
+                        <span class="stat-value gold" id="overallRankDisplay">—</span>
+                        <div class="rank-sub">Overall Rank</div>
+                        <div class="rank-detail">Total Score: <span id="totalScoreDisplay">—</span>  •  Days: <span id="totalDaysDisplay">—</span></div>
+                    </div>
+                </div>
             </div>
 
             <div id="timerArea" class="hidden timer-wrapper">
@@ -2670,6 +2794,9 @@
                 document.getElementById('displayParentId').textContent = user.studentId;
                 document.getElementById('quizDayDisplay').textContent = 'ദിവസം ' + active.day;
 
+                // Load overall rank after login
+                await updateOverallRankForParent();
+
                 renderParentDashboard();
                 showToast('👋 സ്വാഗതം, ' + user.name + '!', 'success');
 
@@ -2840,6 +2967,85 @@
                 result.innerHTML = '<div style="color:#fca5a5;">❌ പിശക്: ' + err.message + '</div>';
             }
         });
+
+        // ================================================================
+        // OVERALL RANK FOR PARENT (Attractive Display)
+        // ================================================================
+        async function updateOverallRankForParent() {
+            const rankDisplay = document.getElementById('overallRankDisplay');
+            const scoreDisplay = document.getElementById('totalScoreDisplay');
+            const daysDisplay = document.getElementById('totalDaysDisplay');
+
+            if (!window.currentUser) return;
+
+            try {
+                // Fetch all COMPLETED attempts
+                const { data: allAttempts, error } = await _supabase
+                    .from('Attempt')
+                    .select('studentId, score, sessionDay')
+                    .eq('status', 'COMPLETED');
+
+                if (error) throw error;
+                if (!allAttempts || allAttempts.length === 0) {
+                    rankDisplay.textContent = '—';
+                    scoreDisplay.textContent = '—';
+                    daysDisplay.textContent = '—';
+                    return;
+                }
+
+                // Group by studentId: sum scores, count days
+                const studentMap = {};
+                allAttempts.forEach(a => {
+                    if (!studentMap[a.studentId]) {
+                        studentMap[a.studentId] = { totalScore: 0, days: new Set() };
+                    }
+                    studentMap[a.studentId].totalScore += (a.score || 0);
+                    studentMap[a.studentId].days.add(a.sessionDay);
+                });
+
+                // Convert to array and sort by totalScore descending
+                const ranked = Object.entries(studentMap).map(([id, data]) => ({
+                    studentId: id,
+                    totalScore: data.totalScore,
+                    days: data.days.size
+                }));
+                ranked.sort((a, b) => b.totalScore - a.totalScore);
+
+                // Find current user's rank
+                const currentId = window.currentUser.id;
+                const myData = ranked.find(r => r.studentId === currentId);
+
+                if (!myData) {
+                    rankDisplay.textContent = '—';
+                    scoreDisplay.textContent = '—';
+                    daysDisplay.textContent = '—';
+                    return;
+                }
+
+                const rank = ranked.findIndex(r => r.studentId === currentId) + 1;
+                const totalScore = myData.totalScore;
+                const days = myData.days;
+
+                // Update the attractive card
+                rankDisplay.textContent = `#${rank}`;
+                scoreDisplay.textContent = totalScore;
+                daysDisplay.textContent = days;
+
+                // Add a subtle animation effect when rank updates
+                const card = document.getElementById('overallRankCard');
+                card.style.transition = 'all 0.3s ease';
+                card.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                }, 300);
+
+            } catch (err) {
+                console.error('Error fetching overall rank:', err);
+                rankDisplay.textContent = '—';
+                scoreDisplay.textContent = '—';
+                daysDisplay.textContent = '—';
+            }
+        }
 
         // ================================================================
         // PARENT DASHBOARD
@@ -3537,6 +3743,9 @@
 
                 document.getElementById('questionsArea').classList.add('hidden');
                 document.getElementById('timerArea').classList.add('hidden');
+
+                // Update overall rank after submission
+                await updateOverallRankForParent();
 
                 if (isTimeout) {
                     showToast('⏰ സമയം കഴിഞ്ഞു. ഫലങ്ങൾ ലഭ്യമാകും...', 'info');
@@ -4348,7 +4557,7 @@
             });
         });
 
-        console.log('🚀 NOORUSSALAM MADRASA — PDF: Portrait, Light Theme, Clean Table.');
+        console.log('🚀 NOORUSSALAM MADRASA — Overall Rank card added to parent dashboard.');
     </script>
 </body>
 </html>
