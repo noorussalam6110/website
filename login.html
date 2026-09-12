@@ -459,7 +459,12 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
         </div>
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
           <span style="font-size:2.4rem;font-weight:900;background:linear-gradient(100deg,#fbbf24,#f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;" id="madrasaRankDisplay">—</span>
-          <span style="font-size:.85rem;color:#9db8dd;">of <strong id="totalMadrasaStudents">0</strong> students</span>
+        </div>
+        <!-- ⭐ Total students count prominent -->
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px;background:rgba(59,139,255,.10);padding:8px 14px;border-radius:30px;border:1px solid rgba(125,179,255,.25);width:fit-content;">
+          <i class="fas fa-users" style="color:#22d3ee;font-size:1rem;"></i>
+          <span style="font-size:.82rem;color:#9db8dd;">Total Students:</span>
+          <strong id="totalMadrasaStudents" style="color:#fff;font-size:1.15rem;font-weight:900;">0</strong>
         </div>
         <div style="font-size:.82rem;color:#67e8f9;margin-top:8px;">
           <i class="fas fa-star"></i> Total Marks: <strong id="totalMarksDisplay">0</strong>
@@ -849,7 +854,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <div class="text-white"><strong>Balance: ₹<span id="modalPassbookBalance">0.00</span></strong></div>
-      <button class="btn-update" style="padding:9px 20px;font-size:.8rem;" onclick="closePassbook();openStudentWithdrawalModal();"><i class="fas fa-hand-holding-dollar"></i> Request</button>
+      <!-- ⭐ Request → Download -->
+      <button class="btn-update" style="padding:9px 20px;font-size:.8rem;" onclick="downloadPassbookPDF()"><i class="fas fa-file-pdf"></i> Download</button>
     </div>
     <div class="table-responsive">
       <table class="table table-dark table-sm align-middle" style="background:transparent;">
@@ -1357,6 +1363,61 @@ async function loadPassbookData(){
     tb.innerHTML=rows.map(r=>{const a=r.t.approved===true;const bg=a?'rgba(52,211,153,.18)':'rgba(248,113,113,.18)';const tc=a?'#6ee7b7':'#fca5a5';return `<tr><td>${formatDate(r.t.date)}</td><td>${r.t.debit>0?'₹'+r.t.debit:''}</td><td>${r.t.credit>0?'₹'+r.t.credit:''}</td><td>₹${r.b}</td><td><span style="display:inline-block;padding:3px 11px;border-radius:30px;font-size:.6rem;font-weight:800;background:${bg};color:${tc};">${a?'YES':'NO'}</span></td></tr>`;}).join('');
   }catch(e){tb.innerHTML='<tr><td colspan="5" class="text-center text-white-50">Error</td></tr>';}
 }
+// ⭐ NEW: Passbook PDF download
+async function downloadPassbookPDF(){
+  if(!currentUser){showToast('Login first','error');return;}
+  showLoading(true);
+  try{
+    const {data:txs}=await supabaseClient.from('payments').select('*').eq('studentid',currentUser.studentId).order('date',{ascending:true});
+    if(!txs||txs.length===0){showToast('No transactions','error');showLoading(false);return;}
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+    const pageW=doc.internal.pageSize.getWidth();
+    doc.setFillColor(21,71,168);doc.rect(0,0,pageW,80,'F');
+    doc.setTextColor(255,255,255);doc.setFontSize(18);doc.setFont(undefined,'bold');
+    doc.text('NOORUSSALAM MADRASA',pageW/2,35,{align:'center'});
+    doc.setFontSize(12);doc.setFont(undefined,'normal');
+    doc.text('Palathulli Passbook',pageW/2,58,{align:'center'});
+    doc.setTextColor(0,0,0);doc.setFontSize(10);
+    doc.setFont(undefined,'bold');doc.text('Name:',40,110);doc.setFont(undefined,'normal');doc.text(currentUser.name||'',90,110);
+    doc.setFont(undefined,'bold');doc.text('ID:',40,128);doc.setFont(undefined,'normal');doc.text(currentUser.studentId||'',90,128);
+    doc.setFont(undefined,'bold');doc.text('Class:',40,146);doc.setFont(undefined,'normal');doc.text('Class '+(currentUser.class||''),90,146);
+    doc.setFontSize(9);doc.setTextColor(120,120,120);
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`,pageW-40,110,{align:'right'});
+    let b=0;
+    const rows=(txs||[]).map(t=>{
+      if(t.approved===true) b+=(t.debit||0)-(t.credit||0);
+      return [
+        formatDate(t.date),
+        t.debit>0?('Rs. '+Number(t.debit).toFixed(2)):'—',
+        t.credit>0?('Rs. '+Number(t.credit).toFixed(2)):'—',
+        'Rs. '+b.toFixed(2),
+        t.approved?'YES':'NO'
+      ];
+    });
+    doc.autoTable({
+      startY:175,
+      head:[['Date','Debit','Credit','Balance','Approved']],
+      body:rows,
+      theme:'grid',
+      styles:{fontSize:9,cellPadding:6,textColor:[0,0,0]},
+      headStyles:{fillColor:[30,107,224],textColor:255,fontStyle:'bold'},
+      columnStyles:{1:{halign:'right'},2:{halign:'right'},3:{halign:'right'},4:{halign:'center'}}
+    });
+    const finalY=doc.lastAutoTable.finalY+22;
+    doc.setFillColor(240,245,255);doc.rect(40,finalY,pageW-80,50,'F');
+    doc.setDrawColor(30,107,224);doc.setLineWidth(1);doc.rect(40,finalY,pageW-80,50);
+    doc.setFontSize(12);doc.setFont(undefined,'bold');doc.setTextColor(0,0,0);
+    doc.text('Final Balance:',55,finalY+22);
+    doc.setFontSize(14);doc.setTextColor(30,107,224);
+    doc.text('Rs. '+b.toFixed(2),pageW-55,finalY+22,{align:'right'});
+    doc.setFontSize(8);doc.setTextColor(150,150,150);doc.setFont(undefined,'normal');
+    doc.text('This is a computer-generated passbook.',pageW/2,finalY+72,{align:'center'});
+    doc.save(`Passbook_${currentUser.studentId}.pdf`);
+    showToast('✅ Passbook downloaded','success');
+  }catch(e){showToast('❌ '+(e.message||'Error'),'error');}
+  showLoading(false);
+}
 function openStudentWithdrawalModal(){if(!currentUser)return;document.getElementById('studentWithdrawalModal').style.display='flex';loadStudentBalanceForWithdrawal();loadStudentWithdrawals();}
 function closeStudentWithdrawalModal(){document.getElementById('studentWithdrawalModal').style.display='none';}
 async function loadStudentBalanceForWithdrawal(){
@@ -1599,7 +1660,7 @@ document.getElementById('editProfileForm').addEventListener('submit',async funct
   showLoading(false);
 });
 
-/* ==== ID CARD ==== */
+/* ==== ID CARD (⭐ REDESIGNED) ==== */
 function showIdCard(){
   modalTitleSpan.innerText="🪪 Student ID Card";
   modalBodyDiv.innerHTML=`<div class="text-center py-2"><div class="id-card-preview" style="max-width:340px;margin:0 auto;"><canvas id="idCardCanvas" width="500" height="800"></canvas></div><div class="d-flex gap-2 justify-content-center mt-3 flex-wrap"><button class="btn-load" onclick="downloadIdCard('png')"><i class="fas fa-download"></i> PNG</button><button class="btn-pdf" onclick="downloadIdCard('pdf')"><i class="fas fa-file-pdf"></i> PDF</button><button class="btn-update" onclick="printIdCard()"><i class="fas fa-print"></i> Print</button></div></div>`;
@@ -1610,25 +1671,95 @@ function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.cro
 async function renderIdCard(){
   const canvas=document.getElementById('idCardCanvas');if(!canvas)return;
   const ctx=canvas.getContext('2d');const w=500,h=800;
+  
   let bgDrawn=false;
-  if(ID_CARD_BG_URL){try{const bg=await loadImage(ID_CARD_BG_URL);ctx.drawImage(bg,0,0,w,h);bgDrawn=true;}catch(e){}}
-  if(!bgDrawn){const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#eaf2ff');g.addColorStop(1,'#c9ddff');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
-  if(bgDrawn){ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(0,88,w,h-88-86);}
-  ctx.fillStyle='rgba(21,71,168,.94)';ctx.fillRect(0,0,w,88);
-  ctx.textAlign='center';ctx.fillStyle='#fff';ctx.font='bold 21px Anek Malayalam';ctx.fillText('NOORUSSALAM MADRASA',w/2,40);
-  ctx.font='600 12px Anek Malayalam';ctx.fillStyle='#a9cdff';ctx.fillText('STUDENT IDENTITY CARD',w/2,64);
-  const px=w/2,py=205,pr=88;
-  ctx.save();ctx.beginPath();ctx.arc(px,py,pr+5,0,Math.PI*2);ctx.strokeStyle='#22d3ee';ctx.lineWidth=4;ctx.stroke();ctx.restore();
-  if(hasPhoto(currentUser.photo)){try{const p=await loadImage(currentUser.photo);ctx.save();ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();const ia=p.width/p.height;let dw,dh,dx,dy;if(ia>1){dh=pr*2;dw=p.width*(dh/p.height);dx=px-dw/2;dy=py-pr;}else{dw=pr*2;dh=p.height*(dw/p.width);dx=px-pr;dy=py-dh/2;}ctx.drawImage(p,dx,dy,dw,dh);ctx.restore();}catch(e){}}
-  else{ctx.save();ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();ctx.fillStyle='#d0e0ff';ctx.fillRect(px-pr,py-pr,pr*2,pr*2);ctx.restore();ctx.fillStyle='#1547a8';ctx.font='bold 78px Anek Malayalam';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((currentUser.name||'S').charAt(0).toUpperCase(),px,py+4);ctx.textBaseline='alphabetic';}
-  ctx.textAlign='center';ctx.fillStyle='#0a1a3f';ctx.font='bold 25px Anek Malayalam';ctx.fillText(currentUser.name||'N/A',w/2,342);
-  ctx.strokeStyle='rgba(21,71,168,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(55,362);ctx.lineTo(w-55,362);ctx.stroke();
-  const rows=[['UID',currentUser.studentId||'—'],['CLASS',currentUser.class||'—'],['ROLL NO',currentUser.roll||'—'],['FATHER',currentUser.fatherName||'—'],['PHONE',currentUser.phone||'—'],['DOB',currentUser.dob?formatDate(currentUser.dob):'—'],['BLOOD GRP',currentUser.bloodGroup||'—'],['ADDRESS',currentUser.address||'—']];
-  let y=398;
-  rows.forEach(([l,v])=>{ctx.textAlign='left';ctx.fillStyle='#1547a8';ctx.font='bold 13px Anek Malayalam';ctx.fillText(l,55,y);ctx.fillStyle='#0a1a3f';ctx.font='600 14px Anek Malayalam';let val=String(v);const maxLen=l==='ADDRESS'?28:26;if(val.length>maxLen)val=val.substring(0,maxLen-1)+'…';ctx.fillText(': '+val,168,y);y+=l==='ADDRESS'?30:32;});
-  ctx.fillStyle='rgba(21,71,168,.94)';ctx.fillRect(0,h-86,w,86);
-  ctx.textAlign='center';ctx.fillStyle='#a9cdff';ctx.font='11px Anek Malayalam';ctx.fillText('Academic Year 2025-2026',w/2,h-52);
-  ctx.fillStyle='#22d3ee';ctx.font='bold 11px Anek Malayalam';ctx.fillText('Valid • Noorussalam Madrasa Portal',w/2,h-28);
+  if(ID_CARD_BG_URL){
+    try{const bg=await loadImage(ID_CARD_BG_URL);ctx.drawImage(bg,0,0,w,h);bgDrawn=true;}catch(e){}
+  }
+  if(!bgDrawn){
+    const g=ctx.createLinearGradient(0,0,w,h);
+    g.addColorStop(0,'#eaf2ff');g.addColorStop(1,'#c9ddff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+  } else {
+    ctx.fillStyle='rgba(255,255,255,.35)';
+    ctx.fillRect(0,0,w,h);
+  }
+  
+  // ❌ NO top header — madrasa name removed
+  
+  // ⭐ PHOTO — centered
+  const px=w/2, py=250, pr=95;
+  ctx.save();
+  ctx.beginPath();ctx.arc(px,py,pr+6,0,Math.PI*2);
+  ctx.strokeStyle='#22d3ee';ctx.lineWidth=5;ctx.stroke();
+  ctx.restore();
+  
+  if(hasPhoto(currentUser.photo)){
+    try{
+      const p=await loadImage(currentUser.photo);
+      ctx.save();
+      ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();
+      const ia=p.width/p.height;let dw,dh,dx,dy;
+      if(ia>1){dh=pr*2;dw=p.width*(dh/p.height);dx=px-dw/2;dy=py-pr;}
+      else{dw=pr*2;dh=p.height*(dw/p.width);dx=px-pr;dy=py-dh/2;}
+      ctx.drawImage(p,dx,dy,dw,dh);
+      ctx.restore();
+    }catch(e){}
+  }else{
+    ctx.save();
+    ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();
+    ctx.fillStyle='#d0e0ff';ctx.fillRect(px-pr,py-pr,pr*2,pr*2);
+    ctx.restore();
+    ctx.fillStyle='#1547a8';ctx.font='bold 84px Anek Malayalam';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText((currentUser.name||'S').charAt(0).toUpperCase(),px,py+4);
+    ctx.textBaseline='alphabetic';
+  }
+  
+  // ⭐ Student name below photo
+  ctx.textAlign='center';
+  ctx.fillStyle='#0a1a3f';
+  ctx.font='bold 28px Anek Malayalam';
+  ctx.fillText(currentUser.name||'N/A',w/2,412);
+  
+  // ⭐ Class + Roll in ONE line
+  ctx.font='600 15px Anek Malayalam';
+  ctx.fillStyle='#1547a8';
+  ctx.fillText(`Class ${currentUser.class||'—'}  •  Roll No: ${currentUser.roll||'—'}`,w/2,442);
+  
+  ctx.strokeStyle='rgba(21,71,168,.4)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(55,468);ctx.lineTo(w-55,468);ctx.stroke();
+  
+  // ⭐ Details moved lower
+  const rows=[
+    ['UID',currentUser.studentId||'—'],
+    ['FATHER',currentUser.fatherName||'—'],
+    ['PHONE',currentUser.phone||'—'],
+    ['DOB',currentUser.dob?formatDate(currentUser.dob):'—'],
+    ['BLOOD GRP',currentUser.bloodGroup||'—'],
+    ['ADDRESS',currentUser.address||'—']
+  ];
+  let y=510;
+  rows.forEach(([l,v])=>{
+    ctx.textAlign='left';
+    ctx.fillStyle='#1547a8';ctx.font='bold 13px Anek Malayalam';
+    ctx.fillText(l,55,y);
+    ctx.fillStyle='#0a1a3f';ctx.font='600 14px Anek Malayalam';
+    let val=String(v);
+    const maxLen=l==='ADDRESS'?28:26;
+    if(val.length>maxLen)val=val.substring(0,maxLen-1)+'…';
+    ctx.fillText(': '+val,168,y);
+    y += l==='ADDRESS'?30:32;
+  });
+  
+  // Footer
+  ctx.fillStyle='rgba(21,71,168,.94)';
+  ctx.fillRect(0,h-70,w,70);
+  ctx.textAlign='center';
+  ctx.fillStyle='#a9cdff';ctx.font='11px Anek Malayalam';
+  ctx.fillText('Academic Year 2025-2026',w/2,h-40);
+  ctx.fillStyle='#22d3ee';ctx.font='bold 11px Anek Malayalam';
+  ctx.fillText('Valid • Noorussalam Madrasa Portal',w/2,h-18);
 }
 function downloadIdCard(t){
   const c=document.getElementById('idCardCanvas');if(!c){showToast('ID card not ready','error');return;}
@@ -1644,23 +1775,64 @@ function printIdCard(){
   win.document.close();
 }
 
-/* ==== TOPPER ==== */
+/* ==== TOPPER (⭐ SIMPLIFIED) ==== */
 function showTopperPoster(){if(!currentUser)return;document.getElementById('topperNameDisplay').textContent=currentUser.name||'Student';const rt=currentUser.rank===1?'First Place':currentUser.rank===2?'Second Place':currentUser.rank===3?'Third Place':'—';document.getElementById('topperClassRank').textContent=`Class ${currentUser.class} • ${rt}`;document.getElementById('topperModal').style.display='flex';}
 function closeTopperModal(){document.getElementById('topperModal').style.display='none';}
 function loadImageForPoster(src){return new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>rej();i.src=src;});}
 async function renderTopperCanvas(name,cls,rank,photo){
-  const w=2400,h=3200;const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');
+  const w=2400,h=3200;
+  const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d');
+  
   let bgDrawn=false;
-  if(TOPPER_BG_URL){try{const bg=await loadImageForPoster(TOPPER_BG_URL);ctx.drawImage(bg,0,0,w,h);bgDrawn=true;}catch(e){}}
-  if(!bgDrawn){const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#fdf6e3');bg.addColorStop(.5,'#fef9ef');bg.addColorStop(1,'#f5e6c3');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);ctx.strokeStyle='#c9a227';ctx.lineWidth=18;ctx.strokeRect(60,60,w-120,h-120);ctx.strokeStyle='#e5c76b';ctx.lineWidth=6;ctx.strokeRect(110,110,w-220,h-220);}
-  const cx=w/2,cy=1600,r=400;
-  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+18,0,Math.PI*2);ctx.strokeStyle='#c9a227';ctx.lineWidth=14;ctx.stroke();ctx.restore();
-  if(photo){try{const img=await loadImageForPoster(photo);ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();let dw,dh;if(img.width>img.height){dh=r*2;dw=img.width*(dh/img.height);}else{dw=r*2;dh=img.height*(dw/img.width);}ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);ctx.restore();}catch(e){}}
-  ctx.textAlign='center';ctx.fillStyle='#8b6914';ctx.font='bold 130px Anek Malayalam';ctx.fillText('🏆 TOPPER 🏆',cx,420);
-  const nameGrad=ctx.createLinearGradient(0,2100,0,2260);nameGrad.addColorStop(0,'#c9a227');nameGrad.addColorStop(.5,'#f5d76e');nameGrad.addColorStop(1,'#b8860b');
-  ctx.fillStyle=nameGrad;ctx.font='bold 140px Anek Malayalam';ctx.fillText(name||'Student',cx,2220);
-  ctx.fillStyle='#5c4a1f';ctx.font='bold 78px Anek Malayalam';const pt=rank===1?'FIRST PLACE':rank===2?'SECOND PLACE':rank===3?'THIRD PLACE':'RANK '+(rank||'—');ctx.fillText(`Class ${cls||'?'} • ${pt}`,cx,2400);
-  ctx.fillStyle='rgba(201,162,39,.92)';ctx.fillRect(0,h-260,w,260);ctx.fillStyle='#fdf6e3';ctx.font='bold 52px Anek Malayalam';ctx.fillText('NOORUSSALAM MADRASA',cx,h-150);ctx.font='600 40px Anek Malayalam';ctx.fillText('Academic Year 2025-2026',cx,h-80);
+  if(TOPPER_BG_URL){
+    try{
+      const bg=await loadImageForPoster(TOPPER_BG_URL);
+      ctx.drawImage(bg,0,0,w,h);
+      bgDrawn=true;
+    }catch(e){}
+  }
+  if(!bgDrawn){
+    const bg=ctx.createLinearGradient(0,0,0,h);
+    bg.addColorStop(0,'#fdf6e3');bg.addColorStop(.5,'#fef9ef');bg.addColorStop(1,'#f5e6c3');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='#c9a227';ctx.lineWidth=18;ctx.strokeRect(60,60,w-120,h-120);
+    ctx.strokeStyle='#e5c76b';ctx.lineWidth=6;ctx.strokeRect(110,110,w-220,h-220);
+    ctx.textAlign='center';ctx.fillStyle='#8b6914';ctx.font='bold 100px Anek Malayalam';
+    ctx.fillText('NOORUSSALAM MADRASA',w/2,320);
+  }
+  
+  const cx=w/2,cy=1500,r=430;
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r+16,0,Math.PI*2);
+  ctx.strokeStyle='#c9a227';ctx.lineWidth=12;ctx.stroke();
+  ctx.restore();
+  
+  if(photo){
+    try{
+      const img=await loadImageForPoster(photo);
+      ctx.save();
+      ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+      let dw,dh;
+      if(img.width>img.height){dh=r*2;dw=img.width*(dh/img.height);}
+      else{dw=r*2;dh=img.height*(dw/img.width);}
+      ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);
+      ctx.restore();
+    }catch(e){}
+  }
+  
+  // ⭐ Name in BLACK
+  ctx.textAlign='center';
+  ctx.fillStyle='#000000';
+  ctx.font='bold 170px Anek Malayalam';
+  ctx.fillText(name||'Student',cx,2320);
+  
+  // ⭐ TOPPER / SECOND / THIRD in BLACK
+  const placeText = rank===1?'TOPPER':rank===2?'SECOND':rank===3?'THIRD':'RANK '+(rank||'—');
+  ctx.fillStyle='#000000';
+  ctx.font='bold 110px Anek Malayalam';
+  ctx.fillText(placeText,cx,2470);
+  
   return canvas;
 }
 async function previewTopperPoster(){showTopperLoading('Generating preview...');try{const c=await renderTopperCanvas(currentUser.name,currentUser.class,currentUser.rank||0,topperPhotoData);hideTopperLoading();const pc=document.getElementById('posterPreviewCanvas');pc.width=1600;pc.height=2134;pc.getContext('2d').drawImage(c,0,0,2400,3200,0,0,1600,2134);document.getElementById('posterPreviewOverlay').style.display='block';}catch(e){hideTopperLoading();}}
@@ -1705,7 +1877,6 @@ async function selectAdminClass(cls){
   else{document.getElementById('classBadgeNumber').textContent='Class '+cls;try{const {data:s}=await supabaseClient.from('students').select('studentid').eq('class',cls);document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast(`📚 Managing Class ${cls}`,'success');}
   document.getElementById('adminSettingsTab').style.display='none';
   const activeTab=document.querySelector('.admin-tab.active')?.dataset.tab||'payments';
-  // 🔧 FIX: payments tab-ൽ ഇന്നത്തെ തിയ്യതി auto-fill
   if(activeTab==='payments'){
     const dateInput=document.getElementById('adminDate');
     if(!dateInput.value) dateInput.value=new Date().toISOString().split('T')[0];
@@ -1723,7 +1894,6 @@ function switchAdminTab(tab){
   const map={payments:'adminPaymentsTab',withdrawals:'adminWithdrawalsTab',balances:'adminBalancesTab',summary:'adminSummaryTab',transactions:'adminTransactionsTab',students:'adminStudentsTab',events:'adminEventsTab',attendance:'adminAttendanceTab',grades:'adminGradesTab',feed:'adminFeedTab',marks:'adminMarksTab',moralvalues:'adminMoralValuesTab',extracurricular:'adminExtracurricularTab',timetable:'adminTimetableTab',homework:'adminHomeworkTab',notifications:'adminNotificationsTab',library:'adminLibraryTab'};
   const el=document.getElementById(map[tab]);if(el)el.style.display='block';
   if(tab==='withdrawals')loadAllWithdrawals();if(tab==='balances')loadBalances();
-  // 🔧 FIX: payments tab-ൽ ഇന്നത്തെ തിയ്യതി auto-fill
   if(tab==='payments'){
     const dateInput=document.getElementById('adminDate');
     if(!dateInput.value) dateInput.value=new Date().toISOString().split('T')[0];
@@ -1739,7 +1909,7 @@ function switchAdminTab(tab){
   if(tab==='extracurricular'){const n=new Date();document.getElementById('extraMonth').value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;loadExtraAdmin();}
 }
 
-/* ==== ADMIN: MARKS (with Total column) ==== */
+/* ==== ADMIN: MARKS (Total column) ==== */
 async function loadMarksEntry(){
   if(!currentAdminClass)return;
   if(currentAdminClass==='all'){showToast('Marks-ന് specific class തിരഞ്ഞെടുക്കുക','error');document.getElementById('marksWrap').innerHTML='<div class="empty-state">📚 Marks entry-ക്ക് ഒരു specific class തിരഞ്ഞെടുക്കുക</div>';return;}
@@ -1758,13 +1928,11 @@ async function loadMarksEntry(){
     html+=`<div class="marks-config-panel"><div class="marks-config-title"><i class="fas fa-sliders"></i> വിഷയങ്ങളും Max Marks-ഉം</div><div class="marks-config-grid">${subjects.map((sub,si)=>`<div class="subject-config-item" id="cfg_s${si}"><label><input type="checkbox" id="subj_en_s${si}" checked onchange="toggleSubjectColumn(${si}, this.checked)">${escapeHtml(sub)}</label><input type="number" id="subj_max_s${si}" value="${configs[si].max_marks}" min="1" max="500" oninput="validateMarksInputs()"></div>`).join('')}</div></div>`;
     html+='<div class="marks-entry-table"><form onsubmit="return false;"><table><thead><tr><th>#</th><th>Student</th>';
     subjects.forEach((sub,si)=>{html+=`<th class="col_s${si}" style="text-align:center;">${escapeHtml(sub.substring(0,10))}</th>`;});
-    // 🔧 NEW: TOTAL column
     html+='<th style="text-align:center;background:rgba(34,211,238,.15);">TOTAL</th>';
     html+='</tr></thead><tbody>';
     marksEntryData.forEach((s,sidx)=>{
       html+=`<tr><td>${sidx+1}</td><td><strong>${escapeHtml(s.name)}</strong></td>`;
       subjects.forEach((sub,si)=>{html+=`<td class="col_s${si}" style="text-align:center;"><input type="text" class="mk-inp" data-sidx="${sidx}" data-si="${si}" autocomplete="new-password" placeholder="—"></td>`;});
-      // 🔧 NEW: per-row total span
       html+=`<td style="text-align:center;background:rgba(34,211,238,.08);"><span id="rowTotal_${sidx}" style="color:#22d3ee;font-weight:800;">0</span></td>`;
       html+='</tr>';
     });
@@ -1774,12 +1942,10 @@ async function loadMarksEntry(){
     marksEntryData.forEach((s,sidx)=>{subjects.forEach((sub,si)=>{const inp=form.querySelector(`input[data-sidx="${sidx}"][data-si="${si}"]`);if(!inp)return;inp.value=s.marks[sub]||'';inp.addEventListener('input',function(){const sx=parseInt(this.dataset.sidx);const sy=parseInt(this.dataset.si);if(marksEntryData[sx] && subjects[sy]){marksEntryData[sx].marks[subjects[sy]]=this.value;}validateMarksInputs();});});});
     subjects.forEach((sub,si)=>{toggleSubjectColumn(si,true);});
     wrap.dataset.subjects=JSON.stringify(subjects);
-    // Initial row totals
     marksEntryData.forEach((_,sidx)=>updateRowTotal(sidx));
   }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}
 }
 function toggleSubjectColumn(si, show){document.querySelectorAll(`.col_s${si}`).forEach(el=>{el.style.display = show ? '' : 'none';});const cfg=document.getElementById(`cfg_s${si}`);if(cfg)cfg.classList.toggle('disabled', !show);}
-// 🔧 NEW: Row total calculation
 function updateRowTotal(sidx){
   const wrap=document.getElementById('marksWrap');
   if(!wrap) return;
@@ -1799,7 +1965,6 @@ function updateRowTotal(sidx){
 function validateMarksInputs(){
   const wrap=document.getElementById('marksWrap');if(!wrap)return;
   wrap.querySelectorAll('.mk-inp').forEach(inp=>{const si=parseInt(inp.dataset.si);const enEl=document.getElementById(`subj_en_s${si}`);if(!enEl || !enEl.checked)return;const maxEl=document.getElementById(`subj_max_s${si}`);const mx=parseFloat(maxEl?.value)||0;const parsed=parseMarksInput(inp.value);inp.classList.remove('invalid','skipped');if(parsed.skip){inp.classList.add('skipped');return;}if(parsed.isPass)return;if(parsed.value<0 || (mx>0 && parsed.value>mx)){inp.classList.add('invalid');}});
-  // 🔧 NEW: update all row totals
   wrap.querySelectorAll('.mk-inp').forEach(inp=>updateRowTotal(parseInt(inp.dataset.sidx)));
 }
 async function saveMarksBulk(){
@@ -1823,7 +1988,7 @@ async function saveMarksBulk(){
   btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Save Marks';
 }
 
-/* ==== AUTO RANK (TOTAL MARKS BASED) ==== */
+/* ==== AUTO RANK (Total marks based) ==== */
 async function autoCalculateRanks(silent){
   if(!currentAdminClass)return;
   if(currentAdminClass==='all'){showToast('Specific class','error');return;}
@@ -1841,7 +2006,6 @@ async function autoCalculateRanks(silent){
     const totals={};students.forEach(s=>{totals[s.studentid]={o:0};});
     marks.forEach(m=>{const mx=Number(m.max_marks)||0;if(mx<=0)return;if(totals[m.studentid])totals[m.studentid].o += Number(m.obtained_marks)||0;});
     const list=students.map(s=>{const o=totals[s.studentid].o;const pct=Math.round((o/totalMaxAll)*100);return {studentid:s.studentid, total:o, pct};});
-    // 🔧 Rank sorted by TOTAL marks (not percentage)
     list.sort((a,b)=>b.total-a.total);
     let cr=0,pp=null;
     for(let i=0;i<list.length;i++){const s=list[i];if(pp===null||s.total!==pp)cr=i+1;pp=s.total;
@@ -1860,7 +2024,7 @@ async function autoCalculateRanks(silent){
   if(!silent)showLoading(false);
 }
 
-/* ==== ADMIN: EXTRA-CURRICULAR (10-mark system) ==== */
+/* ==== ADMIN: EXTRA-CURRICULAR ==== */
 async function loadExtraAdmin(){
   if(!currentAdminClass)return;
   if(currentAdminClass==='all'){document.getElementById('extraWrap').innerHTML='<div class="empty-state">Specific class</div>';return;}
@@ -2065,11 +2229,10 @@ async function saveLibraryItem(e){
 }
 async function deleteLibrary(id){if(!confirm('Delete?'))return;await supabaseClient.from('library').delete().eq('id',id);showToast('🗑️','success');loadLibraryAdmin();}
 
-/* ==== ADMIN: PAYMENTS (🔧 FIXED: model-based updates) ==== */
+/* ==== ADMIN: PAYMENTS (model-based) ==== */
 async function loadPaymentsForDate(){
   if(!currentAdminClass)return;
   const date=document.getElementById('adminDate').value;
-  // 🔧 FIX: if date empty, use today
   if(!date){
     const today=new Date().toISOString().split('T')[0];
     document.getElementById('adminDate').value=today;
@@ -2098,7 +2261,6 @@ async function loadPaymentsForDate(){
     applyPaymentsFilters();
   }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}
 }
-// 🔧 FIX: search by name OR ID
 function applyPaymentsFilters(){
   const st=(document.getElementById('adminSearch').value||'').toLowerCase().trim();
   filteredPayments=currentDatePayments.filter(i=>
@@ -2108,7 +2270,6 @@ function applyPaymentsFilters(){
   );
   renderAdminTable();
 }
-// 🔧 FIX: event listener on inputs → model update
 function renderAdminTable(){
   const wrap=document.getElementById('adminTableWrap');
   if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}
@@ -2125,7 +2286,6 @@ function renderAdminTable(){
   });
   html+='</tbody></table>';
   wrap.innerHTML=html;
-  // 🔧 KEY FIX: input മാറുമ്പോൾ model-ൽ update ചെയ്യുന്നു
   wrap.querySelectorAll('input[data-sid]').forEach(inp=>{
     inp.addEventListener('input',function(){
       const sid=this.dataset.sid;
@@ -2146,12 +2306,9 @@ function clearAdminForm(){
   });
   showToast('Cleared','info');
 }
-// 🔧 FIX: bulkUpdate reads from MODEL (not DOM), so search-hidden students are included
 async function bulkUpdate(){
   const date=document.getElementById('adminDate').value;
   if(!date){showToast('Select date','error');return;}
-
-  // Sync visible inputs into model first (in case any last-second change)
   currentDatePayments.forEach(i=>{
     const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');
     const d=document.getElementById(`admin_debit_${cid}`);
@@ -2159,8 +2316,6 @@ async function bulkUpdate(){
     if(d) i.debit=parseFloat(d.value)||0;
     if(c) i.credit=parseFloat(c.value)||0;
   });
-
-  // ⭐ Build from MODEL — includes students hidden by search
   const data=[];
   currentDatePayments.forEach(i=>{
     const debit=Number(i.debit)||0;
@@ -2177,9 +2332,7 @@ async function bulkUpdate(){
       });
     }
   });
-
   if(data.length===0){showToast('No payments to save','error');return;}
-
   const btn=document.getElementById('adminUpdateBtn');btn.disabled=true;btn.innerHTML='Saving...';
   try{
     const ids=currentDatePayments.map(x=>x.studentId);
@@ -2756,7 +2909,7 @@ async function aiRespond(q){
 Object.assign(window,{
   showResultsModal,showAttendanceReport,showMoralValuesModal,showProfileCard,closeModal,openEditProfile,closeEditProfile,
   showIdCard,downloadIdCard,printIdCard,toggleTheme,showTopperPoster,closeTopperModal,openTopperCrop,closeTopperCrop,saveTopperCrop,
-  previewTopperPoster,closePosterPreview,downloadTopperPoster,openPassbook,closePassbook,openStudentWithdrawalModal,closeStudentWithdrawalModal,
+  previewTopperPoster,closePosterPreview,downloadTopperPoster,openPassbook,closePassbook,openStudentWithdrawalModal,closeStudentWithdrawalModal,downloadPassbookPDF,
   switchAdminTab,loadPaymentsForDate,loadAllWithdrawals,adminDeleteWithdrawal,approveWithdrawal,rejectWithdrawal,loadBalances,clearAdminForm,
   bulkUpdate,loadAllTransactions,loadDailySummary,applyPaymentsFilters,loadPassbookData,closeFindStudentId,openHelpModal,closeHelpModal,
   findStudentId,copyToClipboard,loadStudentsForAdmin,filterStudentsAdmin,openStudentForm,editStudent,saveStudent,deleteStudent,
@@ -2784,7 +2937,7 @@ async function initApp(){
     if(el)el.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
   });
   if(closeModalBtn)closeModalBtn.addEventListener('click',()=>modal.style.display='none');
-  console.log('%c✅ Noorussalam Madrasa v18.0 — Full Edition (Payment & Rank Fixes)','color:#22d3ee;font-weight:bold;font-size:14px;');
+  console.log('%c✅ Noorussalam Madrasa v18.0 — Full Edition (Passbook/Topper/IDCard/Total Students)','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
 </script>
