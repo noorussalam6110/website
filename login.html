@@ -561,7 +561,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div class="admin-toolbar">
         <label>Date</label><input type="date" id="adminDate" />
         <button class="btn-load" onclick="loadPaymentsForDate()"><i class="fas fa-sync-alt"></i> Load</button>
-        <input type="text" id="adminSearch" placeholder="🔍 Search" oninput="applyPaymentsFilters()" />
+        <input type="text" id="adminSearch" placeholder="🔍 Search name or ID" oninput="applyPaymentsFilters()" />
         <button class="btn-pdf" onclick="downloadPaymentsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
       </div>
       <div class="admin-table-wrap" id="adminTableWrap"></div>
@@ -1704,7 +1704,13 @@ async function selectAdminClass(cls){
   if(cls==='all'){document.getElementById('classBadgeNumber').textContent='All Classes';try{const {data:s}=await supabaseClient.from('students').select('studentid');document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast('🌟 Managing All Classes','success');}
   else{document.getElementById('classBadgeNumber').textContent='Class '+cls;try{const {data:s}=await supabaseClient.from('students').select('studentid').eq('class',cls);document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast(`📚 Managing Class ${cls}`,'success');}
   document.getElementById('adminSettingsTab').style.display='none';
-  const activeTab=document.querySelector('.admin-tab.active')?.dataset.tab||'payments';switchAdminTab(activeTab);
+  const activeTab=document.querySelector('.admin-tab.active')?.dataset.tab||'payments';
+  // 🔧 FIX: payments tab-ൽ ഇന്നത്തെ തിയ്യതി auto-fill
+  if(activeTab==='payments'){
+    const dateInput=document.getElementById('adminDate');
+    if(!dateInput.value) dateInput.value=new Date().toISOString().split('T')[0];
+  }
+  switchAdminTab(activeTab);
 }
 function closeSettingsTab(){document.getElementById('adminSettingsTab').style.display='none';if(currentAdminClass){document.getElementById('adminMainContent').style.display='block';document.getElementById('noClassMsg').style.display='none';}else{document.getElementById('noClassMsg').style.display='block';}}
 function switchAdminTab(tab){
@@ -1716,7 +1722,13 @@ function switchAdminTab(tab){
   document.querySelectorAll('.admin-tab-content').forEach(c=>c.style.display='none');
   const map={payments:'adminPaymentsTab',withdrawals:'adminWithdrawalsTab',balances:'adminBalancesTab',summary:'adminSummaryTab',transactions:'adminTransactionsTab',students:'adminStudentsTab',events:'adminEventsTab',attendance:'adminAttendanceTab',grades:'adminGradesTab',feed:'adminFeedTab',marks:'adminMarksTab',moralvalues:'adminMoralValuesTab',extracurricular:'adminExtracurricularTab',timetable:'adminTimetableTab',homework:'adminHomeworkTab',notifications:'adminNotificationsTab',library:'adminLibraryTab'};
   const el=document.getElementById(map[tab]);if(el)el.style.display='block';
-  if(tab==='withdrawals')loadAllWithdrawals();if(tab==='balances')loadBalances();if(tab==='payments')loadPaymentsForDate();
+  if(tab==='withdrawals')loadAllWithdrawals();if(tab==='balances')loadBalances();
+  // 🔧 FIX: payments tab-ൽ ഇന്നത്തെ തിയ്യതി auto-fill
+  if(tab==='payments'){
+    const dateInput=document.getElementById('adminDate');
+    if(!dateInput.value) dateInput.value=new Date().toISOString().split('T')[0];
+    loadPaymentsForDate();
+  }
   if(tab==='summary'){const t=new Date().toISOString().split('T')[0];document.getElementById('summaryDate').value=t;loadDailySummary();}
   if(tab==='transactions'){document.getElementById('txDate').value='';loadAllTransactions();}
   if(tab==='students')loadStudentsForAdmin();if(tab==='events')loadAllEvents();
@@ -1727,7 +1739,7 @@ function switchAdminTab(tab){
   if(tab==='extracurricular'){const n=new Date();document.getElementById('extraMonth').value=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;loadExtraAdmin();}
 }
 
-/* ==== ADMIN: MARKS ==== */
+/* ==== ADMIN: MARKS (with Total column) ==== */
 async function loadMarksEntry(){
   if(!currentAdminClass)return;
   if(currentAdminClass==='all'){showToast('Marks-ന് specific class തിരഞ്ഞെടുക്കുക','error');document.getElementById('marksWrap').innerHTML='<div class="empty-state">📚 Marks entry-ക്ക് ഒരു specific class തിരഞ്ഞെടുക്കുക</div>';return;}
@@ -1746,18 +1758,50 @@ async function loadMarksEntry(){
     html+=`<div class="marks-config-panel"><div class="marks-config-title"><i class="fas fa-sliders"></i> വിഷയങ്ങളും Max Marks-ഉം</div><div class="marks-config-grid">${subjects.map((sub,si)=>`<div class="subject-config-item" id="cfg_s${si}"><label><input type="checkbox" id="subj_en_s${si}" checked onchange="toggleSubjectColumn(${si}, this.checked)">${escapeHtml(sub)}</label><input type="number" id="subj_max_s${si}" value="${configs[si].max_marks}" min="1" max="500" oninput="validateMarksInputs()"></div>`).join('')}</div></div>`;
     html+='<div class="marks-entry-table"><form onsubmit="return false;"><table><thead><tr><th>#</th><th>Student</th>';
     subjects.forEach((sub,si)=>{html+=`<th class="col_s${si}" style="text-align:center;">${escapeHtml(sub.substring(0,10))}</th>`;});
+    // 🔧 NEW: TOTAL column
+    html+='<th style="text-align:center;background:rgba(34,211,238,.15);">TOTAL</th>';
     html+='</tr></thead><tbody>';
-    marksEntryData.forEach((s,sidx)=>{html+=`<tr><td>${sidx+1}</td><td><strong>${escapeHtml(s.name)}</strong></td>`;subjects.forEach((sub,si)=>{html+=`<td class="col_s${si}" style="text-align:center;"><input type="text" class="mk-inp" data-sidx="${sidx}" data-si="${si}" autocomplete="new-password" placeholder="—"></td>`;});html+='</tr>';});
+    marksEntryData.forEach((s,sidx)=>{
+      html+=`<tr><td>${sidx+1}</td><td><strong>${escapeHtml(s.name)}</strong></td>`;
+      subjects.forEach((sub,si)=>{html+=`<td class="col_s${si}" style="text-align:center;"><input type="text" class="mk-inp" data-sidx="${sidx}" data-si="${si}" autocomplete="new-password" placeholder="—"></td>`;});
+      // 🔧 NEW: per-row total span
+      html+=`<td style="text-align:center;background:rgba(34,211,238,.08);"><span id="rowTotal_${sidx}" style="color:#22d3ee;font-weight:800;">0</span></td>`;
+      html+='</tr>';
+    });
     html+='</tbody></table></form></div>';
     wrap.innerHTML=html;
     const form=wrap.querySelector('form');
     marksEntryData.forEach((s,sidx)=>{subjects.forEach((sub,si)=>{const inp=form.querySelector(`input[data-sidx="${sidx}"][data-si="${si}"]`);if(!inp)return;inp.value=s.marks[sub]||'';inp.addEventListener('input',function(){const sx=parseInt(this.dataset.sidx);const sy=parseInt(this.dataset.si);if(marksEntryData[sx] && subjects[sy]){marksEntryData[sx].marks[subjects[sy]]=this.value;}validateMarksInputs();});});});
     subjects.forEach((sub,si)=>{toggleSubjectColumn(si,true);});
     wrap.dataset.subjects=JSON.stringify(subjects);
+    // Initial row totals
+    marksEntryData.forEach((_,sidx)=>updateRowTotal(sidx));
   }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}
 }
 function toggleSubjectColumn(si, show){document.querySelectorAll(`.col_s${si}`).forEach(el=>{el.style.display = show ? '' : 'none';});const cfg=document.getElementById(`cfg_s${si}`);if(cfg)cfg.classList.toggle('disabled', !show);}
-function validateMarksInputs(){const wrap=document.getElementById('marksWrap');if(!wrap)return;wrap.querySelectorAll('.mk-inp').forEach(inp=>{const si=parseInt(inp.dataset.si);const enEl=document.getElementById(`subj_en_s${si}`);if(!enEl || !enEl.checked)return;const maxEl=document.getElementById(`subj_max_s${si}`);const mx=parseFloat(maxEl?.value)||0;const parsed=parseMarksInput(inp.value);inp.classList.remove('invalid','skipped');if(parsed.skip){inp.classList.add('skipped');return;}if(parsed.isPass)return;if(parsed.value<0 || (mx>0 && parsed.value>mx)){inp.classList.add('invalid');}});}
+// 🔧 NEW: Row total calculation
+function updateRowTotal(sidx){
+  const wrap=document.getElementById('marksWrap');
+  if(!wrap) return;
+  let subjects=[]; try{subjects=JSON.parse(wrap.dataset.subjects||'[]');}catch(e){}
+  let total=0;
+  subjects.forEach((sub,si)=>{
+    const enEl=document.getElementById(`subj_en_s${si}`);
+    if(enEl && !enEl.checked) return;
+    const inp=document.querySelector(`input[data-sidx="${sidx}"][data-si="${si}"]`);
+    if(!inp) return;
+    const parsed=parseMarksInput(inp.value);
+    if(!parsed.skip && !parsed.isPass) total+=parsed.value;
+  });
+  const el=document.getElementById(`rowTotal_${sidx}`);
+  if(el) el.textContent=total;
+}
+function validateMarksInputs(){
+  const wrap=document.getElementById('marksWrap');if(!wrap)return;
+  wrap.querySelectorAll('.mk-inp').forEach(inp=>{const si=parseInt(inp.dataset.si);const enEl=document.getElementById(`subj_en_s${si}`);if(!enEl || !enEl.checked)return;const maxEl=document.getElementById(`subj_max_s${si}`);const mx=parseFloat(maxEl?.value)||0;const parsed=parseMarksInput(inp.value);inp.classList.remove('invalid','skipped');if(parsed.skip){inp.classList.add('skipped');return;}if(parsed.isPass)return;if(parsed.value<0 || (mx>0 && parsed.value>mx)){inp.classList.add('invalid');}});
+  // 🔧 NEW: update all row totals
+  wrap.querySelectorAll('.mk-inp').forEach(inp=>updateRowTotal(parseInt(inp.dataset.sidx)));
+}
 async function saveMarksBulk(){
   const wrap=document.getElementById('marksWrap');const subjects=JSON.parse(wrap.dataset.subjects||'[]');const exam=marksExamCache;
   if(!exam||subjects.length===0){showToast('Load marks first','error');return;}
@@ -1779,7 +1823,7 @@ async function saveMarksBulk(){
   btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Save Marks';
 }
 
-/* ==== AUTO RANK (TOTAL MARKS) ==== */
+/* ==== AUTO RANK (TOTAL MARKS BASED) ==== */
 async function autoCalculateRanks(silent){
   if(!currentAdminClass)return;
   if(currentAdminClass==='all'){showToast('Specific class','error');return;}
@@ -1797,6 +1841,7 @@ async function autoCalculateRanks(silent){
     const totals={};students.forEach(s=>{totals[s.studentid]={o:0};});
     marks.forEach(m=>{const mx=Number(m.max_marks)||0;if(mx<=0)return;if(totals[m.studentid])totals[m.studentid].o += Number(m.obtained_marks)||0;});
     const list=students.map(s=>{const o=totals[s.studentid].o;const pct=Math.round((o/totalMaxAll)*100);return {studentid:s.studentid, total:o, pct};});
+    // 🔧 Rank sorted by TOTAL marks (not percentage)
     list.sort((a,b)=>b.total-a.total);
     let cr=0,pp=null;
     for(let i=0;i<list.length;i++){const s=list[i];if(pp===null||s.total!==pp)cr=i+1;pp=s.total;
@@ -2020,34 +2065,135 @@ async function saveLibraryItem(e){
 }
 async function deleteLibrary(id){if(!confirm('Delete?'))return;await supabaseClient.from('library').delete().eq('id',id);showToast('🗑️','success');loadLibraryAdmin();}
 
-/* ==== ADMIN: PAYMENTS ==== */
+/* ==== ADMIN: PAYMENTS (🔧 FIXED: model-based updates) ==== */
 async function loadPaymentsForDate(){
   if(!currentAdminClass)return;
-  const date=document.getElementById('adminDate').value;if(!date){showToast('Select date','error');return;}
+  const date=document.getElementById('adminDate').value;
+  // 🔧 FIX: if date empty, use today
+  if(!date){
+    const today=new Date().toISOString().split('T')[0];
+    document.getElementById('adminDate').value=today;
+    date=today;
+  }
   const wrap=document.getElementById('adminTableWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
-  try{let q=supabaseClient.from('students').select('studentid,name,class');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('class').order('name');
+  try{
+    let q=supabaseClient.from('students').select('studentid,name,class');
+    if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);
+    q=q.order('class').order('name');
     const {data:s}=await q;
     const {data:p}=await supabaseClient.from('payments').select('*').eq('date',date).eq('type','fee');
-    const merged=(s||[]).map(x=>{const pay=(p||[]).find(y=>y.studentid===x.studentid);return {studentId:x.studentid,name:x.name||'',class:x.class||'',debit:pay?(pay.debit||0):0,credit:pay?(pay.credit||0):0,exists:!!pay,approved:pay?(pay.approved||false):false};});
-    currentDatePayments=merged;applyPaymentsFilters();
+    const merged=(s||[]).map(x=>{
+      const pay=(p||[]).find(y=>y.studentid===x.studentid);
+      return {
+        studentId:x.studentid,
+        name:x.name||'',
+        class:x.class||'',
+        debit:pay?(Number(pay.debit)||0):0,
+        credit:pay?(Number(pay.credit)||0):0,
+        exists:!!pay,
+        approved:pay?(pay.approved||false):false
+      };
+    });
+    currentDatePayments=merged;
+    applyPaymentsFilters();
   }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}
 }
-function applyPaymentsFilters(){const st=document.getElementById('adminSearch').value.toLowerCase().trim();filteredPayments=currentDatePayments.filter(i=>!st||i.name.toLowerCase().includes(st));renderAdminTable();}
+// 🔧 FIX: search by name OR ID
+function applyPaymentsFilters(){
+  const st=(document.getElementById('adminSearch').value||'').toLowerCase().trim();
+  filteredPayments=currentDatePayments.filter(i=>
+    !st ||
+    (i.name||'').toLowerCase().includes(st) ||
+    String(i.studentId||'').toLowerCase().includes(st)
+  );
+  renderAdminTable();
+}
+// 🔧 FIX: event listener on inputs → model update
 function renderAdminTable(){
-  const wrap=document.getElementById('adminTableWrap');if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}
+  const wrap=document.getElementById('adminTableWrap');
+  if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}
   const showClass=currentAdminClass==='all';
   let html='<table><thead><tr><th>#</th><th>Student</th>'+(showClass?'<th>Class</th>':'')+'<th>Debit</th><th>Credit</th><th>Status</th></tr></thead><tbody>';
-  filteredPayments.forEach((item,idx)=>{const cid=String(item.studentId).replace(/[^a-zA-Z0-9]/g,'');const st=item.exists?`<span class="existing-badge ${item.approved?'':'pending'}">${item.approved?'✅':'⏳'}</span>`:'—';html+=`<tr><td>${idx+1}</td><td><strong>${escapeHtml(item.name)}</strong></td>`;if(showClass)html+=`<td>${escapeHtml(item.class||'')}</td>`;html+=`<td><input type="number" id="admin_debit_${cid}" value="${item.debit}" min="0"></td><td><input type="number" id="admin_credit_${cid}" value="${item.credit}" min="0"></td><td>${st}</td></tr>`;});
-  html+='</tbody></table>';wrap.innerHTML=html;
+  filteredPayments.forEach((item,idx)=>{
+    const cid=String(item.studentId).replace(/[^a-zA-Z0-9]/g,'');
+    const st=item.exists?`<span class="existing-badge ${item.approved?'':'pending'}">${item.approved?'✅':'⏳'}</span>`:'—';
+    html+=`<tr><td>${idx+1}</td><td><strong>${escapeHtml(item.name)}</strong><br><small style="color:#6d88ad;font-size:.62rem;">${escapeHtml(item.studentId||'')}</small></td>`;
+    if(showClass)html+=`<td>${escapeHtml(item.class||'')}</td>`;
+    html+=`<td><input type="number" id="admin_debit_${cid}" value="${item.debit}" min="0" data-sid="${escapeHtml(item.studentId)}" data-field="debit"></td>`;
+    html+=`<td><input type="number" id="admin_credit_${cid}" value="${item.credit}" min="0" data-sid="${escapeHtml(item.studentId)}" data-field="credit"></td>`;
+    html+=`<td>${st}</td></tr>`;
+  });
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+  // 🔧 KEY FIX: input മാറുമ്പോൾ model-ൽ update ചെയ്യുന്നു
+  wrap.querySelectorAll('input[data-sid]').forEach(inp=>{
+    inp.addEventListener('input',function(){
+      const sid=this.dataset.sid;
+      const field=this.dataset.field;
+      const item=currentDatePayments.find(x=>String(x.studentId)===String(sid));
+      if(item) item[field]=parseFloat(this.value)||0;
+    });
+  });
 }
-function clearAdminForm(){currentDatePayments.forEach(i=>{const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');const d=document.getElementById(`admin_debit_${cid}`);const c=document.getElementById(`admin_credit_${cid}`);if(d)d.value='0';if(c)c.value='0';});showToast('Cleared','info');}
+function clearAdminForm(){
+  currentDatePayments.forEach(i=>{
+    i.debit=0;i.credit=0;
+    const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');
+    const d=document.getElementById(`admin_debit_${cid}`);
+    const c=document.getElementById(`admin_credit_${cid}`);
+    if(d)d.value='0';
+    if(c)c.value='0';
+  });
+  showToast('Cleared','info');
+}
+// 🔧 FIX: bulkUpdate reads from MODEL (not DOM), so search-hidden students are included
 async function bulkUpdate(){
-  const date=document.getElementById('adminDate').value;if(!date){showToast('Select date','error');return;}
+  const date=document.getElementById('adminDate').value;
+  if(!date){showToast('Select date','error');return;}
+
+  // Sync visible inputs into model first (in case any last-second change)
+  currentDatePayments.forEach(i=>{
+    const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');
+    const d=document.getElementById(`admin_debit_${cid}`);
+    const c=document.getElementById(`admin_credit_${cid}`);
+    if(d) i.debit=parseFloat(d.value)||0;
+    if(c) i.credit=parseFloat(c.value)||0;
+  });
+
+  // ⭐ Build from MODEL — includes students hidden by search
   const data=[];
-  currentDatePayments.forEach(i=>{const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');const d=document.getElementById(`admin_debit_${cid}`);const c=document.getElementById(`admin_credit_${cid}`);if(d&&c){const debit=parseFloat(d.value)||0;const credit=parseFloat(c.value)||0;if(debit>0||credit>0||i.exists){data.push({studentid:i.studentId,date,debit,credit,approved:(debit>0||credit>0),reason:'',type:'fee'});}}});
-  if(data.length===0){showToast('No data','error');return;}
+  currentDatePayments.forEach(i=>{
+    const debit=Number(i.debit)||0;
+    const credit=Number(i.credit)||0;
+    if(debit>0||credit>0){
+      data.push({
+        studentid:i.studentId,
+        date,
+        debit,
+        credit,
+        approved:(debit>0||credit>0),
+        reason:'',
+        type:'fee'
+      });
+    }
+  });
+
+  if(data.length===0){showToast('No payments to save','error');return;}
+
   const btn=document.getElementById('adminUpdateBtn');btn.disabled=true;btn.innerHTML='Saving...';
-  try{const ids=currentDatePayments.map(x=>x.studentId);if(ids.length>0){await supabaseClient.from('payments').delete().eq('date',date).eq('type','fee').in('studentid',ids);}if(data.length>0)await supabaseClient.from('payments').insert(data);showToast('✅ Updated','success');await loadPaymentsForDate();}catch(e){showToast('❌ Failed','error');}
+  try{
+    const ids=currentDatePayments.map(x=>x.studentId);
+    if(ids.length>0){
+      await supabaseClient.from('payments').delete().eq('date',date).eq('type','fee').in('studentid',ids);
+    }
+    const CHUNK=200;
+    for(let i=0;i<data.length;i+=CHUNK){
+      const {error}=await supabaseClient.from('payments').insert(data.slice(i,i+CHUNK));
+      if(error) throw error;
+    }
+    showToast(`✅ Updated ${data.length} payments`,'success');
+    await loadPaymentsForDate();
+  }catch(e){showToast('❌ '+(e.message||'Failed'),'error');}
   btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';
 }
 
@@ -2628,7 +2774,7 @@ Object.assign(window,{
   saveSwadarName,saveClassTeachers,saveResultPublishTime,clearResultPublishTime,uploadSignature,uploadClassSignature,clearSignature,clearClassSignature,
   loadTeacherSettingsIntoForm,isResultPublished,getPublishTimeText,parseClassTeachers,stringifyClassTeachers,
   saveHeadings,saveClassExtraCategories,parseClassExtraCategories,stringifyClassExtraCategories,getExtraCategoriesForClass,marksToGrade,
-  recalculateStudentTotals,loadOverallMadrasaRank,loadMonthlyProgress
+  recalculateStudentTotals,loadOverallMadrasaRank,loadMonthlyProgress,updateRowTotal
 });
 
 async function initApp(){
@@ -2638,7 +2784,7 @@ async function initApp(){
     if(el)el.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
   });
   if(closeModalBtn)closeModalBtn.addEventListener('click',()=>modal.style.display='none');
-  console.log('%c✅ Noorussalam Madrasa v18.0 — Full Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
+  console.log('%c✅ Noorussalam Madrasa v18.0 — Full Edition (Payment & Rank Fixes)','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
 </script>
