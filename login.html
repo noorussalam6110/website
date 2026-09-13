@@ -343,6 +343,34 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ai-input:focus{border-color:var(--b400)}
 .ai-send{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;background:linear-gradient(140deg,var(--cyan),var(--b450));color:#03132e;font-size:1rem;display:flex;align-items:center;justify-content:center}
 @media(max-width:480px){.ai-fab{width:56px;height:56px;font-size:1.3rem;bottom:16px;right:14px}.ai-panel{bottom:82px;right:10px;left:10px;width:auto}}
+/* ===== ADMIN VIEW-AS-STUDENT BANNER ===== */
+.admin-view-banner{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9998;
+  background:linear-gradient(100deg,#fbbf24,#f59e0b);color:#03132e;padding:10px 16px;
+  border-radius:50px;font-weight:800;font-size:.8rem;
+  box-shadow:0 14px 34px -10px rgba(251,191,36,.9),0 0 0 2px rgba(3,8,28,.85);
+  display:none;align-items:center;gap:10px;max-width:94vw;flex-wrap:wrap;justify-content:center}
+.admin-view-banner.show{display:flex}
+.admin-view-banner button{background:#03132e;color:#fff;border:none;padding:7px 14px;
+  border-radius:30px;font-weight:800;font-size:.72rem;cursor:pointer;font-family:inherit;
+  display:inline-flex;align-items:center;gap:5px}
+.admin-view-banner button:hover{background:#1e3a8a}
+/* ===== VISIBILITY UI ===== */
+.visibility-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;}
+.vis-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:rgba(59,139,255,.08);padding:8px 12px;border-radius:12px;
+  border:1px solid var(--stroke);cursor:pointer;transition:.2s;user-select:none}
+.vis-toggle:hover{background:rgba(59,139,255,.16)}
+.vis-toggle .vis-name{font-size:.75rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px}
+.vis-toggle .vis-name i{color:#67e8f9;font-size:.85rem;width:14px}
+.vis-toggle input{display:none}
+.vis-switch{position:relative;width:36px;height:20px;border-radius:20px;background:rgba(255,255,255,.15);
+  transition:.22s;flex-shrink:0}
+.vis-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+  background:#fff;transition:.22s;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.vis-toggle input:checked + .vis-switch{background:linear-gradient(100deg,#22d3ee,#3b8bff)}
+.vis-toggle input:checked + .vis-switch::after{left:18px}
+.vis-toggle.off .vis-name{color:#9db8dd;opacity:.7}
+.vis-toggle.off .vis-name i{color:#6d88ad}
 </style>
 </head>
 <body>
@@ -372,7 +400,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <button type="submit" class="btn-gradient mt-3"><i class="fas fa-arrow-right-to-bracket me-2"></i> Access Portal</button>
     <button type="button" class="forgot-btn" onclick="document.getElementById('findStudentIdModal').style.display='flex'"><i class="fas fa-question-circle"></i> Forgot Student ID?</button>
   </form>
-  <div class="login-footer-note">v18.0 • Gemini AI Edition © Suhail Kerala</div>
+  <div class="login-footer-note">v18.2 • Gemini AI Edition © Suhail Kerala</div>
   <button class="help-btn" onclick="openHelpModal()"><i class="fas fa-circle-question"></i><span>സഹായം</span></button>
 </div>
 </div>
@@ -409,6 +437,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div id="findResult" class="mt-3" style="display:none;"></div>
   </div>
 </div>
+
+<div class="admin-view-banner" id="adminViewBanner"></div>
 
 <div id="dashboardSection" style="display:none;">
 <div class="container">
@@ -453,7 +483,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 
-  <div class="palathulli-hero">
+  <div class="palathulli-hero" id="palathulliSection">
     <div class="pala-inner">
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
@@ -478,7 +508,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <i class="fas fa-piggy-bank pala-drop-deco"></i>
   </div>
 
-  <div class="stats-grid">
+  <div class="stats-grid" id="statsGridSection">
     <div class="stat-card-neon"><div class="d-flex justify-content-between align-items-start"><div><span class="stat-value-xl" id="overallGradeDisplay">—</span><div class="stat-label">Academic Grade</div></div><div class="stat-ico" id="gradeIconContainer"><i id="gradeIcon" class="fas fa-graduation-cap"></i></div></div><div class="grade-bar"><div id="gradeLineFill" class="grade-bar-fill" style="width:0%;"></div></div><div class="d-flex justify-content-between mt-2"><small class="text-white-50" style="font-size:.68rem;">Performance</small><small class="text-white-50" style="font-size:.68rem;" id="gradePercentLabel">0%</small></div></div>
     <div class="stat-card-neon"><div class="d-flex justify-content-between align-items-start"><div><span class="stat-value-xl" id="attendanceRateLabel">—</span><div class="stat-label">Attendance</div></div><div class="stat-ico"><i class="fas fa-calendar-check"></i></div></div><div class="progress mt-3" style="height:7px;"><div id="attendanceProgressFill" class="progress-bar bg-success" style="width:0%"></div></div><div class="mt-2"><small class="text-white-50" style="font-size:.68rem;" id="attendanceTrend">No data</small></div></div>
     <div class="stat-card-neon"><div class="d-flex justify-content-between align-items-start"><div><span class="stat-value-xl" id="rankNumber">—</span><div class="stat-label">Class Rank</div></div><div class="stat-ico"><i class="fas fa-trophy"></i></div></div><div class="mt-3"><span id="rankBadge" class="badge-rank">No data</span></div></div>
@@ -500,34 +530,34 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 
-  <div class="section-title"><i class="fas fa-bolt"></i> Quick Actions</div>
-  <div class="action-grid">
-    <div class="action-tile" onclick="showResultsModal()"><div class="action-ico c-results"><i class="fas fa-chart-simple"></i></div><h6>റിസൾട്ട്</h6></div>
-    <div class="action-tile" onclick="showAttendanceReport()"><div class="action-ico c-attendance"><i class="fas fa-calendar-week"></i></div><h6>ഹാജർ</h6></div>
-    <div class="action-tile" onclick="showMoralValuesModal()"><div class="action-ico c-moral"><i class="fas fa-hand-holding-heart"></i></div><h6>മൂല്യം</h6></div>
-    <div class="action-tile" onclick="showProfileCard()"><div class="action-ico c-profile"><i class="fas fa-user-astronaut"></i></div><h6>പ്രൊഫൈൽ</h6></div>
-    <div class="action-tile" onclick="showExamMarks()"><div class="action-ico c-marks"><i class="fas fa-file-alt"></i></div><h6>മാർക്സ്</h6></div>
-    <div class="action-tile" onclick="showTimetable()"><div class="action-ico c-timetable"><i class="fas fa-clock"></i></div><h6>ടൈംടേബിൾ</h6></div>
-    <div class="action-tile" onclick="showHomework()"><div class="action-ico c-homework"><i class="fas fa-book"></i></div><h6>ഹോംവർക്ക്</h6></div>
-    <div class="action-tile" onclick="showLibrary()"><div class="action-ico c-library"><i class="fas fa-book-open"></i></div><h6>ലൈബ്രറി</h6></div>
-    <div class="action-tile" onclick="showIdCard()"><div class="action-ico c-idcard"><i class="fas fa-id-card"></i></div><h6>ID കാർഡ്</h6></div>
-    <div class="action-tile" onclick="openPassbook()"><div class="action-ico c-palathulli"><i class="fas fa-piggy-bank"></i></div><h6>പലതുള്ളി</h6></div>
-    <div class="action-tile" onclick="showExtracurricular()"><div class="action-ico c-activity"><i class="fas fa-palette"></i></div><h6>ആക്ടിവിറ്റി</h6></div>
-    <div class="action-tile" onclick="showCompetitions()"><div class="action-ico c-competition"><i class="fas fa-trophy"></i></div><h6>മൽസരങ്ങൾ</h6></div>
-    <div class="action-tile" onclick="downloadAcademicReport()"><div class="action-ico c-report"><i class="fas fa-file-pdf"></i></div><h6>Report</h6></div>
-    <div class="action-tile" onclick="goToStudentZone()"><div class="action-ico cy"><i class="fas fa-graduation-cap"></i></div><h6>Student Zone</h6></div>
-    <div class="action-tile" onclick="goToFees()"><div class="action-ico gold"><i class="fas fa-money-bill-wave"></i></div><h6>ഫീസ്</h6></div>
-    <div class="action-tile" onclick="goToCalendar()"><div class="action-ico green"><i class="fas fa-calendar-alt"></i></div><h6>കലണ്ടർ</h6></div>
-    <div class="action-tile" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="action-ico c-results"><i class="fas fa-trophy"></i></div><h6>ടോപ്പർ</h6></div>
+  <div class="section-title" id="quickActionsTitle"><i class="fas fa-bolt"></i> Quick Actions</div>
+  <div class="action-grid" id="quickActionsGrid">
+    <div class="action-tile" data-action="results" onclick="showResultsModal()"><div class="action-ico c-results"><i class="fas fa-chart-simple"></i></div><h6>റിസൾട്ട്</h6></div>
+    <div class="action-tile" data-action="attendance" onclick="showAttendanceReport()"><div class="action-ico c-attendance"><i class="fas fa-calendar-week"></i></div><h6>ഹാജർ</h6></div>
+    <div class="action-tile" data-action="moral" onclick="showMoralValuesModal()"><div class="action-ico c-moral"><i class="fas fa-hand-holding-heart"></i></div><h6>മൂല്യം</h6></div>
+    <div class="action-tile" data-action="profile" onclick="showProfileCard()"><div class="action-ico c-profile"><i class="fas fa-user-astronaut"></i></div><h6>പ്രൊഫൈൽ</h6></div>
+    <div class="action-tile" data-action="marks" onclick="showExamMarks()"><div class="action-ico c-marks"><i class="fas fa-file-alt"></i></div><h6>മാർക്സ്</h6></div>
+    <div class="action-tile" data-action="timetable" onclick="showTimetable()"><div class="action-ico c-timetable"><i class="fas fa-clock"></i></div><h6>ടൈംടേബിൾ</h6></div>
+    <div class="action-tile" data-action="homework" onclick="showHomework()"><div class="action-ico c-homework"><i class="fas fa-book"></i></div><h6>ഹോംവർക്ക്</h6></div>
+    <div class="action-tile" data-action="library" onclick="showLibrary()"><div class="action-ico c-library"><i class="fas fa-book-open"></i></div><h6>ലൈബ്രറി</h6></div>
+    <div class="action-tile" data-action="idcard" onclick="showIdCard()"><div class="action-ico c-idcard"><i class="fas fa-id-card"></i></div><h6>ID കാർഡ്</h6></div>
+    <div class="action-tile" data-action="palathulli" onclick="openPassbook()"><div class="action-ico c-palathulli"><i class="fas fa-piggy-bank"></i></div><h6>പലതുള്ളി</h6></div>
+    <div class="action-tile" data-action="extracurricular" onclick="showExtracurricular()"><div class="action-ico c-activity"><i class="fas fa-palette"></i></div><h6>ആക്ടിവിറ്റി</h6></div>
+    <div class="action-tile" data-action="competitions" onclick="showCompetitions()"><div class="action-ico c-competition"><i class="fas fa-trophy"></i></div><h6>മൽസരങ്ങൾ</h6></div>
+    <div class="action-tile" data-action="report" onclick="downloadAcademicReport()"><div class="action-ico c-report"><i class="fas fa-file-pdf"></i></div><h6>Report</h6></div>
+    <div class="action-tile" data-action="studentzone" onclick="goToStudentZone()"><div class="action-ico cy"><i class="fas fa-graduation-cap"></i></div><h6>Student Zone</h6></div>
+    <div class="action-tile" data-action="fees" onclick="goToFees()"><div class="action-ico gold"><i class="fas fa-money-bill-wave"></i></div><h6>ഫീസ്</h6></div>
+    <div class="action-tile" data-action="calendar" onclick="goToCalendar()"><div class="action-ico green"><i class="fas fa-calendar-alt"></i></div><h6>കലണ്ടർ</h6></div>
+    <div class="action-tile" data-action="topper" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="action-ico c-results"><i class="fas fa-trophy"></i></div><h6>ടോപ്പർ</h6></div>
   </div>
 
-  <div class="row g-3">
+  <div class="row g-3" id="feedEventsRow">
     <div class="col-lg-6"><div class="activity-timeline"><h5><i class="fas fa-wave-square"></i> Live Feed</h5><ul class="list-unstyled mb-0" id="activityFeedList"><li class="text-white-50 text-center py-3">Loading...</li></ul></div></div>
     <div class="col-lg-6"><div class="activity-timeline"><h5><i class="fas fa-calendar-day"></i> Upcoming Events</h5><div id="calendarEventsList"></div></div></div>
   </div>
 
   <div class="activity-timeline mt-3" id="monthlyProgressSection"><h5><i class="fas fa-chart-line"></i> <span id="monthlyTitleText">Monthly Progress</span></h5><div id="monthlyProgressList" style="font-size:.85rem;"><div class="text-center text-white-50 py-3">Loading...</div></div></div>
-  <div class="text-center text-white-50 mt-5 pb-4" style="font-size:.72rem;opacity:.6;">Noorussalam Madrasa • v18.0 Gemini AI Edition</div>
+  <div class="text-center text-white-50 mt-5 pb-4" style="font-size:.72rem;opacity:.6;">Noorussalam Madrasa • v18.2 Gemini AI Edition</div>
 </div>
 </div>
 
@@ -676,6 +706,46 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">🌟 Traits</h5><textarea id="settingsTraits" class="modal-form-input" style="min-height:80px;"></textarea><button class="btn-update mt-3" onclick="saveSetting('traitsList','settingsTraits')">Save</button></div>
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">💰 Minimum Balance / Withdrawal</h5><input type="number" id="settingsMinWithdraw" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('minWithdraw','settingsMinWithdraw')">Save</button></div>
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">🖼️ Background Images</h5><label class="text-white-50 small d-block mb-1">ID Card Background URL</label><input type="url" id="settingsIdBgUrl" class="modal-form-input mb-2" placeholder="https://..."><div class="d-flex gap-2 mb-3"><button class="btn-update" style="padding:8px 20px;font-size:.8rem;" onclick="saveBgUrl('id')">Save</button><button class="btn-cancel" style="padding:8px 20px;font-size:.8rem;" onclick="clearBgUrl('id')">Clear</button></div><label class="text-white-50 small d-block mb-1">Topper Poster Background URL</label><input type="url" id="settingsTopperBgUrl" class="modal-form-input mb-2" placeholder="https://..."><div class="d-flex gap-2"><button class="btn-update" style="padding:8px 20px;font-size:.8rem;" onclick="saveBgUrl('topper')">Save</button><button class="btn-cancel" style="padding:8px 20px;font-size:.8rem;" onclick="clearBgUrl('topper')">Clear</button></div></div>
+
+      <!-- ===== STUDENT PORTAL VISIBILITY ===== -->
+      <div class="mb-4" style="background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(120,180,255,.04));padding:16px;border-radius:16px;border:1.5px solid rgba(251,191,36,.35);">
+        <h5 class="text-white mb-2" style="font-size:.95rem;">🎛️ Student Portal Visibility</h5>
+        <p class="text-white-50 small mb-3" style="font-size:.72rem;">
+          Student login-ൽ ഏതൊക്കെ section കാണിക്കണം എന്ന് ഇവിടെ നിന്ന് control ചെയ്യാം. <b>Switch OFF</b> ചെയ്താൽ ആ section എല്ലാ കുട്ടികൾക്കും hide ആകും.
+        </p>
+        <div style="background:rgba(8,20,48,.5);padding:14px;border-radius:14px;border:1px solid var(--stroke);margin-bottom:12px;">
+          <div style="font-weight:800;color:#67e8f9;font-size:.82rem;margin-bottom:10px;">
+            <i class="fas fa-layer-group"></i> Main Sections
+          </div>
+          <div class="visibility-grid" id="visSectionsGrid"></div>
+        </div>
+        <div style="background:rgba(8,20,48,.5);padding:14px;border-radius:14px;border:1px solid var(--stroke);margin-bottom:12px;">
+          <div style="font-weight:800;color:#fbbf24;font-size:.82rem;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+            <span><i class="fas fa-bolt"></i> Quick Action Tiles</span>
+            <span style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button type="button" class="btn-load" style="padding:4px 10px;font-size:.68rem;" onclick="toggleAllQuickActions(true)">All ON</button>
+              <button type="button" class="btn-cancel" style="padding:4px 10px;font-size:.68rem;" onclick="toggleAllQuickActions(false)">All OFF</button>
+            </span>
+          </div>
+          <div class="visibility-grid" id="visActionsGrid"></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap mt-2">
+          <button class="btn-update" onclick="saveStudentPortalVisibility()">
+            <i class="fas fa-save"></i> Save Visibility
+          </button>
+          <button class="btn-cancel" onclick="resetStudentPortalVisibility()">
+            <i class="fas fa-rotate-left"></i> Reset (All ON)
+          </button>
+          <button class="btn-load" onclick="applyStudentPortalVisibility(true)">
+            <i class="fas fa-eye"></i> Preview
+          </button>
+        </div>
+        <small class="text-white-50 d-block mt-2" style="font-size:.7rem;">
+          <i class="fas fa-info-circle"></i> Preview ചെയ്താൽ change ഉടൻ student dashboard-ൽ apply ആകും (save ചെയ്തിട്ടില്ലെങ്കിലും).
+        </small>
+      </div>
+      <!-- ===== END VISIBILITY ===== -->
+
       <h5 class="text-white mt-4 mb-3" style="font-size:.95rem;"><i class="fas fa-database" style="color:#22d3ee"></i> Database Stats</h5><div id="dbStatsContent"></div><button class="btn-load mt-3" onclick="loadDBStats()"><i class="fas fa-sync-alt"></i> Refresh</button>
     </div>
   </div>
@@ -819,6 +889,50 @@ let lastReadNotifTime=parseInt(localStorage.getItem('lastReadNotifTime')||'0');
 let ID_CARD_BG_URL=localStorage.getItem('id_card_bg')||'';
 let TOPPER_BG_URL=localStorage.getItem('topper_bg')||'';
 let notifChannel=null;
+let adminImpersonating=null;
+
+/* ==== STUDENT PORTAL VISIBILITY ==== */
+let STUDENT_PORTAL_VISIBILITY = {
+  sections: {
+    leaderboard:true, palathulli:true, statsGrid:true, madrasaRank:true,
+    quickActionsTitle:true, quickActionsGrid:true, feedEvents:true, monthlyProgress:true
+  },
+  actions: {
+    results:true, attendance:true, moral:true, profile:true, marks:true,
+    timetable:true, homework:true, library:true, idcard:true, palathulli:true,
+    extracurricular:true, competitions:true, report:true, studentzone:true,
+    fees:true, calendar:true, topper:true
+  }
+};
+const VIS_SECTIONS_META = [
+  {key:'leaderboard', label:'Top Winners', icon:'fa-crown'},
+  {key:'palathulli', label:'Palathulli', icon:'fa-piggy-bank'},
+  {key:'statsGrid', label:'Stats Cards', icon:'fa-chart-simple'},
+  {key:'madrasaRank', label:'Overall Rank', icon:'fa-trophy'},
+  {key:'quickActionsTitle', label:'Quick Actions Title', icon:'fa-bolt'},
+  {key:'quickActionsGrid', label:'Quick Action Tiles', icon:'fa-table-cells'},
+  {key:'feedEvents', label:'Live Feed + Events', icon:'fa-wave-square'},
+  {key:'monthlyProgress', label:'Monthly Progress', icon:'fa-chart-line'}
+];
+const VIS_ACTIONS_META = [
+  {key:'results', label:'Results', icon:'fa-chart-simple'},
+  {key:'attendance', label:'Attendance', icon:'fa-calendar-week'},
+  {key:'moral', label:'Moral Values', icon:'fa-hand-holding-heart'},
+  {key:'profile', label:'Profile', icon:'fa-user-astronaut'},
+  {key:'marks', label:'Exam Marks', icon:'fa-file-alt'},
+  {key:'timetable', label:'Timetable', icon:'fa-clock'},
+  {key:'homework', label:'Homework', icon:'fa-book'},
+  {key:'library', label:'Library', icon:'fa-book-open'},
+  {key:'idcard', label:'ID Card', icon:'fa-id-card'},
+  {key:'palathulli', label:'Palathulli', icon:'fa-piggy-bank'},
+  {key:'extracurricular', label:'Activity', icon:'fa-palette'},
+  {key:'competitions', label:'Competitions', icon:'fa-trophy'},
+  {key:'report', label:'Report PDF', icon:'fa-file-pdf'},
+  {key:'studentzone', label:'Student Zone', icon:'fa-graduation-cap'},
+  {key:'fees', label:'Fees', icon:'fa-money-bill-wave'},
+  {key:'calendar', label:'Calendar', icon:'fa-calendar-alt'},
+  {key:'topper', label:'Topper Poster', icon:'fa-crown'}
+];
 
 const loginSection=document.getElementById('loginSection'),dashboardSection=document.getElementById('dashboardSection'),adminSection=document.getElementById('adminSection');
 const loadingOverlay=document.getElementById('loadingOverlay'),modal=document.getElementById('globalModal'),closeModalBtn=document.getElementById('closeModalBtn');
@@ -851,6 +965,20 @@ function hasPhoto(u){return u && (u.startsWith('data:image') || u.startsWith('ht
 function parseMarksInput(raw){if(raw===null||raw===undefined)return {skip:true};const s=String(raw).trim();if(s===''||s==='-'||s==='–'||s==='—'||s==='−')return {skip:true};if(s.toUpperCase()==='P')return {skip:false,value:0,isPass:true};const n=Number(s);if(isNaN(n))return {skip:true};return {skip:false,value:n,isPass:false};}
 function marksToGrade(marks){const m=Number(marks)||0;if(m>=9)return 'A+';if(m>=8)return 'A';if(m>=7)return 'B+';if(m>=6)return 'B';if(m>=5)return 'C+';if(m>=4)return 'C';if(m>=3)return 'D+';return 'D';}
 function getPositionLabel(pos){if(pos===1)return '🥇 1st';if(pos===2)return '🥈 2nd';if(pos===3)return '🥉 3rd';if(pos>3)return '#'+pos;return '—';}
+function classMatchesTarget(studentClass, targetClass){
+  const tg = String(targetClass||'').trim();
+  if(!tg) return false;
+  if(tg === 'all') return true;
+  return tg.split(',').map(x=>x.trim()).includes(String(studentClass));
+}
+function formatTargetClasses(targetClass){
+  const tg = String(targetClass||'').trim();
+  if(!tg) return '—';
+  if(tg === 'all') return '🌟 All Classes';
+  const list = tg.split(',').map(x=>x.trim()).filter(Boolean);
+  if(list.length === 1) return 'Class ' + list[0];
+  return 'Classes ' + list.join(', ');
+}
 
 /* ==== GRADE SYSTEM ==== */
 function calculateGrade(obtained, maxMarks = 50){const score = maxMarks === 50 ? obtained : (obtained / maxMarks) * 50;if(score >= 45) return 'A+';if(score >= 40) return 'A';if(score >= 35) return 'B+';if(score >= 30) return 'B';if(score >= 25) return 'C+';if(score >= 20) return 'C';if(score >= 18) return 'D+';return 'D';}
@@ -862,6 +990,103 @@ function _passStudentSession(){if(!currentUser) return false;sessionStorage.setI
 function goToStudentZone(){if(!currentUser){showToast('Please login first','error');return;}_passStudentSession();window.location.href='student-zone.html';}
 function goToFees(){if(!currentUser){showToast('Please login first','error');return;}_passStudentSession();window.location.href='fees.html';}
 function goToCalendar(){if(!currentUser){showToast('Please login first','error');return;}_passStudentSession();window.location.href='calendar.html';}
+
+/* ==== STUDENT PORTAL VISIBILITY ENGINE ==== */
+function parseStudentVisibility(raw){
+  try{
+    const parsed = raw ? JSON.parse(raw) : {};
+    return {
+      sections: {...STUDENT_PORTAL_VISIBILITY.sections, ...(parsed.sections||{})},
+      actions: {...STUDENT_PORTAL_VISIBILITY.actions, ...(parsed.actions||{})}
+    };
+  }catch(e){ return STUDENT_PORTAL_VISIBILITY; }
+}
+function applyStudentPortalVisibility(showToastMsg){
+  const v = STUDENT_PORTAL_VISIBILITY;
+  const map = {
+    leaderboard:'leaderboardSection',
+    palathulli:'palathulliSection',
+    statsGrid:'statsGridSection',
+    madrasaRank:'madrasaRankCard',
+    quickActionsTitle:'quickActionsTitle',
+    quickActionsGrid:'quickActionsGrid',
+    feedEvents:'feedEventsRow',
+    monthlyProgress:'monthlyProgressSection'
+  };
+  Object.keys(map).forEach(k=>{
+    const el = document.getElementById(map[k]);
+    if(el) el.style.display = v.sections[k] ? '' : 'none';
+  });
+  document.querySelectorAll('#quickActionsGrid .action-tile').forEach(tile=>{
+    const act = tile.dataset.action;
+    if(!act) return;
+    if(act === 'topper'){
+      const rankOK = (currentUser && [1,2,3].includes(currentUser.rank));
+      tile.style.display = (v.actions.topper && rankOK) ? '' : 'none';
+      return;
+    }
+    tile.style.display = v.actions[act] ? '' : 'none';
+  });
+  const grid = document.getElementById('quickActionsGrid');
+  if(grid){
+    const anyVisible = [...grid.querySelectorAll('.action-tile')].some(t=>t.style.display !== 'none');
+    if(!anyVisible){ grid.style.display='none'; }
+    else if(v.sections.quickActionsGrid){ grid.style.display=''; }
+  }
+  if(showToastMsg) showToast('👁️ Visibility applied','info');
+}
+function renderVisibilityUI(){
+  const sGrid = document.getElementById('visSectionsGrid');
+  const aGrid = document.getElementById('visActionsGrid');
+  if(!sGrid || !aGrid) return;
+  sGrid.innerHTML = VIS_SECTIONS_META.map(m=>`
+    <label class="vis-toggle ${STUDENT_PORTAL_VISIBILITY.sections[m.key]?'':'off'}" id="vis_sec_${m.key}">
+      <span class="vis-name"><i class="fas ${m.icon}"></i>${m.label}</span>
+      <input type="checkbox" ${STUDENT_PORTAL_VISIBILITY.sections[m.key]?'checked':''}
+        onchange="onVisibilityToggle('sections','${m.key}',this.checked)">
+      <span class="vis-switch"></span>
+    </label>`).join('');
+  aGrid.innerHTML = VIS_ACTIONS_META.map(m=>`
+    <label class="vis-toggle ${STUDENT_PORTAL_VISIBILITY.actions[m.key]?'':'off'}" id="vis_act_${m.key}">
+      <span class="vis-name"><i class="fas ${m.icon}"></i>${m.label}</span>
+      <input type="checkbox" ${STUDENT_PORTAL_VISIBILITY.actions[m.key]?'checked':''}
+        onchange="onVisibilityToggle('actions','${m.key}',this.checked)">
+      <span class="vis-switch"></span>
+    </label>`).join('');
+}
+function onVisibilityToggle(group, key, value){
+  STUDENT_PORTAL_VISIBILITY[group][key] = value;
+  const wrap = document.getElementById((group==='sections'?'vis_sec_':'vis_act_')+key);
+  if(wrap) wrap.classList.toggle('off', !value);
+}
+function toggleAllQuickActions(state){
+  VIS_ACTIONS_META.forEach(m=>{
+    STUDENT_PORTAL_VISIBILITY.actions[m.key] = state;
+    const wrap = document.getElementById('vis_act_'+m.key);
+    if(wrap){
+      wrap.classList.toggle('off', !state);
+      const chk = wrap.querySelector('input[type="checkbox"]');
+      if(chk) chk.checked = state;
+    }
+  });
+}
+function resetStudentPortalVisibility(){
+  STUDENT_PORTAL_VISIBILITY = {
+    sections:{leaderboard:true,palathulli:true,statsGrid:true,madrasaRank:true,quickActionsTitle:true,quickActionsGrid:true,feedEvents:true,monthlyProgress:true},
+    actions:{results:true,attendance:true,moral:true,profile:true,marks:true,timetable:true,homework:true,library:true,idcard:true,palathulli:true,extracurricular:true,competitions:true,report:true,studentzone:true,fees:true,calendar:true,topper:true}
+  };
+  renderVisibilityUI();
+  showToast('🔄 Reset to all visible (not saved yet)','info');
+}
+async function saveStudentPortalVisibility(){
+  try{
+    const json = JSON.stringify(STUDENT_PORTAL_VISIBILITY);
+    await supabaseClient.from('settings').upsert({key:'studentPortalVisibility',value:json},{onConflict:'key'});
+    SETTINGS_CACHE.studentPortalVisibility = json;
+    showToast('✅ Visibility saved!','success');
+    if(typeof confetti!=='undefined')confetti({particleCount:80,spread:70,origin:{y:.6}});
+  }catch(e){ showToast('❌ '+e.message,'error'); }
+}
 
 /* ==== SETTINGS ==== */
 async function loadAllSettings(){
@@ -885,6 +1110,7 @@ async function loadAllSettings(){
     if(SETTINGS_CACHE.headingExtraTitle) HEADING_EXTRA = SETTINGS_CACHE.headingExtraTitle;
     if(SETTINGS_CACHE.headingOverallRankTitle) HEADING_OVERALL_RANK = SETTINGS_CACHE.headingOverallRankTitle;
     if(SETTINGS_CACHE.headingMonthlyTitle) HEADING_MONTHLY = SETTINGS_CACHE.headingMonthlyTitle;
+    if(SETTINGS_CACHE.studentPortalVisibility) STUDENT_PORTAL_VISIBILITY = parseStudentVisibility(SETTINGS_CACHE.studentPortalVisibility);
     populateSettingsForm();populateDynamicDropdowns();
   }catch(e){console.error(e);}
 }
@@ -947,6 +1173,7 @@ document.getElementById('loginForm').addEventListener('submit',async function(e)
 document.getElementById('logoutBtn').addEventListener('click',logout);
 document.getElementById('adminLogoutBtn').addEventListener('click',logout);
 function logout(){
+  if(adminImpersonating){ returnToAdmin(); return; }
   currentUser=null;isAdminMode=false;currentAdminClass='';
   localStorage.removeItem('noor_session');
   dashboardSection.style.display='none';adminSection.style.display='none';loginSection.style.display='flex';
@@ -967,7 +1194,15 @@ async function restoreSession(){
     showAIAssistant();subscribeNotifications();
   }catch(e){console.error('restoreSession',e);}}
 }
-function showAIAssistant(){if(!currentUser)return;document.getElementById('aiFab').classList.add('show');const nameEl=document.getElementById('aiStudentNameText');if(nameEl)nameEl.textContent=currentUser.name||'Student';const welcome=document.getElementById('aiWelcomeMsg');if(welcome){welcome.innerHTML=`അസ്സലാമു അലൈക്കും <b>${escapeHtml(currentUser.name||'')}</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b> — Gemini AI ഉപയോഗിച്ച് പ്രവർത്തിക്കുന്നു.<br><br>ഏതിനെക്കുറിച്ചും ചോദിക്കാം 😊`;}}
+function showAIAssistant(){
+  if(!currentUser)return;
+  document.getElementById('aiFab').classList.add('show');
+  const nameEl=document.getElementById('aiStudentNameText');
+  if(nameEl)nameEl.textContent=currentUser.name||'Student';
+  const welcome=document.getElementById('aiWelcomeMsg');
+  if(welcome){welcome.innerHTML=`അസ്സലാമു അലൈക്കും <b>${escapeHtml(currentUser.name||'')}</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b> — Gemini AI ഉപയോഗിച്ച് പ്രവർത്തിക്കുന്നു.<br><br>ഏതിനെക്കുറിച്ചും ചോദിക്കാം 😊`;}
+  applyStudentPortalVisibility();
+}
 function toggleTheme(){dashboardSection.classList.toggle('dashboard-light');showToast('🎨 Theme toggled','info');}
 
 function subscribeNotifications(){
@@ -1007,10 +1242,10 @@ function updateDashboardUI(){
   document.getElementById('rankBadge').innerHTML=currentUser.rankChange?(currentUser.rankChange==='+1'?'⬆️ Improved':currentUser.rankChange==='-1'?'⬇️ Dropped':'Stable'):(rank?'Rank '+rank:'No data');
   document.getElementById('moralValuesDisplay').innerText=currentUser.moralValuesGrade||'N/A';
   document.getElementById('moralValuesSub').innerText=currentUser.moralValuesSub||'N/A';
-  document.getElementById('topperPosterTile').style.display=(currentUser.rank===1||currentUser.rank===2||currentUser.rank===3)?'block':'none';
   const bestBadge=document.getElementById('bestStudentBadge');if(bestBadge)bestBadge.style.display=currentUser.isBestStudent?'inline-block':'none';
   const titleEl=document.getElementById('overallRankTitleText');if(titleEl)titleEl.textContent=HEADING_OVERALL_RANK;
   const nameEl=document.getElementById('aiStudentNameText');if(nameEl)nameEl.textContent=currentUser.name||'Student';
+  applyStudentPortalVisibility();
 }
 
 async function refreshStudentAttendance(){
@@ -1113,9 +1348,7 @@ function startLeaderboardAutoScroll(){
       if(delta>0){
         scroll.scrollLeft += SPEED * (delta/16.67);
         const maxScroll=scroll.scrollWidth - scroll.clientWidth;
-        if(scroll.scrollLeft >= maxScroll - 1){
-          scroll.scrollLeft=0;
-        }
+        if(scroll.scrollLeft >= maxScroll - 1){ scroll.scrollLeft=0; }
       }
     }
     lastTime=now;
@@ -1123,7 +1356,6 @@ function startLeaderboardAutoScroll(){
   }
   _lbAutoScrollRAF=requestAnimationFrame(step);
 }
-
 function stopLeaderboardAutoScroll(){
   if(_lbAutoScrollRAF){cancelAnimationFrame(_lbAutoScrollRAF);_lbAutoScrollRAF=null;}
   const scroll=document.getElementById('leaderboardScroll');
@@ -1141,7 +1373,7 @@ function stopLeaderboardAutoScroll(){
   }
 }
 
-/* ==== TOP WINNERS LEADERBOARD (Class-specific) ==== */
+/* ==== TOP WINNERS LEADERBOARD (Multi-Class Aware) ==== */
 async function loadTopWinners(){
   const scroll=document.getElementById('leaderboardScroll');
   const section=document.getElementById('leaderboardSection');
@@ -1152,30 +1384,23 @@ async function loadTopWinners(){
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class info ലഭ്യമല്ല</div>`;
       return;
     }
-    const {data:comps,error:compErr}=await supabaseClient.from('competitions').select('studentid,position,grade,target_class').or(`target_class.eq.${myClass},target_class.eq.all`);
+    const {data:allComps,error:compErr}=await supabaseClient.from('competitions').select('studentid,position,grade,target_class');
     if(compErr){
-      console.error('❌ Competitions fetch error:',compErr);
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-triangle-exclamation" style="color:#f87171;"></i>Error: ${escapeHtml(compErr.message||'Failed')}</div>`;
       return;
     }
-    if(!comps || comps.length===0){
-      scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ മൽസര റിസൾട്ടുകൾ ഇല്ല<br><small style="font-size:.7rem;opacity:.7;">മൽസരങ്ങളിൽ പങ്കെടുക്കൂ! 🌟</small></div>`;
+    const comps = (allComps||[]).filter(c => classMatchesTarget(myClass, c.target_class));
+    if(comps.length===0){
+      scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ മൽസര റിസൾട്ടുകൾ ഇല്ല</div>`;
       return;
     }
     const studentIds=[...new Set(comps.map(c=>c.studentid).filter(Boolean))];
-    if(studentIds.length===0){
-      scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>No winners yet</div>`;
-      return;
-    }
-    const {data:students,error:studErr}=await supabaseClient.from('students').select('studentid,name,class,photo').in('studentid',studentIds).eq('class',myClass);
-    if(studErr)console.error('❌ Students fetch error:',studErr);
+    if(studentIds.length===0){ scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>No winners yet</div>`; return; }
+    const {data:students}=await supabaseClient.from('students').select('studentid,name,class,photo').in('studentid',studentIds);
     const studentMap={};
     (students||[]).forEach(s=>{studentMap[s.studentid]={name:s.name||'Student',class:s.class||'',photo:s.photo||''};});
-    const myClassComps=comps.filter(c=>studentMap[c.studentid]);
-    if(myClassComps.length===0){
-      scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ points ഇല്ല</div>`;
-      return;
-    }
+    const myClassComps=comps.filter(c=>studentMap[c.studentid] && String(studentMap[c.studentid].class)===myClass);
+    if(myClassComps.length===0){ scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ points ഇല്ല</div>`; return; }
     const pointsMap={};
     myClassComps.forEach(c=>{
       if(!c.studentid)return;
@@ -1189,10 +1414,7 @@ async function loadTopWinners(){
       if(c.grade==='A+')p.points+=1;
     });
     const ranked=Object.values(pointsMap).filter(p=>p.points>0).sort((a,b)=>{if(b.points!==a.points)return b.points-a.points;if(b.wins1!==a.wins1)return b.wins1-a.wins1;return b.total-a.total;}).slice(0,20);
-    if(ranked.length===0){
-      scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ points ഇല്ല</div>`;
-      return;
-    }
+    if(ranked.length===0){ scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ points ഇല്ല</div>`; return; }
     const titleEl=section.querySelector('.lb-title span');
     if(titleEl)titleEl.textContent=`Top Winners — Class ${myClass}`;
     let html='';
@@ -1209,7 +1431,6 @@ async function loadTopWinners(){
     if(window._lbInterval)clearInterval(window._lbInterval);
     window._lbInterval=setInterval(()=>{if(document.visibilityState==='visible' && !isAdminMode){loadTopWinners();}},120000);
   }catch(e){
-    console.error('❌ Leaderboard error:',e);
     scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-triangle-exclamation" style="color:#f87171;"></i>Error: ${escapeHtml(e.message||'Failed to load')}</div>`;
   }
 }
@@ -1343,8 +1564,9 @@ async function showCompetitions(){
   modal.style.display='flex';
   try{
     const myClass=String(currentUser.class||'');
-    const {data,error}=await supabaseClient.from('competitions').select('*').or(`studentid.eq.${currentUser.studentId},target_class.eq.${myClass},target_class.eq.all`).order('competition_date',{ascending:false});
+    const {data:allComps,error}=await supabaseClient.from('competitions').select('*').order('competition_date',{ascending:false});
     if(error)throw error;
+    const data = (allComps||[]).filter(c => c.studentid===currentUser.studentId || classMatchesTarget(myClass, c.target_class));
     if(!data||data.length===0){
       modalBodyDiv.innerHTML=`<div class="text-center py-5"><i class="fas fa-trophy" style="font-size:3.5rem;color:#fbbf24;opacity:.4;"></i><h5 class="text-white mt-3" style="font-size:1.05rem;">ഇതുവരെ മൽസരങ്ങളിൽ പങ്കെടുത്തിട്ടില്ല</h5><p class="text-white-50 mt-2" style="font-size:.85rem;">മൽസരങ്ങളിൽ പങ്കെടുക്കൂ, നിങ്ങളുടെ കഴിവ് തെളിയിക്കൂ! 🌟</p></div>`;
       return;
@@ -1358,10 +1580,10 @@ async function showCompetitions(){
     if(myResults.length>0){
       html+=`<div style="font-weight:800;color:#fff;font-size:.88rem;margin:14px 0 10px;"><i class="fas fa-user-check" style="color:#22d3ee;"></i> എന്റെ റിസൾട്ടുകൾ</div>`;
       const groups={};
-      myResults.forEach(c=>{const key=c.competition_name+'__'+c.competition_date;if(!groups[key])groups[key]={name:c.competition_name,date:c.competition_date,category:c.category,entries:[]};groups[key].entries.push(c);});
+      myResults.forEach(c=>{const key=c.competition_name+'__'+c.competition_date;if(!groups[key])groups[key]={name:c.competition_name,date:c.competition_date,category:c.category,target:c.target_class,entries:[]};groups[key].entries.push(c);});
       Object.keys(groups).sort((a,b)=>new Date(groups[b].date)-new Date(groups[a].date)).forEach(key=>{
         const g=groups[key];
-        html+=`<div style="background:rgba(120,180,255,.06);border:1px solid rgba(140,190,255,.18);border-radius:16px;padding:14px;margin-bottom:10px;"><div style="font-weight:800;color:#fff;font-size:.92rem;"><i class="fas fa-trophy" style="color:#fbbf24;margin-right:6px;"></i>${escapeHtml(g.name)}</div><div style="font-size:.72rem;color:#9db8dd;margin-top:3px;margin-bottom:8px;">📅 ${formatDate(g.date)}${g.category?' • '+escapeHtml(g.category):''}</div>`;
+        html+=`<div style="background:rgba(120,180,255,.06);border:1px solid rgba(140,190,255,.18);border-radius:16px;padding:14px;margin-bottom:10px;"><div style="font-weight:800;color:#fff;font-size:.92rem;"><i class="fas fa-trophy" style="color:#fbbf24;margin-right:6px;"></i>${escapeHtml(g.name)}</div><div style="font-size:.72rem;color:#9db8dd;margin-top:3px;margin-bottom:8px;">📅 ${formatDate(g.date)}${g.category?' • '+escapeHtml(g.category):''}${g.target?' • '+formatTargetClasses(g.target):''}</div>`;
         g.entries.forEach(e=>{
           const pos=getPositionLabel(e.position);
           const posColor=e.position===1?'#fbbf24':e.position===2?'#c0c0c0':e.position===3?'#cd7f32':'#7db3ff';
@@ -1375,42 +1597,25 @@ async function showCompetitions(){
   }catch(e){modalBodyDiv.innerHTML='<div class="text-center py-4 text-white-50">Error: '+escapeHtml(e.message||'')+'</div>';}
 }
 
-/* ==== ADMIN: COMPETITIONS (FIXED — No Join) ==== */
+/* ==== ADMIN: COMPETITIONS ==== */
 async function loadCompetitionsAdmin(){
   const wrap=document.getElementById('competitionsAdminWrap');
   wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
   try{
-    // Step 1: Fetch competitions (no join)
-    let q=supabaseClient.from('competitions').select('*').order('competition_date',{ascending:false}).limit(200);
-    if(currentAdminClass && currentAdminClass!=='all'){
-      q=q.or(`target_class.eq.${currentAdminClass},target_class.eq.all`);
-    }
-    const {data:comps,error:compErr}=await q;
-    if(compErr){
-      console.error('❌ Competitions fetch error:',compErr);
-      wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(compErr.message||'')+'</div>';
-      return;
-    }
-    if(!comps||comps.length===0){
-      competitionsData=[];
-      filterCompetitionsAdmin();
-      return;
-    }
-    // Step 2: Fetch students separately
+    const {data:allComps,error:compErr}=await supabaseClient.from('competitions').select('*').order('competition_date',{ascending:false}).limit(300);
+    if(compErr){ wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(compErr.message||'')+'</div>'; return; }
+    let comps = allComps||[];
+    if(currentAdminClass && currentAdminClass!=='all'){ comps = comps.filter(c => classMatchesTarget(currentAdminClass, c.target_class)); }
+    if(comps.length===0){ competitionsData=[]; filterCompetitionsAdmin(); return; }
     const studentIds=[...new Set(comps.map(c=>c.studentid).filter(Boolean))];
     let studentMap={};
     if(studentIds.length>0){
-      const {data:studs,error:studErr}=await supabaseClient.from('students').select('studentid,name,class').in('studentid',studentIds);
-      if(studErr)console.error('❌ Students fetch error:',studErr);
+      const {data:studs}=await supabaseClient.from('students').select('studentid,name,class').in('studentid',studentIds);
       (studs||[]).forEach(s=>{studentMap[s.studentid]={name:s.name||'',class:s.class||''};});
     }
-    // Step 3: Merge data
     competitionsData=comps.map(c=>({...c,studentname:studentMap[c.studentid]?.name||'',studentclass:studentMap[c.studentid]?.class||''}));
     filterCompetitionsAdmin();
-  }catch(e){
-    console.error('❌ loadCompetitionsAdmin error:',e);
-    wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message||'')+'</div>';
-  }
+  }catch(e){ wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message||'')+'</div>'; }
 }
 function filterCompetitionsAdmin(){
   const s=(document.getElementById('competitionsSearch')?.value||'').toLowerCase().trim();
@@ -1421,12 +1626,12 @@ function renderCompetitionsAdmin(){
   const wrap=document.getElementById('competitionsAdminWrap');
   if(!filteredCompetitions.length){wrap.innerHTML='<div class="empty-state">No results</div>';return;}
   const showClass=currentAdminClass==='all';
-  let html='<table><thead><tr><th>#</th><th>Competition</th><th>Date</th><th>Student</th>'+(showClass?'<th>Class</th>':'')+'<th>Category</th><th>Position</th><th>Grade</th><th>Actions</th></tr></thead><tbody>';
+  let html='<table><thead><tr><th>#</th><th>Competition</th><th>Date</th><th>Group</th><th>Student</th>'+(showClass?'<th>Class</th>':'')+'<th>Category</th><th>Position</th><th>Grade</th><th>Actions</th></tr></thead><tbody>';
   filteredCompetitions.forEach((c,i)=>{
     const pos=getPositionLabel(c.position);
     const posColor=c.position===1?'#fbbf24':c.position===2?'#c0c0c0':c.position===3?'#cd7f32':'#7db3ff';
     const gradeColor=getGradeDetails(c.grade).color;
-    html+=`<tr><td>${i+1}</td><td><strong>${escapeHtml(c.competition_name)}</strong></td><td>${formatDate(c.competition_date)}</td><td>${escapeHtml(c.studentname||c.studentid)}</td>${showClass?`<td>${escapeHtml(c.studentclass||'')}</td>`:''}<td><span style="font-size:.7rem;color:#9db8dd;">${escapeHtml(c.category||'—')}</span></td><td><span style="color:${posColor};font-weight:800;font-size:.75rem;">${pos}</span></td><td><span style="color:${gradeColor};font-weight:800;font-size:.85rem;">${escapeHtml(c.grade||'—')}</span></td><td><button class="btn-sm approve" onclick="editCompetition(${c.id})">✏️</button><button class="btn-sm reject" onclick="deleteCompetition(${c.id})">🗑️</button></td></tr>`;
+    html+=`<tr><td>${i+1}</td><td><strong>${escapeHtml(c.competition_name)}</strong></td><td>${formatDate(c.competition_date)}</td><td><span style="font-size:.68rem;color:#67e8f9;font-weight:800;background:rgba(34,211,238,.12);padding:2px 8px;border-radius:20px;">${formatTargetClasses(c.target_class)}</span></td><td>${escapeHtml(c.studentname||c.studentid)}</td>${showClass?`<td>${escapeHtml(c.studentclass||'')}</td>`:''}<td><span style="font-size:.7rem;color:#9db8dd;">${escapeHtml(c.category||'—')}</span></td><td><span style="color:${posColor};font-weight:800;font-size:.75rem;">${pos}</span></td><td><span style="color:${gradeColor};font-weight:800;font-size:.85rem;">${escapeHtml(c.grade||'—')}</span></td><td><button class="btn-sm approve" onclick="editCompetition(${c.id})">✏️</button><button class="btn-sm reject" onclick="deleteCompetition(${c.id})">🗑️</button></td></tr>`;
   });
   html+='</tbody></table>';wrap.innerHTML=html;
 }
@@ -1434,15 +1639,62 @@ async function openCompetitionForm(id=null){
   const isEdit=id!==null;
   const comp=isEdit?competitionsData.find(c=>c.id===id):{};
   let studentsList=[];
-  try{let q=supabaseClient.from('students').select('studentid,name,class').order('name');if(currentAdminClass && currentAdminClass!=='all')q=q.eq('class',currentAdminClass);const {data}=await q;studentsList=data||[];}catch(e){}
+  try{
+    let q=supabaseClient.from('students').select('studentid,name,class').order('name');
+    if(currentAdminClass && currentAdminClass!=='all')q=q.eq('class',currentAdminClass);
+    const {data}=await q;studentsList=data||[];
+  }catch(e){}
+  const tg = String(comp.target_class||'');
+  const isAll = tg==='all';
+  const selectedClasses = isAll ? [] : tg.split(',').map(x=>x.trim());
   modalTitleSpan.innerText=isEdit?'✏️ Edit Competition':'🏆 Add Competition Result';
-  modalBodyDiv.innerHTML=`<form onsubmit="saveCompetition(event,${isEdit?id:'null'})"><div class="row g-3"><div class="col-12"><label class="text-white-50 small">Competition Name *</label><input type="text" id="cp_name" value="${escapeHtml(comp.competition_name||'')}" required class="modal-form-input"></div><div class="col-md-6"><label class="text-white-50 small">Date *</label><input type="date" id="cp_date" value="${comp.competition_date||new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div><div class="col-md-6"><label class="text-white-50 small">Category</label><input type="text" id="cp_category" value="${escapeHtml(comp.category||'')}" class="modal-form-input"></div><div class="col-12"><label class="text-white-50 small">Target Class</label><select id="cp_target" class="modal-form-input"><option value="all" ${comp.target_class==='all'?'selected':''}>All Classes</option>${[1,2,3,4,5,6,7,8,9,10].map(c=>`<option value="${c}" ${String(comp.target_class)===String(c)?'selected':''}>Class ${c}</option>`).join('')}</select></div><div class="col-12"><label class="text-white-50 small">Student *</label><select id="cp_student" required class="modal-form-input"><option value="">-- Select --</option>${studentsList.map(s=>`<option value="${s.studentid}" ${comp.studentid===s.studentid?'selected':''}>${escapeHtml(s.name)} (${s.studentid} • Class ${s.class})</option>`).join('')}</select></div><div class="col-md-6"><label class="text-white-50 small">Position</label><select id="cp_position" class="modal-form-input"><option value="">—</option><option value="1" ${comp.position===1?'selected':''}>🥇 1st</option><option value="2" ${comp.position===2?'selected':''}>🥈 2nd</option><option value="3" ${comp.position===3?'selected':''}>🥉 3rd</option><option value="4" ${comp.position===4?'selected':''}>4th</option><option value="5" ${comp.position===5?'selected':''}>5th</option></select></div><div class="col-md-6"><label class="text-white-50 small">Grade *</label><select id="cp_grade" required class="modal-form-input"><option value="">-- Select --</option>${GRADES_LIST.map(g=>`<option value="${g}" ${comp.grade===g?'selected':''}>${g}</option>`).join('')}</select></div><div class="col-12"><label class="text-white-50 small">Remarks</label><textarea id="cp_remarks" class="modal-form-input" style="min-height:60px;">${escapeHtml(comp.remarks||'')}</textarea></div></div><div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1">Save</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div></form>`;
+  modalBodyDiv.innerHTML=`<form onsubmit="saveCompetition(event,${isEdit?id:'null'})">
+    <div class="row g-3">
+      <div class="col-12"><label class="text-white-50 small">Competition Name *</label><input type="text" id="cp_name" value="${escapeHtml(comp.competition_name||'')}" required class="modal-form-input" placeholder="e.g., Chitra Rachana 2026"></div>
+      <div class="col-md-6"><label class="text-white-50 small">Date *</label><input type="date" id="cp_date" value="${comp.competition_date||new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div>
+      <div class="col-md-6"><label class="text-white-50 small">Category</label><input type="text" id="cp_category" value="${escapeHtml(comp.category||'')}" class="modal-form-input"></div>
+      <div class="col-12"><label class="text-white-50 small">Target Classes * <span style="color:#67e8f9;">(ഒന്നിലധികം ക്ലാസുകൾ ഒരുമിച്ച് മത്സരിക്കാം)</span></label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;background:rgba(8,20,48,.6);padding:10px;border-radius:14px;border:1px solid var(--stroke);">
+          <label style="display:flex;align-items:center;gap:5px;background:rgba(34,211,238,.18);padding:5px 10px;border-radius:20px;font-size:.75rem;cursor:pointer;color:#fff;font-weight:700;">
+            <input type="checkbox" id="cp_class_all" ${isAll?'checked':''} onchange="document.querySelectorAll('.cp-class-chk').forEach(c=>c.checked=this.checked)"> 🌟 All
+          </label>
+          ${[1,2,3,4,5,6,7,8,9,10].map(c=>`<label style="display:flex;align-items:center;gap:5px;background:rgba(59,139,255,.12);padding:5px 10px;border-radius:20px;font-size:.75rem;cursor:pointer;color:#fff;font-weight:700;">
+            <input type="checkbox" class="cp-class-chk" value="${c}" ${selectedClasses.includes(String(c))?'checked':''}> Class ${c}
+          </label>`).join('')}
+        </div>
+      </div>
+      <div class="col-12"><label class="text-white-50 small">Student *</label>
+        <select id="cp_student" required class="modal-form-input"><option value="">-- Select --</option>${studentsList.map(s=>`<option value="${s.studentid}" ${comp.studentid===s.studentid?'selected':''}>${escapeHtml(s.name)} (${s.studentid} • Class ${s.class})</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="text-white-50 small">Position (ഗ്രൂപ്പിനുള്ളിൽ)</label>
+        <select id="cp_position" class="modal-form-input"><option value="">—</option><option value="1" ${comp.position===1?'selected':''}>🥇 1st</option><option value="2" ${comp.position===2?'selected':''}>🥈 2nd</option><option value="3" ${comp.position===3?'selected':''}>🥉 3rd</option><option value="4" ${comp.position===4?'selected':''}>4th</option><option value="5" ${comp.position===5?'selected':''}>5th</option></select></div>
+      <div class="col-md-6"><label class="text-white-50 small">Grade *</label>
+        <select id="cp_grade" required class="modal-form-input"><option value="">-- Select --</option>${GRADES_LIST.map(g=>`<option value="${g}" ${comp.grade===g?'selected':''}>${g}</option>`).join('')}</select></div>
+      <div class="col-12"><label class="text-white-50 small">Remarks</label>
+        <textarea id="cp_remarks" class="modal-form-input" style="min-height:60px;">${escapeHtml(comp.remarks||'')}</textarea></div>
+    </div>
+    <div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1">Save</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div>
+  </form>`;
   modal.style.display='flex';
 }
 function editCompetition(id){openCompetitionForm(id);}
 async function saveCompetition(e,id){
   e.preventDefault();
-  const obj={competition_name:document.getElementById('cp_name').value.trim(),competition_date:document.getElementById('cp_date').value,category:document.getElementById('cp_category').value.trim()||null,target_class:document.getElementById('cp_target').value,studentid:document.getElementById('cp_student').value,position:document.getElementById('cp_position').value?parseInt(document.getElementById('cp_position').value):null,grade:document.getElementById('cp_grade').value,remarks:document.getElementById('cp_remarks').value.trim()||null};
+  const allChk = document.getElementById('cp_class_all').checked;
+  const classChks = [...document.querySelectorAll('.cp-class-chk:checked')].map(x=>x.value);
+  let target_class;
+  if(allChk && classChks.length===10) target_class='all';
+  else if(classChks.length===0){ showToast('⚠️ കുറഞ്ഞത് ഒരു ക്ലാസെങ്കിലും തിരഞ്ഞെടുക്കുക','error'); return; }
+  else target_class = classChks.join(',');
+  const obj={
+    competition_name:document.getElementById('cp_name').value.trim(),
+    competition_date:document.getElementById('cp_date').value,
+    category:document.getElementById('cp_category').value.trim()||null,
+    target_class:target_class,
+    studentid:document.getElementById('cp_student').value,
+    position:document.getElementById('cp_position').value?parseInt(document.getElementById('cp_position').value):null,
+    grade:document.getElementById('cp_grade').value,
+    remarks:document.getElementById('cp_remarks').value.trim()||null
+  };
   if(!obj.competition_name||!obj.studentid||!obj.grade){showToast('Fill required fields','error');return;}
   showLoading(true);
   try{
@@ -1456,14 +1708,80 @@ async function saveCompetition(e,id){
 }
 async function deleteCompetition(id){if(!confirm('Delete?'))return;try{await supabaseClient.from('competitions').delete().eq('id',id);showToast('🗑️ Deleted','success');loadCompetitionsAdmin();}catch(e){showToast('❌ '+e.message,'error');}}
 
+/* ==== ADMIN: BULK COMPETITION (Multi-Class) ==== */
 async function openBulkCompetitionForm(){
-  if(!currentAdminClass || currentAdminClass==='all'){showToast('⚠️ Bulk entry-ക്ക് specific class തിരഞ്ഞെടുക്കുക','error');return;}
-  let studentsList=[];
-  try{const {data}=await supabaseClient.from('students').select('studentid,name,class,roll').eq('class',currentAdminClass).order('roll').order('name');studentsList=data||[];}catch(e){}
-  if(studentsList.length===0){showToast('No students in this class','error');return;}
-  modalTitleSpan.innerText=`🏆 Bulk Competition — Class ${currentAdminClass}`;
-  modalBodyDiv.innerHTML=`<div class="class-subjects-info" style="margin-bottom:14px;"><strong class="text-white" style="font-size:.88rem;"><i class="fas fa-layer-group" style="color:#fbbf24;"></i> Class ${currentAdminClass} — ${studentsList.length} Students</strong><div style="font-size:.72rem;color:#9db8dd;margin-top:4px;">💡 ഒരേ മൽസരത്തിൽ പല കുട്ടികളുടെയും റിസൾട്ട് ഒരുമിച്ച് ചേർക്കാം</div></div><form onsubmit="saveBulkCompetition(event)"><div class="row g-3 mb-3"><div class="col-md-7"><label class="text-white-50 small">Competition Name *</label><input type="text" id="bcp_name" required class="modal-form-input" placeholder="e.g., Quran Recitation 2026"></div><div class="col-md-5"><label class="text-white-50 small">Date *</label><input type="date" id="bcp_date" value="${new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div><div class="col-12"><label class="text-white-50 small">Category</label><input type="text" id="bcp_category" class="modal-form-input" placeholder="Arabic, Speech, Quiz"></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;"><div style="font-weight:800;color:#fff;font-size:.88rem;"><i class="fas fa-users" style="color:#22d3ee;"></i> Students of Class ${currentAdminClass}</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-load" style="padding:5px 12px;font-size:.7rem;" onclick="bulkMarkAllAsParticipated()"><i class="fas fa-check-double"></i> Mark All</button><button type="button" class="btn-cancel" style="padding:5px 12px;font-size:.7rem;" onclick="bulkClearAll()"><i class="fas fa-eraser"></i> Clear</button></div></div><div style="max-height:400px;overflow-y:auto;border:1px solid var(--stroke);border-radius:14px;background:rgba(8,20,48,.42);"><table class="marks-entry-table" style="margin:0;"><thead style="position:sticky;top:0;z-index:2;"><tr><th style="min-width:34px;">#</th><th style="min-width:140px;">Student</th><th style="min-width:90px;">Position</th><th style="min-width:80px;">Grade</th><th style="min-width:100px;">Remarks</th></tr></thead><tbody>${studentsList.map((s,i)=>`<tr><td>${i+1}</td><td><strong style="font-size:.78rem;">${escapeHtml(s.name)}</strong><br><small style="color:#6d88ad;font-size:.6rem;">${escapeHtml(s.studentid)}${s.roll?' • R'+escapeHtml(s.roll):''}</small></td><td><select class="bulk-pos modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option><option value="1">🥇 1st</option><option value="2">🥈 2nd</option><option value="3">🥉 3rd</option><option value="4">4th</option><option value="5">5th</option></select></td><td><select class="bulk-grade modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option>${GRADES_LIST.map(g=>`<option value="${g}">${g}</option>`).join('')}</select></td><td><input type="text" class="bulk-remarks modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.72rem;" placeholder="optional"></td></tr>`).join('')}</tbody></table></div><div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1" id="bulkSaveBtn"><i class="fas fa-save"></i> Save All Results</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div></form>`;
+  if(!currentAdminClass){showToast('⚠️ ആദ്യം ഒരു class തിരഞ്ഞെടുക്കുക','error');return;}
+  const today = new Date().toISOString().split('T')[0];
+  modalTitleSpan.innerText='🏆 Bulk Competition Entry';
+  modalBodyDiv.innerHTML=`<form onsubmit="saveBulkCompetition(event)">
+    <div class="row g-3 mb-3">
+      <div class="col-md-7"><label class="text-white-50 small">Competition Name *</label>
+        <input type="text" id="bcp_name" required class="modal-form-input" placeholder="e.g., Chitra Rachana 2026"></div>
+      <div class="col-md-5"><label class="text-white-50 small">Date *</label>
+        <input type="date" id="bcp_date" value="${today}" required class="modal-form-input"></div>
+      <div class="col-12"><label class="text-white-50 small">Category</label>
+        <input type="text" id="bcp_category" class="modal-form-input" placeholder="Drawing, Speech, Quiz"></div>
+      <div class="col-12"><label class="text-white-50 small">Classes * <span style="color:#67e8f9;">(ഒരുമിച്ച് നടത്തുന്ന മത്സരത്തിന് ഒന്നിലധികം ക്ലാസുകൾ)</span></label>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;background:rgba(8,20,48,.6);padding:10px;border-radius:14px;border:1px solid var(--stroke);">
+          <label style="display:flex;align-items:center;gap:5px;background:rgba(34,211,238,.18);padding:5px 10px;border-radius:20px;font-size:.75rem;cursor:pointer;color:#fff;font-weight:700;">
+            <input type="checkbox" id="bcp_all" onchange="document.querySelectorAll('.bcp-class-chk').forEach(c=>c.checked=this.checked);loadBulkCompetitionStudents();"> 🌟 All
+          </label>
+          ${[1,2,3,4,5,6,7,8,9,10].map(c=>`<label style="display:flex;align-items:center;gap:5px;background:rgba(59,139,255,.12);padding:5px 10px;border-radius:20px;font-size:.75rem;cursor:pointer;color:#fff;font-weight:700;">
+            <input type="checkbox" class="bcp-class-chk" value="${c}" ${currentAdminClass===String(c)?'checked':''} onchange="loadBulkCompetitionStudents()"> Class ${c}
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div id="bcpStudentsArea"><div class="empty-state"><div class="spinner-sm" style="margin:0 auto 8px;"></div>Loading students...</div></div>
+    <div class="d-flex gap-2 mt-4">
+      <button type="submit" class="btn-update flex-grow-1" id="bulkSaveBtn"><i class="fas fa-save"></i> Save All Results</button>
+      <button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button>
+    </div>
+  </form>`;
   modal.style.display='flex';
+  loadBulkCompetitionStudents();
+}
+async function loadBulkCompetitionStudents(){
+  const area = document.getElementById('bcpStudentsArea');
+  if(!area) return;
+  const allChk = document.getElementById('bcp_all')?.checked;
+  let classes;
+  if(allChk) classes = ['1','2','3','4','5','6','7','8','9','10'];
+  else classes = [...document.querySelectorAll('.bcp-class-chk:checked')].map(x=>x.value);
+  if(classes.length===0){ area.innerHTML='<div class="empty-state">ഒരു ക്ലാസെങ്കിലും തിരഞ്ഞെടുക്കുക</div>'; return; }
+  area.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
+  try{
+    const {data:students} = await supabaseClient.from('students').select('studentid,name,class,roll').in('class', classes).order('class').order('roll').order('name');
+    const list = students||[];
+    if(list.length===0){ area.innerHTML='<div class="empty-state">No students in selected classes</div>'; return; }
+    const groupLabel = classes.length===10 ? '🌟 All Classes' : (classes.length>1 ? 'Classes '+classes.join(', ') : 'Class '+classes[0]);
+    area.innerHTML=`
+      <div class="class-subjects-info">
+        <strong class="text-white" style="font-size:.88rem;"><i class="fas fa-layer-group" style="color:#fbbf24;"></i> ${groupLabel} — ${list.length} Students</strong>
+        <div style="font-size:.72rem;color:#9db8dd;margin-top:4px;">💡 Position <b>ഗ്രൂപ്പിനുള്ളിൽ</b> — എല്ലാ ക്ലാസ്സിലെയും കുട്ടികളെ ഒരുമിച്ച് നോക്കി rank നൽകുക</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <button type="button" class="btn-load" style="padding:5px 12px;font-size:.7rem;" onclick="bulkMarkAllAsParticipated()"><i class="fas fa-check-double"></i> Mark All Participated</button>
+        <button type="button" class="btn-cancel" style="padding:5px 12px;font-size:.7rem;" onclick="bulkClearAll()"><i class="fas fa-eraser"></i> Clear</button>
+      </div>
+      <div style="max-height:420px;overflow-y:auto;border:1px solid var(--stroke);border-radius:14px;background:rgba(8,20,48,.42);">
+        <table class="marks-entry-table" style="margin:0;">
+          <thead style="position:sticky;top:0;z-index:2;">
+            <tr><th style="min-width:34px;">#</th><th style="min-width:150px;">Student</th><th style="min-width:60px;">Class</th><th style="min-width:90px;">Position</th><th style="min-width:80px;">Grade</th><th style="min-width:100px;">Remarks</th></tr>
+          </thead>
+          <tbody>
+            ${list.map((s,i)=>`<tr>
+              <td>${i+1}</td>
+              <td><strong style="font-size:.78rem;">${escapeHtml(s.name)}</strong><br><small style="color:#6d88ad;font-size:.6rem;">${escapeHtml(s.studentid)}${s.roll?' • R'+escapeHtml(s.roll):''}</small></td>
+              <td><span style="background:rgba(34,211,238,.15);color:#67e8f9;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:800;">${escapeHtml(s.class)}</span></td>
+              <td><select class="bulk-pos modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option><option value="1">🥇 1st</option><option value="2">🥈 2nd</option><option value="3">🥉 3rd</option><option value="4">4th</option><option value="5">5th</option></select></td>
+              <td><select class="bulk-grade modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option>${GRADES_LIST.map(g=>`<option value="${g}">${g}</option>`).join('')}</select></td>
+              <td><input type="text" class="bulk-remarks modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.72rem;" placeholder="optional"></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }catch(e){ area.innerHTML='<div class="empty-state">Error loading students</div>'; }
 }
 function bulkMarkAllAsParticipated(){document.querySelectorAll('.bulk-grade').forEach(sel=>{if(!sel.value)sel.value='A';});showToast('✅ Grade A set for all','info');}
 function bulkClearAll(){document.querySelectorAll('.bulk-pos').forEach(s=>s.value='');document.querySelectorAll('.bulk-grade').forEach(s=>s.value='');document.querySelectorAll('.bulk-remarks').forEach(s=>s.value='');showToast('Cleared','info');}
@@ -1472,7 +1790,12 @@ async function saveBulkCompetition(e){
   const compName=document.getElementById('bcp_name').value.trim();
   const compDate=document.getElementById('bcp_date').value;
   const category=document.getElementById('bcp_category').value.trim()||null;
-  const targetClass=String(currentAdminClass);
+  const allChk = document.getElementById('bcp_all')?.checked;
+  let classes;
+  if(allChk) classes = ['1','2','3','4','5','6','7','8','9','10'];
+  else classes = [...document.querySelectorAll('.bcp-class-chk:checked')].map(x=>x.value);
+  if(classes.length===0){showToast('⚠️ ഒരു ക്ലാസെങ്കിലും തിരഞ്ഞെടുക്കുക','error');return;}
+  const target_class = classes.length===10 ? 'all' : classes.join(',');
   if(!compName||!compDate){showToast('Name & Date required','error');return;}
   const entries=[];
   document.querySelectorAll('.bulk-pos').forEach(sel=>{
@@ -1482,7 +1805,7 @@ async function saveBulkCompetition(e){
     const remEl=document.querySelector(`.bulk-remarks[data-sid="${sid}"]`);
     const grade=gradeEl?.value||null;
     const remarks=remEl?.value?.trim()||null;
-    if(pos||grade){entries.push({competition_name:compName,competition_date:compDate,category:category,target_class:targetClass,studentid:sid,position:pos,grade:grade,remarks:remarks});}
+    if(pos||grade){entries.push({competition_name:compName,competition_date:compDate,category:category,target_class:target_class,studentid:sid,position:pos,grade:grade,remarks:remarks});}
   });
   if(entries.length===0){showToast('⚠️ കുറഞ്ഞത് ഒരു കുട്ടിക്കെങ്കിലും Position/Grade നൽകുക','error');return;}
   const btn=document.getElementById('bulkSaveBtn');btn.disabled=true;btn.innerHTML='<div class="spinner-sm" style="margin-right:8px;"></div> Saving...';
@@ -1490,14 +1813,20 @@ async function saveBulkCompetition(e){
     const CHUNK=200;
     for(let i=0;i<entries.length;i+=CHUNK){const {error}=await supabaseClient.from('competitions').insert(entries.slice(i,i+CHUNK));if(error)throw error;}
     const winners=entries.filter(e=>e.position && e.position<=3);
-    for(const w of winners){try{const {data:stud}=await supabaseClient.from('students').select('name').eq('studentid',w.studentid).single();const posLabel=getPositionLabel(w.position);await supabaseClient.from('activities').insert({studentid:w.studentid,activity:`🏆 ${compName} — ${posLabel} ${w.grade||''}`.trim(),description:`${stud?.name||''} won in ${category||'competition'}`,timestamp:new Date().toISOString()});}catch(feedErr){}}
-    showToast(`✅ ${entries.length} results saved for Class ${currentAdminClass}!`,'success');
+    for(const w of winners){
+      try{
+        const {data:stud}=await supabaseClient.from('students').select('name').eq('studentid',w.studentid).single();
+        const posLabel=getPositionLabel(w.position);
+        await supabaseClient.from('activities').insert({studentid:w.studentid,activity:`🏆 ${compName} — ${posLabel} ${w.grade||''}`.trim(),description:`${stud?.name||''} won in ${category||'competition'}`,timestamp:new Date().toISOString()});
+      }catch(feedErr){}
+    }
+    const groupLabel = classes.length>1 ? `Classes ${classes.join(', ')}` : `Class ${classes[0]}`;
+    showToast(`✅ ${entries.length} results saved for ${groupLabel}!`,'success');
     closeModal('globalModal');loadCompetitionsAdmin();
     if(typeof confetti!=='undefined')confetti({particleCount:120,spread:80,origin:{y:.6}});
   }catch(err){showToast('❌ '+(err.message||'Error'),'error');}
   btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Save All Results';
 }
-
 async function downloadCompetitionsPDF(){
   if(!filteredCompetitions.length){showToast('No data','error');return;}
   const {jsPDF}=window.jspdf;
@@ -1508,7 +1837,7 @@ async function downloadCompetitionsPDF(){
   doc.text('NOORUSSALAM MADRASA',pageW/2,28,{align:'center'});
   doc.setFontSize(11);doc.setFont(undefined,'normal');
   doc.text('Competition Results',pageW/2,50,{align:'center'});
-  doc.autoTable({startY:90,head:[['#','Competition','Date','Student','Class','Category','Position','Grade']],body:filteredCompetitions.map((c,i)=>[i+1,c.competition_name,formatDate(c.competition_date),c.studentname||c.studentid,c.studentclass||'',c.category||'—',c.position?getPositionLabel(c.position).replace(/[🥇🥈🥉]/g,''):'—',c.grade||'—']),theme:'grid',styles:{fontSize:8,cellPadding:5,textColor:[0,0,0]},headStyles:{fillColor:[30,107,224],textColor:255,fontStyle:'bold'},columnStyles:{6:{halign:'center'},7:{halign:'center',fontStyle:'bold'}}});
+  doc.autoTable({startY:90,head:[['#','Competition','Date','Group','Student','Class','Category','Position','Grade']],body:filteredCompetitions.map((c,i)=>[i+1,c.competition_name,formatDate(c.competition_date),formatTargetClasses(c.target_class).replace(/🌟 /g,''),c.studentname||c.studentid,c.studentclass||'',c.category||'—',c.position?getPositionLabel(c.position).replace(/[🥇🥈🥉]/g,''):'—',c.grade||'—']),theme:'grid',styles:{fontSize:8,cellPadding:5,textColor:[0,0,0]},headStyles:{fillColor:[30,107,224],textColor:255,fontStyle:'bold'},columnStyles:{7:{halign:'center'},8:{halign:'center',fontStyle:'bold'}}});
   doc.save('competitions_results.pdf');
   showToast('✅ Downloaded','success');
 }
@@ -1800,11 +2129,89 @@ async function loadDailySummary(){if(!currentAdminClass)return;const date=docume
 /* ==== ADMIN: STUDENTS ==== */
 async function loadStudentsForAdmin(){if(!currentAdminClass)return;const wrap=document.getElementById('adminStudentsWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';try{let q=supabaseClient.from('students').select('*');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('class').order('roll').order('name');const {data}=await q;studentsAdminData=data||[];filterStudentsAdmin();}catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}}
 function filterStudentsAdmin(){const s=(document.getElementById('studentSearchAdmin')?.value||'').toLowerCase().trim();filteredStudentsAdmin=studentsAdminData.filter(x=>!s||(x.name||'').toLowerCase().includes(s)||(x.studentid||'').toLowerCase().includes(s));renderStudentsAdmin();}
-function renderStudentsAdmin(){const wrap=document.getElementById('adminStudentsWrap');if(filteredStudentsAdmin.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}const showClass=currentAdminClass==='all';let html='<table><thead><tr><th>#</th><th>Photo</th><th>ID</th><th>Name</th>'+(showClass?'<th>Class</th>':'')+'<th>Roll</th><th>Actions</th></tr></thead><tbody>';filteredStudentsAdmin.forEach((s,idx)=>{const photo=hasPhoto(s.photo)?`<img src="${s.photo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(125,179,255,.4);">`:`<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#1e6be0,#22d3ee);display:flex;align-items:center;justify-content:center;color:#03132e;font-weight:800;font-size:.85rem;">${(s.name||'?').charAt(0).toUpperCase()}</div>`;html+=`<tr><td>${idx+1}</td><td>${photo}</td><td><strong>${escapeHtml(s.studentid)}</strong></td><td>${escapeHtml(s.name||'')}</td>`;if(showClass)html+=`<td>${escapeHtml(s.class||'')}</td>`;html+=`<td>${escapeHtml(s.roll||'')}</td><td><button class="btn-sm approve" onclick="editStudent('${s.studentid}')">✏️</button><button class="btn-sm reject" onclick="deleteStudent('${s.studentid}')">🗑️</button></td></tr>`;});html+='</tbody></table>';wrap.innerHTML=html;}
+function renderStudentsAdmin(){const wrap=document.getElementById('adminStudentsWrap');if(filteredStudentsAdmin.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}const showClass=currentAdminClass==='all';let html='<table><thead><tr><th>#</th><th>Photo</th><th>ID</th><th>Name</th>'+(showClass?'<th>Class</th>':'')+'<th>Roll</th><th>Actions</th></tr></thead><tbody>';filteredStudentsAdmin.forEach((s,idx)=>{const photo=hasPhoto(s.photo)?`<img src="${s.photo}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(125,179,255,.4);">`:`<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#1e6be0,#22d3ee);display:flex;align-items:center;justify-content:center;color:#03132e;font-weight:800;font-size:.85rem;">${(s.name||'?').charAt(0).toUpperCase()}</div>`;html+=`<tr><td>${idx+1}</td><td>${photo}</td><td><strong>${escapeHtml(s.studentid)}</strong></td><td>${escapeHtml(s.name||'')}</td>`;if(showClass)html+=`<td>${escapeHtml(s.class||'')}</td>`;html+=`<td>${escapeHtml(s.roll||'')}</td><td><button class="btn-sm" style="background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;padding:5px 10px;" onclick="impersonateStudent('${s.studentid}')" title="View as Student">👁️</button> <button class="btn-sm approve" onclick="editStudent('${s.studentid}')">✏️</button><button class="btn-sm reject" onclick="deleteStudent('${s.studentid}')">🗑️</button></td></tr>`;});html+='</tbody></table>';wrap.innerHTML=html;}
 function openStudentForm(sid){const isEdit=!!sid;const s=isEdit?studentsAdminData.find(x=>x.studentid===sid):{};modalTitleSpan.innerText=isEdit?'✏️ Edit Student':'➕ Add Student';const clsVal=isEdit?(s.class||''):(currentAdminClass==='all'?'':currentAdminClass);modalBodyDiv.innerHTML=`<form><div class="row g-3"><div class="col-md-6"><label class="text-white-50 small">ID *</label><input type="text" id="sf_studentid" value="${escapeHtml(s.studentid||'')}" required ${isEdit?'readonly':''} class="modal-form-input" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');"></div><div class="col-md-6"><label class="text-white-50 small">Name *</label><input type="text" id="sf_name" value="${escapeHtml(s.name||'')}" required class="modal-form-input"></div><div class="col-md-4"><label class="text-white-50 small">Class *</label><select id="sf_class" class="modal-form-input" required>${[1,2,3,4,5,6,7,8,9,10].map(c=>`<option value="${c}" ${String(clsVal)===String(c)?'selected':''}>Class ${c}</option>`).join('')}</select></div><div class="col-md-4"><label class="text-white-50 small">Roll</label><input type="text" id="sf_roll" value="${escapeHtml(s.roll||'')}" class="modal-form-input"></div><div class="col-md-4"><label class="text-white-50 small">Password</label><input type="text" id="sf_password" value="${escapeHtml(s.password||'noor123')}" class="modal-form-input"></div><div class="col-md-6"><label class="text-white-50 small">Father</label><input type="text" id="sf_fathername" value="${escapeHtml(s.fathername||'')}" class="modal-form-input"></div><div class="col-md-6"><label class="text-white-50 small">Phone</label><input type="tel" id="sf_phone" value="${escapeHtml(s.phone||'')}" class="modal-form-input"></div><div class="col-12"><label class="text-white-50 small">Photo</label><input type="file" id="sf_photo" accept="image/*" class="modal-form-input" style="padding:.55rem;"></div></div><div class="d-flex gap-2 mt-4"><button type="button" class="btn-update flex-grow-1" onclick="saveStudent(${isEdit?`'${sid}'`:'null'})">Save</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div></form>`;modal.style.display='flex';}
 function editStudent(sid){openStudentForm(sid);}
 async function saveStudent(eid){const obj={studentid:document.getElementById('sf_studentid').value.trim().toUpperCase(),name:document.getElementById('sf_name').value.trim(),class:document.getElementById('sf_class').value.trim(),roll:document.getElementById('sf_roll').value.trim(),password:document.getElementById('sf_password').value.trim()||'noor123',fathername:document.getElementById('sf_fathername').value.trim(),phone:document.getElementById('sf_phone').value.trim()};if(!obj.studentid||!obj.name){showToast('ID and Name required','error');return;}const pi=document.getElementById('sf_photo');showLoading(true);try{if(pi.files&&pi.files[0]){const b64=await fileToBase64(pi.files[0]);let photoUrl=b64;try{const res=await fetch(b64);const blob=await res.blob();const fileName=`${obj.studentid}_${Date.now()}.jpg`;const {data:up,error:upErr}=await supabaseClient.storage.from('student-photos').upload(fileName,blob,{cacheControl:'3600',upsert:true,contentType:'image/jpeg'});if(upErr)throw upErr;const {data:pub}=supabaseClient.storage.from('student-photos').getPublicUrl(fileName);photoUrl=pub.publicUrl;}catch(storageErr){}obj.photo=photoUrl;}if(eid)await supabaseClient.from('students').update(obj).eq('studentid',eid);else await supabaseClient.from('students').insert(obj);showToast('✅ Saved','success');closeModal('globalModal');loadStudentsForAdmin();const {data:s}=await supabaseClient.from('students').select('studentid');document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){showToast('❌ '+e.message,'error');}showLoading(false);}
 async function deleteStudent(sid){if(!confirm('Delete?'))return;await supabaseClient.from('students').delete().eq('studentid',sid);showToast('🗑️','success');loadStudentsForAdmin();const {data:s}=await supabaseClient.from('students').select('studentid');document.getElementById('classBadgeStudents').textContent=(s||[]).length;}
+
+/* ==== ADMIN: VIEW AS STUDENT (Impersonation) ==== */
+async function impersonateStudent(sid){
+  try{
+    showLoading(true);
+    const {data:student,error}=await supabaseClient.from('students').select('*').eq('studentid',sid).single();
+    if(error||!student) throw new Error('Student not found');
+    adminImpersonating = {
+      class: currentAdminClass,
+      tab: document.querySelector('.admin-tab.active')?.dataset.tab || 'students'
+    };
+    currentUser={
+      studentId:student.studentid,
+      name:student.name||'Student',
+      class:student.class||'N/A',
+      roll:student.roll||'',
+      overallGrade:student.overallgrade||null,
+      attendance:0,
+      rank:student.rank||null,
+      moralValuesGrade:student.moralvaluesgrade||null,
+      moralValuesSub:student.moralvaluessub||null,
+      performance:student.performance||0,
+      avatar:student.name?student.name.charAt(0).toUpperCase():'S',
+      email:student.email||'',phone:student.phone||'',fatherName:student.fathername||'',
+      dob:student.dob||'',photo:student.photo||'',password:student.password||'noor123',
+      bloodGroup:student.bloodgroup||'',address:student.address||'',
+      trendAttendance:student.trendattendance||null,rankChange:student.rankchange||null,
+      isBestStudent:student.isbeststudent||false,
+      extraCurricularGrade:student.extracurriculargrade||null,
+      totalMarks:student.totalmarks||0,
+      madrasaRank:student.madrasarank||null
+    };
+    isAdminMode=false;
+    adminSection.style.display='none';
+    dashboardSection.style.display='block';
+    updateDashboardUI();
+    showAdminViewBanner(student.name||sid);
+    await loadActivitiesAndCalendar();
+    await loadStudentBalance();
+    await loadStudentNotifications();
+    await refreshStudentAttendance();
+    loadOverallMadrasaRank();
+    loadTopWinners();
+    showAIAssistant();
+    subscribeNotifications();
+    showToast(`👁️ Viewing as ${student.name}`,'info');
+  }catch(err){ showToast('❌ '+(err.message||'Error'),'error'); }
+  showLoading(false);
+}
+function showAdminViewBanner(name){
+  const banner=document.getElementById('adminViewBanner');
+  if(!banner)return;
+  banner.innerHTML=`<span><i class="fas fa-eye"></i> Viewing as <b>${escapeHtml(name)}</b></span>
+    <button onclick="returnToAdmin()"><i class="fas fa-arrow-left"></i> Back to Admin</button>`;
+  banner.classList.add('show');
+}
+function returnToAdmin(){
+  const banner=document.getElementById('adminViewBanner');
+  if(banner) banner.classList.remove('show');
+  currentUser=null;
+  dashboardSection.style.display='none';
+  adminSection.style.display='block';
+  isAdminMode=true;
+  document.getElementById('aiFab').classList.remove('show');
+  document.getElementById('aiPanel').classList.remove('open');
+  if(notifChannel){supabaseClient.removeChannel(notifChannel);notifChannel=null;}
+  stopLeaderboardAutoScroll();
+  if(window._lbInterval){clearInterval(window._lbInterval);window._lbInterval=null;}
+  const saved=adminImpersonating;
+  adminImpersonating=null;
+  if(saved && saved.class){
+    document.getElementById('adminClassSelector').value=saved.class;
+    selectAdminClass(saved.class).then(()=>{
+      if(saved.tab) switchAdminTab(saved.tab);
+    });
+  }
+  showToast('🔐 Back to Admin','info');
+}
 
 /* ==== ADMIN: GRADES ==== */
 async function loadGradesForAdmin(){if(!currentAdminClass)return;const wrap=document.getElementById('gradesWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';try{let q=supabaseClient.from('students').select('*');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('class').order('name');const {data}=await q;gradesData=data||[];filterGradesAdmin();}catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}}
@@ -1847,7 +2254,7 @@ async function uploadClassSignature(){await uploadSignature('class');}
 async function clearSignature(type){if(!confirm('Clear signature?'))return;if(type==='swadar'){await supabaseClient.from('settings').upsert({key:'swadarSignature',value:''},{onConflict:'key'});SETTINGS_CACHE.swadarSignature='';SWADAR_SIGNATURE='';}else{const cls=document.getElementById('classSignSelect').value;delete CLASS_SIGNATURES[cls];await supabaseClient.from('settings').upsert({key:'classSignatures',value:JSON.stringify(CLASS_SIGNATURES)},{onConflict:'key'});SETTINGS_CACHE.classSignatures=JSON.stringify(CLASS_SIGNATURES);}showToast('🗑️ Cleared','info');renderSignaturePreviews();}
 async function clearClassSignature(){await clearSignature('class');}
 function renderSignaturePreviews(){const prev=document.getElementById('swadarSignPreview');if(prev){if(SWADAR_SIGNATURE && SWADAR_SIGNATURE.startsWith('data:image')){prev.innerHTML=`<img src="${SWADAR_SIGNATURE}" style="max-height:60px;background:white;padding:5px;border-radius:8px;">`;}else{prev.innerHTML='<small class="text-white-50">No signature uploaded</small>';}}const info=document.getElementById('currentResultTime');if(info)info.textContent=RESULT_PUBLISH_TIME?getPublishTimeText():'Not set';}
-function loadTeacherSettingsIntoForm(){const s1=document.getElementById('settingsSwadarName');if(s1)s1.value=SWADAR_MUALLIM_NAME||'';const s2=document.getElementById('settingsClassTeachers');if(s2)s2.value=stringifyClassTeachers(CLASS_TEACHERS);const h1=document.getElementById('settingsHeadingExtra');if(h1)h1.value=HEADING_EXTRA||'';const h2=document.getElementById('settingsHeadingOverallRank');if(h2)h2.value=HEADING_OVERALL_RANK||'';const h3=document.getElementById('settingsHeadingMonthly');if(h3)h3.value=HEADING_MONTHLY||'';const c1=document.getElementById('settingsClassExtraCategories');if(c1)c1.value=stringifyClassExtraCategories(CLASS_EXTRA_CATEGORIES);const s3=document.getElementById('settingsResultTime');if(s3&&RESULT_PUBLISH_TIME){try{const d=new Date(RESULT_PUBLISH_TIME);const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);s3.value=local;}catch(e){}}renderSignaturePreviews();}
+function loadTeacherSettingsIntoForm(){const s1=document.getElementById('settingsSwadarName');if(s1)s1.value=SWADAR_MUALLIM_NAME||'';const s2=document.getElementById('settingsClassTeachers');if(s2)s2.value=stringifyClassTeachers(CLASS_TEACHERS);const h1=document.getElementById('settingsHeadingExtra');if(h1)h1.value=HEADING_EXTRA||'';const h2=document.getElementById('settingsHeadingOverallRank');if(h2)h2.value=HEADING_OVERALL_RANK||'';const h3=document.getElementById('settingsHeadingMonthly');if(h3)h3.value=HEADING_MONTHLY||'';const c1=document.getElementById('settingsClassExtraCategories');if(c1)c1.value=stringifyClassExtraCategories(CLASS_EXTRA_CATEGORIES);const s3=document.getElementById('settingsResultTime');if(s3&&RESULT_PUBLISH_TIME){try{const d=new Date(RESULT_PUBLISH_TIME);const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);s3.value=local;}catch(e){}}renderSignaturePreviews();renderVisibilityUI();}
 async function changeAdminPassword(){const np=document.getElementById('newAdminPassword').value.trim();if(!np||np.length<4){showToast('Min 4 chars','error');return;}try{await supabaseClient.from('settings').upsert({key:'adminPassword',value:np},{onConflict:'key'});localStorage.setItem('admin_password',np);document.getElementById('currentAdminPwd').textContent=np;showToast('✅ Changed','success');document.getElementById('newAdminPassword').value='';}catch(e){showToast('❌','error');}}
 function saveBgUrl(type){const url=document.getElementById(type==='id'?'settingsIdBgUrl':'settingsTopperBgUrl').value.trim();if(!url){showToast('URL required','error');return;}if(type==='id'){ID_CARD_BG_URL=url;localStorage.setItem('id_card_bg',url);showToast('✅','success');}else{TOPPER_BG_URL=url;localStorage.setItem('topper_bg',url);showToast('✅','success');}}
 function clearBgUrl(type){if(type==='id'){ID_CARD_BG_URL='';localStorage.removeItem('id_card_bg');const inp=document.getElementById('settingsIdBgUrl');if(inp)inp.value='';showToast('🗑️','info');}else{TOPPER_BG_URL='';localStorage.removeItem('topper_bg');const inp=document.getElementById('settingsTopperBgUrl');if(inp)inp.value='';showToast('🗑️','info');}}
@@ -1961,7 +2368,10 @@ Object.assign(window,{
   goToStudentZone,goToFees,goToCalendar,
   showCompetitions,loadCompetitionsAdmin,openCompetitionForm,editCompetition,saveCompetition,deleteCompetition,
   downloadCompetitionsPDF,filterCompetitionsAdmin,openBulkCompetitionForm,saveBulkCompetition,bulkMarkAllAsParticipated,bulkClearAll,
-  loadTopWinners,getPositionLabel,startLeaderboardAutoScroll,stopLeaderboardAutoScroll
+  loadTopWinners,getPositionLabel,startLeaderboardAutoScroll,stopLeaderboardAutoScroll,
+  impersonateStudent,returnToAdmin,showAdminViewBanner,loadBulkCompetitionStudents,classMatchesTarget,formatTargetClasses,
+  renderVisibilityUI,onVisibilityToggle,toggleAllQuickActions,resetStudentPortalVisibility,saveStudentPortalVisibility,
+  applyStudentPortalVisibility,parseStudentVisibility
 });
 
 async function initApp(){
@@ -1971,7 +2381,7 @@ async function initApp(){
     if(el)el.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
   });
   if(closeModalBtn)closeModalBtn.addEventListener('click',()=>modal.style.display='none');
-  console.log('%c✅ Noorussalam Madrasa v18.0 — FINAL (No-Join Competitions + Auto-Scroll Leaderboard)','color:#22d3ee;font-weight:bold;font-size:14px;');
+  console.log('%c✅ Noorussalam Madrasa v18.2 — Multi-Class + View-as-Student + Visibility Control','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
 </script>
