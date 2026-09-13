@@ -80,7 +80,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .icon-btn:hover{background:rgba(59,139,255,.25);color:#fff;transform:translateY(-2px)}
 .btn-exit{background:linear-gradient(100deg,#b91c1c,#ef4444);border:none;color:#fff;font-weight:700;padding:11px 20px;border-radius:14px;font-size:.85rem;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:8px;box-shadow:0 12px 26px -12px rgba(239,68,68,.9);transition:.22s}
 .btn-exit:hover{transform:translateY(-2px)}
-/* ⭐ LEADERBOARD */
 .leaderboard-section{margin-bottom:20px;padding:18px 0 12px;background:linear-gradient(135deg,rgba(251,191,36,.10),rgba(30,107,224,.12));border:1.6px solid rgba(251,191,36,.35);border-radius:24px;position:relative;overflow:hidden;box-shadow:0 22px 50px -26px rgba(0,0,0,.85),0 0 60px -28px rgba(251,191,36,.55),inset 0 1px 0 rgba(255,255,255,.10)}
 .leaderboard-section::before{content:'';position:absolute;top:-50%;right:-10%;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(251,191,36,.32),transparent 66%);filter:blur(28px);pointer-events:none}
 .leaderboard-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px 14px;position:relative;z-index:2;flex-wrap:wrap;gap:8px}
@@ -437,7 +436,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 
-  <!-- 🏆 TOP WINNERS LEADERBOARD -->
   <div class="leaderboard-section" id="leaderboardSection">
     <div class="leaderboard-header">
       <div>
@@ -1154,10 +1152,7 @@ async function loadTopWinners(){
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class info ലഭ്യമല്ല</div>`;
       return;
     }
-    const {data:comps,error:compErr}=await supabaseClient
-      .from('competitions')
-      .select('studentid,position,grade,target_class')
-      .or(`target_class.eq.${myClass},target_class.eq.all`);
+    const {data:comps,error:compErr}=await supabaseClient.from('competitions').select('studentid,position,grade,target_class').or(`target_class.eq.${myClass},target_class.eq.all`);
     if(compErr){
       console.error('❌ Competitions fetch error:',compErr);
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-triangle-exclamation" style="color:#f87171;"></i>Error: ${escapeHtml(compErr.message||'Failed')}</div>`;
@@ -1172,16 +1167,10 @@ async function loadTopWinners(){
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>No winners yet</div>`;
       return;
     }
-    const {data:students,error:studErr}=await supabaseClient
-      .from('students')
-      .select('studentid,name,class,photo')
-      .in('studentid',studentIds)
-      .eq('class',myClass);
+    const {data:students,error:studErr}=await supabaseClient.from('students').select('studentid,name,class,photo').in('studentid',studentIds).eq('class',myClass);
     if(studErr)console.error('❌ Students fetch error:',studErr);
     const studentMap={};
-    (students||[]).forEach(s=>{
-      studentMap[s.studentid]={name:s.name||'Student',class:s.class||'',photo:s.photo||''};
-    });
+    (students||[]).forEach(s=>{studentMap[s.studentid]={name:s.name||'Student',class:s.class||'',photo:s.photo||''};});
     const myClassComps=comps.filter(c=>studentMap[c.studentid]);
     if(myClassComps.length===0){
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ points ഇല്ല</div>`;
@@ -1191,29 +1180,15 @@ async function loadTopWinners(){
     myClassComps.forEach(c=>{
       if(!c.studentid)return;
       if(!pointsMap[c.studentid]){
-        pointsMap[c.studentid]={
-          studentid:c.studentid,
-          name:studentMap[c.studentid]?.name||'Student',
-          class:studentMap[c.studentid]?.class||myClass,
-          photo:studentMap[c.studentid]?.photo||'',
-          points:0,wins1:0,wins2:0,wins3:0,total:0
-        };
+        pointsMap[c.studentid]={studentid:c.studentid,name:studentMap[c.studentid]?.name||'Student',class:studentMap[c.studentid]?.class||myClass,photo:studentMap[c.studentid]?.photo||'',points:0,wins1:0,wins2:0,wins3:0,total:0};
       }
-      const p=pointsMap[c.studentid];
-      p.total++;
+      const p=pointsMap[c.studentid];p.total++;
       if(c.position===1){p.points+=5;p.wins1++;}
       else if(c.position===2){p.points+=3;p.wins2++;}
       else if(c.position===3){p.points+=1;p.wins3++;}
       if(c.grade==='A+')p.points+=1;
     });
-    const ranked=Object.values(pointsMap)
-      .filter(p=>p.points>0)
-      .sort((a,b)=>{
-        if(b.points!==a.points)return b.points-a.points;
-        if(b.wins1!==a.wins1)return b.wins1-a.wins1;
-        return b.total-a.total;
-      })
-      .slice(0,20);
+    const ranked=Object.values(pointsMap).filter(p=>p.points>0).sort((a,b)=>{if(b.points!==a.points)return b.points-a.points;if(b.wins1!==a.wins1)return b.wins1-a.wins1;return b.total-a.total;}).slice(0,20);
     if(ranked.length===0){
       scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-trophy"></i>Class ${myClass}-ൽ ഇതുവരെ points ഇല്ല</div>`;
       return;
@@ -1227,26 +1202,12 @@ async function loadTopWinners(){
       const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':`#${rank}`;
       const avatarInner=hasPhoto(p.photo)?`<img src="${p.photo}" alt="">`:escapeHtml((p.name||'S').charAt(0).toUpperCase());
       const isMe=p.studentid===currentUser?.studentId;
-      html+=`<div class="lb-card ${rankClass}" style="${isMe?'outline:2px solid #22d3ee;outline-offset:2px;':''}">
-        <div class="lb-medal">${medal}</div>
-        <div class="lb-avatar">${avatarInner}</div>
-        <div class="lb-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}${isMe?' ⭐':''}</div>
-        <div class="lb-class">Class ${escapeHtml(String(p.class||'—'))}</div>
-        <div class="lb-stats">
-          ${p.wins1>0?`<span class="lb-stat gold">🥇${p.wins1}</span>`:''}
-          ${p.wins2>0?`<span class="lb-stat silver">🥈${p.wins2}</span>`:''}
-          ${p.wins3>0?`<span class="lb-stat bronze">🥉${p.wins3}</span>`:''}
-          ${(p.wins1===0&&p.wins2===0&&p.wins3===0)?`<span class="lb-stat">🎯${p.total}</span>`:''}
-        </div>
-        <div class="lb-points">${p.points}<small>pts</small></div>
-      </div>`;
+      html+=`<div class="lb-card ${rankClass}" style="${isMe?'outline:2px solid #22d3ee;outline-offset:2px;':''}"><div class="lb-medal">${medal}</div><div class="lb-avatar">${avatarInner}</div><div class="lb-name" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}${isMe?' ⭐':''}</div><div class="lb-class">Class ${escapeHtml(String(p.class||'—'))}</div><div class="lb-stats">${p.wins1>0?`<span class="lb-stat gold">🥇${p.wins1}</span>`:''}${p.wins2>0?`<span class="lb-stat silver">🥈${p.wins2}</span>`:''}${p.wins3>0?`<span class="lb-stat bronze">🥉${p.wins3}</span>`:''}${(p.wins1===0&&p.wins2===0&&p.wins3===0)?`<span class="lb-stat">🎯${p.total}</span>`:''}</div><div class="lb-points">${p.points}<small>pts</small></div></div>`;
     });
     scroll.innerHTML=html;
     startLeaderboardAutoScroll();
     if(window._lbInterval)clearInterval(window._lbInterval);
-    window._lbInterval=setInterval(()=>{
-      if(document.visibilityState==='visible' && !isAdminMode){loadTopWinners();}
-    },120000);
+    window._lbInterval=setInterval(()=>{if(document.visibilityState==='visible' && !isAdminMode){loadTopWinners();}},120000);
   }catch(e){
     console.error('❌ Leaderboard error:',e);
     scroll.innerHTML=`<div class="lb-empty" style="width:100%"><i class="fas fa-triangle-exclamation" style="color:#f87171;"></i>Error: ${escapeHtml(e.message||'Failed to load')}</div>`;
@@ -1393,32 +1354,19 @@ async function showCompetitions(){
     const total2nd=myResults.filter(d=>d.position===2).length;
     const total3rd=myResults.filter(d=>d.position===3).length;
     const totalGrades=myResults.filter(d=>d.grade).length;
-    let html=`<div style="background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(30,107,224,.18));border:1.6px solid rgba(251,191,36,.4);border-radius:18px;padding:16px;margin-bottom:16px;">
-      <div style="font-size:.75rem;color:#9db8dd;margin-bottom:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;">🎯 നിങ്ങളുടെ നേട്ടങ്ങൾ</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(75px,1fr));gap:12px;text-align:center;">
-        <div><div style="font-size:1.6rem;font-weight:900;color:#fbbf24;">🥇 ${totalWins}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">1st Place</div></div>
-        <div><div style="font-size:1.6rem;font-weight:900;color:#c0c0c0;">🥈 ${total2nd}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">2nd Place</div></div>
-        <div><div style="font-size:1.6rem;font-weight:900;color:#cd7f32;">🥉 ${total3rd}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">3rd Place</div></div>
-        <div><div style="font-size:1.6rem;font-weight:900;color:#22d3ee;">📊 ${totalGrades}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">Total</div></div>
-      </div>
-    </div>`;
+    let html=`<div style="background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(30,107,224,.18));border:1.6px solid rgba(251,191,36,.4);border-radius:18px;padding:16px;margin-bottom:16px;"><div style="font-size:.75rem;color:#9db8dd;margin-bottom:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;">🎯 നിങ്ങളുടെ നേട്ടങ്ങൾ</div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(75px,1fr));gap:12px;text-align:center;"><div><div style="font-size:1.6rem;font-weight:900;color:#fbbf24;">🥇 ${totalWins}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">1st Place</div></div><div><div style="font-size:1.6rem;font-weight:900;color:#c0c0c0;">🥈 ${total2nd}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">2nd Place</div></div><div><div style="font-size:1.6rem;font-weight:900;color:#cd7f32;">🥉 ${total3rd}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">3rd Place</div></div><div><div style="font-size:1.6rem;font-weight:900;color:#22d3ee;">📊 ${totalGrades}</div><div style="font-size:.68rem;color:#9db8dd;margin-top:2px;">Total</div></div></div></div>`;
     if(myResults.length>0){
       html+=`<div style="font-weight:800;color:#fff;font-size:.88rem;margin:14px 0 10px;"><i class="fas fa-user-check" style="color:#22d3ee;"></i> എന്റെ റിസൾട്ടുകൾ</div>`;
       const groups={};
       myResults.forEach(c=>{const key=c.competition_name+'__'+c.competition_date;if(!groups[key])groups[key]={name:c.competition_name,date:c.competition_date,category:c.category,entries:[]};groups[key].entries.push(c);});
       Object.keys(groups).sort((a,b)=>new Date(groups[b].date)-new Date(groups[a].date)).forEach(key=>{
         const g=groups[key];
-        html+=`<div style="background:rgba(120,180,255,.06);border:1px solid rgba(140,190,255,.18);border-radius:16px;padding:14px;margin-bottom:10px;">
-          <div style="font-weight:800;color:#fff;font-size:.92rem;"><i class="fas fa-trophy" style="color:#fbbf24;margin-right:6px;"></i>${escapeHtml(g.name)}</div>
-          <div style="font-size:.72rem;color:#9db8dd;margin-top:3px;margin-bottom:8px;">📅 ${formatDate(g.date)}${g.category?' • '+escapeHtml(g.category):''}</div>`;
+        html+=`<div style="background:rgba(120,180,255,.06);border:1px solid rgba(140,190,255,.18);border-radius:16px;padding:14px;margin-bottom:10px;"><div style="font-weight:800;color:#fff;font-size:.92rem;"><i class="fas fa-trophy" style="color:#fbbf24;margin-right:6px;"></i>${escapeHtml(g.name)}</div><div style="font-size:.72rem;color:#9db8dd;margin-top:3px;margin-bottom:8px;">📅 ${formatDate(g.date)}${g.category?' • '+escapeHtml(g.category):''}</div>`;
         g.entries.forEach(e=>{
           const pos=getPositionLabel(e.position);
           const posColor=e.position===1?'#fbbf24':e.position===2?'#c0c0c0':e.position===3?'#cd7f32':'#7db3ff';
           const gradeColor=getGradeDetails(e.grade).color;
-          html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(8,20,48,.5);border-radius:12px;gap:10px;flex-wrap:wrap;">
-            <div><div style="font-size:.85rem;font-weight:800;color:${posColor};">${pos}</div>${e.remarks?`<div style="font-size:.7rem;color:#9db8dd;margin-top:3px;">${escapeHtml(e.remarks)}</div>`:''}</div>
-            <div style="font-size:1.25rem;font-weight:900;color:${gradeColor};">${escapeHtml(e.grade||'—')}</div>
-          </div>`;
+          html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(8,20,48,.5);border-radius:12px;gap:10px;flex-wrap:wrap;"><div><div style="font-size:.85rem;font-weight:800;color:${posColor};">${pos}</div>${e.remarks?`<div style="font-size:.7rem;color:#9db8dd;margin-top:3px;">${escapeHtml(e.remarks)}</div>`:''}</div><div style="font-size:1.25rem;font-weight:900;color:${gradeColor};">${escapeHtml(e.grade||'—')}</div></div>`;
         });
         html+='</div>';
       });
@@ -1427,18 +1375,42 @@ async function showCompetitions(){
   }catch(e){modalBodyDiv.innerHTML='<div class="text-center py-4 text-white-50">Error: '+escapeHtml(e.message||'')+'</div>';}
 }
 
-/* ==== ADMIN: COMPETITIONS ==== */
+/* ==== ADMIN: COMPETITIONS (FIXED — No Join) ==== */
 async function loadCompetitionsAdmin(){
   const wrap=document.getElementById('competitionsAdminWrap');
   wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
   try{
-    let q=supabaseClient.from('competitions').select('*,students(name,class)').order('competition_date',{ascending:false}).limit(200);
-    if(currentAdminClass && currentAdminClass!=='all')q=q.or(`target_class.eq.${currentAdminClass},target_class.eq.all`);
-    const {data,error}=await q;
-    if(error)throw error;
-    competitionsData=(data||[]).map(c=>({...c,studentname:c.students?c.students.name:'',studentclass:c.students?c.students.class:''}));
+    // Step 1: Fetch competitions (no join)
+    let q=supabaseClient.from('competitions').select('*').order('competition_date',{ascending:false}).limit(200);
+    if(currentAdminClass && currentAdminClass!=='all'){
+      q=q.or(`target_class.eq.${currentAdminClass},target_class.eq.all`);
+    }
+    const {data:comps,error:compErr}=await q;
+    if(compErr){
+      console.error('❌ Competitions fetch error:',compErr);
+      wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(compErr.message||'')+'</div>';
+      return;
+    }
+    if(!comps||comps.length===0){
+      competitionsData=[];
+      filterCompetitionsAdmin();
+      return;
+    }
+    // Step 2: Fetch students separately
+    const studentIds=[...new Set(comps.map(c=>c.studentid).filter(Boolean))];
+    let studentMap={};
+    if(studentIds.length>0){
+      const {data:studs,error:studErr}=await supabaseClient.from('students').select('studentid,name,class').in('studentid',studentIds);
+      if(studErr)console.error('❌ Students fetch error:',studErr);
+      (studs||[]).forEach(s=>{studentMap[s.studentid]={name:s.name||'',class:s.class||''};});
+    }
+    // Step 3: Merge data
+    competitionsData=comps.map(c=>({...c,studentname:studentMap[c.studentid]?.name||'',studentclass:studentMap[c.studentid]?.class||''}));
     filterCompetitionsAdmin();
-  }catch(e){wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message||'')+'</div>';}
+  }catch(e){
+    console.error('❌ loadCompetitionsAdmin error:',e);
+    wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message||'')+'</div>';
+  }
 }
 function filterCompetitionsAdmin(){
   const s=(document.getElementById('competitionsSearch')?.value||'').toLowerCase().trim();
@@ -1464,19 +1436,7 @@ async function openCompetitionForm(id=null){
   let studentsList=[];
   try{let q=supabaseClient.from('students').select('studentid,name,class').order('name');if(currentAdminClass && currentAdminClass!=='all')q=q.eq('class',currentAdminClass);const {data}=await q;studentsList=data||[];}catch(e){}
   modalTitleSpan.innerText=isEdit?'✏️ Edit Competition':'🏆 Add Competition Result';
-  modalBodyDiv.innerHTML=`<form onsubmit="saveCompetition(event,${isEdit?id:'null'})">
-    <div class="row g-3">
-      <div class="col-12"><label class="text-white-50 small">Competition Name *</label><input type="text" id="cp_name" value="${escapeHtml(comp.competition_name||'')}" required class="modal-form-input"></div>
-      <div class="col-md-6"><label class="text-white-50 small">Date *</label><input type="date" id="cp_date" value="${comp.competition_date||new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div>
-      <div class="col-md-6"><label class="text-white-50 small">Category</label><input type="text" id="cp_category" value="${escapeHtml(comp.category||'')}" class="modal-form-input"></div>
-      <div class="col-12"><label class="text-white-50 small">Target Class</label><select id="cp_target" class="modal-form-input"><option value="all" ${comp.target_class==='all'?'selected':''}>All Classes</option>${[1,2,3,4,5,6,7,8,9,10].map(c=>`<option value="${c}" ${String(comp.target_class)===String(c)?'selected':''}>Class ${c}</option>`).join('')}</select></div>
-      <div class="col-12"><label class="text-white-50 small">Student *</label><select id="cp_student" required class="modal-form-input"><option value="">-- Select --</option>${studentsList.map(s=>`<option value="${s.studentid}" ${comp.studentid===s.studentid?'selected':''}>${escapeHtml(s.name)} (${s.studentid} • Class ${s.class})</option>`).join('')}</select></div>
-      <div class="col-md-6"><label class="text-white-50 small">Position</label><select id="cp_position" class="modal-form-input"><option value="">—</option><option value="1" ${comp.position===1?'selected':''}>🥇 1st</option><option value="2" ${comp.position===2?'selected':''}>🥈 2nd</option><option value="3" ${comp.position===3?'selected':''}>🥉 3rd</option><option value="4" ${comp.position===4?'selected':''}>4th</option><option value="5" ${comp.position===5?'selected':''}>5th</option></select></div>
-      <div class="col-md-6"><label class="text-white-50 small">Grade *</label><select id="cp_grade" required class="modal-form-input"><option value="">-- Select --</option>${GRADES_LIST.map(g=>`<option value="${g}" ${comp.grade===g?'selected':''}>${g}</option>`).join('')}</select></div>
-      <div class="col-12"><label class="text-white-50 small">Remarks</label><textarea id="cp_remarks" class="modal-form-input" style="min-height:60px;">${escapeHtml(comp.remarks||'')}</textarea></div>
-    </div>
-    <div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1">Save</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div>
-  </form>`;
+  modalBodyDiv.innerHTML=`<form onsubmit="saveCompetition(event,${isEdit?id:'null'})"><div class="row g-3"><div class="col-12"><label class="text-white-50 small">Competition Name *</label><input type="text" id="cp_name" value="${escapeHtml(comp.competition_name||'')}" required class="modal-form-input"></div><div class="col-md-6"><label class="text-white-50 small">Date *</label><input type="date" id="cp_date" value="${comp.competition_date||new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div><div class="col-md-6"><label class="text-white-50 small">Category</label><input type="text" id="cp_category" value="${escapeHtml(comp.category||'')}" class="modal-form-input"></div><div class="col-12"><label class="text-white-50 small">Target Class</label><select id="cp_target" class="modal-form-input"><option value="all" ${comp.target_class==='all'?'selected':''}>All Classes</option>${[1,2,3,4,5,6,7,8,9,10].map(c=>`<option value="${c}" ${String(comp.target_class)===String(c)?'selected':''}>Class ${c}</option>`).join('')}</select></div><div class="col-12"><label class="text-white-50 small">Student *</label><select id="cp_student" required class="modal-form-input"><option value="">-- Select --</option>${studentsList.map(s=>`<option value="${s.studentid}" ${comp.studentid===s.studentid?'selected':''}>${escapeHtml(s.name)} (${s.studentid} • Class ${s.class})</option>`).join('')}</select></div><div class="col-md-6"><label class="text-white-50 small">Position</label><select id="cp_position" class="modal-form-input"><option value="">—</option><option value="1" ${comp.position===1?'selected':''}>🥇 1st</option><option value="2" ${comp.position===2?'selected':''}>🥈 2nd</option><option value="3" ${comp.position===3?'selected':''}>🥉 3rd</option><option value="4" ${comp.position===4?'selected':''}>4th</option><option value="5" ${comp.position===5?'selected':''}>5th</option></select></div><div class="col-md-6"><label class="text-white-50 small">Grade *</label><select id="cp_grade" required class="modal-form-input"><option value="">-- Select --</option>${GRADES_LIST.map(g=>`<option value="${g}" ${comp.grade===g?'selected':''}>${g}</option>`).join('')}</select></div><div class="col-12"><label class="text-white-50 small">Remarks</label><textarea id="cp_remarks" class="modal-form-input" style="min-height:60px;">${escapeHtml(comp.remarks||'')}</textarea></div></div><div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1">Save</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div></form>`;
   modal.style.display='flex';
 }
 function editCompetition(id){openCompetitionForm(id);}
@@ -1502,28 +1462,7 @@ async function openBulkCompetitionForm(){
   try{const {data}=await supabaseClient.from('students').select('studentid,name,class,roll').eq('class',currentAdminClass).order('roll').order('name');studentsList=data||[];}catch(e){}
   if(studentsList.length===0){showToast('No students in this class','error');return;}
   modalTitleSpan.innerText=`🏆 Bulk Competition — Class ${currentAdminClass}`;
-  modalBodyDiv.innerHTML=`
-    <div class="class-subjects-info" style="margin-bottom:14px;"><strong class="text-white" style="font-size:.88rem;"><i class="fas fa-layer-group" style="color:#fbbf24;"></i> Class ${currentAdminClass} — ${studentsList.length} Students</strong><div style="font-size:.72rem;color:#9db8dd;margin-top:4px;">💡 ഒരേ മൽസരത്തിൽ പല കുട്ടികളുടെയും റിസൾട്ട് ഒരുമിച്ച് ചേർക്കാം</div></div>
-    <form onsubmit="saveBulkCompetition(event)">
-      <div class="row g-3 mb-3">
-        <div class="col-md-7"><label class="text-white-50 small">Competition Name *</label><input type="text" id="bcp_name" required class="modal-form-input" placeholder="e.g., Quran Recitation 2026"></div>
-        <div class="col-md-5"><label class="text-white-50 small">Date *</label><input type="date" id="bcp_date" value="${new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div>
-        <div class="col-12"><label class="text-white-50 small">Category</label><input type="text" id="bcp_category" class="modal-form-input" placeholder="Arabic, Speech, Quiz"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-        <div style="font-weight:800;color:#fff;font-size:.88rem;"><i class="fas fa-users" style="color:#22d3ee;"></i> Students of Class ${currentAdminClass}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button type="button" class="btn-load" style="padding:5px 12px;font-size:.7rem;" onclick="bulkMarkAllAsParticipated()"><i class="fas fa-check-double"></i> Mark All</button>
-          <button type="button" class="btn-cancel" style="padding:5px 12px;font-size:.7rem;" onclick="bulkClearAll()"><i class="fas fa-eraser"></i> Clear</button>
-        </div>
-      </div>
-      <div style="max-height:400px;overflow-y:auto;border:1px solid var(--stroke);border-radius:14px;background:rgba(8,20,48,.42);">
-        <table class="marks-entry-table" style="margin:0;"><thead style="position:sticky;top:0;z-index:2;"><tr><th style="min-width:34px;">#</th><th style="min-width:140px;">Student</th><th style="min-width:90px;">Position</th><th style="min-width:80px;">Grade</th><th style="min-width:100px;">Remarks</th></tr></thead><tbody>
-        ${studentsList.map((s,i)=>`<tr><td>${i+1}</td><td><strong style="font-size:.78rem;">${escapeHtml(s.name)}</strong><br><small style="color:#6d88ad;font-size:.6rem;">${escapeHtml(s.studentid)}${s.roll?' • R'+escapeHtml(s.roll):''}</small></td><td><select class="bulk-pos modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option><option value="1">🥇 1st</option><option value="2">🥈 2nd</option><option value="3">🥉 3rd</option><option value="4">4th</option><option value="5">5th</option></select></td><td><select class="bulk-grade modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option>${GRADES_LIST.map(g=>`<option value="${g}">${g}</option>`).join('')}</select></td><td><input type="text" class="bulk-remarks modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.72rem;" placeholder="optional"></td></tr>`).join('')}
-        </tbody></table>
-      </div>
-      <div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1" id="bulkSaveBtn"><i class="fas fa-save"></i> Save All Results</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div>
-    </form>`;
+  modalBodyDiv.innerHTML=`<div class="class-subjects-info" style="margin-bottom:14px;"><strong class="text-white" style="font-size:.88rem;"><i class="fas fa-layer-group" style="color:#fbbf24;"></i> Class ${currentAdminClass} — ${studentsList.length} Students</strong><div style="font-size:.72rem;color:#9db8dd;margin-top:4px;">💡 ഒരേ മൽസരത്തിൽ പല കുട്ടികളുടെയും റിസൾട്ട് ഒരുമിച്ച് ചേർക്കാം</div></div><form onsubmit="saveBulkCompetition(event)"><div class="row g-3 mb-3"><div class="col-md-7"><label class="text-white-50 small">Competition Name *</label><input type="text" id="bcp_name" required class="modal-form-input" placeholder="e.g., Quran Recitation 2026"></div><div class="col-md-5"><label class="text-white-50 small">Date *</label><input type="date" id="bcp_date" value="${new Date().toISOString().split('T')[0]}" required class="modal-form-input"></div><div class="col-12"><label class="text-white-50 small">Category</label><input type="text" id="bcp_category" class="modal-form-input" placeholder="Arabic, Speech, Quiz"></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;"><div style="font-weight:800;color:#fff;font-size:.88rem;"><i class="fas fa-users" style="color:#22d3ee;"></i> Students of Class ${currentAdminClass}</div><div style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" class="btn-load" style="padding:5px 12px;font-size:.7rem;" onclick="bulkMarkAllAsParticipated()"><i class="fas fa-check-double"></i> Mark All</button><button type="button" class="btn-cancel" style="padding:5px 12px;font-size:.7rem;" onclick="bulkClearAll()"><i class="fas fa-eraser"></i> Clear</button></div></div><div style="max-height:400px;overflow-y:auto;border:1px solid var(--stroke);border-radius:14px;background:rgba(8,20,48,.42);"><table class="marks-entry-table" style="margin:0;"><thead style="position:sticky;top:0;z-index:2;"><tr><th style="min-width:34px;">#</th><th style="min-width:140px;">Student</th><th style="min-width:90px;">Position</th><th style="min-width:80px;">Grade</th><th style="min-width:100px;">Remarks</th></tr></thead><tbody>${studentsList.map((s,i)=>`<tr><td>${i+1}</td><td><strong style="font-size:.78rem;">${escapeHtml(s.name)}</strong><br><small style="color:#6d88ad;font-size:.6rem;">${escapeHtml(s.studentid)}${s.roll?' • R'+escapeHtml(s.roll):''}</small></td><td><select class="bulk-pos modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option><option value="1">🥇 1st</option><option value="2">🥈 2nd</option><option value="3">🥉 3rd</option><option value="4">4th</option><option value="5">5th</option></select></td><td><select class="bulk-grade modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.75rem;"><option value="">—</option>${GRADES_LIST.map(g=>`<option value="${g}">${g}</option>`).join('')}</select></td><td><input type="text" class="bulk-remarks modal-form-input" data-sid="${escapeHtml(s.studentid)}" style="width:100%;padding:5px 8px;font-size:.72rem;" placeholder="optional"></td></tr>`).join('')}</tbody></table></div><div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1" id="bulkSaveBtn"><i class="fas fa-save"></i> Save All Results</button><button type="button" class="btn-cancel" onclick="closeModal('globalModal')">Cancel</button></div></form>`;
   modal.style.display='flex';
 }
 function bulkMarkAllAsParticipated(){document.querySelectorAll('.bulk-grade').forEach(sel=>{if(!sel.value)sel.value='A';});showToast('✅ Grade A set for all','info');}
@@ -1600,20 +1539,7 @@ async function showTimetable(){modalTitleSpan.innerText="⏰ Class Timetable";mo
 async function showHomework(){modalTitleSpan.innerText="📝 Homework";modalBodyDiv.innerHTML='<div class="text-center py-4"><div class="spinner-border" style="color:#fbbf24"></div></div>';modal.style.display='flex';try{const {data}=await supabaseClient.from('homework').select('*').eq('class',currentUser.class).order('due_date',{ascending:true});if(!data||data.length===0){modalBodyDiv.innerHTML='<div class="text-center py-3 text-white-50">No homework 🎉</div>';return;}const today=new Date().toISOString().split('T')[0];modalBodyDiv.innerHTML=data.map(h=>{const overdue=h.due_date&&h.due_date<today;return `<div class="homework-item ${overdue?'overdue':''}"><div class="d-flex justify-content-between mb-2 flex-wrap gap-2"><strong class="text-white" style="font-size:.86rem;">${escapeHtml(h.subject||'')} — ${escapeHtml(h.title)}</strong><small class="text-white-50" style="font-size:.7rem;">${overdue?'⚠️ Overdue':formatDate(h.due_date)}</small></div><p class="text-white-50 mb-0" style="font-size:.82rem;">${escapeHtml(h.description||'')}</p></div>`;}).join('');}catch(e){modalBodyDiv.innerHTML='<div class="text-center py-3 text-white-50">Error</div>';}}
 async function showExamMarks(){modalTitleSpan.innerText="📊 Exam Marks";modalBodyDiv.innerHTML='<div class="text-center py-4"><div class="spinner-border" style="color:#3b8bff"></div></div>';modal.style.display='flex';if(!isResultPublished()){modalBodyDiv.innerHTML=`<div class="text-center py-5"><i class="fas fa-clock" style="font-size:4rem;color:#fbbf24;opacity:.7;"></i><h4 class="text-white mt-3" style="font-size:1.2rem;">🔒 Marks ഇതുവരെ Publish ചെയ്തിട്ടില്ല</h4><p class="text-white-50 mt-2">പ്രസിദ്ധീകരണ സമയം:</p><div style="background:linear-gradient(100deg,rgba(34,211,238,.15),rgba(30,107,224,.15));border:1.6px solid rgba(34,211,238,.4);border-radius:16px;padding:14px 22px;margin-top:12px;display:inline-block;"><strong style="color:#67e8f9;">${getPublishTimeText()}</strong></div></div>`;return;}try{const {data:marks,error}=await supabaseClient.from('exam_marks').select('*').eq('studentid',currentUser.studentId);if(error)throw error;if(!marks||marks.length===0){modalBodyDiv.innerHTML=`<div class="text-center py-4"><i class="fas fa-file-circle-xmark" style="font-size:3rem;color:#6d88ad;opacity:.5;"></i><p class="text-white-50 mt-3">ഇപ്പോൾ മാർക്സ് ലഭ്യമല്ല</p></div>`;return;}const examList=[...new Set(marks.map(m=>m.exam_name).filter(Boolean))];if(examList.length===0){modalBodyDiv.innerHTML='<div class="text-center py-4 text-white-50">No exam records</div>';return;}const examKey='last_exam_'+currentUser.studentId;let selectedExam=localStorage.getItem(examKey)||'';if(!examList.includes(selectedExam))selectedExam=examList[0];modalBodyDiv.innerHTML=`<div class="exam-selector-panel"><label><i class="fas fa-file-pen"></i> പരീക്ഷ തിരഞ്ഞെടുക്കുക</label><select id="studentExamSelector" onchange="onStudentExamChange(this.value)">${examList.map(e=>`<option value="${escapeHtml(e)}" ${e===selectedExam?'selected':''}>${escapeHtml(e)}</option>`).join('')}</select></div><div id="studentMarksBody"></div>`;renderStudentExamMarks(marks,selectedExam);}catch(e){modalBodyDiv.innerHTML=`<div class="text-center py-4 text-white-50">Error</div>`;}}
 function onStudentExamChange(exam){const examKey='last_exam_'+currentUser.studentId;localStorage.setItem(examKey,exam);supabaseClient.from('exam_marks').select('*').eq('studentid',currentUser.studentId).eq('exam_name',exam).then(({data})=>{renderStudentExamMarks(data||[],exam,true);});}
-function renderStudentExamMarks(allMarks,exam,alreadyFiltered){
-  const body=document.getElementById('studentMarksBody');if(!body)return;
-  const subs=alreadyFiltered?allMarks:allMarks.filter(m=>m.exam_name===exam);
-  if(subs.length===0){body.innerHTML='<div class="text-center py-4 text-white-50">ഈ പരീക്ഷയുടെ മാർക്സ് ലഭ്യമല്ല</div>';return;}
-  let totalObt=0,totalMax=0;subs.forEach(s=>{const mx=Number(s.max_marks)||0;if(mx<=0)return;totalMax+=mx;totalObt+=Number(s.obtained_marks)||0;});
-  if(totalMax===0){body.innerHTML=`<div class="text-center py-4" style="color:#6ee7b7;"><i class="fas fa-circle-check" style="font-size:2.5rem;"></i><p class="mt-2 fw-bold">✅ എല്ലാ വിഷയങ്ങളും Passed</p></div>`;return;}
-  const pct=Math.round(totalObt/totalMax*100);const scoreOutOf50=(pct/100)*50;const grade=calculateGrade(scoreOutOf50,50);
-  const anyFail=subs.some(s=>{const mx=Number(s.max_marks)||50;return calculateGrade(Number(s.obtained_marks)||0,mx)==='D';});
-  const displayGrade=anyFail?'D':grade;const gcolor=anyFail?'#ef4444':scoreOutOf50>=40?'#34d399':scoreOutOf50>=30?'#22d3ee':scoreOutOf50>=20?'#fbbf24':'#f87171';
-  let html=`<div style="background:rgba(120,180,255,.06);border-radius:16px;padding:14px;border:1px solid rgba(140,190,255,.18);"><div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"><div><strong class="text-white" style="font-size:1rem;">${escapeHtml(exam)}</strong></div><div class="text-end"><div style="font-size:1.4rem;font-weight:900;color:${gcolor};">${displayGrade}</div><small class="text-white-50">${totalObt}/${totalMax} (${pct}%)</small></div></div><div class="table-responsive"><table class="table table-dark table-sm mb-0" style="background:transparent;"><thead><tr><th style="font-size:.7rem;">Subject</th><th style="font-size:.7rem;text-align:center;">Marks</th><th style="font-size:.7rem;text-align:center;">Grade</th></tr></thead><tbody>`;
-  subs.forEach(s=>{const mx=Number(s.max_marks)||0;if(mx<=0){html+=`<tr><td class="text-white" style="font-size:.82rem;">${escapeHtml(s.subject||'')}</td><td style="text-align:center;font-weight:800;color:#6ee7b7;">P</td><td style="text-align:center;font-weight:800;color:#6ee7b7;">Passed</td></tr>`;return;}const ob=Number(s.obtained_marks)||0;const g=calculateGrade(ob,mx);const gc=g==='D'?'#ef4444':'#6ee7b7';html+=`<tr><td class="text-white" style="font-size:.82rem;">${escapeHtml(s.subject||'')}</td><td style="text-align:center;font-weight:700;color:#fff;">${ob} / ${mx}</td><td style="text-align:center;font-weight:800;color:${gc};">${g}</td></tr>`;});
-  html+=`</tbody></table></div><div class="mt-3"><div class="progress" style="height:8px;background:rgba(255,255,255,.08);"><div class="progress-bar" style="width:${pct}%;background:linear-gradient(90deg,${gcolor},#22d3ee);"></div></div></div></div>`;
-  body.innerHTML=html;
-}
+function renderStudentExamMarks(allMarks,exam,alreadyFiltered){const body=document.getElementById('studentMarksBody');if(!body)return;const subs=alreadyFiltered?allMarks:allMarks.filter(m=>m.exam_name===exam);if(subs.length===0){body.innerHTML='<div class="text-center py-4 text-white-50">ഈ പരീക്ഷയുടെ മാർക്സ് ലഭ്യമല്ല</div>';return;}let totalObt=0,totalMax=0;subs.forEach(s=>{const mx=Number(s.max_marks)||0;if(mx<=0)return;totalMax+=mx;totalObt+=Number(s.obtained_marks)||0;});if(totalMax===0){body.innerHTML=`<div class="text-center py-4" style="color:#6ee7b7;"><i class="fas fa-circle-check" style="font-size:2.5rem;"></i><p class="mt-2 fw-bold">✅ എല്ലാ വിഷയങ്ങളും Passed</p></div>`;return;}const pct=Math.round(totalObt/totalMax*100);const scoreOutOf50=(pct/100)*50;const grade=calculateGrade(scoreOutOf50,50);const anyFail=subs.some(s=>{const mx=Number(s.max_marks)||50;return calculateGrade(Number(s.obtained_marks)||0,mx)==='D';});const displayGrade=anyFail?'D':grade;const gcolor=anyFail?'#ef4444':scoreOutOf50>=40?'#34d399':scoreOutOf50>=30?'#22d3ee':scoreOutOf50>=20?'#fbbf24':'#f87171';let html=`<div style="background:rgba(120,180,255,.06);border-radius:16px;padding:14px;border:1px solid rgba(140,190,255,.18);"><div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2"><div><strong class="text-white" style="font-size:1rem;">${escapeHtml(exam)}</strong></div><div class="text-end"><div style="font-size:1.4rem;font-weight:900;color:${gcolor};">${displayGrade}</div><small class="text-white-50">${totalObt}/${totalMax} (${pct}%)</small></div></div><div class="table-responsive"><table class="table table-dark table-sm mb-0" style="background:transparent;"><thead><tr><th style="font-size:.7rem;">Subject</th><th style="font-size:.7rem;text-align:center;">Marks</th><th style="font-size:.7rem;text-align:center;">Grade</th></tr></thead><tbody>`;subs.forEach(s=>{const mx=Number(s.max_marks)||0;if(mx<=0){html+=`<tr><td class="text-white" style="font-size:.82rem;">${escapeHtml(s.subject||'')}</td><td style="text-align:center;font-weight:800;color:#6ee7b7;">P</td><td style="text-align:center;font-weight:800;color:#6ee7b7;">Passed</td></tr>`;return;}const ob=Number(s.obtained_marks)||0;const g=calculateGrade(ob,mx);const gc=g==='D'?'#ef4444':'#6ee7b7';html+=`<tr><td class="text-white" style="font-size:.82rem;">${escapeHtml(s.subject||'')}</td><td style="text-align:center;font-weight:700;color:#fff;">${ob} / ${mx}</td><td style="text-align:center;font-weight:800;color:${gc};">${g}</td></tr>`;});html+=`</tbody></table></div><div class="mt-3"><div class="progress" style="height:8px;background:rgba(255,255,255,.08);"><div class="progress-bar" style="width:${pct}%;background:linear-gradient(90deg,${gcolor},#22d3ee);"></div></div></div></div>`;body.innerHTML=html;}
 async function showLibrary(){modalTitleSpan.innerText="📚 Library";modalBodyDiv.innerHTML='<div class="text-center py-4"><div class="spinner-border" style="color:#3b8bff"></div></div>';modal.style.display='flex';try{const {data}=await supabaseClient.from('library').select('*').or(`class.eq.all,class.eq.${currentUser.class}`).order('uploaded_at',{ascending:false});if(!data||data.length===0){modalBodyDiv.innerHTML='<div class="text-center py-3 text-white-50">No materials</div>';return;}const bySub={};data.forEach(l=>{const k=l.subject||'General';if(!bySub[k])bySub[k]=[];bySub[k].push(l);});let html='';Object.keys(bySub).forEach(sub=>{html+=`<h6 class="text-white mt-3 mb-2" style="font-size:.88rem;"><i class="fas fa-folder" style="color:#22d3ee"></i> ${escapeHtml(sub)}</h6>`;bySub[sub].forEach(l=>{const icon=l.type==='pdf'?'fa-file-pdf':l.type==='video'?'fa-video':'fa-link';const color=l.type==='pdf'?'#f87171':l.type==='video'?'#22d3ee':'#3b8bff';html+=`<a href="${l.file_url}" target="_blank" class="library-item" style="border-left-color:${color};"><i class="fas ${icon} me-2" style="color:${color};"></i><strong class="text-white" style="font-size:.86rem;">${escapeHtml(l.title)}</strong><br><small class="text-white-50" style="font-size:.72rem;">${escapeHtml(l.description||'')}</small></a>`;});});modalBodyDiv.innerHTML=html;}catch(e){modalBodyDiv.innerHTML='<div class="text-center py-3 text-white-50">Error</div>';}}
 function showResultsModal(){modalTitleSpan.innerText="📊 Academic Result";if(!isResultPublished()){modalBodyDiv.innerHTML=`<div class="text-center py-5"><i class="fas fa-clock" style="font-size:4rem;color:#fbbf24;opacity:.7;"></i><h4 class="text-white mt-3" style="font-size:1.2rem;">🔒 Result ഇതുവരെ Publish ചെയ്തിട്ടില്ല</h4><p class="text-white-50 mt-2" style="font-size:.9rem;">ഫലം പ്രസിദ്ധീകരിക്കുന്ന സമയം:</p><div style="background:linear-gradient(100deg,rgba(34,211,238,.15),rgba(30,107,224,.15));border:1.6px solid rgba(34,211,238,.4);border-radius:16px;padding:16px 24px;margin-top:12px;display:inline-block;"><i class="fas fa-calendar-check me-2" style="color:#22d3ee;"></i><strong style="color:#67e8f9;font-size:1.05rem;">${getPublishTimeText()}</strong></div></div>`;modal.style.display='flex';return;}modalBodyDiv.innerHTML=`<div class="text-center py-3"><div style="font-size:4.2rem;font-weight:900;background:linear-gradient(100deg,#fff,#22d3ee);-webkit-background-clip:text;background-clip:text;color:transparent;">${currentUser.overallGrade||'N/A'}</div><p class="text-white-50">Performance: ${currentUser.performance||0}%</p><div class="progress mt-3" style="height:10px;"><div class="progress-bar" style="width:${currentUser.performance||0}%"></div></div></div>`;modal.style.display='flex';}
 async function showAttendanceReport(){modalTitleSpan.innerText="📆 Attendance Report";modalBodyDiv.innerHTML='<div class="text-center py-4"><div class="spinner-border" style="color:#34d399"></div></div>';modal.style.display='flex';await refreshStudentAttendance();await fetchAttendanceRecords();}
@@ -1643,25 +1569,7 @@ document.getElementById('editProfileForm').addEventListener('submit',async funct
 /* ==== ID CARD ==== */
 function showIdCard(){modalTitleSpan.innerText="🪪 Student ID Card";modalBodyDiv.innerHTML=`<div class="text-center py-2"><div class="id-card-preview" style="max-width:340px;margin:0 auto;"><canvas id="idCardCanvas" width="500" height="800"></canvas></div><div class="d-flex gap-2 justify-content-center mt-3 flex-wrap"><button class="btn-load" onclick="downloadIdCard('png')"><i class="fas fa-download"></i> PNG</button><button class="btn-pdf" onclick="downloadIdCard('pdf')"><i class="fas fa-file-pdf"></i> PDF</button><button class="btn-update" onclick="printIdCard()"><i class="fas fa-print"></i> Print</button></div></div>`;modal.style.display='flex';setTimeout(renderIdCard,250);}
 function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>rej();i.src=src;});}
-async function renderIdCard(){
-  const canvas=document.getElementById('idCardCanvas');if(!canvas)return;
-  const ctx=canvas.getContext('2d');const w=500,h=800;
-  let bgDrawn=false;
-  if(ID_CARD_BG_URL){try{const bg=await loadImage(ID_CARD_BG_URL);ctx.drawImage(bg,0,0,w,h);bgDrawn=true;}catch(e){}}
-  if(!bgDrawn){const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#eaf2ff');g.addColorStop(1,'#c9ddff');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}else{ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(0,0,w,h);}
-  const px=w/2, py=250, pr=95;
-  ctx.save();ctx.beginPath();ctx.arc(px,py,pr+6,0,Math.PI*2);ctx.strokeStyle='#22d3ee';ctx.lineWidth=5;ctx.stroke();ctx.restore();
-  if(hasPhoto(currentUser.photo)){try{const p=await loadImage(currentUser.photo);ctx.save();ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();const ia=p.width/p.height;let dw,dh,dx,dy;if(ia>1){dh=pr*2;dw=p.width*(dh/p.height);dx=px-dw/2;dy=py-pr;}else{dw=pr*2;dh=p.height*(dw/p.width);dx=px-pr;dy=py-dh/2;}ctx.drawImage(p,dx,dy,dw,dh);ctx.restore();}catch(e){}}else{ctx.save();ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();ctx.fillStyle='#d0e0ff';ctx.fillRect(px-pr,py-pr,pr*2,pr*2);ctx.restore();ctx.fillStyle='#1547a8';ctx.font='bold 84px Anek Malayalam';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((currentUser.name||'S').charAt(0).toUpperCase(),px,py+4);ctx.textBaseline='alphabetic';}
-  ctx.textAlign='center';ctx.fillStyle='#0a1a3f';ctx.font='bold 28px Anek Malayalam';ctx.fillText(currentUser.name||'N/A',w/2,412);
-  ctx.font='600 15px Anek Malayalam';ctx.fillStyle='#1547a8';ctx.fillText(`Class ${currentUser.class||'—'}  •  Roll No: ${currentUser.roll||'—'}`,w/2,442);
-  ctx.strokeStyle='rgba(21,71,168,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(55,468);ctx.lineTo(w-55,468);ctx.stroke();
-  const rows=[['UID',currentUser.studentId||'—'],['FATHER',currentUser.fatherName||'—'],['PHONE',currentUser.phone||'—'],['DOB',currentUser.dob?formatDate(currentUser.dob):'—'],['BLOOD GRP',currentUser.bloodGroup||'—'],['ADDRESS',currentUser.address||'—']];
-  let y=510;
-  rows.forEach(([l,v])=>{ctx.textAlign='left';ctx.fillStyle='#1547a8';ctx.font='bold 13px Anek Malayalam';ctx.fillText(l,55,y);ctx.fillStyle='#0a1a3f';ctx.font='600 14px Anek Malayalam';let val=String(v);const maxLen=l==='ADDRESS'?28:26;if(val.length>maxLen)val=val.substring(0,maxLen-1)+'…';ctx.fillText(': '+val,168,y);y += l==='ADDRESS'?30:32;});
-  ctx.fillStyle='rgba(21,71,168,.94)';ctx.fillRect(0,h-70,w,70);
-  ctx.textAlign='center';ctx.fillStyle='#a9cdff';ctx.font='11px Anek Malayalam';ctx.fillText('Academic Year 2025-2026',w/2,h-40);
-  ctx.fillStyle='#22d3ee';ctx.font='bold 11px Anek Malayalam';ctx.fillText('Valid • Noorussalam Madrasa Portal',w/2,h-18);
-}
+async function renderIdCard(){const canvas=document.getElementById('idCardCanvas');if(!canvas)return;const ctx=canvas.getContext('2d');const w=500,h=800;let bgDrawn=false;if(ID_CARD_BG_URL){try{const bg=await loadImage(ID_CARD_BG_URL);ctx.drawImage(bg,0,0,w,h);bgDrawn=true;}catch(e){}}if(!bgDrawn){const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#eaf2ff');g.addColorStop(1,'#c9ddff');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}else{ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(0,0,w,h);}const px=w/2, py=250, pr=95;ctx.save();ctx.beginPath();ctx.arc(px,py,pr+6,0,Math.PI*2);ctx.strokeStyle='#22d3ee';ctx.lineWidth=5;ctx.stroke();ctx.restore();if(hasPhoto(currentUser.photo)){try{const p=await loadImage(currentUser.photo);ctx.save();ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();const ia=p.width/p.height;let dw,dh,dx,dy;if(ia>1){dh=pr*2;dw=p.width*(dh/p.height);dx=px-dw/2;dy=py-pr;}else{dw=pr*2;dh=p.height*(dw/p.width);dx=px-pr;dy=py-dh/2;}ctx.drawImage(p,dx,dy,dw,dh);ctx.restore();}catch(e){}}else{ctx.save();ctx.beginPath();ctx.arc(px,py,pr,0,Math.PI*2);ctx.clip();ctx.fillStyle='#d0e0ff';ctx.fillRect(px-pr,py-pr,pr*2,pr*2);ctx.restore();ctx.fillStyle='#1547a8';ctx.font='bold 84px Anek Malayalam';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText((currentUser.name||'S').charAt(0).toUpperCase(),px,py+4);ctx.textBaseline='alphabetic';}ctx.textAlign='center';ctx.fillStyle='#0a1a3f';ctx.font='bold 28px Anek Malayalam';ctx.fillText(currentUser.name||'N/A',w/2,412);ctx.font='600 15px Anek Malayalam';ctx.fillStyle='#1547a8';ctx.fillText(`Class ${currentUser.class||'—'}  •  Roll No: ${currentUser.roll||'—'}`,w/2,442);ctx.strokeStyle='rgba(21,71,168,.4)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(55,468);ctx.lineTo(w-55,468);ctx.stroke();const rows=[['UID',currentUser.studentId||'—'],['FATHER',currentUser.fatherName||'—'],['PHONE',currentUser.phone||'—'],['DOB',currentUser.dob?formatDate(currentUser.dob):'—'],['BLOOD GRP',currentUser.bloodGroup||'—'],['ADDRESS',currentUser.address||'—']];let y=510;rows.forEach(([l,v])=>{ctx.textAlign='left';ctx.fillStyle='#1547a8';ctx.font='bold 13px Anek Malayalam';ctx.fillText(l,55,y);ctx.fillStyle='#0a1a3f';ctx.font='600 14px Anek Malayalam';let val=String(v);const maxLen=l==='ADDRESS'?28:26;if(val.length>maxLen)val=val.substring(0,maxLen-1)+'…';ctx.fillText(': '+val,168,y);y += l==='ADDRESS'?30:32;});ctx.fillStyle='rgba(21,71,168,.94)';ctx.fillRect(0,h-70,w,70);ctx.textAlign='center';ctx.fillStyle='#a9cdff';ctx.font='11px Anek Malayalam';ctx.fillText('Academic Year 2025-2026',w/2,h-40);ctx.fillStyle='#22d3ee';ctx.font='bold 11px Anek Malayalam';ctx.fillText('Valid • Noorussalam Madrasa Portal',w/2,h-18);}
 function downloadIdCard(t){const c=document.getElementById('idCardCanvas');if(!c){showToast('ID card not ready','error');return;}const d=c.toDataURL('image/png');const fn=`ID_${currentUser.studentId}`;if(t==='png'){const a=document.createElement('a');a.href=d;a.download=fn+'.png';a.click();}else{const {jsPDF}=window.jspdf;const p=new jsPDF({orientation:'portrait',unit:'px',format:[500,800]});p.addImage(d,'PNG',0,0,500,800);p.save(fn+'.pdf');}showToast('✅ Downloaded','success');}
 function printIdCard(){const c=document.getElementById('idCardCanvas');if(!c)return;const url=c.toDataURL('image/png');const win=window.open('','_blank');win.document.write(`<html><head><title>ID Card</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f0f4ff;font-family:sans-serif}img{max-width:100%;height:auto;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.18)}@media print{body{background:#fff}img{box-shadow:none}}</style></head><body><img src="${url}" onload="setTimeout(()=>window.print(),300)"></body></html>`);win.document.close();}
 
@@ -1669,18 +1577,7 @@ function printIdCard(){const c=document.getElementById('idCardCanvas');if(!c)ret
 function showTopperPoster(){if(!currentUser)return;document.getElementById('topperNameDisplay').textContent=currentUser.name||'Student';const rt=currentUser.rank===1?'Class Topper':currentUser.rank===2?'Second Place':currentUser.rank===3?'Third Place':'—';document.getElementById('topperClassRank').textContent=`Class ${currentUser.class} • ${rt}`;document.getElementById('topperModal').style.display='flex';}
 function closeTopperModal(){document.getElementById('topperModal').style.display='none';}
 function loadImageForPoster(src){return new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=()=>rej();i.src=src;});}
-async function renderTopperCanvas(name,cls,rank,photo){
-  const w=2400,h=3200;const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');
-  if(TOPPER_BG_URL){try{const bg=await loadImageForPoster(TOPPER_BG_URL);ctx.drawImage(bg,0,0,w,h);}catch(e){const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#fdf6e3');bg.addColorStop(1,'#f5e6c3');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);}}else{const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#fdf6e3');bg.addColorStop(.5,'#fef9ef');bg.addColorStop(1,'#f5e6c3');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);}
-  const cx=w/2, cy=1520, r=440;
-  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+14,0,Math.PI*2);ctx.strokeStyle='#c9a227';ctx.lineWidth=10;ctx.stroke();ctx.restore();
-  if(photo){try{const img=await loadImageForPoster(photo);ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();let dw,dh;if(img.width>img.height){dh=r*2;dw=img.width*(dh/img.height);}else{dw=r*2;dh=img.height*(dw/img.width);}ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);ctx.restore();}catch(e){}}
-  ctx.textAlign='center';ctx.fillStyle='#000000';ctx.font='bold 120px Anek Malayalam';ctx.fillText(name||'Student',cx,2280);
-  const placeText = rank===1?'CLASS TOPPER':rank===2?'SECOND PLACE':rank===3?'THIRD PLACE':'RANK '+(rank||'—');
-  const classText = `Class ${cls||'—'} • ${placeText}`;
-  ctx.fillStyle='#000000';ctx.font='bold 82px Anek Malayalam';ctx.fillText(classText,cx,2400);
-  return canvas;
-}
+async function renderTopperCanvas(name,cls,rank,photo){const w=2400,h=3200;const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');if(TOPPER_BG_URL){try{const bg=await loadImageForPoster(TOPPER_BG_URL);ctx.drawImage(bg,0,0,w,h);}catch(e){const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#fdf6e3');bg.addColorStop(1,'#f5e6c3');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);}}else{const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#fdf6e3');bg.addColorStop(.5,'#fef9ef');bg.addColorStop(1,'#f5e6c3');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);}const cx=w/2, cy=1520, r=440;ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+14,0,Math.PI*2);ctx.strokeStyle='#c9a227';ctx.lineWidth=10;ctx.stroke();ctx.restore();if(photo){try{const img=await loadImageForPoster(photo);ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();let dw,dh;if(img.width>img.height){dh=r*2;dw=img.width*(dh/img.height);}else{dw=r*2;dh=img.height*(dw/img.width);}ctx.drawImage(img,cx-dw/2,cy-dh/2,dw,dh);ctx.restore();}catch(e){}}ctx.textAlign='center';ctx.fillStyle='#000000';ctx.font='bold 120px Anek Malayalam';ctx.fillText(name||'Student',cx,2280);const placeText = rank===1?'CLASS TOPPER':rank===2?'SECOND PLACE':rank===3?'THIRD PLACE':'RANK '+(rank||'—');const classText = `Class ${cls||'—'} • ${placeText}`;ctx.fillStyle='#000000';ctx.font='bold 82px Anek Malayalam';ctx.fillText(classText,cx,2400);return canvas;}
 async function previewTopperPoster(){showTopperLoading('Generating preview...');try{const c=await renderTopperCanvas(currentUser.name,currentUser.class,currentUser.rank||0,topperPhotoData);hideTopperLoading();const pc=document.getElementById('posterPreviewCanvas');pc.width=1600;pc.height=2134;pc.getContext('2d').drawImage(c,0,0,2400,3200,0,0,1600,2134);document.getElementById('posterPreviewOverlay').style.display='block';}catch(e){hideTopperLoading();}}
 function closePosterPreview(){document.getElementById('posterPreviewOverlay').style.display='none';}
 async function downloadTopperPoster(type){showTopperLoading('Creating file...');try{const c=await renderTopperCanvas(currentUser.name,currentUser.class,currentUser.rank||0,topperPhotoData);const img=c.toDataURL('image/png');const fn=`Topper_${currentUser.name}`;if(type==='png'){const a=document.createElement('a');a.href=img;a.download=fn+'.png';a.click();}else{const {jsPDF}=window.jspdf;const p=new jsPDF({orientation:'portrait',unit:'px',format:[2400,3200]});p.addImage(img,'PNG',0,0,2400,3200);p.save(fn+'.pdf');}if(typeof confetti!=='undefined')confetti({particleCount:200,spread:100,origin:{y:.6}});hideTopperLoading();showToast('✅ Downloaded','success');}catch(e){hideTopperLoading();}}
@@ -1706,18 +1603,7 @@ document.getElementById('forgotSubmitBtn').addEventListener('click',async functi
 });
 
 /* ==== ADMIN: CLASS & TABS ==== */
-async function selectAdminClass(cls){
-  currentAdminClass=cls;
-  const mainContent=document.getElementById('adminMainContent'),noClassMsg=document.getElementById('noClassMsg'),badge=document.getElementById('selectedClassBadge');
-  if(!cls){mainContent.style.display='none';noClassMsg.style.display='block';badge.style.display='none';return;}
-  mainContent.style.display='block';noClassMsg.style.display='none';badge.style.display='block';
-  if(cls==='all'){document.getElementById('classBadgeNumber').textContent='All Classes';try{const {data:s}=await supabaseClient.from('students').select('studentid');document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast('🌟 Managing All Classes','success');}
-  else{document.getElementById('classBadgeNumber').textContent='Class '+cls;try{const {data:s}=await supabaseClient.from('students').select('studentid').eq('class',cls);document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast(`📚 Managing Class ${cls}`,'success');}
-  document.getElementById('adminSettingsTab').style.display='none';
-  const activeTab=document.querySelector('.admin-tab.active')?.dataset.tab||'payments';
-  if(activeTab==='payments'){const dateInput=document.getElementById('adminDate');if(!dateInput.value) dateInput.value=new Date().toISOString().split('T')[0];}
-  switchAdminTab(activeTab);
-}
+async function selectAdminClass(cls){currentAdminClass=cls;const mainContent=document.getElementById('adminMainContent'),noClassMsg=document.getElementById('noClassMsg'),badge=document.getElementById('selectedClassBadge');if(!cls){mainContent.style.display='none';noClassMsg.style.display='block';badge.style.display='none';return;}mainContent.style.display='block';noClassMsg.style.display='none';badge.style.display='block';if(cls==='all'){document.getElementById('classBadgeNumber').textContent='All Classes';try{const {data:s}=await supabaseClient.from('students').select('studentid');document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast('🌟 Managing All Classes','success');}else{document.getElementById('classBadgeNumber').textContent='Class '+cls;try{const {data:s}=await supabaseClient.from('students').select('studentid').eq('class',cls);document.getElementById('classBadgeStudents').textContent=(s||[]).length;}catch(e){}showToast(`📚 Managing Class ${cls}`,'success');}document.getElementById('adminSettingsTab').style.display='none';const activeTab=document.querySelector('.admin-tab.active')?.dataset.tab||'payments';if(activeTab==='payments'){const dateInput=document.getElementById('adminDate');if(!dateInput.value) dateInput.value=new Date().toISOString().split('T')[0];}switchAdminTab(activeTab);}
 function closeSettingsTab(){document.getElementById('adminSettingsTab').style.display='none';if(currentAdminClass){document.getElementById('adminMainContent').style.display='block';document.getElementById('noClassMsg').style.display='none';}else{document.getElementById('noClassMsg').style.display='block';}}
 function switchAdminTab(tab){
   if(tab==='settings'){document.getElementById('adminSettingsTab').style.display='block';document.getElementById('adminMainContent').style.display='none';document.getElementById('noClassMsg').style.display='none';document.getElementById('currentAdminPwd').textContent=getAdminPassword();populateSettingsForm();loadBgUrlsIntoForm();loadTeacherSettingsIntoForm();loadDBStats();return;}
@@ -1862,33 +1748,10 @@ async function findBestStudent(){
 }
 
 /* ==== ADMIN: ATTENDANCE ==== */
-async function loadAttendanceForAdmin(){
-  if(!currentAdminClass)return;
-  const month=document.getElementById('attendanceMonth').value;if(!month){showToast('Select a month','error');return;}
-  const wrap=document.getElementById('attendanceWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
-  try{let q=supabaseClient.from('students').select('studentid,name,class,roll');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('name');
-    const {data:students}=await q;const ids=(students||[]).map(x=>x.studentid);let r=[];
-    if(ids.length>0){const {data:rec}=await supabaseClient.from('attendance_records').select('*').eq('month_year',month).in('studentid',ids);r=rec||[];}
-    let commonTotal=0;if(r.length>0){const counts={};r.forEach(x=>{const t=Number(x.total_days)||0;counts[t]=(counts[t]||0)+1;});let maxC=0;Object.keys(counts).forEach(k=>{if(counts[k]>maxC){maxC=counts[k];commonTotal=Number(k);}});}
-    document.getElementById('attendanceTotalDays').value=commonTotal||'';
-    attendanceData=(students||[]).map(x=>{const rec=r.find(y=>y.studentid===x.studentid);return {studentid:x.studentid,name:x.name,class:x.class,present_days:rec?rec.present_days:0,percentage:rec?rec.percentage:0,exists:!!rec};});
-    renderAttendance();
-  }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}
-}
+async function loadAttendanceForAdmin(){if(!currentAdminClass)return;const month=document.getElementById('attendanceMonth').value;if(!month){showToast('Select a month','error');return;}const wrap=document.getElementById('attendanceWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';try{let q=supabaseClient.from('students').select('studentid,name,class,roll');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('name');const {data:students}=await q;const ids=(students||[]).map(x=>x.studentid);let r=[];if(ids.length>0){const {data:rec}=await supabaseClient.from('attendance_records').select('*').eq('month_year',month).in('studentid',ids);r=rec||[];}let commonTotal=0;if(r.length>0){const counts={};r.forEach(x=>{const t=Number(x.total_days)||0;counts[t]=(counts[t]||0)+1;});let maxC=0;Object.keys(counts).forEach(k=>{if(counts[k]>maxC){maxC=counts[k];commonTotal=Number(k);}});}document.getElementById('attendanceTotalDays').value=commonTotal||'';attendanceData=(students||[]).map(x=>{const rec=r.find(y=>y.studentid===x.studentid);return {studentid:x.studentid,name:x.name,class:x.class,present_days:rec?rec.present_days:0,percentage:rec?rec.percentage:0,exists:!!rec};});renderAttendance();}catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}}
 function renderAttendance(){const wrap=document.getElementById('attendanceWrap');if(attendanceData.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}const showClass=currentAdminClass==='all';let html='<table><thead><tr><th>#</th><th>Student</th>'+(showClass?'<th>Class</th>':'')+'<th>Present Days</th><th>Percentage</th></tr></thead><tbody>';attendanceData.forEach((s,idx)=>{const cid=String(s.studentid).replace(/[^a-zA-Z0-9]/g,'');html+=`<tr><td>${idx+1}</td><td><strong>${escapeHtml(s.name)}</strong></td>`;if(showClass)html+=`<td>${escapeHtml(s.class||'')}</td>`;html+=`<td><input type="number" id="att_present_${cid}" value="${s.present_days}" min="0" oninput="recalcAttendancePercentages()" style="width:70px;"></td><td><span id="att_pct_${cid}" style="color:#22d3ee;font-weight:800;">${s.percentage}%</span></td></tr>`;});html+='</tbody></table>';wrap.innerHTML=html;recalcAttendancePercentages();}
 function recalcAttendancePercentages(){const total=parseInt(document.getElementById('attendanceTotalDays').value)||0;attendanceData.forEach(s=>{const cid=String(s.studentid).replace(/[^a-zA-Z0-9]/g,'');const el=document.getElementById(`att_present_${cid}`);const pctEl=document.getElementById(`att_pct_${cid}`);if(el&&pctEl){const p=parseInt(el.value)||0;const pct=total>0?Math.round(p/total*100):0;pctEl.textContent=pct+'%';pctEl.style.color=pct>=75?'#6ee7b7':pct>=50?'#fcd34d':'#fca5a5';}});}
-async function bulkUpdateAttendance(){
-  const month=document.getElementById('attendanceMonth').value;const total=parseInt(document.getElementById('attendanceTotalDays').value)||0;
-  if(!month){showToast('Select a month','error');return;}if(total<=0){showToast('Enter total working days','error');return;}
-  const btn=document.getElementById('attendanceUpdateBtn');btn.disabled=true;btn.innerHTML='Saving...';
-  try{const rows=[];const ids=[];for(const s of attendanceData){const cid=String(s.studentid).replace(/[^a-zA-Z0-9]/g,'');const el=document.getElementById(`att_present_${cid}`);if(!el)continue;const p=parseInt(el.value)||0;const pct=total>0?Math.round(p/total*100):0;rows.push({studentid:s.studentid,month_year:month,present_days:p,total_days:total,percentage:pct});ids.push(s.studentid);}
-    if(rows.length===0){showToast('No data','error');btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';return;}
-    await supabaseClient.from('attendance_records').delete().eq('month_year', month).in('studentid', ids);
-    const CHUNK=200;for(let i=0;i<rows.length;i+=CHUNK){const {error}=await supabaseClient.from('attendance_records').insert(rows.slice(i,i+CHUNK));if(error)throw error;}
-    showToast(`✅ Saved ${rows.length} students`,'success');loadAttendanceForAdmin();
-  }catch(e){showToast('❌ '+(e.message||'Error'),'error');}
-  btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';
-}
+async function bulkUpdateAttendance(){const month=document.getElementById('attendanceMonth').value;const total=parseInt(document.getElementById('attendanceTotalDays').value)||0;if(!month){showToast('Select a month','error');return;}if(total<=0){showToast('Enter total working days','error');return;}const btn=document.getElementById('attendanceUpdateBtn');btn.disabled=true;btn.innerHTML='Saving...';try{const rows=[];const ids=[];for(const s of attendanceData){const cid=String(s.studentid).replace(/[^a-zA-Z0-9]/g,'');const el=document.getElementById(`att_present_${cid}`);if(!el)continue;const p=parseInt(el.value)||0;const pct=total>0?Math.round(p/total*100):0;rows.push({studentid:s.studentid,month_year:month,present_days:p,total_days:total,percentage:pct});ids.push(s.studentid);}if(rows.length===0){showToast('No data','error');btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';return;}await supabaseClient.from('attendance_records').delete().eq('month_year', month).in('studentid', ids);const CHUNK=200;for(let i=0;i<rows.length;i+=CHUNK){const {error}=await supabaseClient.from('attendance_records').insert(rows.slice(i,i+CHUNK));if(error)throw error;}showToast(`✅ Saved ${rows.length} students`,'success');loadAttendanceForAdmin();}catch(e){showToast('❌ '+(e.message||'Error'),'error');}btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';}
 
 /* ==== ADMIN: TIMETABLE ==== */
 async function loadTimetableAdmin(){const wrap=document.getElementById('timetableWrap');if(currentAdminClass==='all'){wrap.innerHTML='<div class="empty-state">Specific class</div>';return;}wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';try{const {data}=await supabaseClient.from('timetable').select('*').eq('class',currentAdminClass).order('day').order('period');timetableData=data||[];if(timetableData.length===0){wrap.innerHTML='<div class="empty-state">No periods</div>';return;}let html='<table><thead><tr><th>#</th><th>Day</th><th>Period</th><th>Subject</th><th>Actions</th></tr></thead><tbody>';timetableData.forEach((t,i)=>{html+=`<tr><td>${i+1}</td><td>${escapeHtml(t.day)}</td><td>P${t.period}</td><td>${escapeHtml(t.subject||'')}</td><td><button class="btn-sm approve" onclick="editTimetable(${t.id})">✏️</button><button class="btn-sm reject" onclick="deleteTimetable(${t.id})">🗑️</button></td></tr>`;});html+='</tbody></table>';wrap.innerHTML=html;}catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}}
@@ -1917,36 +1780,11 @@ async function saveLibraryItem(e){e.preventDefault();const obj={title:document.g
 async function deleteLibrary(id){if(!confirm('Delete?'))return;await supabaseClient.from('library').delete().eq('id',id);showToast('🗑️','success');loadLibraryAdmin();}
 
 /* ==== ADMIN: PAYMENTS ==== */
-async function loadPaymentsForDate(){
-  if(!currentAdminClass)return;
-  const date=document.getElementById('adminDate').value;
-  if(!date){const today=new Date().toISOString().split('T')[0];document.getElementById('adminDate').value=today;date=today;}
-  const wrap=document.getElementById('adminTableWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
-  try{let q=supabaseClient.from('students').select('studentid,name,class');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('class').order('name');
-    const {data:s}=await q;const {data:p}=await supabaseClient.from('payments').select('*').eq('date',date).eq('type','fee');
-    const merged=(s||[]).map(x=>{const pay=(p||[]).find(y=>y.studentid===x.studentid);return {studentId:x.studentid,name:x.name||'',class:x.class||'',debit:pay?(Number(pay.debit)||0):0,credit:pay?(Number(pay.credit)||0):0,exists:!!pay,approved:pay?(pay.approved||false):false};});
-    currentDatePayments=merged;applyPaymentsFilters();
-  }catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}
-}
+async function loadPaymentsForDate(){if(!currentAdminClass)return;const date=document.getElementById('adminDate').value;if(!date){const today=new Date().toISOString().split('T')[0];document.getElementById('adminDate').value=today;date=today;}const wrap=document.getElementById('adminTableWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';try{let q=supabaseClient.from('students').select('studentid,name,class');if(currentAdminClass!=='all')q=q.eq('class',currentAdminClass);q=q.order('class').order('name');const {data:s}=await q;const {data:p}=await supabaseClient.from('payments').select('*').eq('date',date).eq('type','fee');const merged=(s||[]).map(x=>{const pay=(p||[]).find(y=>y.studentid===x.studentid);return {studentId:x.studentid,name:x.name||'',class:x.class||'',debit:pay?(Number(pay.debit)||0):0,credit:pay?(Number(pay.credit)||0):0,exists:!!pay,approved:pay?(pay.approved||false):false};});currentDatePayments=merged;applyPaymentsFilters();}catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}}
 function applyPaymentsFilters(){const st=(document.getElementById('adminSearch').value||'').toLowerCase().trim();filteredPayments=currentDatePayments.filter(i=>!st||(i.name||'').toLowerCase().includes(st)||String(i.studentId||'').toLowerCase().includes(st));renderAdminTable();}
-function renderAdminTable(){
-  const wrap=document.getElementById('adminTableWrap');if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}
-  const showClass=currentAdminClass==='all';
-  let html='<table><thead><tr><th>#</th><th>Student</th>'+(showClass?'<th>Class</th>':'')+'<th>Debit</th><th>Credit</th><th>Status</th></tr></thead><tbody>';
-  filteredPayments.forEach((item,idx)=>{const cid=String(item.studentId).replace(/[^a-zA-Z0-9]/g,'');const st=item.exists?`<span class="existing-badge ${item.approved?'':'pending'}">${item.approved?'✅':'⏳'}</span>`:'—';html+=`<tr><td>${idx+1}</td><td><strong>${escapeHtml(item.name)}</strong><br><small style="color:#6d88ad;font-size:.62rem;">${escapeHtml(item.studentId||'')}</small></td>`;if(showClass)html+=`<td>${escapeHtml(item.class||'')}</td>`;html+=`<td><input type="number" id="admin_debit_${cid}" value="${item.debit}" min="0" data-sid="${escapeHtml(item.studentId)}" data-field="debit"></td>`;html+=`<td><input type="number" id="admin_credit_${cid}" value="${item.credit}" min="0" data-sid="${escapeHtml(item.studentId)}" data-field="credit"></td>`;html+=`<td>${st}</td></tr>`;});
-  html+='</tbody></table>';wrap.innerHTML=html;
-  wrap.querySelectorAll('input[data-sid]').forEach(inp=>{inp.addEventListener('input',function(){const sid=this.dataset.sid;const field=this.dataset.field;const item=currentDatePayments.find(x=>String(x.studentId)===String(sid));if(item) item[field]=parseFloat(this.value)||0;});});
-}
+function renderAdminTable(){const wrap=document.getElementById('adminTableWrap');if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}const showClass=currentAdminClass==='all';let html='<table><thead><tr><th>#</th><th>Student</th>'+(showClass?'<th>Class</th>':'')+'<th>Debit</th><th>Credit</th><th>Status</th></tr></thead><tbody>';filteredPayments.forEach((item,idx)=>{const cid=String(item.studentId).replace(/[^a-zA-Z0-9]/g,'');const st=item.exists?`<span class="existing-badge ${item.approved?'':'pending'}">${item.approved?'✅':'⏳'}</span>`:'—';html+=`<tr><td>${idx+1}</td><td><strong>${escapeHtml(item.name)}</strong><br><small style="color:#6d88ad;font-size:.62rem;">${escapeHtml(item.studentId||'')}</small></td>`;if(showClass)html+=`<td>${escapeHtml(item.class||'')}</td>`;html+=`<td><input type="number" id="admin_debit_${cid}" value="${item.debit}" min="0" data-sid="${escapeHtml(item.studentId)}" data-field="debit"></td>`;html+=`<td><input type="number" id="admin_credit_${cid}" value="${item.credit}" min="0" data-sid="${escapeHtml(item.studentId)}" data-field="credit"></td>`;html+=`<td>${st}</td></tr>`;});html+='</tbody></table>';wrap.innerHTML=html;wrap.querySelectorAll('input[data-sid]').forEach(inp=>{inp.addEventListener('input',function(){const sid=this.dataset.sid;const field=this.dataset.field;const item=currentDatePayments.find(x=>String(x.studentId)===String(sid));if(item) item[field]=parseFloat(this.value)||0;});});}
 function clearAdminForm(){currentDatePayments.forEach(i=>{i.debit=0;i.credit=0;const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');const d=document.getElementById(`admin_debit_${cid}`);const c=document.getElementById(`admin_credit_${cid}`);if(d)d.value='0';if(c)c.value='0';});showToast('Cleared','info');}
-async function bulkUpdate(){
-  const date=document.getElementById('adminDate').value;if(!date){showToast('Select date','error');return;}
-  currentDatePayments.forEach(i=>{const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');const d=document.getElementById(`admin_debit_${cid}`);const c=document.getElementById(`admin_credit_${cid}`);if(d) i.debit=parseFloat(d.value)||0;if(c) i.credit=parseFloat(c.value)||0;});
-  const data=[];currentDatePayments.forEach(i=>{const debit=Number(i.debit)||0;const credit=Number(i.credit)||0;if(debit>0||credit>0){data.push({studentid:i.studentId,date,debit,credit,approved:true,reason:'Palathulli Savings',type:'fee'});}});
-  if(data.length===0){showToast('No payments to save','error');return;}
-  const btn=document.getElementById('adminUpdateBtn');btn.disabled=true;btn.innerHTML='Saving...';
-  try{const ids=currentDatePayments.map(x=>x.studentId);if(ids.length>0){await supabaseClient.from('payments').delete().eq('date',date).eq('type','fee').in('studentid',ids);}const CHUNK=200;for(let i=0;i<data.length;i+=CHUNK){const {error}=await supabaseClient.from('payments').insert(data.slice(i,i+CHUNK));if(error) throw error;}showToast(`✅ Updated ${data.length} payments`,'success');await loadPaymentsForDate();}catch(e){showToast('❌ '+(e.message||'Failed'),'error');}
-  btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';
-}
+async function bulkUpdate(){const date=document.getElementById('adminDate').value;if(!date){showToast('Select date','error');return;}currentDatePayments.forEach(i=>{const cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');const d=document.getElementById(`admin_debit_${cid}`);const c=document.getElementById(`admin_credit_${cid}`);if(d) i.debit=parseFloat(d.value)||0;if(c) i.credit=parseFloat(c.value)||0;});const data=[];currentDatePayments.forEach(i=>{const debit=Number(i.debit)||0;const credit=Number(i.credit)||0;if(debit>0||credit>0){data.push({studentid:i.studentId,date,debit,credit,approved:true,reason:'Palathulli Savings',type:'fee'});}});if(data.length===0){showToast('No payments to save','error');return;}const btn=document.getElementById('adminUpdateBtn');btn.disabled=true;btn.innerHTML='Saving...';try{const ids=currentDatePayments.map(x=>x.studentId);if(ids.length>0){await supabaseClient.from('payments').delete().eq('date',date).eq('type','fee').in('studentid',ids);}const CHUNK=200;for(let i=0;i<data.length;i+=CHUNK){const {error}=await supabaseClient.from('payments').insert(data.slice(i,i+CHUNK));if(error) throw error;}showToast(`✅ Updated ${data.length} payments`,'success');await loadPaymentsForDate();}catch(e){showToast('❌ '+(e.message||'Failed'),'error');}btn.disabled=false;btn.innerHTML='<i class="fas fa-save"></i> Update';}
 
 /* ==== WITHDRAWALS / BALANCES / TXNS / SUMMARY ==== */
 async function loadAllWithdrawals(){if(!currentAdminClass)return;const wrap=document.getElementById('allWithdrawalsWrap');wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';try{const ids=await getFilteredStudentIds();if(ids.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}const {data:r}=await supabaseClient.from('withdrawals').select('*,students(name,class)').in('studentid',ids).order('date',{ascending:false});allWithdrawals=(r||[]).map(x=>({...x,studentname:x.students?x.students.name:'',studentclass:x.students?x.students.class:''}));renderAllWithdrawals();}catch(e){wrap.innerHTML='<div class="empty-state">Error</div>';}}
@@ -2133,7 +1971,7 @@ async function initApp(){
     if(el)el.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});
   });
   if(closeModalBtn)closeModalBtn.addEventListener('click',()=>modal.style.display='none');
-  console.log('%c✅ Noorussalam Madrasa v18.0 — Final with Auto-Scroll Leaderboard','color:#22d3ee;font-weight:bold;font-size:14px;');
+  console.log('%c✅ Noorussalam Madrasa v18.0 — FINAL (No-Join Competitions + Auto-Scroll Leaderboard)','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
 </script>
