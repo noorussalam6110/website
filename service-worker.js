@@ -1,21 +1,18 @@
-const CACHE_NAME = 'noorussalam-v13';
-const RUNTIME_CACHE = 'noorussalam-runtime-v13';
+const CACHE_NAME = 'noorussalam-v14';
+const RUNTIME_CACHE = 'noorussalam-runtime-v14';
 
-// Core files (essential for offline)
 const CORE_FILES = [
   './',
   './index.html',
   './manifest.json'
 ];
 
-// Optional pages (cache if available, but don't fail install if missing)
 const OPTIONAL_PAGES = [
   './student-zone.html',
   './fees.html',
   './calendar.html'
 ];
 
-// External CDN resources (cache for offline)
 const CDN_RESOURCES = [
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
@@ -27,38 +24,24 @@ const CDN_RESOURCES = [
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'
 ];
 
-// Install — cache core + try optional + CDN
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      
-      // Cache core files (must succeed)
       await cache.addAll(CORE_FILES);
-      
-      // Cache optional pages (don't fail if missing)
       for (const url of OPTIONAL_PAGES) {
-        try {
-          await cache.add(url);
-        } catch (e) {
-          console.log('[SW] Optional page not cached:', url);
-        }
+        try { await cache.add(url); }
+        catch (e) { console.log('[SW] Optional page not cached:', url); }
       }
-      
-      // Cache CDN resources (don't fail if any missing)
       for (const url of CDN_RESOURCES) {
-        try {
-          await cache.add(url);
-        } catch (e) {
-          console.log('[SW] CDN resource not cached:', url);
-        }
+        try { await cache.add(url); }
+        catch (e) { console.log('[SW] CDN resource not cached:', url); }
       }
     })()
   );
   self.skipWaiting();
 });
 
-// Activate — clean old caches
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
@@ -76,24 +59,14 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch — smart caching strategy
 self.addEventListener('fetch', event => {
   const req = event.request;
-  
-  // Only handle GET requests
   if (req.method !== 'GET') return;
-  
   const url = new URL(req.url);
   
-  // Skip Supabase API calls (always network)
-  if (url.hostname.includes('supabase.co')) {
-    return; // Let it go to network naturally
-  }
-  
-  // Skip chrome-extension and other non-http protocols
+  if (url.hostname.includes('supabase.co')) return;
   if (!url.protocol.startsWith('http')) return;
   
-  // HTML navigation requests → network-first (always get fresh HTML)
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
     event.respondWith(
       fetch(req)
@@ -107,7 +80,6 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // CDN resources → cache-first (fast, rarely change)
   if (url.hostname.includes('cdn.jsdelivr.net') || 
       url.hostname.includes('cdnjs.cloudflare.com') ||
       url.hostname.includes('fonts.googleapis.com') ||
@@ -125,7 +97,6 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Images (postimg, etc.) → cache-first
   if (req.destination === 'image') {
     event.respondWith(
       caches.match(req).then(cached => {
@@ -140,13 +111,11 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  // Other requests → cache-first, fallback to network
   event.respondWith(
     caches.match(req).then(cached => cached || fetch(req).catch(() => cached))
   );
 });
 
-// Listen for messages from the app (e.g., skip waiting)
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
