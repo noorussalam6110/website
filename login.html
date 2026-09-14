@@ -2624,5 +2624,172 @@ async function initApp(){
 }
 initApp();
 </script>
+  <script>
+/* ============================================================
+   BULLETPROOF MODAL CLOSE SYSTEM
+   Runs independently — works even if main script fails
+   ============================================================ */
+(function(){
+  console.log('🔧 Close system initializing...');
+  
+  // ====== Fallback close functions ======
+  window.closeModal = window.closeModal || function(id){
+    var el=document.getElementById(id);
+    if(el) el.style.display='none';
+  };
+  window.closePassbook = window.closePassbook || function(){ window.closeModal('passbookModal'); };
+  window.closeNotificationsModal = window.closeNotificationsModal || function(){ window.closeModal('notificationsModal'); };
+  window.closeStudentWithdrawalModal = window.closeStudentWithdrawalModal || function(){ window.closeModal('studentWithdrawalModal'); };
+  window.closeFindStudentId = window.closeFindStudentId || function(){ window.closeModal('findStudentIdModal'); };
+  window.closeEditProfile = window.closeEditProfile || function(){ window.closeModal('editProfileModal'); };
+  window.closeTopperModal = window.closeTopperModal || function(){ window.closeModal('topperModal'); };
+  window.closeTopperCrop = window.closeTopperCrop || function(){ window.closeModal('topperCropModal'); };
+  window.closePosterPreview = window.closePosterPreview || function(){
+    var el=document.getElementById('posterPreviewOverlay');
+    if(el) el.style.display='none';
+  };
+  window.closeCreationLightbox = window.closeCreationLightbox || function(){
+    var el=document.getElementById('creationLightbox');
+    if(el) el.classList.remove('open');
+    var p=document.getElementById('clPdfViewer'); if(p) p.src='';
+    window.currentCreationId=null;
+  };
+  window.closeUploadCreationModal = window.closeUploadCreationModal || function(){ window.closeModal('uploadCreationModal'); };
+  window.closeCreationsGallery = window.closeCreationsGallery || function(){
+    var el=document.getElementById('creationsOverlay');
+    if(el) el.classList.remove('open');
+    document.body.style.overflow='';
+  };
+  window.closeHelpModal = window.closeHelpModal || function(){
+    var el=document.getElementById('helpModal');
+    if(el) el.classList.remove('active');
+  };
+  window.closeGlobalModal = window.closeGlobalModal || function(){ window.closeModal('globalModal'); };
+  
+  // ====== Map of modal IDs for click-outside-to-close ======
+  var MODAL_IDS = [
+    'globalModal','passbookModal','findStudentIdModal','editProfileModal',
+    'forgotModal','topperModal','topperCropModal','studentWithdrawalModal',
+    'notificationsModal','uploadCreationModal'
+  ];
+  
+  // ====== Attach click handlers when DOM ready ======
+  function initCloseSystem(){
+    // Click outside modal to close
+    MODAL_IDS.forEach(function(id){
+      var el = document.getElementById(id);
+      if(el){
+        el.addEventListener('click', function(e){
+          if(e.target === this){
+            this.style.display='none';
+          }
+        });
+      }
+    });
+    
+    // Lightbox click-outside
+    var lb = document.getElementById('creationLightbox');
+    if(lb){
+      lb.addEventListener('click', function(e){
+        if(e.target === this) window.closeCreationLightbox();
+      });
+    }
+    
+    // Creatives overlay — no click-outside (has close button)
+    // Help modal click-outside
+    var hm = document.getElementById('helpModal');
+    if(hm){
+      hm.addEventListener('click', function(e){
+        if(e.target === this) window.closeHelpModal();
+      });
+    }
+    
+    // ====== UNIVERSAL CLOSE BUTTON HANDLER (capture phase) ======
+    document.addEventListener('click', function(e){
+      var btn = e.target.closest('button, .close-preview');
+      if(!btn) return;
+      
+      // Only handle if it's a close-type button
+      var onclick = btn.getAttribute('onclick') || '';
+      var html = btn.outerHTML || '';
+      
+      // Detect which modal to close
+      if(onclick.indexOf('closePassbook') > -1) { e.preventDefault(); e.stopPropagation(); window.closePassbook(); return; }
+      if(onclick.indexOf('closeNotificationsModal') > -1) { e.preventDefault(); e.stopPropagation(); window.closeNotificationsModal(); return; }
+      if(onclick.indexOf('closeStudentWithdrawalModal') > -1) { e.preventDefault(); e.stopPropagation(); window.closeStudentWithdrawalModal(); return; }
+      if(onclick.indexOf('closeFindStudentId') > -1) { e.preventDefault(); e.stopPropagation(); window.closeFindStudentId(); return; }
+      if(onclick.indexOf('closeEditProfile') > -1) { e.preventDefault(); e.stopPropagation(); window.closeEditProfile(); return; }
+      if(onclick.indexOf('closeTopperModal') > -1) { e.preventDefault(); e.stopPropagation(); window.closeTopperModal(); return; }
+      if(onclick.indexOf('closeTopperCrop') > -1) { e.preventDefault(); e.stopPropagation(); window.closeTopperCrop(); return; }
+      if(onclick.indexOf('closePosterPreview') > -1) { e.preventDefault(); e.stopPropagation(); window.closePosterPreview(); return; }
+      if(onclick.indexOf('closeCreationLightbox') > -1) { e.preventDefault(); e.stopPropagation(); window.closeCreationLightbox(); return; }
+      if(onclick.indexOf('closeUploadCreationModal') > -1) { e.preventDefault(); e.stopPropagation(); window.closeUploadCreationModal(); return; }
+      if(onclick.indexOf('closeCreationsGallery') > -1) { e.preventDefault(); e.stopPropagation(); window.closeCreationsGallery(); return; }
+      if(onclick.indexOf('closeHelpModal') > -1) { e.preventDefault(); e.stopPropagation(); window.closeHelpModal(); return; }
+      if(onclick.indexOf("closeModal('globalModal')") > -1) { e.preventDefault(); e.stopPropagation(); window.closeModal('globalModal'); return; }
+      
+      // Fallback: check for closeModal with any ID
+      var match = onclick.match(/closeModal\(['"]([^'"]+)['"]\)/);
+      if(match){
+        e.preventDefault(); e.stopPropagation();
+        window.closeModal(match[1]);
+        return;
+      }
+      
+      // Check for the X symbol button (close-preview)
+      if(btn.classList && btn.classList.contains('close-preview')){
+        e.preventDefault(); e.stopPropagation();
+        window.closePosterPreview();
+        return;
+      }
+    }, true); // Capture phase — runs before any other handler
+    
+    // ====== ESC key ======
+    document.addEventListener('keydown', function(e){
+      if(e.key !== 'Escape') return;
+      
+      var allModals = MODAL_IDS.concat(['creationLightbox','creationsOverlay','posterPreviewOverlay','helpModal']);
+      // Find topmost visible modal
+      for(var i = allModals.length - 1; i >= 0; i--){
+        var id = allModals[i];
+        var el = document.getElementById(id);
+        if(!el) continue;
+        var style = window.getComputedStyle(el);
+        var isVisible = style.display !== 'none' && !el.classList.contains('hidden');
+        if(id === 'creationLightbox' || id === 'creationsOverlay') isVisible = el.classList.contains('open');
+        if(id === 'helpModal') isVisible = el.classList.contains('active');
+        
+        if(isVisible){
+          if(id === 'creationLightbox') window.closeCreationLightbox();
+          else if(id === 'creationsOverlay') window.closeCreationsGallery();
+          else if(id === 'posterPreviewOverlay') window.closePosterPreview();
+          else if(id === 'helpModal') window.closeHelpModal();
+          else window.closeModal(id);
+          return;
+        }
+      }
+    });
+    
+    // ====== Attach closeModalBtn handler ======
+    var cmb = document.getElementById('closeModalBtn');
+    if(cmb){
+      cmb.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        window.closeModal('globalModal');
+      });
+    }
+    
+    console.log('✅ Close system ready');
+  }
+  
+  // Run when DOM ready
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', initCloseSystem);
+  }else{
+    initCloseSystem();
+  }
+})();
+</script>
 </body>
 </html>
