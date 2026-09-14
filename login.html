@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <meta name="theme-color" content="#1547a8" />
 <link rel="icon" type="image/png" href="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png">
 <link rel="manifest" href="manifest.json">
-<title>NOORUSSALAM MADRASA | Student Portal v22.0</title>
+<title>NOORUSSALAM MADRASA | Student Portal v22.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -16,11 +17,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-/* ===== FILE 1 BASE CSS (v21.0) ===== */
 :root{--b950:#03081c;--b900:#050e2b;--b850:#071433;--b800:#0a1a3f;--b700:#0f2a63;--b600:#1547a8;--b500:#1e6be0;--b450:#2b7cf0;--b400:#3b8bff;--b300:#7db3ff;--b200:#a9cdff;--cyan:#22d3ee;--cyan-soft:#67e8f9;--stroke:rgba(140,190,255,.18);--stroke-2:rgba(140,190,255,.30);--txt:#eaf2ff;--txt-dim:#9db8dd}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Anek Malayalam',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:linear-gradient(155deg,var(--b950),var(--b900) 22%,var(--b800) 45%,var(--b700) 68%,var(--b600));background-attachment:fixed;min-height:100vh;color:var(--txt);overflow-x:hidden;position:relative}
+body{background:linear-gradient(155deg,var(--b950),var(--b900) 22%,var(--b800) 45%,var(--b700) 68%,var(--b600));background-attachment:fixed;min-height:100vh;color:var(--txt);overflow-x:hidden;position:relative;transition:background .4s}
 body::before{content:'';position:fixed;inset:-30%;z-index:0;pointer-events:none;background:radial-gradient(38% 34% at 15% 18%,rgba(59,139,255,.30),transparent 62%),radial-gradient(34% 30% at 85% 12%,rgba(34,211,238,.20),transparent 60%);animation:auroraFloat 26s ease-in-out infinite alternate}
 @keyframes auroraFloat{0%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(2.5%,-2%,0) scale(1.06)}100%{transform:translate3d(-2%,2.5%,0) scale(1.02)}}
 body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.28;background-image:linear-gradient(rgba(140,190,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(140,190,255,.045) 1px,transparent 1px);background-size:52px 52px;-webkit-mask-image:radial-gradient(circle at 50% 35%,#000 0%,transparent 78%);mask-image:radial-gradient(circle at 50% 35%,#000 0%,transparent 78%)}
@@ -358,8 +359,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .cl-comment-input{flex:1;background:transparent;border:none;outline:none;color:#fff;font-family:inherit;font-size:.85rem;padding:8px 0}
 .cl-comment-send{width:40px;height:40px;border-radius:50%;border:none;background:linear-gradient(140deg,#22d3ee,#3b8bff);color:#03132e;font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .cl-comments-empty{text-align:center;padding:16px;color:#6d88ad;font-size:.8rem;font-style:italic}
-
-/* ===== FILE 2 ADDED CSS - AI CHATBOT ===== */
 .ai-fab{position:fixed;bottom:22px;right:20px;z-index:9000;width:62px;height:62px;border-radius:50%;border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:1.5rem;color:#03132e;background:linear-gradient(140deg,var(--cyan),var(--b450));box-shadow:0 18px 42px -14px rgba(34,211,238,1);transition:.25s}
 .ai-fab.show{display:flex}
 .ai-fab:hover{transform:scale(1.09) rotate(6deg)}
@@ -385,7 +384,106 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 .ai-input{flex:1;background:rgba(8,20,48,.8);border:1.5px solid var(--stroke);border-radius:30px;padding:11px 17px;color:#fff;font-family:inherit;font-size:.86rem;outline:none}
 .ai-input:focus{border-color:var(--b400)}
 .ai-send{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;background:linear-gradient(140deg,var(--cyan),var(--b450));color:#03132e;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.ai-mic-btn{width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;flex-shrink:0;background:rgba(120,180,255,.15);color:var(--b200);font-size:1rem;display:flex;align-items:center;justify-content:center;transition:.2s}
+.ai-mic-btn:hover{background:rgba(59,139,255,.3);color:#fff}
+.ai-mic-btn.listening{background:linear-gradient(140deg,#ef4444,#f87171);color:#fff;animation:pulseMic 1.2s infinite}
+@keyframes pulseMic{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.7)}50%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
 @media(max-width:480px){.ai-fab{width:56px;height:56px;font-size:1.3rem;bottom:16px;right:14px}.ai-panel{bottom:82px;right:10px;left:10px;width:auto}}
+body.light-mode{--b950:#f0f5ff;--b900:#eaf1ff;--b850:#e0e9ff;--b800:#d0defa;--b700:#a8c5f0;--b600:#3b82f6;--b500:#2563eb;--b450:#3b82f6;--b400:#2563eb;--b300:#1e5fa8;--b200:#1a4d8a;--cyan:#0891b2;--cyan-soft:#06b6d4;--stroke:rgba(59,130,246,.28);--stroke-2:rgba(59,130,246,.45);--txt:#0a1a3f;--txt-dim:#4a5f8a;background:linear-gradient(155deg,#f5f8ff,#eaf1ff 22%,#d0defa 45%,#a8c5f0 68%,#3b82f6)}
+body.light-mode::before{background:radial-gradient(38% 34% at 15% 18%,rgba(59,130,246,.20),transparent 62%),radial-gradient(34% 30% at 85% 12%,rgba(6,182,212,.15),transparent 60%)}
+body.light-mode .dashboard-header-glow{background:linear-gradient(120deg,rgba(255,255,255,.85),rgba(224,233,255,.9));border-color:rgba(59,130,246,.3)}
+body.light-mode .stat-card-neon,body.light-mode .action-tile,body.light-mode .activity-timeline,body.light-mode .chart-card{background:linear-gradient(150deg,rgba(255,255,255,.9),rgba(240,245,255,.7));border-color:rgba(59,130,246,.2)}
+body.light-mode .action-tile h6,body.light-mode #studentFullName,body.light-mode .section-title,body.light-mode .activity-timeline h5,body.light-mode .chart-card h5{color:#0a1a3f}
+body.light-mode .modal-glass{background:linear-gradient(160deg,rgba(240,245,255,.98),rgba(255,255,255,.99))}
+body.light-mode .modal-glass h3,body.light-mode .modal-glass h4,body.light-mode .modal-glass h5,body.light-mode .modal-glass strong{color:#0a1a3f!important}
+body.light-mode .text-white{color:#0a1a3f!important}
+body.light-mode .text-white-50{color:#4a5f8a!important}
+body.light-mode .login-panel{background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(224,233,255,.9))}
+body.light-mode .login-title{background:linear-gradient(100deg,#0a1a3f,#0891b2);-webkit-background-clip:text;background-clip:text}
+body.light-mode .input-group-custom{background:rgba(255,255,255,.7);border-color:rgba(59,130,246,.35)}
+body.light-mode .form-control-glass{color:#0a1a3f}
+body.light-mode .form-control-glass::placeholder{color:rgba(74,95,138,.5)}
+body.light-mode .modal-form-input{background:rgba(255,255,255,.85);color:#0a1a3f;border-color:rgba(59,130,246,.35)}
+body.light-mode .modal-form-input option{background:#fff;color:#0a1a3f}
+body.light-mode .palathulli-hero{background:linear-gradient(125deg,rgba(59,130,246,.35),rgba(255,255,255,.6))}
+body.light-mode .pala-title-ml{background:linear-gradient(100deg,#0a1a3f,#2563eb);-webkit-background-clip:text;background-clip:text}
+body.light-mode .pala-amount{background:linear-gradient(100deg,#0a1a3f,#0891b2);-webkit-background-clip:text;background-clip:text}
+body.light-mode .pala-sub,body.light-mode .pala-label{color:#1e5fa8}
+body.light-mode .notif-item{background:rgba(59,130,246,.08)}
+body.light-mode .notif-item p{color:#4a5f8a}
+body.light-mode .event-card{background:linear-gradient(120deg,rgba(59,130,246,.1),rgba(59,130,246,.03))}
+body.light-mode .event-card .text-white{color:#0a1a3f!important}
+body.light-mode .leaderboard-section{background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(59,130,246,.1))}
+body.light-mode .lb-card{background:linear-gradient(155deg,rgba(255,255,255,.9),rgba(240,245,255,.7))}
+body.light-mode .lb-card .lb-name{color:#0a1a3f}
+body.light-mode .lb-card .lb-class{color:#4a5f8a}
+body.light-mode .admin-table-wrap{background:rgba(255,255,255,.7)}
+body.light-mode .admin-table-wrap table,body.light-mode .admin-table-wrap td{color:#0a1a3f}
+body.light-mode .admin-table-wrap td input{background:#fff;color:#0a1a3f}
+body.light-mode .ai-panel{background:linear-gradient(165deg,rgba(255,255,255,.98),rgba(224,233,255,.95))}
+body.light-mode .ai-msg.bot{background:rgba(59,130,246,.1);color:#0a1a3f}
+body.light-mode .ai-input{background:rgba(255,255,255,.85);color:#0a1a3f}
+body.light-mode .ai-head{background:linear-gradient(100deg,rgba(59,130,246,.4),rgba(6,182,212,.25))}
+body.light-mode .ai-head h6,body.light-mode .ai-head small{color:#0a1a3f}
+body.light-mode .class-selector-panel{background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(224,233,255,.9))}
+body.light-mode .class-selector-panel h3{color:#0a1a3f}
+body.light-mode .class-selector-panel select{background:#fff;color:#0a1a3f}
+body.light-mode .class-selector-panel select option{background:#fff;color:#0a1a3f}
+body.light-mode .admin-toolbar input,body.light-mode .admin-toolbar select{background:#fff;color:#0a1a3f}
+body.light-mode .no-class-message h4{color:#0a1a3f}
+body.light-mode .marks-entry-table{background:rgba(255,255,255,.7)}
+body.light-mode .marks-entry-table table,body.light-mode .marks-entry-table td{color:#0a1a3f}
+body.light-mode .marks-entry-table input.mk-inp{background:#fff;color:#0a1a3f}
+body.light-mode .cl-content{background:linear-gradient(160deg,rgba(255,255,255,.98),rgba(224,233,255,.95))}
+body.light-mode .cl-info h3,body.light-mode .cl-comments h4{color:#0a1a3f}
+body.light-mode .cl-info p,body.light-mode .cl-comment-text{color:#4a5f8a}
+body.light-mode .cl-comment-item{background:rgba(59,130,246,.08)}
+body.light-mode .cl-comment-author{color:#0a1a3f}
+body.light-mode .cl-comment-form{background:rgba(255,255,255,.7)}
+body.light-mode .cl-comment-input{color:#0a1a3f}
+body.light-mode .admin-tab{color:#4a5f8a}
+.theme-toggle{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(120,180,255,.09);border:1px solid var(--stroke);cursor:pointer;color:var(--b200);font-size:1.05rem;transition:.22s}
+.theme-toggle:hover{background:rgba(59,139,255,.25);color:#fff;transform:rotate(15deg)}
+.badges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:10px;margin-top:12px}
+.badge-card{background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1.6px solid rgba(255,255,255,.18);border-radius:16px;padding:14px 8px;text-align:center;transition:.25s;cursor:pointer}
+.badge-card:hover{transform:translateY(-4px);border-color:rgba(251,191,36,.6)}
+.badge-card.locked{opacity:.38;filter:grayscale(1)}
+.badge-card.unlocked{border-color:rgba(251,191,36,.5);background:linear-gradient(150deg,rgba(251,191,36,.15),rgba(59,130,246,.08))}
+.badge-card .badge-emoji{font-size:2.2rem;display:block;margin-bottom:6px;line-height:1}
+.badge-card .badge-name{font-size:.72rem;font-weight:800;color:#fff;line-height:1.2}
+.badge-card .badge-desc{font-size:.62rem;color:#9db8dd;margin-top:3px}
+.badge-count-pill{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(100deg,#fbbf24,#f59e0b);color:#03132e;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:800;margin-top:8px}
+body.light-mode .badge-card .badge-name{color:#0a1a3f}
+body.light-mode .badge-card .badge-desc{color:#4a5f8a}
+.charts-section{margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:768px){.charts-section{grid-template-columns:1fr}}
+.chart-card{background:linear-gradient(150deg,rgba(255,255,255,.11),rgba(255,255,255,.03));backdrop-filter:blur(18px);border-radius:20px;padding:18px;border:1px solid rgba(255,255,255,.14)}
+.chart-card h5{font-size:.94rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.chart-card h5 i{color:var(--cyan)}
+.chart-wrapper{position:relative;height:220px}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin-top:16px}
+.note-card{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.03));border:1.6px solid rgba(255,255,255,.15);border-radius:16px;padding:14px;border-left:4px solid #6d88ad;transition:.22s}
+.note-card:hover{border-color:rgba(34,211,238,.55);transform:translateY(-3px)}
+.note-card[data-subject="Maths"]{border-left-color:#10b981}
+.note-card[data-subject="English"]{border-left-color:#f59e0b}
+.note-card[data-subject="Arabic"]{border-left-color:#ec4899}
+.note-card[data-subject="Science"]{border-left-color:#06b6d4}
+.note-card[data-subject="Malayalam"]{border-left-color:#8b5cf6}
+.note-card[data-subject="Notes"]{border-left-color:#3b82f6}
+.note-card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.note-card-title{font-size:.9rem;font-weight:800;color:#fff;line-height:1.25;flex:1;word-break:break-word}
+.note-subject-tag{font-size:.6rem;font-weight:800;padding:3px 9px;border-radius:20px;text-transform:uppercase;background:rgba(140,190,255,.15);color:#67e8f9}
+.note-body{font-size:.82rem;color:#c9dfff;line-height:1.5;white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:hidden}
+.note-card-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.68rem;color:#6d88ad;border-top:1px solid rgba(140,190,255,.1);padding-top:8px}
+.note-actions{display:flex;gap:6px}
+.note-action-btn{width:28px;height:28px;border-radius:8px;border:1px solid rgba(140,190,255,.2);background:rgba(120,180,255,.08);color:#9db8dd;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center}
+.note-action-btn:hover{background:rgba(59,139,255,.25);color:#fff}
+.note-action-btn.danger:hover{background:rgba(239,68,68,.3);color:#fca5a5}
+body.light-mode .note-card-title{color:#0a1a3f}
+body.light-mode .note-body{color:#4a5f8a}
+body.light-mode .note-card-footer{color:#8899bb}
+.notes-empty{text-align:center;padding:40px 20px;color:#9db8dd;grid-column:1/-1}
+.notes-empty i{font-size:3rem;color:#22d3ee;opacity:.4;display:block;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -415,7 +513,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <button type="submit" class="btn-gradient mt-3"><i class="fas fa-arrow-right-to-bracket me-2"></i> Access Portal</button>
     <button type="button" class="forgot-btn" onclick="document.getElementById('findStudentIdModal').style.display='flex'"><i class="fas fa-question-circle"></i> Forgot Student ID?</button>
   </form>
-  <div class="login-footer-note">v22.0 Ultimate Edition © Suhail Kerala</div>
+  <div class="login-footer-note">v22.1 Ultimate+ Edition © Suhail Kerala</div>
   <button class="help-btn" onclick="openHelpModal()"><i class="fas fa-circle-question"></i><span>സഹായം</span></button>
 </div>
 </div>
@@ -473,6 +571,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
       </div>
     </div>
     <div class="hdr-actions">
+      <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle theme"><i class="fas fa-moon" id="themeIcon"></i></div>
       <div class="icon-btn" id="notifBell" onclick="openNotificationsModal()"><i class="fas fa-bell"></i><span id="notifBadge" class="notif-badge" style="display:none;">0</span></div>
       <button id="logoutBtn" class="btn-exit"><i class="fas fa-right-from-bracket"></i> Exit</button>
     </div>
@@ -530,6 +629,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     </div>
   </div>
 
+  <div class="charts-section" id="chartsSection">
+    <div class="chart-card">
+      <h5><i class="fas fa-chart-line"></i> Attendance Trend</h5>
+      <div class="chart-wrapper"><canvas id="attendanceChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h5><i class="fas fa-chart-bar"></i> Exam Performance</h5>
+      <div class="chart-wrapper"><canvas id="marksChart"></canvas></div>
+    </div>
+  </div>
+
   <div class="section-title" id="quickActionsTitle"><i class="fas fa-bolt"></i> Quick Actions</div>
   <div class="action-grid" id="quickActionsGrid">
     <div class="action-tile" data-action="results" onclick="showResultsModal()"><div class="action-ico c-results"><i class="fas fa-chart-simple"></i></div><h6>റിസൾട്ട്</h6></div>
@@ -549,6 +659,8 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <div class="action-tile" data-action="studentzone" onclick="goToStudentZone()"><div class="action-ico cy"><i class="fas fa-graduation-cap"></i></div><h6>Student Zone</h6></div>
     <div class="action-tile" data-action="fees" onclick="goToFees()"><div class="action-ico gold"><i class="fas fa-money-bill-wave"></i></div><h6>ഫീസ്</h6></div>
     <div class="action-tile" data-action="calendar" onclick="goToCalendar()"><div class="action-ico green"><i class="fas fa-calendar-alt"></i></div><h6>കലണ്ടർ</h6></div>
+    <div class="action-tile" onclick="openNotesModal()"><div class="action-ico" style="background:linear-gradient(145deg,#06b6d4,#0ea5e9)"><i class="fas fa-sticky-note"></i></div><h6>കുറിപ്പുകൾ</h6></div>
+    <div class="action-tile" onclick="showBadgesModal()"><div class="action-ico" style="background:linear-gradient(145deg,#fbbf24,#f59e0b)"><i class="fas fa-medal"></i></div><h6>ബാഡ്ജുകൾ</h6></div>
     <div class="action-tile" data-action="topper" onclick="showTopperPoster()" id="topperPosterTile" style="display:none;"><div class="action-ico c-results"><i class="fas fa-trophy"></i></div><h6>ടോപ്പർ</h6></div>
   </div>
 
@@ -558,7 +670,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 
   <div class="activity-timeline mt-3" id="monthlyProgressSection"><h5><i class="fas fa-chart-line"></i> <span id="monthlyTitleText">Monthly Progress</span></h5><div id="monthlyProgressList" style="font-size:.85rem;"><div class="text-center text-white-50 py-3">Loading...</div></div></div>
-  <div class="text-center text-white-50 mt-5 pb-4" style="font-size:.72rem;opacity:.6;">Noorussalam Madrasa • v22.0 Ultimate Edition</div>
+  <div class="text-center text-white-50 mt-5 pb-4" style="font-size:.72rem;opacity:.6;">Noorussalam Madrasa • v22.1 Ultimate+ Edition</div>
 </div>
 </div>
 
@@ -695,31 +807,18 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   <div id="adminSettingsTab" class="admin-tab-content" style="display:none;margin-top:24px;">
     <div style="padding:20px;background:rgba(120,180,255,.03);border-radius:20px;max-width:920px;margin:0 auto;border:1px solid var(--stroke);">
       <div class="d-flex justify-content-between mb-4 flex-wrap gap-2"><h4 class="text-white mb-0" style="font-size:1.1rem;"><i class="fas fa-cog" style="color:#22d3ee"></i> Settings</h4><button class="btn-cancel" style="padding:8px 18px;font-size:.8rem;" onclick="closeSettingsTab()"><i class="fas fa-arrow-left"></i> Back</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">🔑 Admin Password</h5><input type="text" id="newAdminPassword" class="modal-form-input mb-2" placeholder="New password" /><small class="text-white-50">Current: <span id="currentAdminPwd">MADRASA2026</span></small><button class="btn-update mt-3" onclick="changeAdminPassword()"><i class="fas fa-key"></i> Change</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">👨‍🏫 Swadar Muallim Name</h5><input type="text" id="settingsSwadarName" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSwadarName()">Save</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📚 Class-wise Teachers</h5><p class="text-white-50 small mb-2">Format: <code style="color:#7db3ff;">class: teacher_name</code></p><textarea id="settingsClassTeachers" class="modal-form-input" style="min-height:180px;font-family:monospace;font-size:.85rem;"></textarea><button class="btn-update mt-3" onclick="saveClassTeachers()">Save</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📚 Class-wise Subjects</h5><p class="text-white-50 small mb-2">Format: <code style="color:#7db3ff;">class: subject1,subject2</code></p><textarea id="settingsClassSubjects" class="modal-form-input" style="min-height:180px;font-family:monospace;font-size:.85rem;"></textarea><button class="btn-update mt-3" onclick="saveClassSubjects()">Save</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📝 Exams (comma separated)</h5><input type="text" id="settingsExams" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('examsList','settingsExams')">Save</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">🌟 Traits (comma separated)</h5><input type="text" id="settingsTraits" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('traitsList','settingsTraits')">Save</button></div>
-      
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">💰 Minimum Withdrawal</h5><input type="number" id="settingsMinWithdraw" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('minWithdraw','settingsMinWithdraw')">Save</button></div>
-
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📝 Custom Headings</h5><label class="text-white-50 small d-block mb-1">Extra-Curricular Title</label><input type="text" id="settingsHeadingExtra" class="modal-form-input mb-2"><label class="text-white-50 small d-block mb-1">Overall Rank Title</label><input type="text" id="settingsHeadingOverallRank" class="modal-form-input mb-2"><label class="text-white-50 small d-block mb-1">Monthly Progress Title</label><input type="text" id="settingsHeadingMonthly" class="modal-form-input mb-2"><button class="btn-update mt-2" onclick="saveHeadings()"><i class="fas fa-save"></i> Save Headings</button></div>
-
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📊 Per-Class Extra-Curricular Categories</h5><p class="text-white-50 small mb-2">Format: <code style="color:#7db3ff;">class: cat1,cat2,cat3</code></p><textarea id="settingsClassExtraCategories" class="modal-form-input" style="min-height:180px;font-family:monospace;font-size:.85rem;"></textarea><button class="btn-update mt-3" onclick="saveClassExtraCategories()"><i class="fas fa-save"></i> Save Categories</button></div>
-
       <div class="mb-4" style="background:linear-gradient(135deg,rgba(251,191,36,.06),rgba(120,180,255,.04));padding:16px;border-radius:16px;border:1px solid rgba(251,191,36,.25);"><h5 class="text-white mb-3" style="font-size:.95rem;">⏰ Result Publish Time</h5><input type="datetime-local" id="settingsResultTime" class="modal-form-input" /><small class="text-white-50 d-block mt-2">Current: <span id="currentResultTime">Not set</span></small><div class="d-flex gap-2 mt-3"><button class="btn-update" onclick="saveResultPublishTime()"><i class="fas fa-clock"></i> Set</button><button class="btn-cancel" onclick="clearResultPublishTime()"><i class="fas fa-trash"></i> Clear</button></div></div>
-
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">✍️ Digital Signatures</h5><label class="text-white-50 small d-block mb-1">Swadar Muallim Signature</label><input type="file" id="swadarSignUpload" accept="image/*" class="modal-form-input mb-2" style="padding:.55rem;"><div id="swadarSignPreview" class="mb-3"></div><div class="d-flex gap-2 mb-3"><button class="btn-update" style="padding:8px 20px;font-size:.8rem;" onclick="uploadSignature('swadar')">Save</button><button class="btn-cancel" style="padding:8px 20px;font-size:.8rem;" onclick="clearSignature('swadar')">Clear</button></div><label class="text-white-50 small d-block mb-1">Class Teacher Signatures</label><div class="row g-2"><div class="col-md-4"><select id="classSignSelect" class="modal-form-input"><option value="1">Class 1</option><option value="2">Class 2</option><option value="3">Class 3</option><option value="4">Class 4</option><option value="5">Class 5</option><option value="6">Class 6</option><option value="7">Class 7</option><option value="8">Class 8</option><option value="9">Class 9</option><option value="10">Class 10</option></select></div><div class="col-md-8"><input type="file" id="classSignUpload" accept="image/*" class="modal-form-input" style="padding:.55rem;"></div></div><div class="d-flex gap-2 mt-3"><button class="btn-update" style="padding:8px 20px;font-size:.8rem;" onclick="uploadClassSignature()">Save</button><button class="btn-cancel" style="padding:8px 20px;font-size:.8rem;" onclick="clearClassSignature()">Clear This Class</button></div></div>
-
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">🖼️ Background Images</h5><label class="text-white-50 small d-block mb-1">ID Card Background URL</label><input type="url" id="settingsIdBgUrl" class="modal-form-input mb-2" placeholder="https://..."><div class="d-flex gap-2 mb-3"><button class="btn-update" style="padding:8px 20px;font-size:.8rem;" onclick="saveBgUrl('id')">Save</button><button class="btn-cancel" style="padding:8px 20px;font-size:.8rem;" onclick="clearBgUrl('id')">Clear</button></div><label class="text-white-50 small d-block mb-1">Topper Poster Background URL</label><input type="url" id="settingsTopperBgUrl" class="modal-form-input mb-2" placeholder="https://..."><div class="d-flex gap-2"><button class="btn-update" style="padding:8px 20px;font-size:.8rem;" onclick="saveBgUrl('topper')">Save</button><button class="btn-cancel" style="padding:8px 20px;font-size:.8rem;" onclick="clearBgUrl('topper')">Clear</button></div></div>
-
       <div class="mb-4" style="background:linear-gradient(135deg,rgba(251,191,36,.08),rgba(120,180,255,.04));padding:16px;border-radius:16px;border:1.5px solid rgba(251,191,36,.35);">
         <h5 class="text-white mb-2" style="font-size:.95rem;">🎛️ Student Portal Visibility</h5>
         <p class="text-white-50 small mb-3" style="font-size:.72rem;">Student login-ൽ ഏതൊക്കെ section കാണിക്കണം എന്ന് control ചെയ്യാം.</p>
@@ -743,7 +842,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
           <button class="btn-load" onclick="applyStudentPortalVisibility(true)"><i class="fas fa-eye"></i> Preview</button>
         </div>
       </div>
-
       <h5 class="text-white mt-4 mb-3" style="font-size:.95rem;"><i class="fas fa-database" style="color:#22d3ee"></i> Database Stats</h5>
       <div id="dbStatsContent"></div>
       <button class="btn-load mt-3" onclick="loadDBStats()"><i class="fas fa-sync-alt"></i> Refresh</button>
@@ -752,7 +850,6 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
 </div>
 </div>
 
-<!-- PASSBOOK, WITHDRAWAL, NOTIFICATIONS, GLOBAL MODAL, FORGOT, EDIT PROFILE, TOPPER MODALS -->
 <div id="passbookModal" style="display:none;position:fixed;inset:0;background:rgba(3,8,28,.86);backdrop-filter:blur(14px);z-index:1200;align-items:center;justify-content:center;padding:18px;">
   <div class="modal-glass p-4" style="max-width:760px;width:100%;max-height:90vh;overflow-y:auto;">
     <div class="d-flex justify-content-between align-items-center mb-3"><h3 class="text-white fw-bold mb-0" style="font-size:1.1rem;"><i class="fas fa-piggy-bank me-2" style="color:#22d3ee"></i>പലതുള്ളി പാസ്ബുക്ക്</h3><button onclick="closePassbook()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button></div>
@@ -928,7 +1025,17 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
   </div>
 </div>
 
-<!-- ===== AI CHAT (from File 2) ===== -->
+<div id="notesModal" style="display:none;position:fixed;inset:0;background:rgba(3,8,28,.86);backdrop-filter:blur(14px);z-index:1250;align-items:center;justify-content:center;padding:18px;">
+  <div class="modal-glass p-4" style="max-width:820px;width:100%;max-height:90vh;overflow-y:auto;">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="text-white fw-bold mb-0" style="font-size:1.1rem;"><i class="fas fa-sticky-note me-2" style="color:#06b6d4"></i>എന്റെ കുറിപ്പുകൾ</h3>
+      <button onclick="closeNotesModal()" class="btn btn-sm btn-outline-light rounded-circle"><i class="fas fa-times"></i></button>
+    </div>
+    <button class="btn-update mb-3 w-100" onclick="openNoteEditor()"><i class="fas fa-plus"></i> പുതിയ കുറിപ്പ്</button>
+    <div id="notesList" class="notes-grid"></div>
+  </div>
+</div>
+
 <button class="ai-fab" id="aiFab" onclick="toggleAIChat()"><i class="fas fa-robot"></i></button>
 <div class="ai-panel" id="aiPanel">
   <div class="ai-head">
@@ -943,7 +1050,7 @@ body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opac
     <button class="ai-chip" onclick="aiQuick('എന്റെ ഹാജർ')">📆 ഹാജർ</button>
     <button class="ai-chip" onclick="aiQuick('എന്റെ റിസൾട്ട്')">📊 റിസൾട്ട്</button>
   </div>
-  <div class="ai-foot"><input type="text" class="ai-input" id="aiInput" placeholder="എന്തെങ്കിലും ചോദിക്കൂ..." onkeydown="if(event.key==='Enter')sendAIMessage()"><button class="ai-send" onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button></div>
+  <div class="ai-foot"><input type="text" class="ai-input" id="aiInput" placeholder="എന്തെങ്കിലും ചോദിക്കൂ..." onkeydown="if(event.key==='Enter')sendAIMessage()"><button class="ai-mic-btn" id="aiMicBtn" onclick="toggleVoiceInput()" title="Voice input"><i class="fas fa-microphone"></i></button><button class="ai-send" onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button></div>
 </div>
 
 <div class="toast-container" id="toastContainer"></div>
@@ -1146,6 +1253,7 @@ document.getElementById('loginForm').addEventListener('submit',async function(e)
     loadOverallMadrasaRank();loadTopWinners();
     applyStudentPortalVisibility();subscribeNotifications();
     showAIAssistant();
+    await initNewFeatures();
     showToast('Welcome '+currentUser.name+' ✨','success');
   }catch(err){console.error('Login error:',err);showToast('❌ '+(err.message||'Error'),'error');}
   showLoading(false);
@@ -1175,6 +1283,7 @@ async function restoreSession(){
     loadOverallMadrasaRank();loadTopWinners();
     applyStudentPortalVisibility();subscribeNotifications();
     showAIAssistant();
+    await initNewFeatures();
   }catch(e){console.error('restoreSession',e);}}
 }
 function subscribeNotifications(){
@@ -1182,12 +1291,20 @@ function subscribeNotifications(){
   if(!currentUser||isAdminMode||!supabaseClient)return;
   var cls=(currentUser.class&&currentUser.class!=='N/A')?currentUser.class:'__none__';
   try{notifChannel=supabaseClient.channel('notif_'+currentUser.studentId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'target_class=eq.'+cls},function(){loadStudentNotifications();showToast('🔔 പുതിയ അറിയിപ്പ്!','info');})
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'target_class=eq.all'},function(){loadStudentNotifications();showToast('🔔 പുതിയ അറിയിപ്പ്!','info');}).subscribe();
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'target_class=eq.'+cls},function(payload){
+      loadStudentNotifications();
+      showToast('🔔 പുതിയ അറിയിപ്പ്!','info');
+      if(payload&&payload.new)showBrowserNotification('🔔 '+payload.new.title,payload.new.message);
+    })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:'target_class=eq.all'},function(payload){
+      loadStudentNotifications();
+      showToast('🔔 പുതിയ അറിയിപ്പ്!','info');
+      if(payload&&payload.new)showBrowserNotification('🔔 '+payload.new.title,payload.new.message);
+    }).subscribe();
   }catch(e){}
 }
 
-/* ===== AI ASSISTANT (from File 2) ===== */
+/* ===== AI ASSISTANT ===== */
 function showAIAssistant(){
   if(!currentUser)return;
   document.getElementById('aiFab').classList.add('show');
@@ -1584,7 +1701,7 @@ document.getElementById('forgotSubmitBtn').addEventListener('click',async functi
   }catch(e){document.getElementById('forgotLoading').style.display='none';document.getElementById('forgotStep2').style.display='block';document.getElementById('forgotResult2').innerHTML='Error';}
 });
 
-/* ===== ACADEMIC REPORT (File 1 Enhanced) ===== */
+/* ===== ACADEMIC REPORT ===== */
 async function getLogoDataUrl(){
   try{var res=await fetch('https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png',{mode:'cors'});var blob=await res.blob();return await new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(r.result);};r.onerror=reject;r.readAsDataURL(blob);});}catch(e){return null;}
 }
@@ -1598,7 +1715,7 @@ async function openReportOptions(){
     var r=await supabaseClient.from('exam_marks').select('exam_name').eq('studentid',currentUser.studentId);
     if(!r.data||r.data.length===0){modalBodyDiv.innerHTML='<div class="empty-state" style="padding:40px 20px;text-align:center;"><i class="fas fa-file-circle-xmark" style="font-size:3rem;color:#6d88ad;opacity:.5;"></i><p class="text-white-50 mt-3">No results available</p></div>';return;}
     var exams=Array.from(new Set(r.data.map(function(m){return m.exam_name;}).filter(Boolean)));
-    modalBodyDiv.innerHTML='<div style="text-align:center;margin-bottom:22px;"><div style="width:70px;height:70px;margin:0 auto 12px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#dc2626,#ef4444);font-size:2rem;color:#fff;"><i class="fas fa-file-pdf"></i></div><h4 style="color:#fff;font-weight:800;margin:0 0 6px;">Academic Report</h4><p style="color:#9db8dd;font-size:.82rem;margin:0;">ഏത് പരീക്ഷയുടെ റിപ്പോർട്ട് വേണം?</p></div><label style="color:#fff;font-weight:800;font-size:.85rem;display:block;margin-bottom:8px;"><i class="fas fa-book-open" style="color:#22d3ee;"></i> Select Exam</label><select id="reportExamSelect" class="modal-form-input" style="font-size:.95rem;padding:14px 16px;font-weight:700;"><option value="__all__">🌟 All Exams (Complete)</option>'+exams.map(function(e){return'<option value="'+escapeHtml(e)+'">'+escapeHtml(e)+'</option>';}).join('')+'</select><div style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);border-radius:14px;padding:12px 16px;margin-top:16px;font-size:.78rem;color:#67e8f9;"><i class="fas fa-info-circle"></i> All Exams — എല്ലാ പരീക്ഷകളുടെയും റിസൾട്ട് ഒരേ PDF-ൽ</div><div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;"><button class="btn-update flex-grow-1" onclick="handleDownloadReport()" style="padding:14px 22px;"><i class="fas fa-download"></i> Download PDF</button><button class="btn-cancel" onclick="closeModal(\'globalModal\')" style="padding:14px 22px;">Cancel</button></div>';
+    modalBodyDiv.innerHTML='<div style="text-align:center;margin-bottom:22px;"><div style="width:70px;height:70px;margin:0 auto 12px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#dc2626,#ef4444);font-size:2rem;color:#fff;"><i class="fas fa-file-pdf"></i></div><h4 style="color:#fff;font-weight:800;margin:0 0 6px;">Academic Report</h4><p style="color:#9db8dd;font-size:.82rem;margin:0;">ഏത് പരീക്ഷയുടെ റിപ്പോർട്ട് വേണം?</p></div><label style="color:#fff;font-weight:800;font-size:.85rem;display:block;margin-bottom:8px;"><i class="fas fa-book-open" style="color:#22d3ee;"></i> Select Exam</label><select id="reportExamSelect" class="modal-form-input" style="font-size:.95rem;padding:14px 16px;font-weight:700;"><option value="__all__">🌟 All Exams (Complete)</option>'+exams.map(function(e){return'<option value="'+escapeHtml(e)+'">'+escapeHtml(e)+'</option>';}).join('')+'</select><div style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);border-radius:14px;padding:12px 16px;margin-top:16px;font-size:.78rem;color:#67e8f9;"><i class="fas fa-info-circle"></i> All Exams — എല്ലാ പരീക്ഷകളുടെയും റിസൾട്ട് ഒരേ PDF-ൽ</div><div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;"><button class="btn-update flex-grow-1" onclick="handleDownloadReport()" style="padding:14px 22px;"><i class="fas fa-download"></i> Download PDF</button><button class="btn-update flex-grow-1" onclick="shareReportViaWhatsApp()" style="padding:14px 22px;background:linear-gradient(100deg,#25D366,#128C7E);color:#fff;"><i class="fab fa-whatsapp"></i> Share</button><button class="btn-cancel" onclick="closeModal(\'globalModal\')" style="padding:14px 22px;">Cancel</button></div>';
   }catch(e){modalBodyDiv.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message)+'</div>';}
 }
 async function handleDownloadReport(){
@@ -2067,7 +2184,7 @@ async function downloadCompetitionsPDF(){
   doc.save('competitions.pdf');showToast('✅ Downloaded','success');
 }
 
-/* ===== ADMIN: CREATIONS (with Approval - from File 2) ===== */
+/* ===== ADMIN: CREATIONS ===== */
 async function loadCreationsAdmin(){
   var wrap=document.getElementById('adminCreationsWrap');if(!wrap)return;
   wrap.innerHTML='<div class="loading-tx"><div class="spinner-sm"></div></div>';
@@ -2165,6 +2282,7 @@ async function impersonateStudent(sid){
     b.classList.add('show');
     await loadActivitiesAndCalendar();await loadStudentBalance();await loadStudentNotifications();await refreshStudentAttendance();
     loadOverallMadrasaRank();loadTopWinners();applyStudentPortalVisibility();subscribeNotifications();showAIAssistant();
+    await initNewFeatures();
     showToast('👁️ Viewing as '+student.name,'info');
   }catch(err){showToast('❌ '+err.message,'error');}
   showLoading(false);
@@ -2181,7 +2299,7 @@ function returnToAdmin(){
   showToast('🔐 Back to Admin','info');
 }
 
-/* ===== ADMIN: PAYMENTS / OTHER (File 1 versions) ===== */
+/* ===== ADMIN: PAYMENTS / OTHER ===== */
 async function loadPaymentsForDate(){
   if(!currentAdminClass)return;
   var date=document.getElementById('adminDate').value||new Date().toISOString().split('T')[0];
@@ -2600,7 +2718,6 @@ async function submitCreation(e){
     if(ue.error)throw ue.error;
     var pub=supabaseClient.storage.from('creative-works').getPublicUrl(fn);
     var url=pub.data.publicUrl;
-    // FILE 2 CHANGE: approved:false for admin moderation
     var ie=await supabaseClient.from('student_creations').insert({studentid:currentUser.studentId,title:title,category:category,description:description||null,image_url:url,file_url:url,file_type:creationFileType,approved:false});
     if(ie.error)throw ie.error;
     try{await supabaseClient.from('activities').insert({studentid:currentUser.studentId,activity:(creationFileType==='pdf'?'📄':'🎨')+' പുതിയ സൃഷ്ടി — '+title,description:currentUser.name+' uploaded (pending approval)',timestamp:new Date().toISOString()});}catch(e){}
@@ -2767,6 +2884,221 @@ async function downloadClassMarksPDF(){
   showLoading(false);
 }
 
+/* ============================================================ */
+/* NEW FEATURES v22.1 - Theme, Push, Badges, Charts, Voice, Notes */
+/* ============================================================ */
+
+/* ----- FEATURE 1: DARK/LIGHT MODE ----- */
+function initTheme(){
+  var saved=localStorage.getItem('noor_theme')||'dark';
+  applyTheme(saved);
+}
+function toggleTheme(){
+  var current=localStorage.getItem('noor_theme')||'dark';
+  var next=current==='dark'?'light':'dark';
+  applyTheme(next);
+  localStorage.setItem('noor_theme',next);
+  showToast(next==='light'?'☀️ Light mode':'🌙 Dark mode','info');
+}
+function applyTheme(theme){
+  document.body.classList.toggle('light-mode',theme==='light');
+  var icon=document.getElementById('themeIcon');
+  if(icon)icon.className=theme==='light'?'fas fa-sun':'fas fa-moon';
+  if(typeof renderCharts==='function'&&currentUser)setTimeout(renderCharts,300);
+}
+
+/* ----- FEATURE 2: PUSH NOTIFICATIONS ----- */
+async function requestPushPermission(){
+  if(!('Notification' in window))return false;
+  if(Notification.permission==='granted')return true;
+  if(Notification.permission==='denied')return false;
+  try{
+    var perm=await Notification.requestPermission();
+    localStorage.setItem('noor_push_asked','true');
+    if(perm==='granted'){showToast('🔔 Notifications enabled','success');return true;}
+  }catch(e){}
+  return false;
+}
+function showBrowserNotification(title,body){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  try{
+    var n=new Notification(title,{body:body||'',icon:'https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png',badge:'https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png',tag:'nsm-'+Date.now()});
+    n.onclick=function(){window.focus();n.close();};
+    setTimeout(function(){try{n.close();}catch(e){}},8000);
+  }catch(e){}
+}
+
+/* ----- FEATURE 4: ACHIEVEMENT BADGES ----- */
+var BADGE_DEFS=[
+  {id:'top_scorer',emoji:'🥇',name:'Top Scorer',desc:'Rank 1-3',check:function(u){return u.rank&&u.rank<=3;}},
+  {id:'perfect_att',emoji:'🌟',name:'Perfect Attendance',desc:'95%+ attendance',check:function(u){return (u.attendance||0)>=95;}},
+  {id:'att_star',emoji:'📆',name:'Attendance Star',desc:'80%+ attendance',check:function(u){return (u.attendance||0)>=80;}},
+  {id:'scholar',emoji:'📖',name:'Scholar',desc:'A+ or A grade',check:function(u){return u.overallGrade==='A+'||u.overallGrade==='A';}},
+  {id:'competitor',emoji:'🏆',name:'Competitor',desc:'Any competition',check:function(u){return (u._compCount||0)>=1;}},
+  {id:'champion',emoji:'👑',name:'Champion',desc:'1st place winner',check:function(u){return (u._wins1||0)>=1;}},
+  {id:'creative',emoji:'🎨',name:'Creative',desc:'3+ creations',check:function(u){return (u._creationCount||0)>=3;}},
+  {id:'saver',emoji:'💰',name:'Saver',desc:'Balance ₹500+',check:function(u){return (u._balance||0)>=500;}},
+  {id:'super_saver',emoji:'💎',name:'Super Saver',desc:'Balance ₹2000+',check:function(u){return (u._balance||0)>=2000;}},
+  {id:'best',emoji:'⭐',name:'Best Student',desc:'Selected as best',check:function(u){return !!u.isBestStudent;}},
+  {id:'moral_star',emoji:'🌟',name:'Moral Star',desc:'A+ in morals',check:function(u){return u.moralValuesGrade==='A+';}},
+  {id:'streak',emoji:'🔥',name:'Streak Master',desc:'5+ competitions',check:function(u){return (u._compCount||0)>=5;}}
+];
+async function loadBadgeData(){
+  if(!currentUser)return null;
+  try{
+    var compR=await supabaseClient.from('competitions').select('position').eq('studentid',currentUser.studentId);
+    var crR=await supabaseClient.from('student_creations').select('id',{count:'exact',head:true}).eq('studentid',currentUser.studentId).eq('approved',true);
+    var bal=await getStudentBalance(currentUser.studentId);
+    var comps=compR.data||[];
+    currentUser._compCount=comps.length;
+    currentUser._wins1=comps.filter(function(c){return c.position===1;}).length;
+    currentUser._creationCount=crR.count||0;
+    currentUser._balance=bal||0;
+    return currentUser;
+  }catch(e){return currentUser;}
+}
+function getUnlockedBadges(u){return BADGE_DEFS.filter(function(b){try{return b.check(u);}catch(e){return false;}});}
+async function showBadgesModal(){
+  if(!currentUser){showToast('Login first','error');return;}
+  modalTitleSpan.innerText="🏆 Achievements";
+  modalBodyDiv.innerHTML='<div class="text-center py-4"><div class="spinner-border" style="color:#fbbf24"></div></div>';
+  modal.style.display='flex';
+  var u=await loadBadgeData();
+  var unlocked=getUnlockedBadges(u);
+  var h='<div style="text-align:center;margin-bottom:18px;">';
+  h+='<div style="width:80px;height:80px;margin:0 auto 12px;border-radius:22px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#fbbf24,#f59e0b);font-size:2.5rem;color:#03132e;box-shadow:0 12px 28px -10px rgba(251,191,36,.9);"><i class="fas fa-trophy"></i></div>';
+  h+='<h4 style="color:#fff;font-weight:800;margin:0 0 8px;">Your Achievements</h4>';
+  h+='<div class="badge-count-pill"><i class="fas fa-medal"></i> '+unlocked.length+' / '+BADGE_DEFS.length+' Unlocked</div></div>';
+  h+='<div class="badges-grid">';
+  BADGE_DEFS.forEach(function(b){
+    var on=unlocked.some(function(x){return x.id===b.id;});
+    h+='<div class="badge-card '+(on?'unlocked':'locked')+'"><span class="badge-emoji">'+b.emoji+'</span><div class="badge-name">'+escapeHtml(b.name)+'</div><div class="badge-desc">'+escapeHtml(b.desc)+'</div></div>';
+  });
+  h+='</div>';
+  modalBodyDiv.innerHTML=h;
+}
+
+/* ----- FEATURE 5: PROGRESS CHARTS ----- */
+var _attChart=null,_marksChart=null;
+async function renderCharts(){
+  if(!currentUser||!window.Chart)return;
+  var attCtx=document.getElementById('attendanceChart');
+  var marksCtx=document.getElementById('marksChart');
+  if(!attCtx||!marksCtx)return;
+  var isLight=document.body.classList.contains('light-mode');
+  var txtColor=isLight?'#0a1a3f':'#eaf2ff';
+  var gridColor=isLight?'rgba(59,130,246,.15)':'rgba(140,190,255,.15)';
+  try{
+    var ar=await supabaseClient.from('attendance_records').select('month_year,percentage').eq('studentid',currentUser.studentId).order('month_year');
+    var labels=(ar.data||[]).map(function(x){return x.month_year;});
+    var vals=(ar.data||[]).map(function(x){return Number(x.percentage)||0;});
+    if(!labels.length){labels=['No data'];vals=[0];}
+    if(_attChart)_attChart.destroy();
+    _attChart=new Chart(attCtx,{type:'line',data:{labels:labels,datasets:[{label:'Attendance %',data:vals,borderColor:'#22d3ee',backgroundColor:'rgba(34,211,238,.15)',fill:true,tension:.35,pointBackgroundColor:'#22d3ee',pointRadius:5,borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{color:txtColor},grid:{color:gridColor}},x:{ticks:{color:txtColor},grid:{color:gridColor}}}}});
+  }catch(e){console.warn('attChart',e);}
+  try{
+    var mr=await supabaseClient.from('exam_marks').select('exam_name,obtained_marks,max_marks').eq('studentid',currentUser.studentId);
+    var byExam={};(mr.data||[]).forEach(function(m){if(!byExam[m.exam_name])byExam[m.exam_name]={o:0,t:0};if(Number(m.max_marks)>0){byExam[m.exam_name].o+=Number(m.obtained_marks)||0;byExam[m.exam_name].t+=Number(m.max_marks);}});
+    var exLabels=Object.keys(byExam);
+    var exVals=exLabels.map(function(k){var e=byExam[k];return e.t>0?Math.round(e.o/e.t*100):0;});
+    if(!exLabels.length){exLabels=['No data'];exVals=[0];}
+    if(_marksChart)_marksChart.destroy();
+    _marksChart=new Chart(marksCtx,{type:'bar',data:{labels:exLabels,datasets:[{label:'Score %',data:exVals,backgroundColor:'rgba(59,139,255,.7)',borderColor:'#3b8bff',borderWidth:2,borderRadius:10}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{color:txtColor},grid:{color:gridColor}},x:{ticks:{color:txtColor},grid:{color:gridColor}}}}});
+  }catch(e){console.warn('marksChart',e);}
+}
+
+/* ----- FEATURE 7: WHATSAPP SHARE ----- */
+function shareReportViaWhatsApp(){
+  if(!currentUser){showToast('Login first','error');return;}
+  var txt='*NOORUSSALAM MADRASA*\n\n👤 '+currentUser.name+'\n🎓 Class '+currentUser.class+'\n🆔 '+currentUser.studentId+'\n\n📊 Grade: '+(currentUser.overallGrade||'N/A')+'\n📅 Attendance: '+(currentUser.attendance||0)+'%\n🏆 Rank: '+(currentUser.rank||'—');
+  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+  showToast('📤 Opening WhatsApp...','success');
+}
+
+/* ----- FEATURE 8: VOICE INPUT ----- */
+var _recognition=null,_isListening=false;
+function initVoiceRecognition(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window))return null;
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  _recognition=new SR();
+  _recognition.continuous=false;
+  _recognition.interimResults=false;
+  _recognition.lang='ml-IN';
+  _recognition.onstart=function(){_isListening=true;updateMicUI(true);};
+  _recognition.onend=function(){_isListening=false;updateMicUI(false);};
+  _recognition.onerror=function(e){_isListening=false;updateMicUI(false);if(e.error!=='aborted')showToast('⚠️ Voice: '+e.error,'error');};
+  _recognition.onresult=function(e){var text=e.results[0][0].transcript;var inp=document.getElementById('aiInput');if(inp){inp.value=text;sendAIMessage();}};
+  return _recognition;
+}
+function toggleVoiceInput(){
+  if(!_recognition)_recognition=initVoiceRecognition();
+  if(!_recognition){showToast('⚠️ Voice not supported','error');return;}
+  if(_isListening){try{_recognition.stop();}catch(e){}return;}
+  try{_recognition.start();showToast('🎤 Listening...','info');}catch(e){showToast('⚠️ '+e.message,'error');}
+}
+function updateMicUI(on){
+  var btn=document.getElementById('aiMicBtn');if(!btn)return;
+  btn.classList.toggle('listening',on);
+  var icon=btn.querySelector('i');if(icon)icon.className=on?'fas fa-stop':'fas fa-microphone';
+}
+
+/* ----- FEATURE 9: PERSONAL NOTES ----- */
+var _notes=[];
+function notesKey(){return currentUser?('noor_notes_'+currentUser.studentId):'noor_notes_guest';}
+function loadNotesFromStorage(){try{_notes=JSON.parse(localStorage.getItem(notesKey())||'[]');}catch(e){_notes=[];}}
+function saveNotesToStorage(){try{localStorage.setItem(notesKey(),JSON.stringify(_notes));}catch(e){showToast('⚠️ Storage full','error');}}
+function openNotesModal(){
+  if(!currentUser){showToast('Login first','error');return;}
+  loadNotesFromStorage();
+  renderNotesList();
+  document.getElementById('notesModal').style.display='flex';
+}
+function closeNotesModal(){document.getElementById('notesModal').style.display='none';}
+function renderNotesList(){
+  var list=document.getElementById('notesList');if(!list)return;
+  if(_notes.length===0){list.innerHTML='<div class="notes-empty"><i class="fas fa-sticky-note"></i><div style="font-weight:800;color:#fff;margin-bottom:6px;">ഇതുവരെ കുറിപ്പുകൾ ഇല്ല</div><div>ആദ്യത്തേത് എഴുതി തുടങ്ങൂ! 📝</div></div>';return;}
+  list.innerHTML=_notes.slice().sort(function(a,b){return new Date(b.updated)-new Date(a.updated);}).map(function(n){
+    return '<div class="note-card" data-subject="'+escapeHtml(n.subject)+'"><div class="note-card-header"><div class="note-card-title">'+escapeHtml(n.title)+'</div><span class="note-subject-tag">'+escapeHtml(n.subject)+'</span></div><div class="note-body">'+escapeHtml(n.body||'').substring(0,200)+'</div><div class="note-card-footer"><span><i class="far fa-clock"></i> '+timeAgo(n.updated)+'</span><div class="note-actions"><button class="note-action-btn" onclick="editNote(\''+n.id+'\')" title="Edit"><i class="fas fa-pen"></i></button><button class="note-action-btn danger" onclick="deleteNote(\''+n.id+'\')" title="Delete"><i class="fas fa-trash"></i></button></div></div></div>';
+  }).join('');
+}
+function openNoteEditor(note){
+  var ex=note||{};
+  modalTitleSpan.innerText=note?'✏️ Edit Note':'📝 New Note';
+  modalBodyDiv.innerHTML='<form onsubmit="saveNote(event)"><div class="mb-3"><label class="text-white-50 small">Title *</label><input type="text" id="noteTitleInput" class="modal-form-input" value="'+escapeHtml(ex.title||'')+'" required maxlength="80"></div><div class="mb-3"><label class="text-white-50 small">Subject</label><select id="noteSubjectInput" class="modal-form-input">'+['Notes','Maths','English','Arabic','Science','Malayalam','Other'].map(function(s){return'<option value="'+s+'" '+(ex.subject===s?'selected':'')+'>'+s+'</option>';}).join('')+'</select></div><div class="mb-3"><label class="text-white-50 small">Content</label><textarea id="noteBodyInput" class="modal-form-input" style="min-height:140px;" maxlength="2000">'+escapeHtml(ex.body||'')+'</textarea></div><input type="hidden" id="noteEditId" value="'+(ex.id||'')+'"><div class="d-flex gap-2 mt-3"><button type="submit" class="btn-update flex-grow-1"><i class="fas fa-save"></i> Save</button><button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div></form>';
+  modal.style.display='flex';
+  setTimeout(function(){var i=document.getElementById('noteTitleInput');if(i)i.focus();},150);
+}
+function saveNote(e){
+  e.preventDefault();
+  var title=document.getElementById('noteTitleInput').value.trim();
+  var subject=document.getElementById('noteSubjectInput').value;
+  var body=document.getElementById('noteBodyInput').value;
+  var editId=document.getElementById('noteEditId').value;
+  if(!title){showToast('Title required','error');return;}
+  if(editId){
+    var idx=_notes.findIndex(function(n){return n.id===editId;});
+    if(idx>-1){_notes[idx].title=title;_notes[idx].subject=subject;_notes[idx].body=body;_notes[idx].updated=new Date().toISOString();}
+  }else{
+    _notes.push({id:'note_'+Date.now()+'_'+Math.random().toString(36).substr(2,6),title:title,subject:subject,body:body,created:new Date().toISOString(),updated:new Date().toISOString()});
+  }
+  saveNotesToStorage();
+  closeModal('globalModal');
+  renderNotesList();
+  showToast(editId?'✅ Updated':'✅ Note saved','success');
+  if(typeof confetti!=='undefined')confetti({particleCount:60,spread:60,origin:{y:.7}});
+}
+function editNote(id){var n=_notes.find(function(x){return x.id===id;});if(n)openNoteEditor(n);}
+function deleteNote(id){if(!confirm('Delete this note?'))return;_notes=_notes.filter(function(n){return n.id!==id;});saveNotesToStorage();renderNotesList();showToast('🗑️ Deleted','info');}
+
+/* ----- INIT NEW FEATURES ----- */
+async function initNewFeatures(){
+  initTheme();
+  if('Notification' in window&&Notification.permission==='default'){
+    setTimeout(function(){if(currentUser)requestPushPermission();},4000);
+  }
+  if(currentUser)setTimeout(renderCharts,800);
+}
+
 /* ===== EXPORTS ===== */
 Object.assign(window,{
   openHelpModal,closeHelpModal,showResultsModal,showAttendanceReport,showMoralValuesModal,showProfileCard,closeModal,openEditProfile,closeEditProfile,
@@ -2796,24 +3128,27 @@ Object.assign(window,{
   saveBgUrl,clearBgUrl,loadGradesForAdmin,bulkUpdateGrades,autoCalculateRanks,loadMoralValuesAdmin,saveMoralGrade,
   loadExtraAdmin,saveExtraBulk,findBestStudent,
   downloadPaymentsPDF,downloadStudentsPDF,downloadBalancesPDF,downloadClassMarksPDF,
-  // AI Chat
   toggleAIChat,aiQuick,sendAIMessage,callGeminiAI,showAIAssistant,
-  // Withdrawals
-  adminDeleteWithdrawal,approveWithdrawal,rejectWithdrawal
+  adminDeleteWithdrawal,approveWithdrawal,rejectWithdrawal,
+  toggleTheme,applyTheme,requestPushPermission,showBrowserNotification,
+  showBadgesModal,loadBadgeData,getUnlockedBadges,
+  renderCharts,shareReportViaWhatsApp,
+  toggleVoiceInput,updateMicUI,
+  openNotesModal,closeNotesModal,renderNotesList,openNoteEditor,saveNote,editNote,deleteNote,
+  initNewFeatures
 });
 
 /* ===== INIT ===== */
 async function initApp(){
   try{await loadAllSettings();}catch(e){}
+  initTheme();
   await restoreSession();
-  console.log('%c✅ Noorussalam Madrasa v22.0 Ultimate Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
+  await initNewFeatures();
+  console.log('%c✅ Noorussalam Madrasa v22.1 Ultimate+ Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
 </script>
 
-<!-- ============================================================ -->
-<!-- BULLETPROOF MODAL CLOSE SYSTEM (File 1) -->
-<!-- ============================================================ -->
 <script>
 (function(){
   window.closeModal=window.closeModal||function(id){var el=document.getElementById(id);if(el)el.style.display='none';};
@@ -2829,19 +3164,13 @@ initApp();
   window.closeUploadCreationModal=window.closeUploadCreationModal||function(){window.closeModal('uploadCreationModal');};
   window.closeCreationsGallery=window.closeCreationsGallery||function(){var el=document.getElementById('creationsOverlay');if(el)el.classList.remove('open');document.body.style.overflow='';};
   window.closeHelpModal=window.closeHelpModal||function(){var el=document.getElementById('helpModal');if(el)el.classList.remove('active');};
-  
-  var MODAL_IDS=['globalModal','passbookModal','findStudentIdModal','editProfileModal','forgotModal','topperModal','topperCropModal','studentWithdrawalModal','notificationsModal','uploadCreationModal'];
-  
+  var MODAL_IDS=['globalModal','passbookModal','findStudentIdModal','editProfileModal','forgotModal','topperModal','topperCropModal','studentWithdrawalModal','notificationsModal','uploadCreationModal','notesModal'];
   function init(){
-    MODAL_IDS.forEach(function(id){
-      var el=document.getElementById(id);
-      if(el){el.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});}
-    });
+    MODAL_IDS.forEach(function(id){var el=document.getElementById(id);if(el){el.addEventListener('click',function(e){if(e.target===this)this.style.display='none';});}});
     var lb=document.getElementById('creationLightbox');
     if(lb){lb.addEventListener('click',function(e){if(e.target===this)window.closeCreationLightbox();});}
     var hm=document.getElementById('helpModal');
     if(hm){hm.addEventListener('click',function(e){if(e.target===this)window.closeHelpModal();});}
-    
     document.addEventListener('click',function(e){
       var t=e.target;
       if(t.classList&&t.classList.contains('close-preview')){e.preventDefault();e.stopPropagation();window.closePosterPreview();return;}
@@ -2860,17 +3189,14 @@ initApp();
       if(oc.indexOf('closeUploadCreationModal')>-1){e.preventDefault();e.stopPropagation();window.closeModal('uploadCreationModal');return;}
       if(oc.indexOf('closeCreationsGallery')>-1){e.preventDefault();e.stopPropagation();window.closeCreationsGallery();return;}
       if(oc.indexOf('closeHelpModal')>-1){e.preventDefault();e.stopPropagation();window.closeHelpModal();return;}
+      if(oc.indexOf('closeNotesModal')>-1){e.preventDefault();e.stopPropagation();window.closeModal('notesModal');return;}
       if(oc.indexOf("closeModal('globalModal')")>-1){e.preventDefault();e.stopPropagation();window.closeModal('globalModal');return;}
       var m=oc.match(/closeModal\(['"]([^'"]+)['"]\)/);
       if(m){e.preventDefault();e.stopPropagation();window.closeModal(m[1]);return;}
     },true);
-    
     document.addEventListener('keydown',function(e){
       if(e.key!=='Escape')return;
-      for(var i=MODAL_IDS.length-1;i>=0;i--){
-        var el=document.getElementById(MODAL_IDS[i]);
-        if(el&&el.style.display==='flex'){el.style.display='none';return;}
-      }
+      for(var i=MODAL_IDS.length-1;i>=0;i--){var el=document.getElementById(MODAL_IDS[i]);if(el&&el.style.display==='flex'){el.style.display='none';return;}}
       var cb=document.getElementById('creationLightbox');
       if(cb&&cb.classList.contains('open')){window.closeCreationLightbox();return;}
       var co=document.getElementById('creationsOverlay');
@@ -2882,9 +3208,18 @@ initApp();
     });
     console.log('✅ Close system ready');
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
-  else init();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg=>console.log('✅ SW registered:',reg.scope))
+      .catch(err=>console.log('❌ SW error:',err));
+  });
+}
 </script>
 
 </body>
