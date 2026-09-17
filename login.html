@@ -3868,6 +3868,62 @@ async function initApp(){
   console.log('%c✅ Noorussalam Madrasa v22.1 Ultimate+ Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
+/* ===== HANDLE URL HASH & QUERY FOR SHORTCUTS ===== */
+function handleShortcutNavigation() {
+  var hash = (window.location.hash || '').replace('#', '').toLowerCase();
+  var params = new URLSearchParams(window.location.search);
+  
+  // If already logged in (currentUser exists), open corresponding section
+  function openTarget() {
+    if (!currentUser) return; // Wait for login
+    
+    if (hash === 'palathulli') {
+      openPassbook();
+    } else if (hash === 'creations') {
+      openCreationsGallery();
+    } else if (hash === 'ai') {
+      var fab = document.getElementById('aiFab');
+      if (fab && fab.classList.contains('show')) toggleAIChat();
+    }
+    
+    // Public feed shortcut
+    if (params.get('public') === '1') {
+      openPublicCreationsFeed();
+    }
+  }
+  
+  // If logged in right now
+  if (currentUser) {
+    setTimeout(openTarget, 800);
+  } else {
+    // Wait for login — check every 500ms for 30 seconds
+    var tries = 0;
+    var timer = setInterval(function() {
+      tries++;
+      if (currentUser) {
+        clearInterval(timer);
+        setTimeout(openTarget, 800);
+      }
+      if (tries > 60) clearInterval(timer); // 30 sec timeout
+    }, 500);
+  }
+  
+  // Handle public feed even without login
+  if (params.get('public') === '1') {
+    setTimeout(function() {
+      if (typeof openPublicCreationsFeed === 'function') {
+        openPublicCreationsFeed();
+      }
+    }, 1500);
+  }
+}
+
+// Run when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', handleShortcutNavigation);
+} else {
+  handleShortcutNavigation();
+}
 /* ============================================================ */
 /* STUDENT BLOCK SYSTEM                                          */
 /* ============================================================ */
