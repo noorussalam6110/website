@@ -1529,6 +1529,12 @@ document.getElementById('loginForm').addEventListener('submit',async function(e)
     }
     var r=await supabaseClient.from('students').select('*').eq('studentid',raw).single();
     if(r.error||!r.data){showToast('Invalid Student ID','error');showLoading(false);return;}
+        // 🚫 Blocked check
+    if (r.data.is_blocked === true) {
+      showLoading(false);
+      showBlockedScreen(r.data);
+      return;
+    }
     var student=r.data;
     await loadAllSettings();
     currentUser={studentId:student.studentid,name:student.name||'Student',class:student.class||'N/A',roll:student.roll||'',overallGrade:student.overallgrade||null,attendance:0,rank:student.rank||null,moralValuesGrade:student.moralvaluesgrade||null,moralValuesSub:student.moralvaluessub||null,performance:student.performance||0,avatar:student.name?student.name.charAt(0).toUpperCase():'S',email:student.email||'',phone:student.phone||'',fatherName:student.fathername||'',dob:student.dob||'',photo:student.photo||'',password:student.password||'noor123',bloodGroup:student.bloodgroup||'',address:student.address||'',trendAttendance:student.trendattendance||null,rankChange:student.rankchange||null,isBestStudent:student.isbeststudent||false,extraCurricularGrade:student.extracurriculargrade||null,totalMarks:student.totalmarks||0,madrasaRank:student.madrasarank||null};
@@ -1566,6 +1572,16 @@ async function restoreSession(){
   var s=localStorage.getItem('noor_session');
   if(s&&supabaseClient){try{
     currentUser=JSON.parse(s);
+        // 🚫 Check if blocked
+    try {
+      var blockCheck = await supabaseClient.from('students').select('is_blocked,block_reason,blocked_at').eq('studentid',currentUser.studentId).single();
+      if (blockCheck.data && blockCheck.data.is_blocked === true) {
+        localStorage.removeItem('noor_session');
+        currentUser = null;
+        setTimeout(function() { showBlockedScreen(blockCheck.data); }, 300);
+        return;
+      }
+    } catch(bce) {}
     loginSection.style.display='none';dashboardSection.style.display='block';
     updateDashboardUI();loadActivitiesAndCalendar();loadStudentBalance();loadStudentNotifications();
     await refreshStudentAttendance();
@@ -2532,9 +2548,10 @@ function renderStudentsAdmin(){
   var h='<table><thead><tr><th>#</th><th>Photo</th><th>ID</th><th>Name</th>'+(sc?'<th>Class</th>':'')+'<th>Roll</th><th>Actions</th></tr></thead><tbody>';
   filteredStudentsAdmin.forEach(function(s,idx){
     var ph=hasPhoto(s.photo)?'<img src="'+s.photo+'" style="width:38px;height:38px;border-radius:50%;object-fit:cover;">':'<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(140deg,#1e6be0,#22d3ee);display:flex;align-items:center;justify-content:center;color:#03132e;font-weight:800;">'+(s.name||'?').charAt(0).toUpperCase()+'</div>';
-    h+='<tr><td>'+(idx+1)+'</td><td>'+ph+'</td><td><strong>'+escapeHtml(s.studentid)+'</strong></td><td>'+escapeHtml(s.name||'')+'</td>';
+    var blockedBadge = s.is_blocked ? ' <span style="background:rgba(239,68,68,.2);color:#fca5a5;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">🚫 BLOCKED</span>' : '';
+h+='<tr '+(s.is_blocked?'style="background:rgba(239,68,68,.06);"':'')+'><td>'+(idx+1)+'</td><td>'+ph+'</td><td><strong>'+escapeHtml(s.studentid)+'</strong></td><td>'+escapeHtml(s.name||'')+blockedBadge+'</td>';
     if(sc)h+='<td>'+escapeHtml(s.class||'')+'</td>';
-    h+='<td>'+escapeHtml(s.roll||'')+'</td><td><button class="btn-sm" style="background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;padding:5px 10px;" onclick="impersonateStudent(\''+s.studentid+'\')" title="View as">👁️</button> <button class="btn-sm approve" onclick="editStudent(\''+s.studentid+'\')">✏️</button><button class="btn-sm reject" onclick="deleteStudent(\''+s.studentid+'\')">🗑️</button></td></tr>';
+    h+='<td>'+escapeHtml(s.roll||'')+'</td><td><button class="btn-sm" style="background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;padding:5px 10px;"+(s.is_blocked?'<button class="btn-sm" style="background:linear-gradient(100deg,#059669,#34d399);color:#fff;padding:5px 10px;" onclick="unblockStudent(\''+s.studentid+'\')" title="Unblock">🔓</button>':'<button class="btn-sm" style="background:linear-gradient(100deg,#b91c1c,#ef4444);color:#fff;padding:5px 10px;" onclick="openBlockForm(\''+s.studentid+'\')" title="Block">🔒</button>')+' ' onclick="impersonateStudent(\''+s.studentid+'\')" title="View as">👁️</button> <button class="btn-sm approve" onclick="editStudent(\''+s.studentid+'\')">✏️</button><button class="btn-sm reject" onclick="deleteStudent(\''+s.studentid+'\')">🗑️</button></td></tr>';
   });
   h+='</tbody></table>';wrap.innerHTML=h;
 }
@@ -3851,6 +3868,180 @@ async function initApp(){
   console.log('%c✅ Noorussalam Madrasa v22.1 Ultimate+ Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
 initApp();
+/* ============================================================ */
+/* STUDENT BLOCK SYSTEM                                          */
+/* ============================================================ */
+
+function openBlockForm(sid) {
+  var s = studentsAdminData.find(function(x){ return x.studentid === sid; });
+  if (!s) { showToast('Student not found', 'error'); return; }
+  
+  modalTitleSpan.innerText = '🔒 Block Student';
+  modalBodyDiv.innerHTML = 
+    '<div style="background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(251,191,36,.06));border:1.6px solid rgba(239,68,68,.35);border-radius:16px;padding:16px;margin-bottom:18px;">' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(140deg,#1e6be0,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:1.3rem;flex-shrink:0;">' + escapeHtml((s.name||'S').charAt(0).toUpperCase()) + '</div>' +
+        '<div style="min-width:0;">' +
+          '<div style="color:#fff;font-weight:800;font-size:1rem;word-break:break-word;">' + escapeHtml(s.name) + '</div>' +
+          '<div style="color:#9db8dd;font-size:.76rem;margin-top:2px;">' + escapeHtml(s.studentid) + ' • Class ' + escapeHtml(s.class) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<form onsubmit="confirmBlockStudent(event,\'' + sid + '\')">' +
+      '<div class="mb-3">' +
+        '<label class="text-white-50 small">📝 കാരണം * (Student-നു കാണിക്കും)</label>' +
+        '<textarea id="blockReasonInput" class="modal-form-input" style="min-height:110px;" required maxlength="500" placeholder="ഉദാ: ഫീസ് അടച്ചിട്ടില്ല. ദയവായി ഓഫീസിൽ ബന്ധപ്പെടുക..."></textarea>' +
+      '</div>' +
+      '<div style="background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:10px 14px;margin-bottom:16px;font-size:.76rem;color:#fcd34d;">' +
+        '<i class="fas fa-info-circle"></i> ഈ കാരണം Student login ചെയ്യുമ്പോൾ അവരെ കാണിക്കും.' +
+      '</div>' +
+      '<div class="d-flex gap-2">' +
+        '<button type="submit" class="btn-update flex-grow-1" style="background:linear-gradient(100deg,#b91c1c,#ef4444);color:#fff;"><i class="fas fa-lock"></i> Block ചെയ്യുക</button>' +
+        '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button>' +
+      '</div>' +
+    '</form>';
+  modal.style.display = 'flex';
+  
+  setTimeout(function() {
+    var ta = document.getElementById('blockReasonInput');
+    if (ta) ta.focus();
+  }, 200);
+}
+
+async function confirmBlockStudent(e, sid) {
+  e.preventDefault();
+  var reason = document.getElementById('blockReasonInput').value.trim();
+  if (!reason) { showToast('കാരണം എഴുതുക', 'error'); return; }
+  
+  showLoading(true);
+  try {
+    var r = await supabaseClient.from('students').update({
+      is_blocked: true,
+      block_reason: reason,
+      blocked_at: new Date().toISOString(),
+      blocked_by: 'Admin'
+    }).eq('studentid', sid);
+    
+    if (r.error) throw r.error;
+    
+    showToast('🔒 Blocked successfully', 'success');
+    closeModal('globalModal');
+    loadStudentsForAdmin();
+    
+    // Try to send notification (optional)
+    try {
+      var s = studentsAdminData.find(function(x){ return x.studentid === sid; });
+      if (s) {
+        await supabaseClient.from('notifications').insert({
+          title: '🚫 Account Blocked',
+          message: 'നിങ്ങളുടെ അക്കൗണ്ട് ബ്ലോക്ക് ചെയ്യപ്പെട്ടിരിക്കുന്നു: ' + reason,
+          type: 'urgent',
+          target_class: s.class
+        });
+      }
+    } catch(ne) {}
+    
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+  showLoading(false);
+}
+
+async function unblockStudent(sid) {
+  if (!confirm('ഈ Student-ന്റെ block പിൻവലിക്കണോ?')) return;
+  
+  showLoading(true);
+  try {
+    var r = await supabaseClient.from('students').update({
+      is_blocked: false,
+      block_reason: null,
+      blocked_at: null,
+      blocked_by: null
+    }).eq('studentid', sid);
+    
+    if (r.error) throw r.error;
+    
+    showToast('🔓 Unblocked successfully', 'success');
+    loadStudentsForAdmin();
+    
+    if (typeof confetti !== 'undefined') confetti({ particleCount: 60, spread: 70, origin: { y: 0.7 } });
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+  showLoading(false);
+}
+
+function showBlockedScreen(student) {
+  var reason = student.block_reason || 'കാരണം നൽകിയിട്ടില്ല';
+  var blockedDate = student.blocked_at ? formatDate(student.blocked_at) : '';
+  
+  // Hide all sections
+  document.getElementById('loginSection').style.display = 'none';
+  document.getElementById('dashboardSection').style.display = 'none';
+  document.getElementById('adminSection').style.display = 'none';
+  document.getElementById('aiFab').classList.remove('show');
+  
+  // Create blocked screen
+  var existing = document.getElementById('blockedScreen');
+  if (existing) existing.remove();
+  
+  var html = 
+    '<div id="blockedScreen" style="position:fixed;inset:0;background:linear-gradient(155deg,#03081c,#050e2b 30%,#071433);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">' +
+      '<div style="max-width:480px;width:100%;background:linear-gradient(160deg,rgba(239,68,68,.18),rgba(5,14,43,.98));border:2px solid rgba(239,68,68,.5);border-radius:28px;padding:36px 26px 30px;text-align:center;box-shadow:0 40px 100px -30px rgba(0,0,0,.95),0 0 80px -20px rgba(239,68,68,.5);">' +
+        
+        '<div style="width:90px;height:90px;margin:0 auto 16px;border-radius:50%;background:linear-gradient(140deg,#b91c1c,#ef4444);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px -10px rgba(239,68,68,.9);animation:pulseBlock 2s infinite;">' +
+          '<i class="fas fa-lock" style="font-size:2.3rem;color:#fff;"></i>' +
+        '</div>' +
+        
+        '<h1 style="color:#fff;font-size:1.6rem;font-weight:900;margin:0 0 6px;">🚫 Account Blocked</h1>' +
+        '<p style="color:#fca5a5;font-size:.9rem;margin:0 0 22px;font-weight:700;">നിങ്ങളുടെ അക്കൗണ്ട് താൽക്കാലികമായി ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു</p>' +
+        
+        '<div style="background:rgba(8,20,48,.7);border:1px solid rgba(140,190,255,.2);border-radius:16px;padding:16px;text-align:left;margin-bottom:16px;">' +
+          '<div style="font-size:.7rem;color:#9db8dd;text-transform:uppercase;font-weight:800;letter-spacing:1px;margin-bottom:8px;"><i class="fas fa-user"></i> Student Details</div>' +
+          '<div style="color:#fff;font-weight:800;font-size:1rem;">' + escapeHtml(student.name || 'Student') + '</div>' +
+          '<div style="color:#9db8dd;font-size:.78rem;margin-top:3px;">' + escapeHtml(student.studentid) + ' • Class ' + escapeHtml(student.class || '—') + '</div>' +
+        '</div>' +
+        
+        '<div style="background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(251,191,36,.08));border:1.6px solid rgba(239,68,68,.4);border-radius:16px;padding:16px;text-align:left;margin-bottom:20px;">' +
+          '<div style="font-size:.7rem;color:#fca5a5;text-transform:uppercase;font-weight:800;letter-spacing:1px;margin-bottom:8px;"><i class="fas fa-circle-exclamation"></i> കാരണം</div>' +
+          '<div style="color:#fff;font-size:.9rem;line-height:1.6;white-space:pre-wrap;">' + escapeHtml(reason) + '</div>' +
+          (blockedDate ? '<div style="color:#9db8dd;font-size:.7rem;margin-top:10px;"><i class="far fa-clock"></i> ' + blockedDate + '</div>' : '') +
+        '</div>' +
+        
+        '<div style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:14px;padding:12px 16px;margin-bottom:22px;text-align:left;">' +
+          '<div style="font-size:.78rem;color:#67e8f9;line-height:1.6;"><i class="fas fa-info-circle"></i> <b>എന്ത് ചെയ്യണം?</b><br>മദ്രസ ഓഫീസിൽ ബന്ധപ്പെട്ട് ഈ പ്രശ്നം പരിഹരിക്കുക.</div>' +
+        '</div>' +
+        
+        '<button onclick="closeBlockedScreen()" style="background:linear-gradient(100deg,#22d3ee,#3b8bff);color:#03132e;border:none;padding:14px 32px;border-radius:50px;font-weight:800;font-size:.95rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:9px;width:100%;justify-content:center;">' +
+          '<i class="fas fa-arrow-left"></i> Back to Login' +
+        '</button>' +
+        
+        '<div style="margin-top:18px;font-size:.68rem;color:#6d88ad;">Noorussalam Madrasa • v22.1</div>' +
+        
+      '</div>' +
+    '</div>' +
+    
+    '<style>' +
+      '@keyframes pulseBlock{0%,100%{box-shadow:0 12px 30px -10px rgba(239,68,68,.9),0 0 0 0 rgba(239,68,68,.5);}50%{box-shadow:0 12px 30px -10px rgba(239,68,68,.9),0 0 0 20px rgba(239,68,68,0);}}' +
+    '</style>';
+  
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeBlockedScreen() {
+  var el = document.getElementById('blockedScreen');
+  if (el) el.remove();
+  document.getElementById('loginSection').style.display = 'flex';
+  var sidInput = document.getElementById('studentId');
+  if (sidInput) sidInput.value = '';
+  localStorage.removeItem('noor_session');
+}
+
+window.openBlockForm = openBlockForm;
+window.confirmBlockStudent = confirmBlockStudent;
+window.unblockStudent = unblockStudent;
+window.showBlockedScreen = showBlockedScreen;
+window.closeBlockedScreen = closeBlockedScreen;
 /* ============================================================ */
 /* PUBLIC CREATIONS FEED — Facebook-style                       */
 /* ============================================================ */
