@@ -1,8 +1,9 @@
-const CACHE_NAME = 'noorussalam-v14';
-const RUNTIME_CACHE = 'noorussalam-runtime-v14';
+const CACHE_NAME = 'noorussalam-v15';
+const RUNTIME_CACHE = 'noorussalam-runtime-v15';
 
 const CORE_FILES = [
   './',
+  './login.html',
   './index.html',
   './manifest.json'
 ];
@@ -75,7 +76,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(cache => cache.put(req, clone));
           return response;
         })
-        .catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+        .catch(() => caches.match(req).then(r => r || caches.match('./login.html') || caches.match('./index.html')))
     );
     return;
   }
