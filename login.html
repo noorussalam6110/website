@@ -8,16 +8,27 @@
 <link rel="apple-touch-icon" href="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png">
 <link rel="manifest" href="manifest.json">
 <title>NOORUSSALAM MADRASA | Student Portal v22.1</title>
-<link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'"> <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap"></noscript>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<!-- 🚀 Preconnect for faster CDN access -->
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://dmjjtmimrozzqknduqas.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
+<!-- Supabase MUST load sync (used at parse time) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- 🚀 Heavy libraries deferred — NOT needed for login screen -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{--b950:#03081c;--b900:#050e2b;--b850:#071433;--b800:#0a1a3f;--b700:#0f2a63;--b600:#1547a8;--b500:#1e6be0;--b450:#2b7cf0;--b400:#3b8bff;--b300:#7db3ff;--b200:#a9cdff;--cyan:#22d3ee;--cyan-soft:#67e8f9;--stroke:rgba(140,190,255,.18);--stroke-2:rgba(140,190,255,.30);--txt:#eaf2ff;--txt-dim:#9db8dd}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Anek Malayalam',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
@@ -1349,7 +1360,526 @@ body.light-mode .action-tile:hover{
 </style>
 </head>
 <body>
+<div id="splashScreen" style="position:fixed;inset:0;z-index:99998;background:linear-gradient(155deg,#03081c,#050e2b 30%,#071433);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;transition:opacity .4s ease;">
+  <div style="width:90px;height:90px;border-radius:24px;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px -15px rgba(59,139,255,.9);animation:splashPulse 1.6s ease-in-out infinite;">
+    <img src="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png" style="width:70px;height:70px;object-fit:contain;" alt="NSM">
+  </div>
+  <div style="text-align:center;">
+    <div style="color:#fff;font-weight:800;font-size:1.1rem;letter-spacing:.5px;">NOORUSSALAM MADRASA</div>
+    <div style="color:#67e8f9;font-size:.72rem;letter-spacing:2px;text-transform:uppercase;margin-top:6px;font-weight:700;">Loading Portal…</div>
+  </div>
+  <div style="width:160px;height:3px;background:rgba(140,190,255,.15);border-radius:3px;overflow:hidden;">
+    <div style="width:40%;height:100%;background:linear-gradient(90deg,#22d3ee,#3b8bff);border-radius:3px;animation:splashBar 1.2s ease-in-out infinite;"></div>
+  </div>
+</div>
+<style>
+  @keyframes splashPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.06);}}
+  @keyframes splashBar{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
+/* ================================================================ */
+/* 🤖 ADVANCED AI PANEL — Premium Look                              */
+/* ================================================================ */
 
+/* ---------- PANEL CONTAINER ---------- */
+.ai-panel{
+  border:1.5px solid rgba(140,190,255,.28) !important;
+  background:
+    linear-gradient(165deg,rgba(24,87,196,.45),rgba(5,14,43,.99)) !important;
+  backdrop-filter:blur(32px) saturate(180%) !important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%) !important;
+  box-shadow:
+    0 30px 80px -20px rgba(0,0,0,.95),
+    0 0 0 1px rgba(34,211,238,.15),
+    0 0 80px -30px rgba(34,211,238,.6) !important;
+  animation:aiPanelIn .45s cubic-bezier(.34,1.56,.64,1) !important;
+  overflow:visible !important;
+}
+.ai-panel.open{display:flex !important;}
+@keyframes aiPanelIn{
+  0%{opacity:0;transform:translateY(20px) scale(.94);}
+  100%{opacity:1;transform:translateY(0) scale(1);}
+}
+
+/* Gradient border glow ring */
+.ai-panel::before{
+  content:'';
+  position:absolute;
+  inset:-2px;
+  border-radius:28px;
+  background:conic-gradient(from 0deg,
+    rgba(34,211,238,.9),
+    rgba(59,139,255,.9),
+    rgba(236,72,153,.85),
+    rgba(251,191,36,.85),
+    rgba(34,211,238,.9));
+  z-index:-1;
+  opacity:.7;
+  filter:blur(12px);
+  animation:aiBorderSpin 5s linear infinite;
+  pointer-events:none;
+}
+@keyframes aiBorderSpin{
+  to{transform:rotate(360deg);}
+}
+
+/* ---------- HEADER ---------- */
+.ai-head{
+  position:relative;
+  padding:18px 20px !important;
+  background:
+    linear-gradient(100deg,rgba(30,107,224,.65),rgba(34,211,238,.40)) !important;
+  border-bottom:1px solid rgba(140,190,255,.22) !important;
+  overflow:hidden;
+}
+.ai-head::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 20% 50%,rgba(255,255,255,.12),transparent 40%),
+    radial-gradient(circle at 80% 20%,rgba(34,211,238,.25),transparent 40%);
+  pointer-events:none;
+}
+.ai-head::after{
+  content:'';
+  position:absolute;
+  bottom:-1px;
+  left:8%;
+  right:8%;
+  height:2px;
+  border-radius:2px;
+  background:linear-gradient(90deg,transparent,#22d3ee,#fbbf24,#22d3ee,transparent);
+  background-size:220% 100%;
+  animation:shimmer 3.5s linear infinite;
+  pointer-events:none;
+}
+
+.ai-head-left{gap:14px !important;}
+
+/* Avatar with rotating halo */
+.ai-avatar{
+  width:46px !important;
+  height:46px !important;
+  border-radius:16px !important;
+  font-size:1.2rem !important;
+  position:relative;
+  background:linear-gradient(140deg,#22d3ee,#3b8bff,#ec4899) !important;
+  background-size:200% 200% !important;
+  animation:aiAvatarGlow 3s ease infinite;
+  box-shadow:
+    0 8px 22px -6px rgba(34,211,238,.9),
+    0 0 0 1px rgba(255,255,255,.2) inset;
+}
+.ai-avatar::before{
+  content:'';
+  position:absolute;
+  inset:-4px;
+  border-radius:20px;
+  background:conic-gradient(from 0deg,
+    transparent 0deg,
+    rgba(34,211,238,.8) 90deg,
+    transparent 180deg,
+    rgba(236,72,153,.8) 270deg,
+    transparent 360deg);
+  z-index:-1;
+  animation:aiBorderSpin 4s linear infinite;
+  filter:blur(6px);
+}
+@keyframes aiAvatarGlow{
+  0%,100%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+}
+
+.ai-head h6{
+  font-size:1rem !important;
+  letter-spacing:.3px;
+  text-shadow:0 2px 8px rgba(0,0,0,.4);
+}
+.ai-head h6::after{
+  content:'✦ AI';
+  display:inline-block;
+  margin-left:8px;
+  padding:2px 8px;
+  font-size:.58rem;
+  border-radius:20px;
+  background:linear-gradient(100deg,#fbbf24,#f59e0b);
+  color:#03132e;
+  font-weight:900;
+  vertical-align:middle;
+  letter-spacing:.5px;
+}
+.ai-student-name{
+  font-size:.7rem !important;
+  background:rgba(255,255,255,.10);
+  padding:3px 10px;
+  border-radius:20px;
+  border:1px solid rgba(140,190,255,.2);
+  width:fit-content;
+  margin-top:6px !important;
+  backdrop-filter:blur(8px);
+}
+.ai-dot{
+  width:8px !important;
+  height:8px !important;
+  box-shadow:0 0 0 0 rgba(52,211,153,.7);
+  animation:blink 1.6s infinite, aiDotPulse 2s infinite !important;
+}
+@keyframes aiDotPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,.7);}
+  50%{box-shadow:0 0 0 8px rgba(52,211,153,0);}
+}
+
+/* Header action buttons */
+.ai-head-actions{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  position:relative;
+  z-index:2;
+}
+.ai-head-btn{
+  width:34px;
+  height:34px;
+  border-radius:11px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.15);
+  color:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.85rem;
+  transition:all .22s;
+  backdrop-filter:blur(8px);
+}
+.ai-head-btn:hover{
+  background:rgba(255,255,255,.22);
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px -4px rgba(0,0,0,.5);
+}
+.ai-head-btn.danger:hover{
+  background:rgba(239,68,68,.3);
+  border-color:rgba(239,68,68,.5);
+}
+
+/* ---------- BODY ---------- */
+.ai-body{
+  padding:18px 16px !important;
+  gap:14px !important;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(34,211,238,.06),transparent 50%),
+    radial-gradient(circle at 80% 100%,rgba(236,72,153,.05),transparent 50%);
+  scroll-behavior:smooth;
+}
+.ai-body::-webkit-scrollbar{width:5px;}
+.ai-body::-webkit-scrollbar-track{background:transparent;}
+.ai-body::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#3b8bff,#22d3ee);
+  border-radius:5px;
+  box-shadow:0 0 8px rgba(34,211,238,.5);
+}
+
+/* ---------- MESSAGES ---------- */
+.ai-msg{
+  position:relative;
+  max-width:88% !important;
+  padding:12px 16px !important;
+  border-radius:20px !important;
+  font-size:.88rem !important;
+  line-height:1.6 !important;
+  animation:aiMsgIn .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 6px 20px -8px rgba(0,0,0,.5);
+}
+@keyframes aiMsgIn{
+  0%{opacity:0;transform:translateY(12px) scale(.94);}
+  100%{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.ai-msg.bot{
+  align-self:flex-start;
+  background:linear-gradient(150deg,rgba(120,180,255,.18),rgba(120,180,255,.06)) !important;
+  border:1px solid rgba(140,190,255,.22) !important;
+  border-bottom-left-radius:6px !important;
+  padding-left:46px !important;
+  color:var(--txt) !important;
+  backdrop-filter:blur(10px);
+}
+.ai-msg.bot::before{
+  content:'🤖';
+  position:absolute;
+  left:10px;
+  top:10px;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:linear-gradient(140deg,#22d3ee,#3b8bff);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.85rem;
+  box-shadow:0 4px 12px -3px rgba(34,211,238,.7);
+}
+.ai-msg.bot::after{
+  content:attr(data-time);
+  position:absolute;
+  bottom:-16px;
+  left:46px;
+  font-size:.6rem;
+  color:rgba(157,184,221,.65);
+  font-weight:600;
+  letter-spacing:.3px;
+}
+
+.ai-msg.user{
+  align-self:flex-end;
+  background:linear-gradient(135deg,#3b8bff,#22d3ee) !important;
+  color:#03132e !important;
+  font-weight:700 !important;
+  border-bottom-right-radius:6px !important;
+  box-shadow:0 8px 24px -8px rgba(34,211,238,.8) !important;
+}
+.ai-msg.user::after{
+  content:attr(data-time);
+  position:absolute;
+  bottom:-16px;
+  right:8px;
+  font-size:.6rem;
+  color:rgba(157,184,221,.65);
+  font-weight:600;
+  letter-spacing:.3px;
+}
+
+/* Copy button on bot hover */
+.ai-msg.bot .ai-copy-btn{
+  position:absolute;
+  top:6px;
+  right:6px;
+  width:24px;
+  height:24px;
+  border-radius:8px;
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.15);
+  color:rgba(200,220,255,.7);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:.65rem;
+  opacity:0;
+  transition:opacity .2s, background .2s;
+  padding:0;
+}
+.ai-msg.bot:hover .ai-copy-btn{opacity:1;}
+.ai-msg.bot .ai-copy-btn:hover{
+  background:rgba(34,211,238,.3);
+  color:#fff;
+}
+
+/* ---------- TYPING INDICATOR UPGRADE ---------- */
+.ai-msg.typing{
+  background:linear-gradient(150deg,rgba(120,180,255,.18),rgba(120,180,255,.06)) !important;
+  border:1px solid rgba(34,211,238,.3) !important;
+  padding-left:46px !important;
+  min-height:50px !important;
+}
+.ai-msg.typing::before{
+  content:'🤖';
+  background:linear-gradient(140deg,#22d3ee,#3b8bff);
+  animation:aiTypingPulse 1.4s infinite;
+}
+@keyframes aiTypingPulse{
+  0%,100%{transform:scale(1);box-shadow:0 4px 12px -3px rgba(34,211,238,.7);}
+  50%{transform:scale(1.08);box-shadow:0 4px 20px -3px rgba(34,211,238,1);}
+}
+.ai-msg.typing .dot{
+  width:9px !important;
+  height:9px !important;
+  background:linear-gradient(140deg,#22d3ee,#3b8bff) !important;
+  box-shadow:0 0 8px rgba(34,211,238,.7);
+}
+
+/* ---------- QUICK CHIPS ---------- */
+.ai-quick{
+  padding:8px 14px 12px !important;
+  gap:8px !important;
+  background:linear-gradient(180deg,transparent,rgba(5,14,43,.4));
+}
+.ai-chip{
+  position:relative;
+  padding:9px 16px !important;
+  font-size:.74rem !important;
+  border-radius:22px !important;
+  background:linear-gradient(135deg,rgba(120,180,255,.14),rgba(120,180,255,.05)) !important;
+  border:1px solid rgba(140,190,255,.28) !important;
+  color:#c9dfff !important;
+  overflow:hidden;
+  box-shadow:0 4px 12px -4px rgba(0,0,0,.3);
+  transition:all .25s;
+}
+.ai-chip::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.25) 50%,transparent 70%);
+  transition:left .6s ease;
+}
+.ai-chip:hover{
+  background:linear-gradient(135deg,rgba(34,211,238,.3),rgba(59,139,255,.25)) !important;
+  border-color:rgba(34,211,238,.6) !important;
+  color:#fff !important;
+  transform:translateY(-2px);
+  box-shadow:0 8px 20px -6px rgba(34,211,238,.6);
+}
+.ai-chip:hover::before{left:100%;}
+
+/* ---------- INPUT FOOTER ---------- */
+.ai-foot{
+  padding:12px 14px !important;
+  background:linear-gradient(180deg,rgba(5,14,43,.5),rgba(5,14,43,.85)) !important;
+  border-top:1px solid rgba(140,190,255,.18) !important;
+  gap:8px !important;
+  position:relative;
+}
+.ai-foot::before{
+  content:'';
+  position:absolute;
+  top:-1px;
+  left:10%;
+  right:10%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(34,211,238,.5),transparent);
+}
+
+.ai-input{
+  padding:13px 20px !important;
+  font-size:.88rem !important;
+  border-radius:26px !important;
+  background:rgba(8,20,48,.9) !important;
+  border:1.5px solid rgba(140,190,255,.2) !important;
+  transition:all .25s;
+}
+.ai-input:focus{
+  border-color:rgba(34,211,238,.75) !important;
+  background:rgba(8,20,48,.98) !important;
+  box-shadow:
+    0 0 0 4px rgba(34,211,238,.15),
+    0 0 30px -6px rgba(34,211,238,.7) !important;
+}
+
+.ai-send{
+  width:46px !important;
+  height:46px !important;
+  border-radius:16px !important;
+  background:linear-gradient(140deg,#22d3ee,#3b8bff) !important;
+  font-size:1rem !important;
+  box-shadow:
+    0 8px 22px -8px rgba(34,211,238,.9),
+    0 0 0 1px rgba(255,255,255,.15) inset;
+  transition:all .22s;
+}
+.ai-send:hover:not(:disabled){
+  transform:scale(1.06) rotate(-8deg);
+  box-shadow:
+    0 12px 30px -8px rgba(34,211,238,1),
+    0 0 0 1px rgba(255,255,255,.25) inset;
+}
+.ai-send:active:not(:disabled){transform:scale(.96);}
+
+.ai-mic-btn{
+  width:46px !important;
+  height:46px !important;
+  border-radius:16px !important;
+  background:linear-gradient(140deg,rgba(120,180,255,.18),rgba(120,180,255,.06)) !important;
+  border:1px solid rgba(140,190,255,.25) !important;
+  color:#7db3ff !important;
+  font-size:1rem !important;
+  transition:all .22s;
+}
+.ai-mic-btn:hover{
+  background:linear-gradient(140deg,rgba(34,211,238,.3),rgba(59,139,255,.25)) !important;
+  color:#fff !important;
+  transform:scale(1.06);
+}
+.ai-mic-btn.listening{
+  background:linear-gradient(140deg,#ef4444,#f87171) !important;
+  color:#fff !important;
+  box-shadow:
+    0 0 0 4px rgba(239,68,68,.25),
+    0 0 30px -6px rgba(239,68,68,.9) !important;
+  animation:pulseMic 1.2s infinite, aiMicWave 1s infinite !important;
+}
+@keyframes aiMicWave{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.08);}
+}
+
+/* ---------- FAB (Floating Button) ---------- */
+.ai-fab{
+  background:linear-gradient(140deg,#22d3ee,#3b8bff,#ec4899) !important;
+  background-size:200% 200% !important;
+  animation:aiFabFloat 3s ease-in-out infinite, aiAvatarGlow 4s ease infinite !important;
+  box-shadow:
+    0 20px 50px -14px rgba(34,211,238,1),
+    0 0 0 1px rgba(255,255,255,.25) inset,
+    0 0 0 0 rgba(34,211,238,.6) !important;
+}
+@keyframes aiFabFloat{
+  0%,100%{transform:translateY(0) rotate(0deg);}
+  50%{transform:translateY(-6px) rotate(4deg);}
+}
+.ai-fab::after{
+  content:'';
+  position:absolute;
+  inset:-8px;
+  border-radius:50%;
+  border:2px solid rgba(34,211,238,.5);
+  animation:aiFabRing 2.5s ease-out infinite;
+  pointer-events:none;
+}
+@keyframes aiFabRing{
+  0%{transform:scale(.85);opacity:1;}
+  100%{transform:scale(1.5);opacity:0;}
+}
+
+/* ---------- MOBILE TUNE ---------- */
+@media (max-width:480px){
+  .ai-panel::before{filter:blur(9px);opacity:.55;}
+  .ai-msg{max-width:92% !important;}
+  .ai-chip{padding:7px 12px !important;font-size:.7rem !important;}
+  .ai-head{padding:14px 16px !important;}
+  .ai-send,.ai-mic-btn{width:42px !important;height:42px !important;}
+}
+
+/* ---------- LIGHT MODE ---------- */
+body.light-mode .ai-panel{
+  background:linear-gradient(165deg,rgba(255,255,255,.98),rgba(224,233,255,.96)) !important;
+}
+body.light-mode .ai-msg.bot{
+  background:linear-gradient(150deg,rgba(59,130,246,.12),rgba(59,130,246,.04)) !important;
+  border-color:rgba(59,130,246,.25) !important;
+  color:#0a1a3f !important;
+}
+body.light-mode .ai-input{
+  background:rgba(255,255,255,.95) !important;
+  color:#0a1a3f !important;
+  border-color:rgba(59,130,246,.3) !important;
+}
+body.light-mode .ai-chip{
+  background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(59,130,246,.04)) !important;
+  color:#1a4d8a !important;
+  border-color:rgba(59,130,246,.3) !important;
+}
+body.light-mode .ai-msg.user{
+  background:linear-gradient(135deg,#2563eb,#0891b2) !important;
+  color:#fff !important;
+}
+body.light-mode .ai-msg.bot::after,
+body.light-mode .ai-msg.user::after{
+  color:rgba(74,95,138,.75);
+}
+</style>
 <div id="loadingOverlay" style="position:fixed;inset:0;background:rgba(3,8,28,.9);backdrop-filter:blur(12px);z-index:9999;display:none;justify-content:center;align-items:center;flex-direction:column;gap:1rem;">
 <div class="spinner-border" style="width:3.6rem;height:3.6rem;color:#3b8bff;border-width:.28rem;" role="status"></div>
 <p style="color:#d6e6ff;font-weight:700;">Loading...</p>
@@ -2050,18 +2580,36 @@ body.light-mode .action-tile:hover{
 <button class="ai-fab" id="aiFab" onclick="toggleAIChat()"><i class="fas fa-robot"></i></button>
 <div class="ai-panel" id="aiPanel">
   <div class="ai-head">
-    <div class="ai-head-left"><div class="ai-avatar"><i class="fas fa-robot"></i></div>
-      <div><h6>NSM AI Assistant</h6><small><span class="ai-dot"></span> Online • <b style="color:#67e8f9;">Gemini</b></small><div class="ai-student-name"><i class="fas fa-user-graduate"></i> <span id="aiStudentNameText">Student</span></div></div>
+    <div class="ai-head-left">
+      <div class="ai-avatar"><i class="fas fa-robot"></i></div>
+      <div>
+        <h6>NSM Assistant</h6>
+        <small><span class="ai-dot"></span> Online • <b style="color:#67e8f9;">Gemini 2.0</b></small>
+        <div class="ai-student-name"><i class="fas fa-user-graduate"></i> <span id="aiStudentNameText">Student</span></div>
+      </div>
     </div>
-    <button class="ai-close" onclick="toggleAIChat()"><i class="fas fa-times"></i></button>
+    <div class="ai-head-actions">
+      <button class="ai-head-btn" onclick="clearAIChat()" title="New chat"><i class="fas fa-rotate-right"></i></button>
+      <button class="ai-head-btn danger" onclick="toggleAIChat()" title="Close"><i class="fas fa-times"></i></button>
+    </div>
   </div>
-  <div class="ai-body" id="aiBody"><div class="ai-msg bot" id="aiWelcomeMsg">അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.</div></div>
+
+  <div class="ai-body" id="aiBody">
+    <div class="ai-msg bot" id="aiWelcomeMsg">അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.</div>
+  </div>
+
   <div class="ai-quick">
     <button class="ai-chip" onclick="aiQuick('എന്റെ സമ്പാദ്യം എത്ര?')">💰 സമ്പാദ്യം</button>
     <button class="ai-chip" onclick="aiQuick('എന്റെ ഹാജർ')">📆 ഹാജർ</button>
     <button class="ai-chip" onclick="aiQuick('എന്റെ റിസൾട്ട്')">📊 റിസൾട്ട്</button>
+    <button class="ai-chip" onclick="aiQuick('ഇന്നത്തെ പരീക്ഷ കൗണ്ട്ഡൗൺ')">⏳ പരീക്ഷ</button>
   </div>
-  <div class="ai-foot"><input type="text" class="ai-input" id="aiInput" placeholder="എന്തെങ്കിലും ചോദിക്കൂ..." onkeydown="if(event.key==='Enter')sendAIMessage()"><button class="ai-mic-btn" id="aiMicBtn" onclick="toggleVoiceInput()" title="Voice input"><i class="fas fa-microphone"></i></button><button class="ai-send" onclick="sendAIMessage()"><i class="fas fa-paper-plane"></i></button></div>
+
+  <div class="ai-foot">
+    <input type="text" class="ai-input" id="aiInput" placeholder="എന്തെങ്കിലും ചോദിക്കൂ..." onkeydown="if(event.key==='Enter')sendAIMessage()" autocomplete="off">
+    <button class="ai-mic-btn" id="aiMicBtn" onclick="toggleVoiceInput()" title="Voice input"><i class="fas fa-microphone"></i></button>
+    <button class="ai-send" onclick="sendAIMessage()" title="Send"><i class="fas fa-paper-plane"></i></button>
+  </div>
 </div>
 <!-- WELCOME POPUP -->
 <div id="welcomePopup" class="welcome-popup">
@@ -2461,7 +3009,7 @@ async function restoreSession(){
   var s=localStorage.getItem('noor_session');
   if(s&&supabaseClient){try{
     currentUser=JSON.parse(s);
-        // 🚫 Check if blocked
+    // 🚫 Check if blocked
     try {
       var blockCheck = await supabaseClient.from('students').select('is_blocked,block_reason,blocked_at').eq('studentid',currentUser.studentId).single();
       if (blockCheck.data && blockCheck.data.is_blocked === true) {
@@ -2471,13 +3019,12 @@ async function restoreSession(){
         return;
       }
     } catch(bce) {}
+    
+    // ⚡ Load settings AFTER session restored (needed for dashboard)
+    try{ await loadAllSettings(); }catch(e){}
+    
     loginSection.style.display='none';dashboardSection.style.display='block';
-    updateDashboardUI();loadActivitiesAndCalendar();loadStudentBalance();loadStudentNotifications();
-    await refreshStudentAttendance();
-    loadOverallMadrasaRank();loadTopWinners();
-    applyStudentPortalVisibility();subscribeNotifications();
-    showAIAssistant();
-    await initNewFeatures();
+    // ... rest same
   }catch(e){console.error('restoreSession',e);}}
 }
 function subscribeNotifications(){
@@ -2503,14 +3050,75 @@ function showAIAssistant(){
   if(!currentUser)return;
   document.getElementById('aiFab').classList.add('show');
   var nameEl=document.getElementById('aiStudentNameText');if(nameEl)nameEl.textContent=currentUser.name||'Student';
-  var welcome=document.getElementById('aiWelcomeMsg');
-  if(welcome){welcome.innerHTML='അസ്സലാമു അലൈക്കും <b>'+escapeHtml(currentUser.name||'')+'</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.';}
+  var welcome = document.getElementById('aiWelcomeMsg');
+  if(welcome){
+  welcome.innerHTML = 'അസ്സലാമു അലൈക്കും <b>'+escapeHtml(currentUser.name||'')+'</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.<br><br>എന്തെങ്കിലും ചോദിക്കൂ 👇<button class="ai-copy-btn" onclick="copyAIMsg(this)" title="Copy"><i class="fas fa-copy"></i></button>';
+  var now = new Date();
+  welcome.setAttribute('data-time', String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'));
 }
 var aiOpen=false,aiHistory=[];
 function toggleAIChat(){if(!currentUser){showToast('Login first','error');return;}aiOpen=!aiOpen;document.getElementById('aiPanel').classList.toggle('open',aiOpen);}
 function aiQuick(t){document.getElementById('aiInput').value=t;sendAIMessage();}
-function aiAddMsg(t,w){var b=document.getElementById('aiBody');var d=document.createElement('div');d.className='ai-msg '+w;d.innerHTML=t;b.appendChild(d);b.scrollTop=b.scrollHeight;}
-/* ===== AI with Typing Indicator + Speed Optimizations ===== */
+function aiAddMsg(t, w){
+  var b = document.getElementById('aiBody');
+  if(!b) return;
+  var d = document.createElement('div');
+  d.className = 'ai-msg ' + w;
+
+  // ⏰ Timestamp
+  var now = new Date();
+  var hh = String(now.getHours()).padStart(2,'0');
+  var mm = String(now.getMinutes()).padStart(2,'0');
+  d.setAttribute('data-time', hh + ':' + mm);
+
+  if(w === 'bot'){
+    // Add copy button for bot messages
+    d.innerHTML = t + '<button class="ai-copy-btn" onclick="copyAIMsg(this)" title="Copy"><i class="fas fa-copy"></i></button>';
+  } else {
+    d.innerHTML = t;
+  }
+
+  b.appendChild(d);
+  b.scrollTop = b.scrollHeight;
+  return d;
+}
+
+function copyAIMsg(btn){
+  var msg = btn.parentNode;
+  // Remove copy button from text
+  var clone = msg.cloneNode(true);
+  var cb = clone.querySelector('.ai-copy-btn');
+  if(cb) cb.remove();
+  var text = clone.innerText.trim();
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(function(){
+      var icon = btn.querySelector('i');
+      if(icon){
+        icon.className = 'fas fa-check';
+        setTimeout(function(){ icon.className = 'fas fa-copy'; }, 1500);
+      }
+    });
+  }
+}
+
+function clearAIChat(){
+  if(_aiSending) return;
+  var b = document.getElementById('aiBody');
+  if(!b) return;
+  b.innerHTML = '';
+  aiHistory = [];
+  var welcome = currentUser
+    ? 'അസ്സലാമു അലൈക്കും <b>' + escapeHtml(currentUser.name||'') + '</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.<br><br>എന്തെങ്കിലും ചോദിക്കൂ 👇'
+    : 'അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.';
+  var d = document.createElement('div');
+  d.className = 'ai-msg bot';
+  d.id = 'aiWelcomeMsg';
+  var now = new Date();
+  d.setAttribute('data-time', String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'));
+  d.innerHTML = welcome + '<button class="ai-copy-btn" onclick="copyAIMsg(this)" title="Copy"><i class="fas fa-copy"></i></button>';
+  b.appendChild(d);
+  showToast('🆕 New chat', 'info');
+}/* ===== AI with Typing Indicator + Speed Optimizations ===== */
 var _cachedBalance = null;
 var _cachedBalanceTime = 0;
 var _BALANCE_CACHE_MS = 60000;
@@ -2537,6 +3145,8 @@ function showTypingIndicator(){
   var d = document.createElement('div');
   d.className = 'ai-msg bot typing';
   d.setAttribute('id','aiTypingIndicator');
+  var now = new Date();
+  d.setAttribute('data-time', String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'));
   d.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
   b.appendChild(d);
   b.scrollTop = b.scrollHeight;
@@ -5356,17 +5966,27 @@ Object.assign(window,{
   openNoticeBoard,closeNoticeBoard,loadNoticeAdmin,togglePinNotice,
   editNoticeAdmin,deleteNoticeAdmin,openNoticeForm,saveNoticeAdmin,saveMoralValuesBulk,recalcMoralOverall,
   loadDailyHub,parseClassExamSubjects,stringifyClassExamSubjects,getSubjectsForClass,
-calculateGradeFromPercent,autoCalculateRanks,previewSubjectMatrix,switchCreationMode,updateCreationTextMeta,editCreationAdmin,
+calculateGradeFromPercent,autoCalculateRanks,previewSubjectMatrix,switchCreationMode,updateCreationTextMeta,editCreationAdmin,clearAIChat,copyAIMsg,
 });
 
 /* ===== INIT ===== */
 async function initApp(){
-  try{await loadAllSettings();}catch(e){}
   initTheme();
-  await restoreSession();   // ← restoreSession() initNewFeatures() call ചെയ്യും
+  await restoreSession();
+  // 🚀 Remove splash after everything ready
+  var splash = document.getElementById('splashScreen');
+  if(splash){
+    splash.style.opacity = '0';
+    setTimeout(function(){ splash.remove(); }, 400);
+  }
   console.log('%c✅ Noorussalam Madrasa v22.1 Ultimate+ Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
 }
-initApp();
+// 🚀 Defer app init until DOM ready
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 /* ===== HANDLE URL HASH & QUERY FOR SHORTCUTS ===== */
 function handleShortcutNavigation() {
   var hash = (window.location.hash || '').replace('#', '').toLowerCase();
