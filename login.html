@@ -3298,19 +3298,75 @@ async function callGeminiAI(userMessage){
 }
 
 async function aiRespond(q){
-  var t = q.toLowerCase();
-  var uname = escapeHtml(currentUser.name||'Student');
-  if(/(balance|palathulli|savings|സമ്പാദ്യം)/.test(t)){
-    var b = await getStudentBalance(currentUser.studentId);
-    return '💰 '+uname+', ബാലൻസ്: <b>₹'+b.toFixed(2)+'</b>';
-  }
-  if(/(attendance|ഹാജർ)/.test(t))
-    return '📆 '+uname+', ഹാജർ: <b>'+(currentUser.attendance||0)+'%</b>';
-  if(/(result|റിസൾട്ട്|grade|mark)/.test(t))
-    return '📊 '+uname+', Grade: <b>'+(currentUser.overallGrade||'N/A')+'</b>';
-  if(/(hi|hello|salam|ഹലോ)/.test(t))
-    return 'വ അലൈക്കും സലാം '+uname+'! 👋';
-  return '🤔 '+uname+', ക്ഷമിക്കണം, എനിക്ക് മനസ്സിലായില്ല. വീണ്ടും ചോദിക്കൂ.';
+  var t=q.toLowerCase();var uname=escapeHtml((currentUser.name||'Student').split(' ')[0]);
+  
+  // ⭐ Fun + Smart fallback
+  var FUN_RESPONSES = {
+    balance: async function(){
+      var b=await getStudentBalance(currentUser.studentId);
+      var jokes = b>1000 ? 'ബിർയാനി കഴിക്കാൻ മതി 😄' : b>500 ? 'ചായയും പരിപ്പുവടയും മതി ☕' : b>100 ? 'ഒരു പേപ്പർ കട മതി 🍬' : 'ഒന്നും ഇല്ല, പഠിക്കാൻ ശ്രമിക്ക് 😅';
+      return '💰 '+uname+', നിങ്ങളുടെ പലതുള്ളിയിൽ <b>₹'+b.toFixed(2)+'</b> ഉണ്ട്! '+jokes;
+    },
+    attendance: function(){
+      var a=currentUser.attendance||0;
+      var msg = a>=90?'കിടിലൻ! 💪 സ്കൂൾ ഒരിക്കലും miss ചെയ്യുന്നില്ലല്ലോ!':a>=75?'ഭേദപ്പെട്ടത് 👍 ഇനിയും മെച്ചപ്പെടുത്താം!':a>=50?'അളിയാ, കുറച്ച് കൂടി വരണം 😅 മടി കൂടുതലാണോ?':'ഇത് കണ്ടിട്ട് സർ ദേഷ്യപ്പെടും! 😂';
+      return '📆 '+uname+', ഹാജർ: <b>'+a+'%</b>. '+msg;
+    },
+    result: function(){
+      var g=currentUser.overallGrade||'N/A';var r=currentUser.rank||'—';
+      var jokes = g==='A+'||g==='A'?'അടിപൊളി! 🌟 ഞാൻ അഭിമാനിക്കുന്നു!':g==='B+'||g==='B'?'നല്ലത്! 👌 1st റാങ്ക് കിട്ടാൻ കുറച്ച് കൂടി!':'അളിയാ, പഠിക്കാൻ സമയം ആയി! 📚 ഞാൻ പോലും നാണിക്കുന്നു 😅';
+      return '📊 '+uname+', Grade: <b>'+g+'</b> | Rank: <b>#'+r+'</b><br>'+jokes;
+    },
+    rank: function(){
+      var r=currentUser.rank||'—';
+      var jokes = r==='1'||r==='2'||r==='3'?'🔥 സൂപ്പർ! ഞാൻ പോലും ജീലസ് ആണ്!':'ഇനിയും ഉയരാം! 💪 കഷ്ടപ്പെട്ടാൽ 1st റാങ്ക് നിങ്ങളുടേത്!';
+      return '🏆 '+uname+', Class Rank: <b>#'+r+'</b><br>'+jokes;
+    },
+    timing: function(){
+      return '🕐 Madrasa timings: <b>ശനി-വ്യാഴം 6AM-10AM</b><br>അളിയാ, രാവിലെ എഴുന്നേൽക്കാൻ പ്രയാസമാണോ? 😴 രാത്രി നേരത്തെ കിടക്ക്!';
+    },
+    contact: function(){
+      return '📞 Contact: <b>+91 70346 78818</b><br>എന്തേലും സംശയം വന്നാൽ വിളിക്ക്, അവർ സൂപ്പർ ആണ്! 👍';
+    },
+    founder: function(){
+      return '🏛️ Founders: പട്ട മുഹമ്മദ്, തോട്ടുങ്ങൽ മുഹമ്മദ് കുട്ടി, പട്ടാണി ഇസ്മായിൽ മുസ്ലിയാർ അവർ!<br>രാവും പകലും കഷ്ടപ്പെട്ടാണ് ഈ മദ്റസ കെട്ടിപ്പടുത്തത്. സ്ത്രീകളുടെ സംഭാവനയും മറക്കരുത്! ❤️';
+    },
+    greeting: function(){
+      var greetings = [
+        'വ അലൈക്കും സലാം '+uname+'! 👋 എന്താ വിശേഷം? പഠിക്കാൻ മൂഡ് ഉണ്ടോ? 😏',
+        'ഹായ് '+uname+'! 🔥 ഇന്ന് എന്താ പ്ലാൻ? ചായയും പരിപ്പുവടയും കഴിച്ചോ? ☕',
+        'സലാം '+uname+'! 😊 ഞാൻ NSM AI, എന്ത് സഹായം വേണം?',
+      ];
+      return greetings[Math.floor(Math.random()*greetings.length)];
+    },
+    thanks: function(){
+      return '🌟 ബാർകല്ലാഹു ഫീക് '+uname+'! ഇനിയും സംശയം വന്നാൽ ഞാൻ ഇവിടെ ഉണ്ട്. ഞാൻ ഉറങ്ങാറില്ല 😎';
+    },
+    help: function(){
+      return '🤖 '+uname+', ഞാൻ സഹായിക്കാം:<br>• 💰 സമ്പാദ്യം<br>• 📊 റിസൾട്ട് / റാങ്ക്<br>• 📆 ഹാജർ<br>• 📝 ഹോംവർക്ക്<br>• 🕌 Madrasa timings<br>• 📞 Contact<br><br>ഏതാ വേണ്ടത്? 😊';
+    },
+  };
+  
+  // Check keywords
+  if(/(balance|palathulli|savings|സമ്പാദ്യം|പലതുള്ളി)/.test(t)) return await FUN_RESPONSES.balance();
+  if(/(attendance|ഹാജർ|ഹാജര്‍)/.test(t)) return FUN_RESPONSES.attendance();
+  if(/(result|റിസൾട്ട്|grade|mark|ഗ്രേഡ്|മാർക്ക്)/.test(t)) return FUN_RESPONSES.result();
+  if(/(rank|റാങ്ക്|റാങ്ക)/.test(t)) return FUN_RESPONSES.rank();
+  if(/(timing|സമയം|hours|time)/.test(t)) return FUN_RESPONSES.timing();
+  if(/(contact|ഫോൺ|phone|നമ്പർ)/.test(t)) return FUN_RESPONSES.contact();
+  if(/(founder|സ്ഥാപക|ഉസ്താദ്)/.test(t)) return FUN_RESPONSES.founder();
+  if(/(hi|hello|salam|ഹലോ|ഹായ്|assalam|സലാം)/.test(t)) return FUN_RESPONSES.greeting();
+  if(/(thanks|thank you|നന്ദി|shukran)/.test(t)) return FUN_RESPONSES.thanks();
+  if(/(help|സഹായം|എന്ത് ചെയ്യാം)/.test(t)) return FUN_RESPONSES.help();
+  
+  // ⭐ Funny fallback
+  var fallbacks = [
+    '🤔 '+uname+', എന്റെ brain cell ഇപ്പോൾ ലീവിൽ ആണ് 😅 വേറെ എന്തേലും ചോദിക്ക്!',
+    '😂 '+uname+', ഇത് ഞാൻ പോലും ചിരിച്ചു! വേറെ എന്തേലും?',
+    '🤷 അളിയാ '+uname+', എനിക്ക് ഇത് മനസ്സിലായില്ല. ലളിതമായി ചോദിക്ക്! 😄',
+    '🤖 '+uname+', ഞാൻ AI ആണ്, മനുഷ്യനല്ല. അതിനാൽ ദയവായി സ്റ്റാൻഡേർഡ് ചോദ്യങ്ങൾ ചോദിക്ക് 😎',
+  ];
+  return fallbacks[Math.floor(Math.random()*fallbacks.length)];
 }
 
 /* ===== DASHBOARD ===== */
