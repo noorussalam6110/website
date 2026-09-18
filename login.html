@@ -2299,27 +2299,67 @@ body.light-mode .ai-msg.user::after{
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📚 Class-wise Teachers</h5><p class="text-white-50 small mb-2">Format: <code style="color:#7db3ff;">class: teacher_name</code></p><textarea id="settingsClassTeachers" class="modal-form-input" style="min-height:180px;font-family:monospace;font-size:.85rem;"></textarea><button class="btn-update mt-3" onclick="saveClassTeachers()">Save</button></div>
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);">
   <h5 class="text-white mb-3" style="font-size:.95rem;">📚 Class + Exam-wise Subjects</h5>
-  <div class="text-white-50 small mb-2" style="line-height:1.7;">
-    <b style="color:#67e8f9;">Format 1 (exam-specific):</b><br>
-    <code style="color:#7db3ff;background:rgba(8,20,48,.6);padding:2px 6px;border-radius:6px;">class|exam: subject1,subject2</code><br>
-    <b style="color:#67e8f9;">Format 2 (class default):</b><br>
-    <code style="color:#7db3ff;background:rgba(8,20,48,.6);padding:2px 6px;border-radius:6px;">class: subject1,subject2</code>
+  
+  <div style="background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.22);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.74rem;color:#67e8f9;line-height:1.7;">
+    <i class="fas fa-lightbulb"></i> <b>എങ്ങനെ ഉപയോഗിക്കാം:</b><br>
+    1️⃣ Class തിരഞ്ഞെടുക്കുക<br>
+    2️⃣ 📝 Exams (താഴെ) list-ൽ നിന്ന് exams auto-ആയി ഇവിടെ വരും<br>
+    3️⃣ ഓരോ പരീക്ഷയ്ക്കും വിഷയങ്ങൾ comma-ൽ നൽകുക (ഉദാ: <code style="color:#c9dfff;">Arabic,Malayalam,Maths</code>)<br>
+    4️⃣ <b>Default</b> row = എല്ലാ പരീക്ഷകൾക്കും common subjects
   </div>
-  <div style="background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.22);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:.72rem;color:#67e8f9;line-height:1.7;">
-    <b>ഉദാഹരണം:</b><br>
-    <code style="color:#c9dfff;">1|First Term: Arabic,Malayalam,Maths</code><br>
-    <code style="color:#c9dfff;">1|Half Yearly: Arabic,Malayalam,Maths,English</code><br>
-    <code style="color:#c9dfff;">1|Annual: Arabic,Malayalam,Maths,English,Science</code><br>
-    <code style="color:#c9dfff;">5: Arabic,Malayalam,English,Maths,Science</code> <span style="color:#9db8dd;">(default for all 5th exams)</span>
+  
+  <div class="row g-2 mb-3">
+    <div class="col-md-6">
+      <label class="text-white-50 small">🎓 Class</label>
+      <select id="settingsSubjectClassSelect" class="modal-form-input" onchange="renderClassExamSubjectsUI()"></select>
+    </div>
+    <div class="col-md-6">
+      <label class="text-white-50 small">📋 Bulk Copy (optional)</label>
+      <div class="d-flex gap-2">
+        <select id="settingsSubjectCopyFrom" class="modal-form-input" style="flex:1;">
+          <option value="">Copy from class...</option>
+        </select>
+        <button type="button" class="btn-load" onclick="copyClassSubjectsFrom()" style="padding:9px 14px;"><i class="fas fa-copy"></i></button>
+      </div>
+    </div>
   </div>
-  <textarea id="settingsClassSubjects" class="modal-form-input" style="min-height:220px;font-family:monospace;font-size:.82rem;" placeholder="1|First Term: Arabic,Malayalam,Maths&#10;1|Annual: Arabic,Malayalam,Maths,English&#10;5: Arabic,Malayalam,English,Maths,Science"></textarea>
+  
+  <div id="settingsSubjectExamsArea" style="background:rgba(8,20,48,.5);padding:14px;border-radius:14px;border:1px solid var(--stroke);min-height:100px;">
+    <div class="text-white-50 text-center" style="padding:20px;font-size:.82rem;">Class തിരഞ്ഞെടുക്കുക...</div>
+  </div>
+  
   <div class="d-flex gap-2 mt-3 flex-wrap">
-    <button class="btn-update" onclick="saveClassSubjects()"><i class="fas fa-save"></i> Save Subjects</button>
+    <button class="btn-update" onclick="saveClassSubjectsUI()"><i class="fas fa-save"></i> Save Subjects</button>
     <button class="btn-load" onclick="previewSubjectMatrix()"><i class="fas fa-eye"></i> Preview Matrix</button>
   </div>
+  
+  <!-- Hidden field — പഴയ preview/share code-ന് വേണ്ടി -->
+  <textarea id="settingsClassSubjects" style="display:none;"></textarea>
 </div>
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📝 Exams (comma separated)</h5><input type="text" id="settingsExams" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('examsList','settingsExams')">Save</button></div>
-      <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">🌟 Traits (comma separated)</h5><input type="text" id="settingsTraits" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('traitsList','settingsTraits')">Save</button></div>
+      <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);">
+  <h5 class="text-white mb-3" style="font-size:.95rem;">🌟 Moral Traits</h5>
+  
+  <label class="text-white-50 small d-block mb-1">🌐 Default (എല്ലാ ക്ലാസ്സുകൾക്കും)</label>
+  <input type="text" id="settingsTraits" class="modal-form-input mb-2" placeholder="Discipline,Respect,Honesty,Punctuality,Cleanliness">
+  <button class="btn-update mb-3" onclick="saveSetting('traitsList','settingsTraits')"><i class="fas fa-save"></i> Save Default</button>
+  
+  <hr style="border-color:rgba(140,190,255,.12);margin:14px 0;">
+  
+  <label class="text-white-50 small d-block mb-1">🎯 Per-Class Override (optional)</label>
+  <p class="text-white-50 small mb-2" style="line-height:1.7;">
+    Format: <code style="color:#7db3ff;background:rgba(8,20,48,.6);padding:2px 6px;border-radius:6px;">class: trait1,trait2</code><br>
+    <span style="color:#67e8f9;">ഒരു ക്ലാസ്സിനു override നൽകിയാൽ, ആ ക്ലാസ്സിന് default മാറി ഇത് ഉപയോഗിക്കും. മറ്റുള്ളവ default തുടരും.</span>
+  </p>
+  <div style="background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.22);border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:.72rem;color:#67e8f9;line-height:1.7;">
+    <b>ഉദാഹരണം:</b><br>
+    <code style="color:#c9dfff;">1: Discipline,Respect,Honesty</code><br>
+    <code style="color:#c9dfff;">5: Discipline,Respect,Honesty,Punctuality,Cleanliness,Teamwork</code><br>
+    <code style="color:#c9dfff;">10: Discipline,Respect,Honesty,Leadership,Responsibility</code>
+  </div>
+  <textarea id="settingsClassTraits" class="modal-form-input" style="min-height:140px;font-family:monospace;font-size:.82rem;" placeholder="1: Discipline,Respect,Honesty&#10;5: Discipline,Respect,Punctuality,Cleanliness"></textarea>
+  <button class="btn-update mt-3" onclick="saveClassTraits()"><i class="fas fa-save"></i> Save Class Traits</button>
+</div>
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">💰 Minimum Withdrawal</h5><input type="number" id="settingsMinWithdraw" class="modal-form-input" /><button class="btn-update mt-3" onclick="saveSetting('minWithdraw','settingsMinWithdraw')">Save</button></div>
       <div class="mb-4" style="background:rgba(120,180,255,.04);padding:16px;border-radius:16px;border:1px solid var(--stroke);"><h5 class="text-white mb-3" style="font-size:.95rem;">📝 Custom Headings</h5><label class="text-white-50 small d-block mb-1">Extra-Curricular Title</label><input type="text" id="settingsHeadingExtra" class="modal-form-input mb-2"><label class="text-white-50 small d-block mb-1">Overall Rank Title</label><input type="text" id="settingsHeadingOverallRank" class="modal-form-input mb-2"><label class="text-white-50 small d-block mb-1">Monthly Progress Title</label><input type="text" id="settingsHeadingMonthly" class="modal-form-input mb-2"><button class="btn-update mt-2" onclick="saveHeadings()"><i class="fas fa-save"></i> Save Headings</button></div>
       <div class="mb-4" style="background:linear-gradient(135deg,rgba(239,68,68,.06),rgba(251,191,36,.04));padding:16px;border-radius:16px;border:1px solid rgba(239,68,68,.25);">
@@ -2928,6 +2968,7 @@ async function loadAllSettings(){
     if(SETTINGS_CACHE.minWithdraw)MIN_WITHDRAW=parseInt(SETTINGS_CACHE.minWithdraw)||100;
     if(SETTINGS_CACHE.classSubjectsList){   CLASS_EXAM_SUBJECTS = parseClassExamSubjects(SETTINGS_CACHE.classSubjectsList);   syncLegacyClassSubjects(); }
     if(SETTINGS_CACHE.extracurricularCategories)EXTRACURRICULAR_CATS=SETTINGS_CACHE.extracurricularCategories.split(',').map(function(s){return s.trim();}).filter(Boolean);
+    if(SETTINGS_CACHE.classTraitsList) CLASS_TRAITS = parseClassTraits(SETTINGS_CACHE.classTraitsList);
     if(SETTINGS_CACHE.swadarMuallimName)SWADAR_MUALLIM_NAME=SETTINGS_CACHE.swadarMuallimName;
     if(SETTINGS_CACHE.resultPublishTime)RESULT_PUBLISH_TIME=SETTINGS_CACHE.resultPublishTime;
     if(SETTINGS_CACHE.swadarSignature)SWADAR_SIGNATURE=SETTINGS_CACHE.swadarSignature;
@@ -2948,6 +2989,10 @@ function populateSettingsForm(){
   var s5=document.getElementById('settingsMinWithdraw');if(s5)s5.value=(SETTINGS_CACHE.minWithdraw||100);
   var s6=document.getElementById('swMinAmount');if(s6)s6.textContent=MIN_WITHDRAW;
   var s7=document.getElementById('settingsClassSubjects'); if(s7) s7.value = stringifyClassExamSubjects(CLASS_EXAM_SUBJECTS);
+  var s4 = document.getElementById('settingsClassTraits');
+if(s4) s4.value = stringifyClassTraits(CLASS_TRAITS);
+populateSubjectClassSelect();
+renderClassExamSubjectsUI();
 }
 function populateDynamicDropdowns(){var me=document.getElementById('marksExamName');if(me)me.innerHTML='<option value="">-- Select --</option>'+EXAMS_LIST.map(function(e){return'<option value="'+e+'">'+e+'</option>';}).join('');}
 
@@ -3285,61 +3330,39 @@ async function sendAIMessage(){
   if(sendBtn) sendBtn.disabled = false;
   input.focus();
 }
-
 async function callGeminiAI(userMessage){
-  if(!currentUser) return null;
+  if(!currentUser)return null;
   try{
-    var balance = 0;
-    var now = Date.now();
-    if(_cachedBalance !== null && (now - _cachedBalanceTime) < _BALANCE_CACHE_MS){
-      balance = _cachedBalance;
-    }else{
-      try{
-        balance = await getStudentBalance(currentUser.studentId);
-        _cachedBalance = balance;
-        _cachedBalanceTime = now;
-      }catch(e){}
-    }
-
-    var controller = new AbortController();
-    var timeoutId = setTimeout(function(){ controller.abort(); }, 12000);
-
-    var context = {
-      name: currentUser.name,
-      class: currentUser.class,
-      grade: currentUser.overallGrade,
-      rank: currentUser.rank,
-      attendance: currentUser.attendance,
-      balance: Number(balance).toFixed(2),
-      minWithdraw: MIN_WITHDRAW
+    var balance=0;try{balance=await getStudentBalance(currentUser.studentId);}catch(e){}
+    var context={
+      name:currentUser.name,
+      class:currentUser.class,
+      roll:currentUser.roll,
+      studentId:currentUser.studentId,
+      grade:currentUser.overallGrade,
+      rank:currentUser.rank,
+      attendance:currentUser.attendance,
+      balance:Number(balance).toFixed(2),
+      minWithdraw:MIN_WITHDRAW,
+      moralGrade:currentUser.moralValuesGrade,
+      madrasaInfo:{},
+      palathulliInfo:{minBalance:MIN_WITHDRAW}
     };
-
-    var res = await fetch(GEMINI_EDGE_FN, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-        'apikey': SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ message: userMessage, context: context }),
-      signal: controller.signal
+    var res=await fetch(GEMINI_EDGE_FN,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+SUPABASE_ANON_KEY,'apikey':SUPABASE_ANON_KEY},
+      body:JSON.stringify({message:userMessage,context:context,history:aiHistory.slice(-4)})
     });
-
-    clearTimeout(timeoutId);
-    if(!res.ok) return null;
-
-    var data = await res.json();
-    if(data && data.reply){
+    if(!res.ok)return null;
+    var data=await res.json();
+    if(data&&data.reply){
       return escapeHtml(String(data.reply))
-        .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-        .replace(/\n/g, '<br>');
+        .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+        .replace(/\n/g,'<br>');
     }
     return null;
-  }catch(e){
-    return null;
-  }
+  }catch(e){return null;}
 }
-
 async function aiRespond(q){
   var t=q.toLowerCase();var uname=escapeHtml((currentUser.name||'Student').split(' ')[0]);
   
@@ -3721,7 +3744,8 @@ async function showMoralValuesModal(){
 
     // Trait cards
     h+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">';
-    TRAITS_LIST.forEach(function(t){
+    var traits = getTraitsForClass(currentUser.class);
+traits.forEach(function(t){ ... });
       var g=tmap[t]||'—';
       var gc=getGradeDetails(g);
       var c=(g==='—')?'#6d88ad':gc.color;
@@ -4151,7 +4175,9 @@ async function loadMoralValuesAdmin(){
     moralValuesData.forEach(function(s){s.traits=mvMap[s.studentid]||{};});
 
     var sc=currentAdminClass==='all';
-    var traits=TRAITS_LIST;
+    var traits = (currentAdminClass && currentAdminClass !== 'all')
+  ? getTraitsForClass(currentAdminClass)
+  : TRAITS_LIST.slice();
     var h='<table><thead><tr><th>#</th><th>Name</th>'+(sc?'<th>Class</th>':'');
     traits.forEach(function(t){h+='<th style="text-align:center;font-size:.58rem;">'+escapeHtml(t)+'</th>';});
     h+='<th style="text-align:center;">Overall</th></tr></thead><tbody>';
@@ -4853,7 +4879,143 @@ function openActivityForm(){
 }
 async function saveActivity(e){e.preventDefault();try{await supabaseClient.from('activities').insert({activity:document.getElementById('act_title').value.trim(),description:document.getElementById('act_desc').value.trim()});showToast('✅','success');closeModal('globalModal');loadAllActivities();}catch(e){showToast('❌','error');}}
 async function deleteActivity(id){if(!confirm('Delete?'))return;await supabaseClient.from('activities').delete().eq('id',id);loadAllActivities();}
+/* ===== CLASS+EXAM SUBJECTS — Dynamic UI ===== */
+let CLASS_TRAITS = {};  // per-class traits
 
+function populateSubjectClassSelect(){
+  var sel = document.getElementById('settingsSubjectClassSelect');
+  var copySel = document.getElementById('settingsSubjectCopyFrom');
+  var opts = [1,2,3,4,5,6,7,8,9,10].map(function(c){
+    return '<option value="'+c+'">Class '+c+'</option>';
+  }).join('');
+  if(sel) sel.innerHTML = opts;
+  if(copySel) copySel.innerHTML = '<option value="">Copy from class...</option>' + opts;
+}
+
+function renderClassExamSubjectsUI(){
+  var clsEl = document.getElementById('settingsSubjectClassSelect');
+  var area = document.getElementById('settingsSubjectExamsArea');
+  if(!clsEl || !area) return;
+  var cls = clsEl.value;
+  if(!cls){
+    area.innerHTML = '<div class="text-white-50 text-center" style="padding:20px;font-size:.82rem;">Class തിരഞ്ഞെടുക്കുക...</div>';
+    return;
+  }
+  
+  var classData = CLASS_EXAM_SUBJECTS[cls] || {};
+  var exams = EXAMS_LIST.slice();
+  
+  if(exams.length === 0){
+    area.innerHTML = '<div style="padding:14px;text-align:center;color:#fcd34d;font-size:.8rem;"><i class="fas fa-exclamation-triangle"></i> ആദ്യം 📝 Exams list-ൽ exams ചേർക്കുക</div>';
+    return;
+  }
+  
+  var html = '';
+  // Default row
+  var defSubs = classData['__default__'] || [];
+  html += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;padding:10px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.28);border-radius:12px;">';
+  html += '<div style="min-width:130px;font-weight:800;color:#fcd34d;font-size:.8rem;"><i class="fas fa-star"></i> Default</div>';
+  html += '<input type="text" class="modal-form-input subject-input" data-exam="__default__" value="'+escapeHtml(defSubs.join(','))+'" placeholder="e.g., Arabic,Malayalam,Maths" style="flex:1;font-size:.82rem;">';
+  html += '</div>';
+  
+  // Exam rows
+  exams.forEach(function(exam){
+    var subs = classData[exam] || [];
+    var isOverridden = subs.length > 0;
+    html += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;padding:10px;background:rgba(59,139,255,.05);border:1px solid rgba(140,190,255,.15);border-radius:12px;">';
+    html += '<div style="min-width:130px;font-weight:800;color:#fff;font-size:.8rem;">';
+    html += isOverridden
+      ? '<i class="fas fa-check-circle" style="color:#6ee7b7;"></i> '
+      : '<i class="fas fa-circle-notch" style="color:#6d88ad;"></i> ';
+    html += escapeHtml(exam) + '</div>';
+    html += '<input type="text" class="modal-form-input subject-input" data-exam="'+escapeHtml(exam)+'" value="'+escapeHtml(subs.join(','))+'" placeholder="Override (blank = default)" style="flex:1;font-size:.82rem;">';
+    html += '</div>';
+  });
+  
+  html += '<div style="margin-top:10px;font-size:.7rem;color:#9db8dd;"><i class="fas fa-info-circle"></i> Blank ആയി വിട്ടാൽ Default subjects ഉപയോഗിക്കും</div>';
+  area.innerHTML = html;
+}
+
+async function saveClassSubjectsUI(){
+  var cls = document.getElementById('settingsSubjectClassSelect')?.value;
+  if(!cls){showToast('Class select ചെയ്യുക','error');return;}
+  
+  var inputs = document.querySelectorAll('#settingsSubjectExamsArea .subject-input');
+  if(inputs.length === 0){showToast('Load data first','error');return;}
+  
+  // Rebuild this class
+  CLASS_EXAM_SUBJECTS[cls] = {};
+  var anyData = false;
+  inputs.forEach(function(inp){
+    var exam = inp.dataset.exam;
+    var val = inp.value.trim();
+    if(!val) return;
+    var subs = val.split(',').map(function(s){return s.trim();}).filter(Boolean);
+    if(subs.length === 0) return;
+    CLASS_EXAM_SUBJECTS[cls][exam] = subs;
+    anyData = true;
+  });
+  if(!anyData) delete CLASS_EXAM_SUBJECTS[cls];
+  
+  syncLegacyClassSubjects();
+  
+  try{
+    var str = stringifyClassExamSubjects(CLASS_EXAM_SUBJECTS);
+    await supabaseClient.from('settings').upsert({key:'classSubjectsList',value:str},{onConflict:'key'});
+    SETTINGS_CACHE.classSubjectsList = str;
+    var ta = document.getElementById('settingsClassSubjects');
+    if(ta) ta.value = str;
+    showToast('✅ Class '+cls+' subjects saved','success');
+    if(typeof confetti !== 'undefined') confetti({particleCount:60,spread:70,origin:{y:.7}});
+    renderClassExamSubjectsUI();
+  }catch(e){showToast('❌ '+e.message,'error');}
+}
+
+function copyClassSubjectsFrom(){
+  var from = document.getElementById('settingsSubjectCopyFrom')?.value;
+  var to = document.getElementById('settingsSubjectClassSelect')?.value;
+  if(!from || !to){showToast('Select both classes','error');return;}
+  if(from === to){showToast('Same class','error');return;}
+  if(!CLASS_EXAM_SUBJECTS[from]){showToast('Source class has no subjects','error');return;}
+  if(!confirm('Copy Class '+from+' → Class '+to+'?')) return;
+  CLASS_EXAM_SUBJECTS[to] = JSON.parse(JSON.stringify(CLASS_EXAM_SUBJECTS[from]));
+  renderClassExamSubjectsUI();
+  showToast('✅ Copied! Save ചെയ്യാൻ മറക്കരുത്','info');
+}
+
+/* ===== CLASS-WISE TRAITS ===== */
+function parseClassTraits(str){
+  var r = {};
+  if(!str) return r;
+  str.split('\n').forEach(function(l){
+    l = l.trim();
+    if(!l || l.indexOf(':') < 0) return;
+    var i = l.indexOf(':');
+    var c = l.substring(0, i).trim();
+    var s = l.substring(i+1).split(',').map(function(x){return x.trim();}).filter(Boolean);
+    if(c && s.length > 0) r[c] = s;
+  });
+  return r;
+}
+function stringifyClassTraits(o){
+  return Object.keys(o).sort(function(a,b){return parseInt(a)-parseInt(b);}).map(function(k){
+    return k + ': ' + o[k].join(',');
+  }).join('\n');
+}
+function getTraitsForClass(cls){
+  var cs = String(cls);
+  if(CLASS_TRAITS[cs] && CLASS_TRAITS[cs].length > 0) return CLASS_TRAITS[cs].slice();
+  return TRAITS_LIST.slice();
+}
+async function saveClassTraits(){
+  var val = document.getElementById('settingsClassTraits').value.trim();
+  try{
+    await supabaseClient.from('settings').upsert({key:'classTraitsList',value:val},{onConflict:'key'});
+    CLASS_TRAITS = parseClassTraits(val);
+    SETTINGS_CACHE.classTraitsList = val;
+    showToast('✅ Class traits saved','success');
+  }catch(e){showToast('❌ '+e.message,'error');}
+}
 /* ===== SETTINGS ACTIONS ===== */
 async function saveSetting(key,elId){var val=document.getElementById(elId).value.trim();if(!val){showToast('Required','error');return;}try{await supabaseClient.from('settings').upsert({key:key,value:val},{onConflict:'key'});SETTINGS_CACHE[key]=val;if(key==='examsList'){EXAMS_LIST=val.split(',').map(function(s){return s.trim();});populateDynamicDropdowns();}if(key==='traitsList')TRAITS_LIST=val.split(',').map(function(s){return s.trim();});if(key==='minWithdraw'){MIN_WITHDRAW=parseInt(val)||100;var e=document.getElementById('swMinAmount');if(e)e.textContent=MIN_WITHDRAW;}showToast('✅ Saved','success');}catch(e){showToast('❌ '+e.message,'error');}}
 async function saveClassSubjects(){
@@ -4866,6 +5028,10 @@ async function saveClassSubjects(){
     showToast('✅ Subjects saved','success');
     if(typeof confetti !== 'undefined') confetti({particleCount:60,spread:70,origin:{y:.7}});
   }catch(e){showToast('❌ '+e.message,'error');}
+  if(typeof renderClassExamSubjectsUI === 'function'){
+  populateSubjectClassSelect();
+  renderClassExamSubjectsUI();
+}
 }
 function previewSubjectMatrix(){
   var val = document.getElementById('settingsClassSubjects').value.trim();
@@ -4950,6 +5116,10 @@ function loadTeacherSettingsIntoForm(){
   var i1=document.getElementById('settingsIdBgUrl');if(i1)i1.value=localStorage.getItem('id_card_bg')||'';
   var i2=document.getElementById('settingsTopperBgUrl');if(i2)i2.value=localStorage.getItem('topper_bg')||'';
   renderSignaturePreviews();renderVisibilityUI();loadDBStats();
+  var ct = document.getElementById('settingsClassTraits');
+if(ct) ct.value = stringifyClassTraits(CLASS_TRAITS);
+populateSubjectClassSelect();
+renderClassExamSubjectsUI();
 }
 async function loadDBStats(){
   var el=document.getElementById('dbStatsContent');if(!el)return;
@@ -6094,7 +6264,8 @@ Object.assign(window,{
   openNoticeBoard,closeNoticeBoard,loadNoticeAdmin,togglePinNotice,
   editNoticeAdmin,deleteNoticeAdmin,openNoticeForm,saveNoticeAdmin,saveMoralValuesBulk,recalcMoralOverall,
   loadDailyHub,parseClassExamSubjects,stringifyClassExamSubjects,getSubjectsForClass,
-calculateGradeFromPercent,autoCalculateRanks,previewSubjectMatrix,switchCreationMode,updateCreationTextMeta,editCreationAdmin,clearAIChat,copyAIMsg,
+calculateGradeFromPercent,autoCalculateRanks,previewSubjectMatrix,switchCreationMode,updateCreationTextMeta,editCreationAdmin,clearAIChat,copyAIMsg,populateSubjectClassSelect,renderClassExamSubjectsUI,saveClassSubjectsUI,copyClassSubjectsFrom,
+parseClassTraits,stringifyClassTraits,getTraitsForClass,saveClassTraits,
 });
 
 /* ===== INIT ===== */
