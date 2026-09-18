@@ -3006,26 +3006,54 @@ function logout(){
   showToast('Logged out','info');
 }
 async function restoreSession(){
-  var s=localStorage.getItem('noor_session');
-  if(s&&supabaseClient){try{
-    currentUser=JSON.parse(s);
-    // 🚫 Check if blocked
-    try {
-      var blockCheck = await supabaseClient.from('students').select('is_blocked,block_reason,blocked_at').eq('studentid',currentUser.studentId).single();
-      if (blockCheck.data && blockCheck.data.is_blocked === true) {
-        localStorage.removeItem('noor_session');
-        currentUser = null;
-        setTimeout(function() { showBlockedScreen(blockCheck.data); }, 300);
-        return;
-      }
-    } catch(bce) {}
-    
-    // ⚡ Load settings AFTER session restored (needed for dashboard)
-    try{ await loadAllSettings(); }catch(e){}
-    
-    loginSection.style.display='none';dashboardSection.style.display='block';
-    // ... rest same
-  }catch(e){console.error('restoreSession',e);}}
+  var s = localStorage.getItem('noor_session');
+  if(s && supabaseClient){
+    try{
+      currentUser = JSON.parse(s);
+
+      // 🚫 Blocked check
+      try {
+        var blockCheck = await supabaseClient.from('students')
+          .select('is_blocked,block_reason,blocked_at')
+          .eq('studentid', currentUser.studentId)
+          .single();
+        if (blockCheck.data && blockCheck.data.is_blocked === true) {
+          localStorage.removeItem('noor_session');
+          currentUser = null;
+          setTimeout(function() { showBlockedScreen(blockCheck.data); }, 300);
+          return;
+        }
+      } catch(bce) {}
+
+      // ⚡ Load settings
+      try { await loadAllSettings(); } catch(e) {}
+
+      // ✅ Show dashboard & load everything
+      loginSection.style.display = 'none';
+      adminSection.style.display = 'none';
+      dashboardSection.style.display = 'block';
+
+      updateDashboardUI();
+      loadActivitiesAndCalendar();
+      loadStudentBalance();
+      loadStudentNotifications();
+      await refreshStudentAttendance();
+      loadOverallMadrasaRank();
+      loadTopWinners();
+      applyStudentPortalVisibility();
+      subscribeNotifications();
+      showAIAssistant();
+      await initNewFeatures();
+
+    }catch(e){
+      console.error('restoreSession error:', e);
+      // ❌ Error ആണെങ്കിൽ login screen കാണിക്കുക
+      currentUser = null;
+      localStorage.removeItem('noor_session');
+      loginSection.style.display = 'flex';
+      dashboardSection.style.display = 'none';
+    }
+  }
 }
 function subscribeNotifications(){
   if(notifChannel){supabaseClient.removeChannel(notifChannel);notifChannel=null;}
@@ -3055,6 +3083,7 @@ function showAIAssistant(){
   welcome.innerHTML = 'അസ്സലാമു അലൈക്കും <b>'+escapeHtml(currentUser.name||'')+'</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.<br><br>എന്തെങ്കിലും ചോദിക്കൂ 👇<button class="ai-copy-btn" onclick="copyAIMsg(this)" title="Copy"><i class="fas fa-copy"></i></button>';
   var now = new Date();
   welcome.setAttribute('data-time', String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'));
+}
 }
 var aiOpen=false,aiHistory=[];
 function toggleAIChat(){if(!currentUser){showToast('Login first','error');return;}aiOpen=!aiOpen;document.getElementById('aiPanel').classList.toggle('open',aiOpen);}
