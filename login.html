@@ -2695,22 +2695,6 @@ body.light-mode .ai-msg.user::after{
   </div>
 </div>
 <!-- WELCOME POPUP -->
-<div id="welcomePopup" class="welcome-popup">
-  <div class="welcome-card">
-    <div class="welcome-glow"></div>
-    <div class="welcome-logo">
-      <img src="https://i.postimg.cc/SszJfrFH/nsm-logo-removebg-preview.png" alt="Logo">
-    </div>
-    <div class="welcome-emoji">🎉</div>
-    <h2 class="welcome-text">Welcome</h2>
-    <h1 class="welcome-name" id="welcomeStudentName">Student</h1>
-    <p class="welcome-class" id="welcomeClassText">Class —</p>
-    <div class="welcome-badge">v22.1 Ultimate+ Edition</div>
-    <div class="welcome-tagline">
-      <i class="fas fa-sparkles"></i> Noorussalam Madrasa
-    </div>
-  </div>
-</div>
 <div class="toast-container" id="toastContainer"></div>
 <!-- PUBLIC CREATIONS FEED -->
 <div id="publicFeedOverlay" class="public-feed-overlay">
@@ -5813,54 +5797,7 @@ function saveNote(e){
 }
 function editNote(id){var n=_notes.find(function(x){return x.id===id;});if(n)openNoteEditor(n);}
 function deleteNote(id){if(!confirm('Delete this note?'))return;_notes=_notes.filter(function(n){return n.id!==id;});saveNotesToStorage();renderNotesList();showToast('🗑️ Deleted','info');}
-
- /* ----- WELCOME POPUP ----- */
-var _welcomeTimer=null,_welcomeHideTimer=null;
-function showWelcomePopup(){
-  if(!currentUser)return;
-  var popup=document.getElementById('welcomePopup');
-  if(!popup)return;
-  
-  // Clear any existing timers
-  if(_welcomeTimer)clearTimeout(_welcomeTimer);
-  if(_welcomeHideTimer)clearTimeout(_welcomeHideTimer);
-  
-  // Set content
-  var nameEl=document.getElementById('welcomeStudentName');
-  var classEl=document.getElementById('welcomeClassText');
-  if(nameEl)nameEl.textContent=currentUser.name||'Student';
-  if(classEl)classEl.textContent='Class '+(currentUser.class||'—')+(currentUser.roll?' • Roll '+currentUser.roll:'');
-  
-  // Show with animation
-  popup.classList.remove('hide');
-  popup.classList.add('show');
-  
-  // Confetti burst
-  if(typeof confetti!=='undefined'){
-    setTimeout(function(){
-      confetti({particleCount:80,spread:70,origin:{y:.5},colors:['#22d3ee','#fbbf24','#3b8bff','#ffffff']});
-      confetti({particleCount:40,spread:100,origin:{y:.6},angle:60,colors:['#22d3ee','#fbbf24']});
-      confetti({particleCount:40,spread:100,origin:{y:.6},angle:120,colors:['#3b8bff','#ffffff']});
-    },200);
-  }
-  
-  // Auto-hide after 3.5 seconds
-  _welcomeTimer=setTimeout(function(){
-    popup.classList.add('hide');
-    _welcomeHideTimer=setTimeout(function(){
-      popup.classList.remove('show','hide');
-    },400);
-  },3500);
-}
-
-// Allow click to dismiss early
-document.addEventListener('click',function(e){
-  var popup=document.getElementById('welcomePopup');
-  if(popup&&popup.classList.contains('show')&&e.target===popup){
-    popup.classList.add('hide');
-    setTimeout(function(){popup.classList.remove('show','hide');},400);
-  }
-},true); 
+ 
 /* ============================================================ */
 /* NEW FEATURES v22.2 - Prayer, Islamic Content, Exam, Notice   */
 /* ============================================================ */
@@ -6218,7 +6155,6 @@ async function initNewFeatures(){
   if(currentUser)setTimeout(renderCharts,800);
   if(currentUser)setTimeout(loadDailyHub,600);
   // Welcome popup — 500ms delay for smooth appear
-  if(currentUser)setTimeout(showWelcomePopup,500);
 }
 
 /* ===== EXPORTS ===== */
@@ -6257,7 +6193,7 @@ Object.assign(window,{
   renderCharts,shareReportViaWhatsApp,
   toggleVoiceInput,updateMicUI,
   openNotesModal,closeNotesModal,renderNotesList,openNoteEditor,saveNote,editNote,deleteNote,
-  initNewFeatures,showWelcomePopup,
+  initNewFeatures,
   loadPrayerTimes,renderPrayerTimes,startPrayerCountdown,updatePrayerCountdown,
   switchIslamicTab,renderIslamicContent,renderHijriDate,
   loadExamCountdown,saveExamCountdown,clearExamCountdown,
