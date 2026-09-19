@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>MOCK TEST</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23fbbf24'/><text x='50' y='68' font-size='55' text-anchor='middle' font-family='Arial' font-weight='bold' fill='%230a0f1e'>N</text></svg>" />
 <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -77,7 +78,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
   background:linear-gradient(135deg,#fff 30%,var(--gold) 100%);-webkit-background-clip:text;
   background-clip:text;color:transparent;line-height:1.2}
 .login-field-group{position:relative;z-index:1;margin-bottom:14px}
-.login-field-label{display:block;color:#e5e7eb;font-size:.75rem;font-weight:600;letter-spacing:.5px;
+.login-field-label{display:block;color:#e5e7eb;font-size:.72rem;font-weight:600;letter-spacing:.5px;
   margin-bottom:6px;padding-left:4px;opacity:.9}
 .login-input-wrap{background:rgba(255,255,255,.06);border-radius:1.2rem;
   border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 16px;
@@ -91,8 +92,6 @@ body.dashboard-mode .container{min-height:auto;display:block}
   background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat:no-repeat;background-position:right center;background-size:18px;padding-right:24px}
 .login-input-wrap select option{background:#111c2e;color:#fff;padding:10px}
-.login-input-wrap select:disabled{opacity:.5;cursor:not-allowed}
-.login-input-wrap:has(select:disabled){opacity:.6}
 .login-actions{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;margin-top:16px}
 #loginMessage{margin-top:10px;text-align:center;font-size:.85rem;position:relative;z-index:1;
   min-height:24px;color:#fca5a5}
@@ -332,8 +331,9 @@ body.dashboard-mode .container{min-height:auto;display:block}
         </div>
       </div>
       <form id="loginForm">
+        <!-- STEP 1: മദ്‌റസ -->
         <div class="login-field-group">
-          <label class="login-field-label"><i class="fas fa-school" style="margin-right:6px;opacity:.5;"></i>മദ്‌റസ</label>
+          <label class="login-field-label"><i class="fas fa-school" style="margin-right:6px;opacity:.5;"></i>STEP 1 — മദ്‌റസ</label>
           <div class="login-input-wrap">
             <i class="fas fa-school"></i>
             <select id="loginMadrasa">
@@ -341,17 +341,32 @@ body.dashboard-mode .container{min-height:auto;display:block}
             </select>
           </div>
         </div>
-        <div class="login-field-group">
-          <label class="login-field-label"><i class="fas fa-user-graduate" style="margin-right:6px;opacity:.5;"></i>ചെസ്റ്റ് നമ്പർ - പേര്</label>
+
+        <!-- STEP 2: Password -->
+        <div class="login-field-group hidden" id="passwordStepGroup">
+          <label class="login-field-label"><i class="fas fa-lock" style="margin-right:6px;opacity:.5;"></i>STEP 2 — പാസ്‌വേഡ്</label>
+          <div class="login-input-wrap">
+            <i class="fas fa-key"></i>
+            <input type="password" id="loginPassword" placeholder="മദ്‌റസ പാസ്‌വേഡ് നൽകുക" autocomplete="off" />
+          </div>
+          <p style="font-size:0.7rem;color:rgba(255,255,255,0.4);margin-top:6px;padding-left:6px;">
+            <i class="fas fa-info-circle"></i> മദ്‌റസ അധികൃതർ നൽകിയ പാസ്‌വേഡ്
+          </p>
+        </div>
+
+        <!-- STEP 3: Chest-Name dropdown -->
+        <div class="login-field-group hidden" id="studentStepGroup">
+          <label class="login-field-label"><i class="fas fa-user-graduate" style="margin-right:6px;opacity:.5;"></i>STEP 3 — ചെസ്റ്റ് നമ്പർ - പേര്</label>
           <div class="login-input-wrap">
             <i class="fas fa-id-card"></i>
-            <select id="loginStudent" disabled>
-              <option value="">-- ആദ്യം മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>
+            <select id="loginStudent">
+              <option value="">-- ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക --</option>
             </select>
           </div>
         </div>
+
         <div class="login-actions">
-          <button type="submit" class="btn btn-primary btn-block">
+          <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn" disabled>
             <i class="fas fa-key"></i> പ്രവേശിക്കുക
           </button>
         </div>
@@ -536,6 +551,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
 
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="students" onclick="switchAdminTab('students')">👥 Students</button>
+      <button class="admin-tab" data-tab="madrasas" onclick="switchAdminTab('madrasas')">🏫 Madrasas</button>
       <button class="admin-tab" data-tab="session" onclick="switchAdminTab('session')">⏰ Session</button>
       <button class="admin-tab" data-tab="questions" onclick="switchAdminTab('questions')">📋 Questions</button>
       <button class="admin-tab" data-tab="rankings" onclick="switchAdminTab('rankings')">📊 Rankings</button>
@@ -550,7 +566,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
             <input type="text" id="nsChest" placeholder="ചെസ്റ്റ് നമ്പർ *" style="max-width:140px;"
               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" />
             <input type="text" id="nsName" placeholder="കുട്ടിയുടെ പേര് *" class="flex-grow" />
-            <input type="text" id="nsMadrasa" placeholder="മദ്‌റസ * (ഉദാ: NOORUSSALAM)" list="madrasaList" />
+            <input type="text" id="nsMadrasa" placeholder="മദ്‌റസ *" list="madrasaList" />
             <datalist id="madrasaList"></datalist>
             <select id="nsCategory" style="max-width:240px;">
               <option value="">വിഭാഗം *</option>
@@ -587,6 +603,27 @@ body.dashboard-mode .container{min-height:auto;display:block}
 
         <div class="admin-table-wrap">
           <div id="adminStudentsTable"><div class="text-center text-muted">Loading...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-madrasas" class="tab-content hidden">
+      <div class="glass-card">
+        <h4 style="color:var(--gold);">🏫 Madrasa Management</h4>
+        <div class="admin-section-box" style="border-color:rgba(16,185,129,.15);">
+          <h5 style="color:#10b981;">➕ Add / Update Madrasa Password</h5>
+          <div class="admin-form-row">
+            <input type="text" id="mName" placeholder="Madrasa Name *" class="flex-grow"
+              oninput="this.value=this.value.toUpperCase()" />
+            <input type="text" id="mPassword" placeholder="Password *" />
+            <button class="btn btn-success btn-sm" id="saveMadrasaBtn">💾 Save</button>
+          </div>
+          <p class="text-muted" style="font-size:.7rem;margin-top:8px;">
+            ⚠️ Madrasa name, Students table-ലെ madrasa name-മായി <strong>exact match</strong> ആയിരിക്കണം. Password minimum 4 characters.
+          </p>
+        </div>
+        <div class="admin-table-wrap">
+          <div id="adminMadrasaTable"><div class="text-center text-muted">Loading...</div></div>
         </div>
       </div>
     </div>
@@ -720,12 +757,10 @@ body.dashboard-mode .container{min-height:auto;display:block}
 </div>
 
 <script>
-/* ============================================================
-   ✅ SUPABASE CONFIG
-   ============================================================ */
+/* ============================================================ */
 const SUPABASE_URL = "https://xsojmegvunggtuxclsyv.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_9nZpCNLizU6Bx-afC0cCEw_urqSdcCx";
-const ADMIN_PASSWORD = "Noor@Madrasa2025";   // ← മാറ്റുക
+const ADMIN_PASSWORD = "Noor@Madrasa2025";
 
 const STUDENT_CATEGORIES = ['ജൂനിയർ GIRLS', 'സീനിയർ GIRLS'];
 const TEST_CATEGORIES = ['കുരുന്നുകൾ', 'സന്തുഷ്ട കുടുംബം'];
@@ -747,7 +782,6 @@ window.addEventListener('load', () => {
     ov.classList.add('hidden-loading');
     setTimeout(() => ov.style.display = 'none', 800);
   }, 2200);
-  // Load madrasas for login
   loadLoginMadrasas();
 });
 
@@ -800,7 +834,7 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
-   LOGIN DROPDOWNS
+   LOGIN FLOW: Madrasa → Password (RPC) → Chest dropdown
    ============================================================ */
 async function loadLoginMadrasas() {
   const sel = document.getElementById('loginMadrasa');
@@ -821,16 +855,58 @@ async function loadLoginMadrasas() {
   }
 }
 
-document.getElementById('loginMadrasa').addEventListener('change', async function() {
+async function verifyMadrasaPassword(madrasa, password) {
+  try {
+    const { data, error } = await _supabase.rpc('verify_madrasa_password', {
+      p_madrasa: madrasa, p_password: password
+    });
+    if (error) { console.error('RPC error:', error); return false; }
+    return data === true;
+  } catch (e) { console.error(e); return false; }
+}
+
+/* STEP 1 — Madrasa change */
+document.getElementById('loginMadrasa').addEventListener('change', function() {
   const madrasa = this.value;
-  const stuSel = document.getElementById('loginStudent');
-  if (!madrasa) {
-    stuSel.disabled = true;
-    stuSel.innerHTML = '<option value="">-- ആദ്യം മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>';
-    return;
-  }
-  stuSel.disabled = true;
-  stuSel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യുന്നു... --</option>';
+  document.getElementById('passwordStepGroup').classList.add('hidden');
+  document.getElementById('studentStepGroup').classList.add('hidden');
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginStudent').innerHTML = '<option value="">-- ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക --</option>';
+  document.getElementById('loginSubmitBtn').disabled = true;
+  window.verifiedMadrasa = null;
+  if (!madrasa) return;
+  document.getElementById('passwordStepGroup').classList.remove('hidden');
+  setTimeout(() => document.getElementById('loginPassword').focus(), 200);
+});
+
+/* STEP 2 — Password input (debounced verify) */
+let pwdTimer = null;
+document.getElementById('loginPassword').addEventListener('input', function() {
+  const madrasa = document.getElementById('loginMadrasa').value;
+  const enteredPass = this.value;
+  if (pwdTimer) clearTimeout(pwdTimer);
+  document.getElementById('studentStepGroup').classList.add('hidden');
+  document.getElementById('loginSubmitBtn').disabled = true;
+  window.verifiedMadrasa = null;
+  if (!madrasa || !enteredPass || enteredPass.length < 3) return;
+  pwdTimer = setTimeout(async () => {
+    const ok = await verifyMadrasaPassword(madrasa, enteredPass);
+    if (ok) {
+      window.verifiedMadrasa = madrasa;
+      document.getElementById('studentStepGroup').classList.remove('hidden');
+      await loadStudentsForLogin(madrasa);
+    } else {
+      document.getElementById('studentStepGroup').classList.add('hidden');
+      document.getElementById('loginSubmitBtn').disabled = true;
+      window.verifiedMadrasa = null;
+    }
+  }, 500);
+});
+
+/* STEP 3 — Load students */
+async function loadStudentsForLogin(madrasa) {
+  const sel = document.getElementById('loginStudent');
+  sel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യുന്നു... --</option>';
   try {
     const { data, error } = await _supabase.from('Student')
       .select('chestNumber, studentName, category')
@@ -838,32 +914,49 @@ document.getElementById('loginMadrasa').addEventListener('change', async functio
       .order('chestNumber');
     if (error) throw error;
     if (!data || data.length === 0) {
-      stuSel.innerHTML = '<option value="">-- വിദ്യാർത്ഥികളില്ല --</option>';
+      sel.innerHTML = '<option value="">-- വിദ്യാർത്ഥികളില്ല --</option>';
       return;
     }
-    stuSel.innerHTML = '<option value="">-- ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക --</option>' +
+    sel.innerHTML = '<option value="">-- ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക --</option>' +
       data.map(s => `<option value="${escapeHtml(s.chestNumber)}">${escapeHtml(s.chestNumber)}-${escapeHtml(s.studentName)}</option>`).join('');
-    stuSel.disabled = false;
   } catch (err) {
     console.error(err);
-    stuSel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല --</option>';
+    sel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല --</option>';
   }
+}
+
+document.getElementById('loginStudent').addEventListener('change', function() {
+  document.getElementById('loginSubmitBtn').disabled = !this.value;
 });
 
-/* LOGIN SUBMIT */
+/* SUBMIT */
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const madrasa = document.getElementById('loginMadrasa').value;
+  const password = document.getElementById('loginPassword').value;
   const chest = document.getElementById('loginStudent').value;
   const msg = document.getElementById('loginMessage');
   msg.innerHTML = '';
 
   if (!madrasa) { showToast('മദ്‌റസ തിരഞ്ഞെടുക്കുക', 'error'); return; }
+  if (!password) { showToast('പാസ്‌വേഡ് നൽകുക', 'error'); return; }
+
+  const passOk = await verifyMadrasaPassword(madrasa, password);
+  if (!passOk) {
+    showToast('❌ പാസ്‌വേഡ് തെറ്റാണ്', 'error');
+    msg.innerHTML = '<div style="color:#fca5a5;">❌ മദ്‌റസ പാസ്‌വേഡ് തെറ്റാണ്</div>';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('studentStepGroup').classList.add('hidden');
+    document.getElementById('loginSubmitBtn').disabled = true;
+    window.verifiedMadrasa = null;
+    return;
+  }
+
   if (!chest) { showToast('ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക', 'error'); return; }
 
   try {
-    const { data: student, error } = await _supabase
-      .from('Student').select('*').eq('chestNumber', chest).eq('madrasa', madrasa).single();
+    const { data: student, error } = await _supabase.from('Student')
+      .select('*').eq('chestNumber', chest).eq('madrasa', madrasa).single();
     if (error || !student) throw new Error('വിദ്യാർത്ഥിയെ കണ്ടെത്തിയില്ല.');
 
     window.currentStudent = student;
@@ -939,17 +1032,19 @@ function logout() {
   document.getElementById('adminDashboard').classList.add('hidden');
   document.body.classList.remove('dashboard-mode');
   document.body.classList.add('login-mode');
-  // Reset dropdown
   document.getElementById('loginMadrasa').value = '';
-  const ss = document.getElementById('loginStudent');
-  ss.innerHTML = '<option value="">-- ആദ്യം മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>';
-  ss.disabled = true;
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('passwordStepGroup').classList.add('hidden');
+  document.getElementById('studentStepGroup').classList.add('hidden');
+  document.getElementById('loginStudent').innerHTML = '<option value="">-- ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക --</option>';
+  document.getElementById('loginSubmitBtn').disabled = true;
+  window.verifiedMadrasa = null;
   showToast('പുറത്തുകടന്നു', 'info');
 }
 document.getElementById('logoutBtn').addEventListener('click', logout);
 document.getElementById('adminLogoutBtn').addEventListener('click', logout);
 
-/* ADMIN LOGIN (via 5-tap logo) */
+/* ADMIN LOGIN */
 document.getElementById('adminLoginModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.add('hidden');
 });
@@ -1388,9 +1483,7 @@ async function loadParentRankingData() {
   }
 }
 
-/* ============================================================
-   ADMIN
-   ============================================================ */
+/* ADMIN */
 window.adminCurrentTest = TEST_CATEGORIES[0];
 let currentRankingCategory = STUDENT_CATEGORIES[0];
 
@@ -1400,6 +1493,7 @@ function switchAdminTab(tab) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.getElementById(`tab-${tab}`).classList.remove('hidden');
   if (tab === 'students') loadStudents();
+  if (tab === 'madrasas') loadMadrasasAdmin();
   if (tab === 'session') loadSessionEditor();
   if (tab === 'questions') loadAdminQuestions(window.adminCurrentTest);
   if (tab === 'rankings') loadAdminRankings(currentRankingCategory);
@@ -1407,6 +1501,7 @@ function switchAdminTab(tab) {
 
 async function loadAdminData() {
   await loadStudents();
+  await loadMadrasasAdmin();
   await loadSessionEditor();
   await loadAdminQuestions(window.adminCurrentTest);
   await loadAdminRankings(currentRankingCategory);
@@ -1429,7 +1524,100 @@ async function loadSessionSummary() {
   }
 }
 
-/* STUDENTS */
+/* ===== MADRASA MANAGEMENT ===== */
+window.madrasaCache = [];
+
+async function loadMadrasasAdmin() {
+  const wrap = document.getElementById('adminMadrasaTable');
+  if (!wrap) return;
+  wrap.innerHTML = '<div class="text-center text-muted">Loading...</div>';
+  try {
+    const { data, error } = await _supabase.rpc('admin_list_madrasas');
+    if (error) throw error;
+    window.madrasaCache = data || [];
+    if (window.madrasaCache.length === 0) {
+      wrap.innerHTML = '<div class="text-center text-muted" style="padding:20px;">No madrasas. Add one above.</div>';
+      return;
+    }
+    let html = '<table><thead><tr><th>Name</th><th>Password</th><th>Created</th><th>Actions</th></tr></thead><tbody>';
+    window.madrasaCache.forEach(m => {
+      const maskedPass = '•'.repeat(Math.min(m.password.length, 12));
+      html += `<tr>
+        <td><strong style="color:var(--gold);">${escapeHtml(m.name)}</strong></td>
+        <td>
+          <span id="pass-display-${m.id}" style="font-family:monospace;">${maskedPass}</span>
+          <button class="btn btn-outline btn-sm" onclick="togglePass('${m.id}', '${escapeHtml(m.password)}')" style="margin-left:6px;padding:2px 8px;min-height:26px;">
+            <i class="fas fa-eye"></i>
+          </button>
+        </td>
+        <td style="font-size:.75rem;color:var(--text-muted);">${new Date(m.createdAt).toLocaleDateString('ml-IN')}</td>
+        <td>
+          <button class="btn btn-primary btn-sm" onclick="editMadrasa('${m.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMadrasa('${m.id}', '${escapeHtml(m.name)}')">🗑️</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    wrap.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    wrap.innerHTML = '<div class="text-center text-muted">Error loading. SQL run ചെയ്തിട്ടുണ്ടോ?</div>';
+  }
+}
+
+window.togglePass = function(id, realPass) {
+  const el = document.getElementById('pass-display-' + id);
+  if (!el) return;
+  if (el.dataset.shown === '1') {
+    el.textContent = '•'.repeat(Math.min(realPass.length, 12));
+    el.dataset.shown = '0';
+  } else {
+    el.textContent = realPass;
+    el.dataset.shown = '1';
+  }
+};
+
+window.editMadrasa = function(id) {
+  const m = window.madrasaCache.find(x => x.id === id);
+  if (!m) return;
+  document.getElementById('mName').value = m.name;
+  document.getElementById('mPassword').value = m.password;
+  document.getElementById('mPassword').focus();
+  showToast('ℹ️ Password edit ചെയ്ത് Save ചെയ്യുക', 'info');
+};
+
+window.deleteMadrasa = async function(id, name) {
+  if (!confirm(`Delete madrasa "${name}"? Students won't be deleted.`)) return;
+  try {
+    const { error } = await _supabase.rpc('admin_delete_madrasa', { p_id: id });
+    if (error) throw error;
+    showToast('🗑️ Deleted', 'success');
+    await loadMadrasasAdmin();
+    await loadLoginMadrasas();
+  } catch (err) { showToast(err.message, 'error'); }
+};
+
+document.getElementById('saveMadrasaBtn').addEventListener('click', async function() {
+  const name = document.getElementById('mName').value.trim().toUpperCase();
+  const password = document.getElementById('mPassword').value.trim();
+  if (!name || !password) { showToast('Name & password നൽകുക', 'error'); return; }
+  if (password.length < 4) { showToast('Password കുറഞ്ഞത് 4 characters', 'error'); return; }
+  this.disabled = true;
+  try {
+    const { error } = await _supabase.rpc('admin_save_madrasa', {
+      p_name: name, p_password: password
+    });
+    if (error) throw error;
+    showToast('✅ Saved', 'success');
+    document.getElementById('mName').value = '';
+    document.getElementById('mPassword').value = '';
+    await loadMadrasasAdmin();
+    await loadLoginMadrasas();
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { this.disabled = false; }
+});
+
+/* ===== STUDENTS ===== */
 window.allStudentsCache = [];
 
 async function loadStudents() {
@@ -1441,7 +1629,6 @@ async function loadStudents() {
     window.allStudentsCache = students || [];
     document.getElementById('studentCount').textContent = window.allStudentsCache.length;
 
-    // Populate madrasa datalist + filter
     const madrasas = [...new Set(window.allStudentsCache.map(s => s.madrasa).filter(Boolean))].sort();
     document.getElementById('madrasaList').innerHTML = madrasas.map(m => `<option value="${escapeHtml(m)}">`).join('');
     const filterSel = document.getElementById('filterMadrasa');
@@ -1884,8 +2071,9 @@ function openHelp() {
     '📘 ജൂനിയർ & സീനിയർ GIRLS ടെസ്റ്റ്\n\n' +
     '🔐 Login:\n' +
     '1. മദ്‌റസ തിരഞ്ഞെടുക്കുക\n' +
-    '2. ചെസ്റ്റ് നമ്പർ-പേര് തിരഞ്ഞെടുക്കുക\n' +
-    '3. പ്രവേശിക്കുക\n\n' +
+    '2. മദ്‌റസ പാസ്‌വേഡ് നൽകുക\n' +
+    '3. ചെസ്റ്റ് നമ്പർ-പേര് തിരഞ്ഞെടുക്കുക\n' +
+    '4. പ്രവേശിക്കുക\n\n' +
     '📌 Categories:\n' +
     '• ജൂനിയർ GIRLS → കുരുന്നുകൾ ടെസ്റ്റ്\n' +
     '• സീനിയർ GIRLS → സന്തുഷ്ട കുടുംബം ടെസ്റ്റ്\n\n' +
