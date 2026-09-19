@@ -10,18 +10,15 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --gold:#fbbf24;--gold-dark:#f59e0b;--dark:#0a0f1e;--slate:#1e293b;
+  --gold:#fbbf24;--gold-dark:#f59e0b;--dark:#0a0f1e;
   --text-primary:#f8fafc;--text-secondary:#d1d5db;--text-muted:#9ca3af;
   --glass-bg:rgba(255,255,255,0.06);--glass-border:rgba(255,255,255,0.08);
   --shadow:0 25px 50px -12px rgba(0,0,0,0.8);--radius:2rem;
-  --junior:#ec4899;--senior:#8b5cf6;
 }
 html,body{height:100%;font-family:'Anek Malayalam','Inter',sans-serif;scroll-behavior:smooth}
-body{
-  background:radial-gradient(ellipse at 30% 20%,#0f1a2e,#050a14);
+body{background:radial-gradient(ellipse at 30% 20%,#0f1a2e,#050a14);
   min-height:100vh;min-height:100dvh;display:flex;justify-content:center;align-items:center;
-  padding:16px;color:#fff;transition:align-items .3s ease;
-}
+  padding:16px;color:#fff;transition:align-items .3s ease}
 body.dashboard-mode{align-items:flex-start;padding-top:16px}
 .container{max-width:1400px;width:100%;margin:0 auto;padding:0 12px 20px}
 body.login-mode .container{min-height:100vh;display:flex;align-items:center;justify-content:center}
@@ -74,26 +71,29 @@ body.dashboard-mode .container{min-height:auto;display:block}
 .login-header .logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:2px}
 .login-header .logo-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));
   border-radius:18px;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 8px 30px rgba(251,191,36,.15);flex-shrink:0}
+  box-shadow:0 8px 30px rgba(251,191,36,.15);flex-shrink:0;user-select:none}
 .login-header .logo-icon i{font-size:24px;color:#0a0f1e}
 .login-header .title-main{font-size:1.15rem;font-weight:800;
   background:linear-gradient(135deg,#fff 30%,var(--gold) 100%);-webkit-background-clip:text;
   background-clip:text;color:transparent;line-height:1.2}
-.login-field-group{position:relative;z-index:1;margin-bottom:2px}
+.login-field-group{position:relative;z-index:1;margin-bottom:14px}
 .login-field-label{display:block;color:#e5e7eb;font-size:.75rem;font-weight:600;letter-spacing:.5px;
   margin-bottom:6px;padding-left:4px;opacity:.9}
 .login-input-wrap{background:rgba(255,255,255,.06);border-radius:1.2rem;
   border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;padding:0 16px;
   transition:.3s;position:relative;z-index:1}
 .login-input-wrap:focus-within{border-color:var(--gold);box-shadow:0 0 0 3px rgba(251,191,36,.08)}
-.login-input-wrap i{color:var(--gold);margin-right:12px;font-size:1rem;opacity:.7}
-.login-input-wrap input{background:transparent;border:none;padding:14px 0;color:#fff;width:100%;
+.login-input-wrap i{color:var(--gold);margin-right:12px;font-size:1rem;opacity:.7;flex-shrink:0}
+.login-input-wrap input,.login-input-wrap select{background:transparent;border:none;padding:14px 0;color:#fff;width:100%;
   outline:none;font-size:1rem;font-family:'Anek Malayalam','Inter',sans-serif}
 .login-input-wrap input::placeholder{color:rgba(255,255,255,.4)}
-.login-remember{color:rgba(255,255,255,.5);font-size:.8rem;display:flex;align-items:center;
-  gap:6px;margin:12px 0 6px;position:relative;z-index:1}
-.login-remember input[type="checkbox"]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer}
-.login-actions{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;margin-top:4px}
+.login-input-wrap select{cursor:pointer;appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  background-image:url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat:no-repeat;background-position:right center;background-size:18px;padding-right:24px}
+.login-input-wrap select option{background:#111c2e;color:#fff;padding:10px}
+.login-input-wrap select:disabled{opacity:.5;cursor:not-allowed}
+.login-input-wrap:has(select:disabled){opacity:.6}
+.login-actions{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;margin-top:16px}
 #loginMessage{margin-top:10px;text-align:center;font-size:.85rem;position:relative;z-index:1;
   min-height:24px;color:#fca5a5}
 .btn{border:none;cursor:pointer;font-weight:700;font-family:'Anek Malayalam','Inter',sans-serif;
@@ -127,6 +127,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
   font-size:.9rem;width:100%;outline:none;transition:.2s;font-family:'Anek Malayalam','Inter',sans-serif}
 .modal-glass input:focus,.modal-glass select:focus,.modal-glass textarea:focus{
   border-color:var(--gold);box-shadow:0 0 0 3px rgba(251,191,36,.08)}
+.modal-glass select option{background:#111c2e;color:#fff}
 .modal-glass input::placeholder,.modal-glass textarea::placeholder{color:rgba(255,255,255,.35)}
 .hidden{display:none!important}
 .text-muted{color:var(--text-muted)}
@@ -223,15 +224,16 @@ body.dashboard-mode .container{min-height:auto;display:block}
   padding:8px 14px;color:#fff;font-size:.85rem;outline:none;font-family:inherit;width:100%}
 .admin-form-row input:focus,.admin-form-row select:focus,.admin-form-row textarea:focus{
   border-color:var(--gold);box-shadow:0 0 0 3px rgba(251,191,36,.08)}
+.admin-form-row select option{background:#111c2e;color:#fff}
 .admin-form-row textarea{border-radius:16px;resize:vertical;min-height:50px}
 .admin-section-box{background:rgba(0,0,0,.2);border-radius:16px;padding:16px 18px;
   margin-bottom:16px;border:1px solid rgba(255,255,255,.06)}
 .admin-section-box h5{color:var(--gold);font-size:.9rem;margin-bottom:12px;font-weight:600}
 .cat-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;
   letter-spacing:.3px;border:1px solid currentColor}
-.cat-badge.junior{background:rgba(236,72,153,.15);color:#ec4899;}
-.cat-badge.senior{background:rgba(139,92,246,.15);color:#8b5cf6;}
-.cat-badge.test{background:rgba(251,191,36,.12);color:var(--gold);}
+.cat-badge.junior{background:rgba(236,72,153,.15);color:#ec4899}
+.cat-badge.senior{background:rgba(139,92,246,.15);color:#8b5cf6}
+.cat-badge.test{background:rgba(251,191,36,.12);color:var(--gold)}
 .status-box{text-align:center;padding:40px 20px}
 .status-box .icon{font-size:56px;margin-bottom:14px;display:inline-block;animation:float 3s ease-in-out infinite}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
@@ -326,20 +328,27 @@ body.dashboard-mode .container{min-height:auto;display:block}
           <span class="title-main">ജൂനിയർ & സീനിയർ GIRLS</span>
         </div>
         <div style="text-align:center;opacity:.5;letter-spacing:3px;margin-top:6px;font-size:.7rem;">
-          <i class="fas fa-lock"></i> CHEST NUMBER LOGIN
+          <i class="fas fa-lock"></i> LOGIN
         </div>
       </div>
       <form id="loginForm">
         <div class="login-field-group">
-          <label class="login-field-label"><i class="fas fa-id-card" style="margin-right:6px;opacity:.5;"></i>ചെസ്റ്റ് നമ്പർ</label>
+          <label class="login-field-label"><i class="fas fa-school" style="margin-right:6px;opacity:.5;"></i>മദ്‌റസ</label>
           <div class="login-input-wrap">
-            <i class="fas fa-id-card"></i>
-            <input type="text" id="loginIdInput" placeholder="ചെസ്റ്റ് നമ്പർ നൽകുക" autofocus />
+            <i class="fas fa-school"></i>
+            <select id="loginMadrasa">
+              <option value="">-- ലോഡ് ചെയ്യുന്നു... --</option>
+            </select>
           </div>
         </div>
-        <div class="login-remember">
-          <input type="checkbox" id="rememberMe" checked />
-          <label for="rememberMe">Remember Me</label>
+        <div class="login-field-group">
+          <label class="login-field-label"><i class="fas fa-user-graduate" style="margin-right:6px;opacity:.5;"></i>ചെസ്റ്റ് നമ്പർ - പേര്</label>
+          <div class="login-input-wrap">
+            <i class="fas fa-id-card"></i>
+            <select id="loginStudent" disabled>
+              <option value="">-- ആദ്യം മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>
+            </select>
+          </div>
         </div>
         <div class="login-actions">
           <button type="submit" class="btn btn-primary btn-block">
@@ -541,8 +550,9 @@ body.dashboard-mode .container{min-height:auto;display:block}
             <input type="text" id="nsChest" placeholder="ചെസ്റ്റ് നമ്പർ *" style="max-width:140px;"
               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" />
             <input type="text" id="nsName" placeholder="കുട്ടിയുടെ പേര് *" class="flex-grow" />
-            <input type="text" id="nsMadrasa" placeholder="മദ്‌റസ *" />
-            <select id="nsCategory" style="max-width:220px;">
+            <input type="text" id="nsMadrasa" placeholder="മദ്‌റസ * (ഉദാ: NOORUSSALAM)" list="madrasaList" />
+            <datalist id="madrasaList"></datalist>
+            <select id="nsCategory" style="max-width:240px;">
               <option value="">വിഭാഗം *</option>
               <option value="ജൂനിയർ GIRLS">ജൂനിയർ GIRLS (കുരുന്നുകൾ ടെസ്റ്റ്)</option>
               <option value="സീനിയർ GIRLS">സീനിയർ GIRLS (സന്തുഷ്ട കുടുംബം ടെസ്റ്റ്)</option>
@@ -555,14 +565,22 @@ body.dashboard-mode .container{min-height:auto;display:block}
           <h5 style="color:#3b82f6;">📥 Bulk Import (CSV)</h5>
           <p class="text-muted" style="font-size:.75rem;margin-bottom:10px;">
             Format: chestNumber,studentName,madrasa,category<br>
-            ഉദാ: JG01,FATHIMA,NOORUSSALAM,ജൂനിയർ GIRLS
+            ഉദാ: 101,MUHAMMED SUHAIL,NOORUSSALAM,ജൂനിയർ GIRLS
           </p>
-          <textarea id="bulkCsv" placeholder="JG01,FATHIMA,NOORUSSALAM,ജൂനിയർ GIRLS" style="min-height:100px;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 14px;color:#fff;font-family:inherit;"></textarea>
+          <textarea id="bulkCsv" placeholder="101,MUHAMMED SUHAIL,NOORUSSALAM,ജൂനിയർ GIRLS" style="min-height:100px;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 14px;color:#fff;font-family:inherit;"></textarea>
           <button class="btn btn-primary btn-sm mt-2" id="bulkImportBtn">📥 Import</button>
         </div>
 
-        <div class="flex-between" style="margin-bottom:10px;">
-          <input type="text" id="studentSearch" placeholder="🔍 Search..." style="max-width:300px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:40px;padding:8px 14px;color:#fff;font-family:inherit;"
+        <div class="admin-form-row" style="margin-bottom:12px;">
+          <select id="filterMadrasa" onchange="filterStudentsTable()" style="max-width:200px;">
+            <option value="">എല്ലാ മദ്‌റസകളും</option>
+          </select>
+          <select id="filterCategory" onchange="filterStudentsTable()" style="max-width:200px;">
+            <option value="">എല്ലാ വിഭാഗങ്ങളും</option>
+            <option value="ജൂനിയർ GIRLS">ജൂനിയർ GIRLS</option>
+            <option value="സീനിയർ GIRLS">സീനിയർ GIRLS</option>
+          </select>
+          <input type="text" id="studentSearch" placeholder="🔍 Search chest/name..." class="flex-grow"
             oninput="filterStudentsTable()" />
           <span class="text-muted" style="font-size:.8rem;">Total: <span id="studentCount">0</span></span>
         </div>
@@ -612,8 +630,8 @@ body.dashboard-mode .container{min-height:auto;display:block}
           <h5 id="formTitle" style="color:var(--gold);">Add Question</h5>
           <div class="admin-form-row">
             <select id="qTestCategory" style="max-width:240px;">
-              <option value="കുരുന്നുകൾ">കുരുന്നുകൾ (ജൂനിയർ GIRLS)</option>
-              <option value="സന്തുഷ്ട കുടുംബം">സന്തുഷ്ട കുടുംബം (സീനിയർ GIRLS)</option>
+              <option value="കുരുന്നുകൾ">കുരുന്നുകൾ (ജൂനിയർ)</option>
+              <option value="സന്തുഷ്ട കുടുംബം">സന്തുഷ്ട കുടുംബം (സീനിയർ)</option>
             </select>
             <textarea id="qText" placeholder="Question" class="flex-grow" style="min-height:44px;"></textarea>
           </div>
@@ -703,20 +721,18 @@ body.dashboard-mode .container{min-height:auto;display:block}
 
 <script>
 /* ============================================================
-   ✅ നിങ്ങളുടെ SUPABASE VALUES
+   ✅ SUPABASE CONFIG
    ============================================================ */
 const SUPABASE_URL = "https://xsojmegvunggtuxclsyv.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_9nZpCNLizU6Bx-afC0cCEw_urqSdcCx";
-const ADMIN_PASSWORD = "Noor@Madrasa2025";   // ← ഇത് നിങ്ങൾ മാറ്റുക
+const ADMIN_PASSWORD = "Noor@Madrasa2025";   // ← മാറ്റുക
 
 const STUDENT_CATEGORIES = ['ജൂനിയർ GIRLS', 'സീനിയർ GIRLS'];
 const TEST_CATEGORIES = ['കുരുന്നുകൾ', 'സന്തുഷ്ട കുടുംബം'];
-
 const CATEGORY_TEST_MAP = {
   'ജൂനിയർ GIRLS': 'കുരുന്നുകൾ',
   'സീനിയർ GIRLS': 'സന്തുഷ്ട കുടുംബം'
 };
-
 const CATEGORY_COLORS = {
   'ജൂനിയർ GIRLS': '#ec4899',
   'സീനിയർ GIRLS': '#8b5cf6'
@@ -725,18 +741,17 @@ const CATEGORY_COLORS = {
 const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const CIRCUMFERENCE = 2 * Math.PI * 60;
 
-/* Console check */
-console.log('🔧 Supabase URL:', SUPABASE_URL);
-console.log('🔑 Key starts:', SUPABASE_ANON_KEY.substring(0, 20) + '...');
-
 window.addEventListener('load', () => {
   setTimeout(() => {
     const ov = document.getElementById('loadingOverlay');
     ov.classList.add('hidden-loading');
     setTimeout(() => ov.style.display = 'none', 800);
   }, 2200);
+  // Load madrasas for login
+  loadLoginMadrasas();
 });
 
+/* HELPERS */
 function showToast(msg, type = 'info') {
   const c = document.getElementById('toastContainer');
   if (!c) return;
@@ -746,11 +761,6 @@ function showToast(msg, type = 'info') {
   t.innerHTML = `${icon} ${msg}`;
   c.appendChild(t);
   setTimeout(() => t.remove(), 3200);
-}
-function saveId(id) {
-  const r = document.getElementById('rememberMe');
-  if (r && r.checked) localStorage.setItem('lastChest', id);
-  else localStorage.removeItem('lastChest');
 }
 function localToUTC(s) {
   if (!s) return '';
@@ -784,37 +794,78 @@ function testCatBadge(test) {
 function getTestForStudent(studentCategory) {
   return CATEGORY_TEST_MAP[studentCategory] || null;
 }
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
 
-/* LOGIN */
+/* ============================================================
+   LOGIN DROPDOWNS
+   ============================================================ */
+async function loadLoginMadrasas() {
+  const sel = document.getElementById('loginMadrasa');
+  if (!sel) return;
+  try {
+    const { data, error } = await _supabase.from('Student').select('madrasa');
+    if (error) throw error;
+    const madrasas = [...new Set((data || []).map(s => (s.madrasa || '').trim()).filter(Boolean))].sort();
+    if (madrasas.length === 0) {
+      sel.innerHTML = '<option value="">-- മദ്‌റസ ലഭ്യമല്ല --</option>';
+      return;
+    }
+    sel.innerHTML = '<option value="">-- മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>' +
+      madrasas.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+  } catch (err) {
+    console.error(err);
+    sel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല --</option>';
+  }
+}
+
+document.getElementById('loginMadrasa').addEventListener('change', async function() {
+  const madrasa = this.value;
+  const stuSel = document.getElementById('loginStudent');
+  if (!madrasa) {
+    stuSel.disabled = true;
+    stuSel.innerHTML = '<option value="">-- ആദ്യം മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>';
+    return;
+  }
+  stuSel.disabled = true;
+  stuSel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യുന്നു... --</option>';
+  try {
+    const { data, error } = await _supabase.from('Student')
+      .select('chestNumber, studentName, category')
+      .eq('madrasa', madrasa)
+      .order('chestNumber');
+    if (error) throw error;
+    if (!data || data.length === 0) {
+      stuSel.innerHTML = '<option value="">-- വിദ്യാർത്ഥികളില്ല --</option>';
+      return;
+    }
+    stuSel.innerHTML = '<option value="">-- ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക --</option>' +
+      data.map(s => `<option value="${escapeHtml(s.chestNumber)}">${escapeHtml(s.chestNumber)}-${escapeHtml(s.studentName)}</option>`).join('');
+    stuSel.disabled = false;
+  } catch (err) {
+    console.error(err);
+    stuSel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല --</option>';
+  }
+});
+
+/* LOGIN SUBMIT */
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const rawInput = document.getElementById('loginIdInput').value.trim();
+  const madrasa = document.getElementById('loginMadrasa').value;
+  const chest = document.getElementById('loginStudent').value;
   const msg = document.getElementById('loginMessage');
   msg.innerHTML = '';
 
-  if (!rawInput) { showToast('ചെസ്റ്റ് നമ്പർ നൽകുക', 'error'); return; }
+  if (!madrasa) { showToast('മദ്‌റസ തിരഞ്ഞെടുക്കുക', 'error'); return; }
+  if (!chest) { showToast('ചെസ്റ്റ് നമ്പർ തിരഞ്ഞെടുക്കുക', 'error'); return; }
 
-  // ADMIN CHECK
-  if (rawInput === ADMIN_PASSWORD) {
-    document.getElementById('loginIdInput').value = '';
-    localStorage.removeItem('lastChest');
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('adminDashboard').classList.remove('hidden');
-    document.getElementById('parentDashboard').classList.add('hidden');
-    document.body.classList.remove('login-mode');
-    document.body.classList.add('dashboard-mode');
-    loadAdminData();
-    showToast('👋 Admin Panel', 'success');
-    return;
-  }
-
-  const id = rawInput.toUpperCase();
   try {
     const { data: student, error } = await _supabase
-      .from('Student').select('*').eq('chestNumber', id).single();
-    if (error || !student) throw new Error('ചെസ്റ്റ് നമ്പർ കണ്ടെത്തിയില്ല.');
+      .from('Student').select('*').eq('chestNumber', chest).eq('madrasa', madrasa).single();
+    if (error || !student) throw new Error('വിദ്യാർത്ഥിയെ കണ്ടെത്തിയില്ല.');
 
-    saveId(id);
     window.currentStudent = student;
     window.currentTest = getTestForStudent(student.category);
     window.verified = false;
@@ -847,16 +898,10 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
     showToast('👋 സ്വാഗതം, ' + student.studentName, 'success');
   } catch (err) {
-    console.error('Login error:', err);
+    console.error(err);
     showToast(err.message, 'error');
     msg.innerHTML = `<div style="color:#fca5a5;">❌ ${err.message}</div>`;
   }
-});
-
-document.getElementById('loginIdInput').addEventListener('input', function() {
-  const val = this.value;
-  const hasSpecial = /[^A-Za-z0-9]/.test(val);
-  if (!hasSpecial) this.value = val.toUpperCase();
 });
 
 document.getElementById('cancelStudentBtn').addEventListener('click', () => logout());
@@ -866,9 +911,7 @@ document.getElementById('confirmStudentBtn').addEventListener('click', async () 
   window.verified = true;
   document.getElementById('verifySection').classList.add('hidden');
   document.getElementById('statsSection').classList.remove('hidden');
-
-  const { data: sessions, error } = await _supabase.from('QuizSession').select('*').eq('id', 1);
-  if (error) { console.error(error); }
+  const { data: sessions } = await _supabase.from('QuizSession').select('*').eq('id', 1);
   if (!sessions || sessions.length === 0) {
     showToast('സെഷൻ ലഭ്യമല്ല. അഡ്മിനെ ബന്ധപ്പെടുക.', 'error');
     return;
@@ -877,6 +920,7 @@ document.getElementById('confirmStudentBtn').addEventListener('click', async () 
   renderParentDashboard();
 });
 
+/* LOGOUT */
 function logout() {
   if (window.timerInterval) clearInterval(window.timerInterval);
   if (window.pubInterval) clearInterval(window.pubInterval);
@@ -895,12 +939,17 @@ function logout() {
   document.getElementById('adminDashboard').classList.add('hidden');
   document.body.classList.remove('dashboard-mode');
   document.body.classList.add('login-mode');
-  document.getElementById('loginIdInput').value = '';
+  // Reset dropdown
+  document.getElementById('loginMadrasa').value = '';
+  const ss = document.getElementById('loginStudent');
+  ss.innerHTML = '<option value="">-- ആദ്യം മദ്‌റസ തിരഞ്ഞെടുക്കുക --</option>';
+  ss.disabled = true;
   showToast('പുറത്തുകടന്നു', 'info');
 }
 document.getElementById('logoutBtn').addEventListener('click', logout);
 document.getElementById('adminLogoutBtn').addEventListener('click', logout);
 
+/* ADMIN LOGIN (via 5-tap logo) */
 document.getElementById('adminLoginModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.add('hidden');
 });
@@ -1090,6 +1139,7 @@ function startCountdownTimer(target, type) {
   }, 1000);
 }
 
+/* START QUIZ */
 document.getElementById('startQuizBtn').addEventListener('click', function() {
   if (this.disabled) return;
   document.getElementById('confirmModal').classList.remove('hidden');
@@ -1176,12 +1226,12 @@ function renderCurrentQuestion() {
 
   const html = `
     <div class="question-card">
-      <div class="question-title">${cur}. ${q.questionText}</div>
+      <div class="question-title">${cur}. ${escapeHtml(q.questionText)}</div>
       <div class="options-grid">
         ${opts.map((opt, i) => `
           <button class="opt-btn ${selected === i ? 'selected' : ''}" data-opt="${i}">
             <span class="opt-letter">${String.fromCharCode(65+i)}</span>
-            <span>${opt}</span>
+            <span>${escapeHtml(opt)}</span>
           </button>
         `).join('')}
       </div>
@@ -1260,7 +1310,6 @@ async function submitQuiz(isTimeout) {
   if (window.isSubmitted) return;
   window.isSubmitted = true;
   clearInterval(window.timerInterval);
-
   try {
     let score = 0;
     window.questions.forEach(q => {
@@ -1269,16 +1318,13 @@ async function submitQuiz(isTimeout) {
       if (s === q.correctAnswer) score += 5;
       else score -= 3;
     });
-
     await _supabase.from('Attempt').update({
       endTime: new Date().toISOString(),
       score: score,
       status: isTimeout ? 'TIMED_OUT' : 'COMPLETED'
     }).eq('id', window.currentAttemptId);
-
     document.getElementById('quizArea').classList.add('hidden');
     document.getElementById('timerArea').classList.add('hidden');
-
     if (isTimeout) {
       showToast('⏰ സമയം കഴിഞ്ഞു. സമർപ്പിച്ചു.', 'info');
       setTimeout(() => location.reload(), 1500);
@@ -1305,8 +1351,7 @@ async function loadParentRankingData() {
       return;
     }
     const ranked = attempts.map(a => ({
-      ...a,
-      timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+      ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
     }));
     ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
     const myAttempt = ranked.find(a => a.studentId === window.currentStudent.id);
@@ -1323,13 +1368,12 @@ async function loadParentRankingData() {
     else if (userRank === 3) { medal = '🥉'; celebration = '🥉 മൂന്നാം സ്ഥാനം!'; }
     const mins = Math.floor(timeTaken / 60), secs = timeTaken % 60;
     const timeStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-
     container.innerHTML = `
       <div class="rank-card ${rankClass}">
         <div class="rank-label">📊 ${studentCatBadge(window.currentStudent.category)} — റാങ്ക്</div>
         <div class="rank-number"><span style="font-size:2.6rem;margin-right:6px;">${medal}</span>
           <span class="num">#${userRank}</span></div>
-        <div class="rank-name">${window.currentStudent.studentName}</div>
+        <div class="rank-name">${escapeHtml(window.currentStudent.studentName)}</div>
         <div class="rank-stats">
           <div class="stat-item"><div class="stat-label">🌟 സ്കോർ</div>
             <div class="stat-value gold">${score}</div></div>
@@ -1344,7 +1388,9 @@ async function loadParentRankingData() {
   }
 }
 
-/* ADMIN */
+/* ============================================================
+   ADMIN
+   ============================================================ */
 window.adminCurrentTest = TEST_CATEGORIES[0];
 let currentRankingCategory = STUDENT_CATEGORIES[0];
 
@@ -1383,16 +1429,27 @@ async function loadSessionSummary() {
   }
 }
 
+/* STUDENTS */
 window.allStudentsCache = [];
 
 async function loadStudents() {
   const wrap = document.getElementById('adminStudentsTable');
   wrap.innerHTML = '<div class="text-center text-muted">Loading...</div>';
   try {
-    const { data: students, error } = await _supabase.from('Student').select('*').order('chestNumber');
+    const { data: students, error } = await _supabase.from('Student').select('*').order('madrasa').order('chestNumber');
     if (error) throw error;
     window.allStudentsCache = students || [];
     document.getElementById('studentCount').textContent = window.allStudentsCache.length;
+
+    // Populate madrasa datalist + filter
+    const madrasas = [...new Set(window.allStudentsCache.map(s => s.madrasa).filter(Boolean))].sort();
+    document.getElementById('madrasaList').innerHTML = madrasas.map(m => `<option value="${escapeHtml(m)}">`).join('');
+    const filterSel = document.getElementById('filterMadrasa');
+    const currentVal = filterSel.value;
+    filterSel.innerHTML = '<option value="">എല്ലാ മദ്‌റസകളും</option>' +
+      madrasas.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+    if (currentVal) filterSel.value = currentVal;
+
     renderStudentsTable(window.allStudentsCache);
   } catch (err) {
     console.error(err);
@@ -1412,9 +1469,9 @@ function renderStudentsTable(students) {
   students.forEach(s => {
     const testName = getTestForStudent(s.category) || '—';
     html += `<tr>
-      <td><strong style="color:var(--gold);">${s.chestNumber}</strong></td>
-      <td>${s.studentName}</td>
-      <td>${s.madrasa}</td>
+      <td><strong style="color:var(--gold);">${escapeHtml(s.chestNumber)}</strong></td>
+      <td>${escapeHtml(s.studentName)}</td>
+      <td>${escapeHtml(s.madrasa)}</td>
       <td>${studentCatBadge(s.category)}</td>
       <td>${testCatBadge(testName)}</td>
       <td>
@@ -1429,8 +1486,13 @@ function renderStudentsTable(students) {
 
 function filterStudentsTable() {
   const q = document.getElementById('studentSearch').value.trim().toUpperCase();
-  const filtered = q ? window.allStudentsCache.filter(s =>
-    s.chestNumber.toUpperCase().includes(q) || s.studentName.toUpperCase().includes(q)) : window.allStudentsCache;
+  const mad = document.getElementById('filterMadrasa').value;
+  const cat = document.getElementById('filterCategory').value;
+  let filtered = window.allStudentsCache;
+  if (q) filtered = filtered.filter(s =>
+    s.chestNumber.toUpperCase().includes(q) || s.studentName.toUpperCase().includes(q));
+  if (mad) filtered = filtered.filter(s => s.madrasa === mad);
+  if (cat) filtered = filtered.filter(s => s.category === cat);
   renderStudentsTable(filtered);
 }
 
@@ -1521,6 +1583,7 @@ document.getElementById('bulkImportBtn').addEventListener('click', async functio
   finally { this.disabled = false; }
 });
 
+/* SESSION */
 async function loadSessionEditor() {
   try {
     const { data: sessions } = await _supabase.from('QuizSession').select('*').eq('id', 1);
@@ -1545,14 +1608,10 @@ document.getElementById('saveSessionBtn').addEventListener('click', async functi
   const startLocal = document.getElementById('sessStart').value;
   const endLocal = document.getElementById('sessEnd').value;
   const duration = parseInt(document.getElementById('sessDuration').value);
-  if (!startLocal || !endLocal || !duration) {
-    showToast('എല്ലാ വിവരങ്ങളും നൽകുക', 'error'); return;
-  }
+  if (!startLocal || !endLocal || !duration) { showToast('എല്ലാ വിവരങ്ങളും നൽകുക', 'error'); return; }
   const startUTC = localToUTC(startLocal), endUTC = localToUTC(endLocal);
   if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
-  if (new Date(startUTC) >= new Date(endUTC)) {
-    showToast('End time, Start time-ന് ശേഷം ആകണം', 'error'); return;
-  }
+  if (new Date(startUTC) >= new Date(endUTC)) { showToast('End time, Start time-ന് ശേഷം ആകണം', 'error'); return; }
   this.disabled = true;
   try {
     const { data: existing } = await _supabase.from('QuizSession').select('id').eq('id', 1).maybeSingle();
@@ -1572,6 +1631,7 @@ document.getElementById('saveSessionBtn').addEventListener('click', async functi
   finally { this.disabled = false; }
 });
 
+/* QUESTIONS */
 window.questionsCache = [];
 
 function switchQuestionTest(test) {
@@ -1664,9 +1724,9 @@ async function loadAdminQuestions(testCategory) {
     window.questionsCache.forEach((q, i) => {
       html += `<tr>
         <td>${i+1}</td>
-        <td>${q.questionText}</td>
-        <td style="font-size:.75rem;">${q.options.map((o,j)=>String.fromCharCode(65+j)+'. '+o).join(' | ')}</td>
-        <td><span style="color:#10b981;font-weight:700;">${q.options[q.correctAnswer]}</span></td>
+        <td>${escapeHtml(q.questionText)}</td>
+        <td style="font-size:.75rem;">${q.options.map((o,j)=>String.fromCharCode(65+j)+'. '+escapeHtml(o)).join(' | ')}</td>
+        <td><span style="color:#10b981;font-weight:700;">${escapeHtml(q.options[q.correctAnswer])}</span></td>
         <td>
           <button class="btn btn-primary btn-sm" onclick="editQuestion('${q.id}')">✏️</button>
           <button class="btn btn-danger btn-sm" onclick="deleteQuestion('${q.id}')">🗑️</button>
@@ -1681,6 +1741,7 @@ async function loadAdminQuestions(testCategory) {
   } catch (err) { table.innerHTML = 'Error'; }
 }
 
+/* RANKINGS */
 function switchRankingCategory(cat) {
   currentRankingCategory = cat;
   document.querySelectorAll('.admin-tab[data-rcat]').forEach(t => t.classList.remove('active'));
@@ -1701,8 +1762,7 @@ async function loadAdminRankings(studentCategory) {
       return;
     }
     const ranked = attempts.map(a => ({
-      ...a,
-      timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
+      ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
     }));
     ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
     let html = '<table><thead><tr><th>Rank</th><th>Chest</th><th>Name</th><th>Madrasa</th><th>Score</th><th>Time</th></tr></thead><tbody>';
@@ -1711,9 +1771,9 @@ async function loadAdminRankings(studentCategory) {
       const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
       html += `<tr>
         <td><strong>${medal}${rank}</strong></td>
-        <td>${r.Student?.chestNumber || '—'}</td>
-        <td>${r.Student?.studentName || '—'}</td>
-        <td>${r.Student?.madrasa || '—'}</td>
+        <td>${escapeHtml(r.Student?.chestNumber || '—')}</td>
+        <td>${escapeHtml(r.Student?.studentName || '—')}</td>
+        <td>${escapeHtml(r.Student?.madrasa || '—')}</td>
         <td style="color:#fbbf24;font-weight:700;">${r.score ?? 0}</td>
         <td>${r.timeTaken}s</td>
       </tr>`;
@@ -1723,6 +1783,7 @@ async function loadAdminRankings(studentCategory) {
   } catch (err) { c.innerHTML = 'Error'; }
 }
 
+/* PDF */
 let pdfReady = false;
 let pdfBlobForPreview = null;
 function loadScript(src) {
@@ -1791,7 +1852,6 @@ document.getElementById('downloadRankBtn').addEventListener('click', async funct
       ...a, timeTaken: Math.floor((new Date(a.endTime) - new Date(a.startTime)) / 1000)
     }));
     ranked.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.timeTaken || 9999) - (b.timeTaken || 9999));
-
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
     const pw = doc.internal.pageSize.getWidth();
@@ -1818,22 +1878,22 @@ document.getElementById('downloadRankBtn').addEventListener('click', async funct
   finally { this.disabled = false; }
 });
 
+/* HELP */
 function openHelp() {
   alert(
     '📘 ജൂനിയർ & സീനിയർ GIRLS ടെസ്റ്റ്\n\n' +
+    '🔐 Login:\n' +
+    '1. മദ്‌റസ തിരഞ്ഞെടുക്കുക\n' +
+    '2. ചെസ്റ്റ് നമ്പർ-പേര് തിരഞ്ഞെടുക്കുക\n' +
+    '3. പ്രവേശിക്കുക\n\n' +
     '📌 Categories:\n' +
     '• ജൂനിയർ GIRLS → കുരുന്നുകൾ ടെസ്റ്റ്\n' +
     '• സീനിയർ GIRLS → സന്തുഷ്ട കുടുംബം ടെസ്റ്റ്\n\n' +
-    '⏰ ഒരു Session — രണ്ട് വിഭാഗത്തിനും ഒരേ സമയം\n' +
     '🎯 Scoring: ശരി +5, തെറ്റ് −3\n\n' +
-    '1. ചെസ്റ്റ് നമ്പർ നൽകി ലോഗിൻ\n' +
-    '2. വിവരങ്ങൾ പരിശോധിച്ച് സ്ഥിരീകരിക്കുക\n' +
-    '3. ടെസ്റ്റ് ആരംഭിക്കുക'
+    '🔧 Admin: Logo 5 തവണ tap ചെയ്യുക'
   );
 }
 
-const saved = localStorage.getItem('lastChest');
-if (saved) document.getElementById('loginIdInput').value = saved;
 document.body.classList.add('login-mode');
 
 document.addEventListener('scroll', () => {
