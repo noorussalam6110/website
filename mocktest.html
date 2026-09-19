@@ -566,7 +566,8 @@ body.dashboard-mode .container{min-height:auto;display:block}
             <input type="text" id="nsChest" placeholder="ചെസ്റ്റ് നമ്പർ *" style="max-width:140px;"
               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')" />
             <input type="text" id="nsName" placeholder="കുട്ടിയുടെ പേര് *" class="flex-grow" />
-            <input type="text" id="nsMadrasa" placeholder="മദ്‌റസ *" list="madrasaList" />
+            <input type="text" id="nsMadrasa" placeholder="മദ്‌റസ *" list="madrasaList"
+              style="text-transform:uppercase;" />
             <datalist id="madrasaList"></datalist>
             <select id="nsCategory" style="max-width:240px;">
               <option value="">വിഭാഗം *</option>
@@ -575,6 +576,9 @@ body.dashboard-mode .container{min-height:auto;display:block}
             </select>
             <button class="btn btn-success btn-sm" id="addStudentBtn">➕ Add</button>
           </div>
+          <p class="text-muted" style="font-size:.7rem;margin-top:8px;">
+            💡 പുതിയ മദ്‌റസ name നൽകിയാൽ അത് <strong>automatically Madrasa table-ൽ create</strong> ചെയ്യും.
+          </p>
         </div>
 
         <div class="admin-section-box" style="border-color:rgba(59,130,246,.15);">
@@ -725,6 +729,39 @@ body.dashboard-mode .container{min-height:auto;display:block}
   <button class="help-btn" onclick="openHelp()"><i class="fas fa-circle-question"></i> <span>സഹായം</span></button>
 </div>
 
+<!-- NEW MADRASA PASSWORD MODAL -->
+<div id="newMadrasaModal" class="modal-overlay hidden">
+  <div class="modal-glass" style="max-width:480px;">
+    <div class="flex-between" style="margin-bottom:16px;">
+      <h3 style="color:var(--gold);">
+        <i class="fas fa-key"></i> പുതിയ മദ്‌റസ Password
+      </h3>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('newMadrasaModal').classList.add('hidden')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <p style="color:var(--text-secondary);font-size:.85rem;margin-bottom:12px;">
+      Student add ചെയ്ത madrasa <strong>automatically Madrasa table-ൽ create</strong> ചെയ്തിട്ടുണ്ട്. 
+      താഴെ കാണുന്ന password ഉപയോഗിച്ച് parents-ന് login ചെയ്യാം:
+    </p>
+    <div id="newMadrasaPassList" style="margin:16px 0;"></div>
+    <div style="background:rgba(251,191,36,.08);border:1px dashed rgba(251,191,36,.3);border-radius:12px;padding:12px;margin-top:12px;">
+      <p style="color:var(--gold);font-size:.75rem;margin:0;">
+        <i class="fas fa-info-circle"></i> 
+        Password മാറ്റണോ? <strong>Madrasas tab</strong>-ലേക്ക് പോകുക → edit (✏️) click ചെയ്യുക.
+      </p>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:20px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="document.getElementById('newMadrasaModal').classList.add('hidden');switchAdminTab('madrasas');">
+        <i class="fas fa-edit"></i> Madrasas-ൽ പോകുക
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('newMadrasaModal').classList.add('hidden')">
+        ✅ ശരി
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="confirmModal" class="modal-overlay hidden">
   <div class="modal-glass">
     <h3>⚠️ ശ്രദ്ധിക്കുക</h3>
@@ -834,6 +871,42 @@ function escapeHtml(s) {
 }
 
 /* ============================================================
+   AUTO-SYNC MADRASAS
+   ============================================================ */
+async function autoSyncMadrasas() {
+  try {
+    const { data: studentData } = await _supabase.from('Student').select('madrasa');
+    const studentMadrasas = [...new Set(
+      (studentData || [])
+        .map(s => (s.madrasa || '').trim().toUpperCase())
+        .filter(Boolean)
+    )];
+
+    const { data: madrasaData } = await _supabase.rpc('admin_list_madrasas');
+    const existingMadrasas = (madrasaData || []).map(m => m.name.toUpperCase());
+
+    const missing = studentMadrasas.filter(m => !existingMadrasas.includes(m));
+    if (missing.length === 0) return { created: 0, list: [] };
+
+    const created = [];
+    for (const madrasa of missing) {
+      const defaultPass = `${madrasa.toLowerCase()}@2025`;
+      try {
+        await _supabase.rpc('admin_save_madrasa', {
+          p_name: madrasa,
+          p_password: defaultPass
+        });
+        created.push({ name: madrasa, password: defaultPass });
+      } catch(e) { console.error('Sync error for', madrasa, e); }
+    }
+    return { created: created.length, list: created };
+  } catch (e) {
+    console.error('autoSyncMadrasas error:', e);
+    return { created: 0, list: [] };
+  }
+}
+
+/* ============================================================
    LOGIN FLOW: Madrasa → Password (RPC) → Chest dropdown
    ============================================================ */
 async function loadLoginMadrasas() {
@@ -865,7 +938,7 @@ async function verifyMadrasaPassword(madrasa, password) {
   } catch (e) { console.error(e); return false; }
 }
 
-/* STEP 1 — Madrasa change */
+/* STEP 1 */
 document.getElementById('loginMadrasa').addEventListener('change', function() {
   const madrasa = this.value;
   document.getElementById('passwordStepGroup').classList.add('hidden');
@@ -879,7 +952,7 @@ document.getElementById('loginMadrasa').addEventListener('change', function() {
   setTimeout(() => document.getElementById('loginPassword').focus(), 200);
 });
 
-/* STEP 2 — Password input (debounced verify) */
+/* STEP 2 */
 let pwdTimer = null;
 document.getElementById('loginPassword').addEventListener('input', function() {
   const madrasa = document.getElementById('loginMadrasa').value;
@@ -903,7 +976,7 @@ document.getElementById('loginPassword').addEventListener('input', function() {
   }, 500);
 });
 
-/* STEP 3 — Load students */
+/* STEP 3 */
 async function loadStudentsForLogin(madrasa) {
   const sel = document.getElementById('loginStudent');
   sel.innerHTML = '<option value="">-- ലോഡ് ചെയ്യുന്നു... --</option>';
@@ -1638,6 +1711,13 @@ async function loadStudents() {
     if (currentVal) filterSel.value = currentVal;
 
     renderStudentsTable(window.allStudentsCache);
+
+    // Auto-sync madrasas
+    const sync = await autoSyncMadrasas();
+    if (sync.created > 0) {
+      console.log('🏫 Auto-created madrasas:', sync.list);
+      await loadMadrasasAdmin();
+    }
   } catch (err) {
     console.error(err);
     wrap.innerHTML = '<div class="text-center text-muted">Error loading</div>';
@@ -1686,24 +1766,52 @@ function filterStudentsTable() {
 document.getElementById('addStudentBtn').addEventListener('click', async function() {
   const chest = document.getElementById('nsChest').value.trim().toUpperCase();
   const name = document.getElementById('nsName').value.trim();
-  const madrasa = document.getElementById('nsMadrasa').value.trim();
+  const madrasa = document.getElementById('nsMadrasa').value.trim().toUpperCase();
   const category = document.getElementById('nsCategory').value;
+
   if (!chest || !name || !madrasa || !category) {
     showToast('എല്ലാ വിവരങ്ങളും നൽകുക', 'error');
     return;
   }
+
   this.disabled = true;
   try {
     const { error } = await _supabase.from('Student').insert({
       chestNumber: chest, studentName: name, madrasa, category
     });
     if (error) throw error;
-    showToast('✅ Student added', 'success');
+
+    const sync = await autoSyncMadrasas();
+
+    if (sync.created > 0) {
+      const listHtml = sync.list.map(m =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(251,191,36,.08);border-radius:10px;margin-bottom:6px;gap:8px;">
+          <span style="color:var(--gold);font-weight:700;font-size:.85rem;">${escapeHtml(m.name)}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-family:monospace;color:#fff;font-size:.85rem;">${escapeHtml(m.password)}</span>
+            <button class="btn btn-outline btn-sm" style="padding:2px 8px;min-height:24px;font-size:.7rem;"
+              onclick="navigator.clipboard.writeText('${escapeHtml(m.password)}');showToast('✅ Copied','success');">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+        </div>`
+      ).join('');
+
+      document.getElementById('newMadrasaPassList').innerHTML = listHtml;
+      document.getElementById('newMadrasaModal').classList.remove('hidden');
+      showToast('🏫 പുതിയ മദ്‌റസ auto-created!', 'success');
+    } else {
+      showToast('✅ Student added', 'success');
+    }
+
     document.getElementById('nsChest').value = '';
     document.getElementById('nsName').value = '';
     document.getElementById('nsMadrasa').value = '';
     document.getElementById('nsCategory').value = '';
+
     await loadStudents();
+    await loadMadrasasAdmin();
+    await loadLoginMadrasas();
   } catch (err) {
     showToast(err.message.includes('duplicate') ? 'ഈ ചെസ്റ്റ് നമ്പർ നിലവിലുണ്ട്' : err.message, 'error');
   } finally { this.disabled = false; }
@@ -1725,11 +1833,14 @@ window.editStudent = async function(id) {
     await _supabase.from('Student').update({
       chestNumber: chest.trim().toUpperCase(),
       studentName: name.trim(),
-      madrasa: madrasa.trim(),
+      madrasa: madrasa.trim().toUpperCase(),
       category: category
     }).eq('id', id);
+    await autoSyncMadrasas();
     showToast('✅ Updated', 'success');
     await loadStudents();
+    await loadMadrasasAdmin();
+    await loadLoginMadrasas();
   } catch (err) { showToast(err.message, 'error'); }
 };
 
@@ -1754,7 +1865,7 @@ document.getElementById('bulkImportBtn').addEventListener('click', async functio
     rows.push({
       chestNumber: parts[0].toUpperCase(),
       studentName: parts[1],
-      madrasa: parts[2],
+      madrasa: parts[2].toUpperCase(),
       category: parts[3]
     });
   }
@@ -1763,9 +1874,31 @@ document.getElementById('bulkImportBtn').addEventListener('click', async functio
   try {
     const { error } = await _supabase.from('Student').insert(rows);
     if (error) throw error;
-    showToast(`✅ ${rows.length} students imported`, 'success');
+
+    const sync = await autoSyncMadrasas();
+
+    if (sync.created > 0) {
+      const listHtml = sync.list.map(m =>
+        `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(251,191,36,.08);border-radius:10px;margin-bottom:6px;gap:8px;">
+          <span style="color:var(--gold);font-weight:700;font-size:.85rem;">${escapeHtml(m.name)}</span>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-family:monospace;color:#fff;font-size:.85rem;">${escapeHtml(m.password)}</span>
+            <button class="btn btn-outline btn-sm" style="padding:2px 8px;min-height:24px;font-size:.7rem;"
+              onclick="navigator.clipboard.writeText('${escapeHtml(m.password)}');showToast('✅ Copied','success');">
+              <i class="fas fa-copy"></i>
+            </button>
+          </div>
+        </div>`
+      ).join('');
+      document.getElementById('newMadrasaPassList').innerHTML = listHtml;
+      document.getElementById('newMadrasaModal').classList.remove('hidden');
+    }
+
+    showToast(`✅ ${rows.length} students imported${sync.created > 0 ? ` + ${sync.created} madrasas created` : ''}`, 'success');
     document.getElementById('bulkCsv').value = '';
     await loadStudents();
+    await loadMadrasasAdmin();
+    await loadLoginMadrasas();
   } catch (err) { showToast(err.message, 'error'); }
   finally { this.disabled = false; }
 });
@@ -2078,6 +2211,7 @@ function openHelp() {
     '• ജൂനിയർ GIRLS → കുരുന്നുകൾ ടെസ്റ്റ്\n' +
     '• സീനിയർ GIRLS → സന്തുഷ്ട കുടുംബം ടെസ്റ്റ്\n\n' +
     '🎯 Scoring: ശരി +5, തെറ്റ് −3\n\n' +
+    '🏫 Auto-Sync: Students-ൽ പുതിയ madrasa → Password auto-create\n\n' +
     '🔧 Admin: Logo 5 തവണ tap ചെയ്യുക'
   );
 }
