@@ -38,7 +38,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
   box-shadow:0 0 60px rgba(251,191,36,.15);animation:floatLogo 3s ease-in-out infinite}
 .loading-logo i{font-size:38px;color:#0a0f1e}
 @keyframes floatLogo{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.02)}}
-.loading-title{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--gold) 100%);
+.loading-title{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--gold) 100%);
   -webkit-background-clip:text;background-clip:text;color:transparent;text-align:center;line-height:1.3;padding:0 12px}
 .loading-subtitle{font-size:.85rem;color:rgba(255,255,255,.5);text-align:center;letter-spacing:3px;
   text-transform:uppercase;font-weight:400}
@@ -198,7 +198,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
 .timer-ring-container.warning .progress-circle{stroke:#f87171}
 .timer-ring-container.warning .timer-text{color:#f87171}
 
-/* SINGLE QUESTION UI */
+/* QUIZ UI */
 .quiz-progress-wrap{margin-bottom:20px}
 .quiz-progress-text{display:flex;justify-content:space-between;font-size:.85rem;
   color:var(--text-muted);margin-bottom:8px;font-weight:600}
@@ -250,11 +250,6 @@ body.dashboard-mode .container{min-height:auto;display:block}
 .admin-section-box{background:rgba(0,0,0,.2);border-radius:16px;padding:16px 18px;
   margin-bottom:16px;border:1px solid rgba(255,255,255,.06)}
 .admin-section-box h5{color:var(--gold);font-size:.9rem;margin-bottom:12px;font-weight:600}
-.day-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.day-tab{padding:7px 18px;border-radius:30px;background:#1e293b;color:#94a3b8;cursor:pointer;
-  border:none;font-weight:600;font-size:.8rem;font-family:inherit;transition:.2s}
-.day-tab.active{background:var(--gold);color:#0a0f1e}
-.day-tab:hover{opacity:.85}
 .cat-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:600}
 
 /* STATUS */
@@ -357,7 +352,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
       </div>
       <div class="login-header">
         <div class="logo-wrap">
-          <div class="logo-icon"><i class="fas fa-users"></i></div>
+          <div class="logo-icon" id="secretAdminTrigger" style="cursor:default;"><i class="fas fa-users"></i></div>
           <span class="title-main">സന്തുഷ്ട കുടുംബം & കുരുന്നുകൾ</span>
         </div>
         <div style="text-align:center;opacity:.5;letter-spacing:3px;margin-top:6px;font-size:.7rem;">
@@ -366,11 +361,10 @@ body.dashboard-mode .container{min-height:auto;display:block}
       </div>
       <form id="loginForm">
         <div class="login-field-group">
-          <label class="login-field-label"><i class="fas fa-hashtag" style="margin-right:6px;opacity:.5;"></i>ചെസ്റ്റ് നമ്പർ</label>
+          <label class="login-field-label"><i class="fas fa-id-card" style="margin-right:6px;opacity:.5;"></i>ചെസ്റ്റ് നമ്പർ</label>
           <div class="login-input-wrap">
-            <i class="fas fa-hashtag"></i>
-            <input type="text" id="loginIdInput" placeholder="ചെസ്റ്റ് നമ്പർ നൽകുക"
-              autofocus oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');" />
+            <i class="fas fa-id-card"></i>
+            <input type="text" id="loginIdInput" placeholder="ചെസ്റ്റ് നമ്പർ നൽകുക" autofocus />
           </div>
         </div>
         <div class="login-remember">
@@ -381,16 +375,13 @@ body.dashboard-mode .container{min-height:auto;display:block}
           <button type="submit" class="btn btn-primary btn-block">
             <i class="fas fa-key"></i> പ്രവേശിക്കുക
           </button>
-          <button type="button" class="btn btn-outline btn-block" id="adminLoginBtn">
-            <i class="fas fa-user-shield"></i> അഡ്മിൻ ലോഗിൻ
-          </button>
         </div>
         <div id="loginMessage"></div>
       </form>
     </div>
   </div>
 
-  <!-- ADMIN LOGIN MODAL -->
+  <!-- ADMIN PASSWORD MODAL (backup — logo 5-tap) -->
   <div id="adminLoginModal" class="modal-overlay hidden">
     <div class="modal-glass" style="max-width:400px;">
       <div class="flex-between" style="margin-bottom:16px;">
@@ -410,7 +401,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
 
   <!-- PARENT DASHBOARD -->
   <div id="parentDashboard" class="hidden">
-    <div class="dashboard-header" id="parentHeader">
+    <div class="dashboard-header">
       <div class="flex" style="gap:14px;">
         <div class="avatar-neon"><span id="avatarText">S</span></div>
         <div>
@@ -461,13 +452,13 @@ body.dashboard-mode .container{min-height:auto;display:block}
     <!-- STATS -->
     <div class="stats-grid hidden" id="statsSection">
       <div class="stat-card">
-        <div><span class="stat-value" id="quizDayDisplay">ദിവസം 1</span>
-          <div class="text-muted" style="font-size:.8rem;">ഇന്നത്തെ ടെസ്റ്റ്</div>
+        <div><span class="stat-value" id="questionCountDisplay">0</span>
+          <div class="text-muted" style="font-size:.8rem;">ചോദ്യങ്ങൾ</div>
         </div>
       </div>
       <div class="stat-card">
-        <div><span class="stat-value" id="questionCountDisplay">0</span>
-          <div class="text-muted" style="font-size:.8rem;">ചോദ്യങ്ങൾ</div>
+        <div><span class="stat-value" id="timerInfoDisplay">15:00</span>
+          <div class="text-muted" style="font-size:.8rem;">സമയം</div>
         </div>
       </div>
       <div class="stat-card">
@@ -499,13 +490,13 @@ body.dashboard-mode .container{min-height:auto;display:block}
       </div>
       <div class="status-box hidden" id="endedMsg">
         <div class="icon">🚫</div>
-        <h2>ഇന്നത്തെ മത്സരം അവസാനിച്ചു</h2>
-        <p id="endedMsgText">നാളെ വീണ്ടും വരൂ!</p>
+        <h2>മത്സരം അവസാനിച്ചു</h2>
+        <p id="endedMsgText">ഫലപ്രഖ്യാപനത്തിനായി കാത്തിരിക്കുക!</p>
       </div>
       <div class="status-box hidden" id="resultsExpiredMsg">
         <div class="icon">⏰</div>
         <h2>ഫലം ഇനി ലഭ്യമല്ല</h2>
-        <p>അടുത്ത മത്സരത്തിന് 30 മിനിറ്റ് മുമ്പ് മുതൽ ഫലം കാണാൻ സാധിക്കില്ല.</p>
+        <p>ഫലപ്രഖ്യാപന സമയം കഴിഞ്ഞു.</p>
       </div>
       <div class="status-box hidden" id="preStartMsg">
         <div class="icon">⏳</div>
@@ -522,7 +513,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
       <div id="quizStatusMessage" class="mt-2 text-muted" style="font-size:.9rem;"></div>
     </div>
 
-    <!-- QUIZ (Single Question) -->
+    <!-- QUIZ -->
     <div id="quizArea" class="hidden">
       <div class="glass-card">
         <div class="quiz-progress-wrap">
@@ -567,13 +558,13 @@ body.dashboard-mode .container{min-height:auto;display:block}
     </div>
 
     <div class="glass-card" style="margin-bottom:20px;padding:16px 20px;">
-      <h4 style="color:var(--gold);font-size:1rem;">📅 Today's Session</h4>
+      <h4 style="color:var(--gold);font-size:1rem;">📅 Session Info</h4>
       <div id="todaySessionInfo" class="text-muted">Loading...</div>
     </div>
 
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="students" onclick="switchAdminTab('students')">👥 Students</button>
-      <button class="admin-tab" data-tab="sessions" onclick="switchAdminTab('sessions')">⏰ Sessions</button>
+      <button class="admin-tab" data-tab="session" onclick="switchAdminTab('session')">⏰ Session</button>
       <button class="admin-tab" data-tab="questions" onclick="switchAdminTab('questions')">📋 Questions</button>
       <button class="admin-tab" data-tab="rankings" onclick="switchAdminTab('rankings')">📊 Rankings</button>
     </div>
@@ -601,11 +592,9 @@ body.dashboard-mode .container{min-height:auto;display:block}
         <div class="admin-section-box" style="border-color:rgba(59,130,246,.15);">
           <h5 style="color:#3b82f6;">📥 Bulk Import (CSV)</h5>
           <p class="text-muted" style="font-size:.75rem;margin-bottom:10px;">
-            Format: chestNumber,studentName,madrasa,category<br>
-            ഉദാ: A101,AHMED ALI,NOORUSSALAM,സന്തുഷ്ട കുടുംബം<br>
-            ഉദാ: K101,YUSUF,NOORUSSALAM,കുരുന്നുകൾ
+            Format: chestNumber,studentName,madrasa,category
           </p>
-          <textarea id="bulkCsv" placeholder="Paste CSV here..." style="min-height:100px;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 14px;color:#fff;font-family:inherit;"></textarea>
+          <textarea id="bulkCsv" placeholder="A101,AHMED ALI,NOORUSSALAM,സന്തുഷ്ട കുടുംബം" style="min-height:100px;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:10px 14px;color:#fff;font-family:inherit;"></textarea>
           <button class="btn btn-primary btn-sm mt-2" id="bulkImportBtn">📥 Import</button>
         </div>
 
@@ -621,25 +610,32 @@ body.dashboard-mode .container{min-height:auto;display:block}
       </div>
     </div>
 
-    <!-- SESSIONS TAB -->
-    <div id="tab-sessions" class="tab-content hidden">
+    <!-- SESSION TAB -->
+    <div id="tab-session" class="tab-content hidden">
       <div class="glass-card">
-        <h4 style="color:var(--gold);">⏰ Manage Days</h4>
+        <h4 style="color:var(--gold);">⏰ Quiz Session Settings</h4>
+        <p class="text-muted" style="font-size:.85rem;margin-bottom:16px;">
+          ⚠️ ഒരു session മാത്രം — രണ്ട് വിഭാഗത്തിനും ഒരേ സമയം.
+        </p>
         <div class="admin-section-box" style="border-color:rgba(59,130,246,.15);">
-          <h5 style="color:#3b82f6;">➕ Add New Day (രണ്ട് വിഭാഗത്തിനും common)</h5>
+          <h5 style="color:#3b82f6;">📅 Set Session Time</h5>
           <div class="admin-form-row">
-            <input type="number" id="newDay" placeholder="Day #" style="max-width:100px;" />
-            <input type="datetime-local" id="newStart" class="flex-grow" />
-            <input type="datetime-local" id="newEnd" class="flex-grow" />
-            <input type="number" id="newDuration" placeholder="min" style="max-width:90px;" value="15" />
-            <button class="btn btn-success btn-sm" id="addDayBtn">➕ Add</button>
+            <label style="flex:0 0 auto;font-size:.8rem;color:var(--text-secondary);">Start:</label>
+            <input type="datetime-local" id="sessStart" class="flex-grow" />
           </div>
-          <p class="text-muted" style="font-size:.7rem;margin-top:8px;">
-            ⚠️ ഒരു session ഉണ്ടാക്കിയാൽ <strong>രണ്ട് വിഭാഗത്തിനും ഒരേ സമയം</strong> ആരംഭിക്കും. ചോദ്യങ്ങൾ category-wise ആയിരിക്കും.
-          </p>
+          <div class="admin-form-row">
+            <label style="flex:0 0 auto;font-size:.8rem;color:var(--text-secondary);">End:</label>
+            <input type="datetime-local" id="sessEnd" class="flex-grow" />
+          </div>
+          <div class="admin-form-row">
+            <label style="flex:0 0 auto;font-size:.8rem;color:var(--text-secondary);">Duration (min):</label>
+            <input type="number" id="sessDuration" value="15" style="max-width:120px;" />
+          </div>
+          <button class="btn btn-success btn-sm mt-2" id="saveSessionBtn">💾 Save Session</button>
         </div>
-        <div class="admin-table-wrap">
-          <div id="adminSessionsTable"><div class="text-center text-muted">Loading...</div></div>
+        <div id="sessionInfoBox" class="admin-section-box" style="border-color:rgba(251,191,36,.15);">
+          <h5 style="color:var(--gold);">📊 Current Session</h5>
+          <div id="currentSessionInfo" class="text-muted">Loading...</div>
         </div>
       </div>
     </div>
@@ -658,7 +654,6 @@ body.dashboard-mode .container{min-height:auto;display:block}
               <option value="സന്തുഷ്ട കുടുംബം">സന്തുഷ്ട കുടുംബം</option>
               <option value="കുരുന്നുകൾ">കുരുന്നുകൾ</option>
             </select>
-            <input type="number" id="qDay" placeholder="Day" style="max-width:100px;" />
             <textarea id="qText" placeholder="Question" class="flex-grow" style="min-height:44px;"></textarea>
           </div>
           <div class="admin-form-row">
@@ -679,9 +674,14 @@ body.dashboard-mode .container{min-height:auto;display:block}
             <input type="hidden" id="editQuestionId" />
           </div>
         </div>
-        <div id="adminDayTabsContainer" class="day-tabs"></div>
+
+        <div class="admin-tabs" style="margin-bottom:16px;">
+          <button class="admin-tab active" data-qcat="സന്തുഷ്ട കുടുംബം" onclick="switchQuestionCategory('സന്തുഷ്ട കുടുംബം')">സന്തുഷ്ട കുടുംബം</button>
+          <button class="admin-tab" data-qcat="കുരുന്നുകൾ" onclick="switchQuestionCategory('കുരുന്നുകൾ')">കുരുന്നുകൾ</button>
+        </div>
+
         <div class="admin-table-wrap">
-          <div id="adminQuestionsTable"><div class="text-center text-muted">Select category & day</div></div>
+          <div id="adminQuestionsTable"><div class="text-center text-muted">Loading...</div></div>
         </div>
       </div>
     </div>
@@ -690,26 +690,20 @@ body.dashboard-mode .container{min-height:auto;display:block}
     <div id="tab-rankings" class="tab-content hidden">
       <div class="glass-card">
         <h4 style="color:var(--gold);">🏆 Rankings (Category-wise)</h4>
-        <div class="day-tabs" id="rankDayTabs"></div>
+
+        <div class="admin-tabs" style="margin-bottom:16px;">
+          <button class="admin-tab active" data-rcat="സന്തുഷ്ട കുടുംബം" onclick="switchRankingCategory('സന്തുഷ്ട കുടുംബം')">സന്തുഷ്ട കുടുംബം</button>
+          <button class="admin-tab" data-rcat="കുരുന്നുകൾ" onclick="switchRankingCategory('കുരുന്നുകൾ')">കുരുന്നുകൾ</button>
+        </div>
+
         <div class="flex" style="justify-content:center;gap:12px;margin:12px 0;">
-          <button class="btn btn-primary btn-sm" id="downloadDayRankBtn">
-            <i class="fas fa-file-pdf"></i> Day PDF
+          <button class="btn btn-primary btn-sm" id="downloadRankBtn">
+            <i class="fas fa-file-pdf"></i> Download PDF
           </button>
         </div>
+
         <div class="admin-table-wrap">
-          <div id="adminRankListContainer"><div class="text-center text-muted">Select category & day</div></div>
-        </div>
-        <div id="overallRankContainer" class="hidden" style="margin-top:20px;">
-          <div class="flex-between" style="margin-bottom:10px;">
-            <h5 style="color:var(--gold);">📊 Overall Rankings</h5>
-            <button class="btn btn-primary btn-sm" id="downloadOverallRankBtn"><i class="fas fa-file-pdf"></i> PDF</button>
-          </div>
-          <div class="admin-table-wrap">
-            <div id="overallRankList"><div class="text-center text-muted">Loading...</div></div>
-          </div>
-        </div>
-        <div class="text-center mt-4">
-          <button class="btn btn-outline" id="loadOverallRankBtn"><i class="fas fa-trophy"></i> Show Overall Rank</button>
+          <div id="adminRankListContainer"><div class="text-center text-muted">Select category</div></div>
         </div>
       </div>
     </div>
@@ -724,7 +718,7 @@ body.dashboard-mode .container{min-height:auto;display:block}
   <div class="modal-glass">
     <h3>⚠️ ശ്രദ്ധിക്കുക</h3>
     <p>
-      <strong>ടെസ്റ്റ് ആരംഭിച്ചാൽ പിന്നീട് ഇന്ന് വീണ്ടും പ്രവേശിക്കാൻ സാധിക്കുകയില്ല.</strong><br><br>
+      <strong>ടെസ്റ്റ് ആരംഭിച്ചാൽ പിന്നീട് വീണ്ടും പ്രവേശിക്കാൻ സാധിക്കുകയില്ല.</strong><br><br>
       • ഓരോ ചോദ്യത്തിനും ഉത്തരം നിർബന്ധമാണ്<br>
       • ശരിയുത്തരം: <span style="color:#6ee7b7;font-weight:700;">+5 മാർക്ക്</span><br>
       • തെറ്റ് ഉത്തരം: <span style="color:#fca5a5;font-weight:700;">−3 മാർക്ക്</span><br>
@@ -754,13 +748,12 @@ body.dashboard-mode .container{min-height:auto;display:block}
 
 <script>
 /* ============================================================
-   ⚠️ STEP 1 — നിങ്ങളുടെ SUPABASE VALUES ഇവിടെ PASTE ചെയ്യുക
+   ⚠️ നിങ്ങളുടെ SUPABASE VALUES ഇവിടെ PASTE ചെയ്യുക
    ============================================================ */
 const SUPABASE_URL = "https://xxxxxxxx.supabase.co";   // ← നിങ്ങളുടേത്
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIs...";   // ← നിങ്ങളുടേത്
-const ADMIN_PASSWORD = "ADMIN123";                      // ← മാറ്റുക
+const ADMIN_PASSWORD = "Noor@Sksbv2025";                 // ← മാറ്റുക
 
-/* CATEGORIES */
 const CATEGORIES = ['സന്തുഷ്ട കുടുംബം', 'കുരുന്നുകൾ'];
 const CATEGORY_COLORS = {
   'സന്തുഷ്ട കുടുംബം': '#f59e0b',
@@ -811,7 +804,7 @@ function utcToLocal(u) {
 function formatDate(d) {
   if (!d) return '';
   return new Date(d).toLocaleString('ml-IN', { timeZone:'Asia/Kolkata', day:'2-digit', month:'short',
-    hour:'2-digit', minute:'2-digit' });
+    year: 'numeric', hour:'2-digit', minute:'2-digit' });
 }
 function formatCountdown(s) {
   const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60;
@@ -823,19 +816,36 @@ function catBadge(cat) {
 }
 
 /* ============================================================
-   LOGIN
+   LOGIN — Admin check first, then student
    ============================================================ */
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const id = document.getElementById('loginIdInput').value.trim().toUpperCase();
+  const rawInput = document.getElementById('loginIdInput').value.trim();
   const msg = document.getElementById('loginMessage');
   msg.innerHTML = '';
-  if (!id) { showToast('ചെസ്റ്റ് നമ്പർ നൽകുക', 'error'); return; }
 
+  if (!rawInput) { showToast('ചെസ്റ്റ് നമ്പർ നൽകുക', 'error'); return; }
+
+  // ⭐ ADMIN CHECK (case-sensitive)
+  if (rawInput === ADMIN_PASSWORD) {
+    document.getElementById('loginIdInput').value = '';
+    localStorage.removeItem('lastChest');
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminDashboard').classList.remove('hidden');
+    document.getElementById('parentDashboard').classList.add('hidden');
+    document.body.classList.remove('login-mode');
+    document.body.classList.add('dashboard-mode');
+    loadAdminData();
+    showToast('👋 Admin Panel', 'success');
+    return;
+  }
+
+  // Student login
+  const id = rawInput.toUpperCase();
   try {
     const { data: student, error } = await _supabase
       .from('Student').select('*').eq('chestNumber', id).single();
-    if (error || !student) throw new Error('ചെസ്റ്റ് നമ്പർ കണ്ടെത്തിയില്ല. അഡ്മിനെ ബന്ധപ്പെടുക.');
+    if (error || !student) throw new Error('ചെസ്റ്റ് നമ്പർ കണ്ടെത്തിയില്ല.');
 
     saveId(id);
     window.currentStudent = student;
@@ -857,7 +867,8 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     document.getElementById('userNameDisplay').textContent = student.studentName;
     document.getElementById('displayChestNo').textContent = student.chestNumber;
     document.getElementById('displayMadrasa').textContent = student.madrasa;
-    document.getElementById('displayCategoryBadge').outerHTML = catBadge(student.category)
+    const badgeEl = document.getElementById('displayCategoryBadge');
+    if (badgeEl) badgeEl.outerHTML = catBadge(student.category)
       .replace('class="cat-badge"', 'id="displayCategoryBadge" class="cat-badge"');
 
     document.getElementById('verifyChest').textContent = student.chestNumber;
@@ -872,6 +883,13 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
   }
 });
 
+/* Smart input: uppercase letters/numbers, preserve special chars for admin */
+document.getElementById('loginIdInput').addEventListener('input', function() {
+  const val = this.value;
+  const hasSpecial = /[^A-Za-z0-9]/.test(val);
+  if (!hasSpecial) this.value = val.toUpperCase();
+});
+
 document.getElementById('cancelStudentBtn').addEventListener('click', () => logout());
 
 document.getElementById('confirmStudentBtn').addEventListener('click', async () => {
@@ -880,20 +898,13 @@ document.getElementById('confirmStudentBtn').addEventListener('click', async () 
   document.getElementById('verifySection').classList.add('hidden');
   document.getElementById('statsSection').classList.remove('hidden');
 
-  // Sessions are COMMON for both categories
-  const { data: sessions } = await _supabase
-    .from('QuizSession').select('*').order('day');
+  // Load single session
+  const { data: sessions } = await _supabase.from('QuizSession').select('*').eq('id', 1);
   if (!sessions || sessions.length === 0) {
-    showToast('സെഷനുകൾ ലഭ്യമല്ല', 'error');
+    showToast('സെഷൻ ലഭ്യമല്ല. അഡ്മിനെ ബന്ധപ്പെടുക.', 'error');
     return;
   }
-  window.allSessions = sessions;
-  const now = new Date();
-  let active = sessions.find(s => now >= new Date(s.startTime) && now <= new Date(s.endTime));
-  if (!active) active = sessions.find(s => new Date(s.startTime) > now) || sessions[sessions.length-1];
-  window.currentSession = active;
-  document.getElementById('quizDayDisplay').textContent = 'ദിവസം ' + active.day;
-
+  window.currentSession = sessions[0];
   renderParentDashboard();
 });
 
@@ -921,11 +932,7 @@ function logout() {
 document.getElementById('logoutBtn').addEventListener('click', logout);
 document.getElementById('adminLogoutBtn').addEventListener('click', logout);
 
-/* ADMIN LOGIN */
-document.getElementById('adminLoginBtn').addEventListener('click', () => {
-  document.getElementById('adminLoginModal').classList.remove('hidden');
-  document.getElementById('adminLoginMsg').textContent = '';
-});
+/* ADMIN LOGIN MODAL (5-tap backup) */
 document.getElementById('adminLoginModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.add('hidden');
 });
@@ -947,6 +954,28 @@ document.getElementById('adminLoginForm').addEventListener('submit', function(e)
   showToast('👋 Admin Panel', 'success');
 });
 
+/* Secret 5-tap on logo */
+(function setupSecretAdminTrigger() {
+  let tapCount = 0, tapTimer = null;
+  const logo = document.getElementById('secretAdminTrigger');
+  if (!logo) return;
+  logo.addEventListener('click', () => {
+    tapCount++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
+    if (tapCount >= 2 && tapCount < 5) {
+      logo.style.transform = `scale(${1 + tapCount * 0.05})`;
+      setTimeout(() => logo.style.transform = 'scale(1)', 200);
+    }
+    if (tapCount >= 5) {
+      tapCount = 0;
+      document.getElementById('adminLoginModal').classList.remove('hidden');
+      document.getElementById('adminLoginMsg').textContent = '';
+      setTimeout(() => document.getElementById('adminPassInput')?.focus(), 200);
+    }
+  });
+})();
+
 /* ============================================================
    PARENT DASHBOARD
    ============================================================ */
@@ -957,13 +986,6 @@ window.currentAttemptId = null;
 window.quizStarted = false;
 window.isSubmitted = false;
 window.timeLeft = 0;
-window.allSessions = [];
-
-function getNextSession(day) {
-  if (!window.allSessions) return null;
-  const idx = window.allSessions.findIndex(s => s.day === day);
-  return (idx !== -1 && idx < window.allSessions.length - 1) ? window.allSessions[idx + 1] : null;
-}
 
 async function renderParentDashboard() {
   if (!window.currentSession) return;
@@ -975,12 +997,11 @@ async function renderParentDashboard() {
   const start = new Date(window.currentSession.startTime);
   const end = new Date(window.currentSession.endTime);
   const rankRevealTime = new Date(end.getTime() + 3 * 60000);
-  const nextSession = getNextSession(window.currentSession.day);
-  const expiryTime = nextSession
-    ? new Date(new Date(nextSession.startTime).getTime() - 30 * 60000)
-    : new Date(rankRevealTime.getTime() + 12 * 3600000);
+  const expiryTime = new Date(rankRevealTime.getTime() + 12 * 3600000);
   const visibilityStart = new Date(start.getTime() - 30 * 60000);
   const cat = window.currentStudent.category;
+
+  document.getElementById('timerInfoDisplay').textContent = window.currentSession.duration + ' min';
 
   // BEFORE VISIBILITY
   if (now < visibilityStart) {
@@ -1006,7 +1027,7 @@ async function renderParentDashboard() {
     startCountdownTimer(start, 'preStart');
 
     const { data: qs } = await _supabase.from('Question')
-      .select('*').eq('sessionDay', window.currentSession.day).eq('category', cat).order('id');
+      .select('*').eq('category', cat).order('orderIndex');
     if (qs) {
       window.questions = qs;
       document.getElementById('questionCountDisplay').textContent = qs.length;
@@ -1023,11 +1044,10 @@ async function renderParentDashboard() {
   // ACTIVE
   if (now >= start && now <= end) {
     const { data: attempt } = await _supabase.from('Attempt')
-      .select('*').eq('studentId', window.currentStudent.id)
-      .eq('sessionDay', window.currentSession.day).eq('category', cat).maybeSingle();
+      .select('*').eq('studentId', window.currentStudent.id).maybeSingle();
 
     const { data: qs } = await _supabase.from('Question')
-      .select('*').eq('sessionDay', window.currentSession.day).eq('category', cat).order('id');
+      .select('*').eq('category', cat).order('orderIndex');
     if (!qs || qs.length === 0) {
       showToast(`"${cat}" വിഭാഗത്തിന് ചോദ്യങ്ങളില്ല`, 'error');
       return;
@@ -1105,10 +1125,7 @@ function startCountdownTimer(target, type) {
       const el = document.getElementById('endedMsgText');
       if (el) el.innerHTML = `⏳ ഫലം ലഭ്യമാകാൻ <strong style="color:var(--gold);">${disp}</strong> ശേഷിക്കുന്നു.`;
     }
-    if (diff <= 0) {
-      clearInterval(window.pubInterval);
-      location.reload();
-    }
+    if (diff <= 0) { clearInterval(window.pubInterval); location.reload(); }
   }, 1000);
 }
 
@@ -1129,7 +1146,6 @@ async function beginQuiz() {
   try {
     const { data: att, error } = await _supabase.from('Attempt').insert({
       studentId: window.currentStudent.id,
-      sessionDay: window.currentSession.day,
       category: window.currentStudent.category,
       status: 'STARTED'
     }).select().single();
@@ -1279,7 +1295,7 @@ document.getElementById('nextQBtn').addEventListener('click', async function() {
   }
 });
 
-/* SUBMIT (+5 / -3) */
+/* SUBMIT (+5 correct, -3 wrong) */
 async function submitQuiz(isTimeout) {
   if (window.isSubmitted) return;
   window.isSubmitted = true;
@@ -1316,14 +1332,13 @@ async function submitQuiz(isTimeout) {
   }
 }
 
-/* PARENT RANKING (category-wise) */
+/* PARENT RANKING */
 async function loadParentRankingData() {
   const container = document.getElementById('rankListContainer');
   container.innerHTML = '<div class="text-center text-muted">ലോഡ് ചെയ്യുന്നു...</div>';
   try {
     const { data: attempts } = await _supabase.from('Attempt')
       .select('*, Student(studentName, chestNumber)')
-      .eq('sessionDay', window.currentSession.day)
       .eq('category', window.currentStudent.category)
       .eq('status', 'COMPLETED');
     if (!attempts || attempts.length === 0) {
@@ -1352,7 +1367,7 @@ async function loadParentRankingData() {
 
     container.innerHTML = `
       <div class="rank-card ${rankClass}">
-        <div class="rank-label">📊 ${catBadge(window.currentStudent.category)} — ഇന്നത്തെ റാങ്ക്</div>
+        <div class="rank-label">📊 ${catBadge(window.currentStudent.category)} — റാങ്ക്</div>
         <div class="rank-number"><span style="font-size:2.6rem;margin-right:6px;">${medal}</span>
           <span class="num">#${userRank}</span></div>
         <div class="rank-name">${window.currentStudent.studentName}</div>
@@ -1374,41 +1389,37 @@ async function loadParentRankingData() {
    ADMIN
    ============================================================ */
 window.adminCurrentCategory = CATEGORIES[0];
-window.adminCurrentDay = 1;
-let currentRankingDay = 1;
 let currentRankingCategory = CATEGORIES[0];
 
 function switchAdminTab(tab) {
-  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-tab[data-tab]').forEach(t => t.classList.remove('active'));
   document.querySelector(`.admin-tab[data-tab="${tab}"]`).classList.add('active');
   document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
   document.getElementById(`tab-${tab}`).classList.remove('hidden');
   if (tab === 'students') loadStudents();
-  if (tab === 'sessions') loadSessions();
-  if (tab === 'questions') loadAdminQuestions(window.adminCurrentCategory, window.adminCurrentDay);
-  if (tab === 'rankings') loadAdminRankings(currentRankingCategory, currentRankingDay);
+  if (tab === 'session') loadSessionEditor();
+  if (tab === 'questions') loadAdminQuestions(window.adminCurrentCategory);
+  if (tab === 'rankings') loadAdminRankings(currentRankingCategory);
 }
 
 async function loadAdminData() {
   await loadStudents();
-  await loadSessions();
-  await loadAdminQuestions(window.adminCurrentCategory, 1);
-  await loadAdminRankings(currentRankingCategory, 1);
+  await loadSessionEditor();
+  await loadAdminQuestions(window.adminCurrentCategory);
+  await loadAdminRankings(currentRankingCategory);
   await loadSessionSummary();
 }
 
 async function loadSessionSummary() {
   try {
-    const { data: sessions } = await _supabase.from('QuizSession').select('*').order('day');
+    const { data: sessions } = await _supabase.from('QuizSession').select('*').eq('id', 1);
     if (!sessions || sessions.length === 0) {
-      document.getElementById('todaySessionInfo').textContent = 'No sessions. Add one.';
+      document.getElementById('todaySessionInfo').textContent = 'Session set ചെയ്തിട്ടില്ല. Session tab-ൽ പോകുക.';
       return;
     }
-    const now = new Date();
-    let active = sessions.find(s => now >= new Date(s.startTime) && now <= new Date(s.endTime));
-    if (!active) active = sessions.find(s => new Date(s.startTime) > now) || sessions[sessions.length-1];
+    const s = sessions[0];
     document.getElementById('todaySessionInfo').innerHTML =
-      `Day ${active.day} | ${formatDate(active.startTime)} → ${formatDate(active.endTime)} | ${active.duration} min<br>
+      `📅 ${formatDate(s.startTime)} → ${formatDate(s.endTime)} | ⏱️ ${s.duration} min<br>
        <span style="color:#10b981;font-size:.85rem;">✓ രണ്ട് വിഭാഗത്തിനും common</span>`;
   } catch (e) {
     document.getElementById('todaySessionInfo').textContent = 'Error loading.';
@@ -1547,142 +1558,77 @@ document.getElementById('bulkImportBtn').addEventListener('click', async functio
     showToast(`✅ ${rows.length} students imported`, 'success');
     document.getElementById('bulkCsv').value = '';
     await loadStudents();
-  } catch (err) {
-    showToast(err.message, 'error');
-  } finally { this.disabled = false; }
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { this.disabled = false; }
 });
 
-/* SESSIONS (COMMON for both categories) */
-document.getElementById('addDayBtn').addEventListener('click', async function() {
-  const day = parseInt(document.getElementById('newDay').value);
-  const startLocal = document.getElementById('newStart').value;
-  const endLocal = document.getElementById('newEnd').value;
-  const duration = parseInt(document.getElementById('newDuration').value);
-  if (!day || !startLocal || !endLocal || !duration) {
+/* SESSION (single) */
+async function loadSessionEditor() {
+  try {
+    const { data: sessions } = await _supabase.from('QuizSession').select('*').eq('id', 1);
+    if (sessions && sessions.length > 0) {
+      const s = sessions[0];
+      document.getElementById('sessStart').value = utcToLocal(s.startTime);
+      document.getElementById('sessEnd').value = utcToLocal(s.endTime);
+      document.getElementById('sessDuration').value = s.duration;
+      document.getElementById('currentSessionInfo').innerHTML =
+        `<strong style="color:#10b981;">✅ Session set:</strong><br>
+         📅 ${formatDate(s.startTime)}<br>
+         📅 ${formatDate(s.endTime)}<br>
+         ⏱️ Duration: ${s.duration} min`;
+    } else {
+      document.getElementById('currentSessionInfo').innerHTML =
+        '<span style="color:#f59e0b;">⚠️ Session set ചെയ്തിട്ടില്ല</span>';
+    }
+  } catch (e) { console.log(e); }
+}
+
+document.getElementById('saveSessionBtn').addEventListener('click', async function() {
+  const startLocal = document.getElementById('sessStart').value;
+  const endLocal = document.getElementById('sessEnd').value;
+  const duration = parseInt(document.getElementById('sessDuration').value);
+  if (!startLocal || !endLocal || !duration) {
     showToast('എല്ലാ വിവരങ്ങളും നൽകുക', 'error'); return;
   }
   const startUTC = localToUTC(startLocal), endUTC = localToUTC(endLocal);
   if (!startUTC || !endUTC) { showToast('Invalid date/time', 'error'); return; }
+  if (new Date(startUTC) >= new Date(endUTC)) {
+    showToast('End time, Start time-ന് ശേഷം ആകണം', 'error'); return;
+  }
+  this.disabled = true;
   try {
-    const { data: ex } = await _supabase.from('QuizSession').select('id').eq('day', day).maybeSingle();
-    if (ex) { showToast(`Day ${day} നിലവിലുണ്ട്`, 'error'); return; }
-    await _supabase.from('QuizSession').insert({
-      day, startTime: startUTC, endTime: endUTC, duration
-    });
-    showToast(`✅ Day ${day} added (രണ്ട് വിഭാഗത്തിനും)`, 'success');
-    document.getElementById('newDay').value = '';
-    document.getElementById('newStart').value = '';
-    document.getElementById('newEnd').value = '';
-    await loadSessions();
-    await loadSessionSummary();
-  } catch (err) { showToast(err.message, 'error'); }
-});
-
-window.deleteDay = async function(day) {
-  if (!confirm(`Delete Day ${day}?`)) return;
-  try {
-    await _supabase.from('QuizSession').delete().eq('day', day);
-    showToast('🗑️ Deleted', 'success');
-    await loadSessions();
-    await loadSessionSummary();
-  } catch (err) { showToast(err.message, 'error'); }
-};
-
-async function loadSessions() {
-  const table = document.getElementById('adminSessionsTable');
-  table.innerHTML = '<div class="text-center text-muted">Loading...</div>';
-  try {
-    const { data: sessions } = await _supabase.from('QuizSession').select('*').order('day');
-    if (!sessions || sessions.length === 0) {
-      table.innerHTML = '<div class="text-center text-muted">No days.</div>';
-      document.getElementById('adminDayTabsContainer').innerHTML = '';
-      document.getElementById('rankDayTabs').innerHTML = '';
-      return;
-    }
-    let html = '<table><thead><tr><th>Day</th><th>Start</th><th>End</th><th>Min</th><th>Actions</th></tr></thead><tbody>';
-    sessions.forEach(s => {
-      html += `<tr>
-        <td><strong style="color:var(--gold);">Day ${s.day}</strong></td>
-        <td><input type="datetime-local" class="edit-start" value="${utcToLocal(s.startTime)}" style="min-width:140px;" /></td>
-        <td><input type="datetime-local" class="edit-end" value="${utcToLocal(s.endTime)}" style="min-width:140px;" /></td>
-        <td><input type="number" class="edit-duration" value="${s.duration}" style="width:60px;" /></td>
-        <td>
-          <button class="btn btn-primary btn-sm update-row-btn" data-day="${s.day}">💾</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteDay(${s.day})">🗑️</button>
-        </td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-    table.innerHTML = html;
-
-    table.querySelectorAll('.update-row-btn').forEach(btn => {
-      btn.addEventListener('click', async function() {
-        const row = this.closest('tr');
-        const day = parseInt(this.dataset.day);
-        const startLocal = row.querySelector('.edit-start').value;
-        const endLocal = row.querySelector('.edit-end').value;
-        const dur = parseInt(row.querySelector('.edit-duration').value);
-        if (!startLocal || !endLocal || !dur) { showToast('Fill all', 'error'); return; }
-        const sU = localToUTC(startLocal), eU = localToUTC(endLocal);
-        try {
-          await _supabase.from('QuizSession').update({ startTime: sU, endTime: eU, duration: dur }).eq('day', day);
-          showToast('✅ Updated', 'success');
-          await loadSessions();
-          await loadSessionSummary();
-        } catch (err) { showToast(err.message, 'error'); }
+    const { data: existing } = await _supabase.from('QuizSession').select('id').eq('id', 1).maybeSingle();
+    if (existing) {
+      await _supabase.from('QuizSession').update({
+        startTime: startUTC, endTime: endUTC, duration, updatedAt: new Date().toISOString()
+      }).eq('id', 1);
+    } else {
+      await _supabase.from('QuizSession').insert({
+        id: 1, startTime: startUTC, endTime: endUTC, duration
       });
-    });
-
-    window.allSessions = sessions;
-    updateDayTabs(sessions);
-  } catch (err) { table.innerHTML = 'Error'; }
-}
-
-function updateDayTabs(sessions) {
-  const qContainer = document.getElementById('adminDayTabsContainer');
-  const rContainer = document.getElementById('rankDayTabs');
-
-  const days = sessions.map(s => s.day).sort((a,b)=>a-b);
-  if (days.length === 0) days.push(1);
-
-  const buildCategoryTabs = (activeCat, onclickFn) => {
-    return CATEGORIES.map(c => {
-      const isActive = c === activeCat;
-      const catColor = CATEGORY_COLORS[c] || '#f59e0b';
-      return `<button class="day-tab ${isActive ? 'active' : ''}"
-        style="background:${isActive ? catColor : '#1e293b'};color:${isActive ? '#fff' : '#94a3b8'};"
-        onclick="${onclickFn}('${c}',${window.adminCurrentDay || 1})">${c}</button>`;
-    }).join('');
-  };
-
-  const buildDayTabs = (activeCat, activeDay, onclickFn) => {
-    return days.map(d =>
-      `<button class="day-tab ${d === activeDay ? 'active' : ''}" data-day="${d}"
-        onclick="${onclickFn}('${activeCat}',${d})">Day ${d}</button>`
-    ).join('');
-  };
-
-  if (qContainer) {
-    qContainer.innerHTML = `<div style="width:100%;display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-      ${buildCategoryTabs(window.adminCurrentCategory, 'loadAdminQuestions')}
-    </div>${buildDayTabs(window.adminCurrentCategory, window.adminCurrentDay, 'loadAdminQuestions')}`;
-  }
-  if (rContainer) {
-    rContainer.innerHTML = `<div style="width:100%;display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
-      ${buildCategoryTabs(currentRankingCategory, 'loadAdminRankings')}
-    </div>${buildDayTabs(currentRankingCategory, currentRankingDay, 'loadAdminRankings')}`;
-  }
-}
+    }
+    showToast('✅ Session saved!', 'success');
+    await loadSessionEditor();
+    await loadSessionSummary();
+  } catch (err) { showToast(err.message, 'error'); }
+  finally { this.disabled = false; }
+});
 
 /* QUESTIONS */
 window.questionsCache = [];
+
+function switchQuestionCategory(cat) {
+  window.adminCurrentCategory = cat;
+  document.querySelectorAll('.admin-tab[data-qcat]').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.admin-tab[data-qcat="${cat}"]`).classList.add('active');
+  loadAdminQuestions(cat);
+}
 
 document.getElementById('showAddQuestionBtn').addEventListener('click', () => {
   document.getElementById('questionForm').classList.remove('hidden');
   document.getElementById('formTitle').textContent = 'Add Question';
   document.getElementById('editQuestionId').value = '';
   document.getElementById('qCategory').value = window.adminCurrentCategory;
-  document.getElementById('qDay').value = window.adminCurrentDay;
   document.getElementById('qText').value = '';
   ['qOpt0','qOpt1','qOpt2','qOpt3'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('qCorrect').value = '0';
@@ -1693,28 +1639,31 @@ document.getElementById('cancelQuestionBtn').addEventListener('click', () => {
 
 document.getElementById('saveQuestionBtn').addEventListener('click', async function() {
   const category = document.getElementById('qCategory').value;
-  const day = parseInt(document.getElementById('qDay').value);
   const text = document.getElementById('qText').value.trim();
   const opts = ['qOpt0','qOpt1','qOpt2','qOpt3'].map(id => document.getElementById(id).value.trim());
   const correct = parseInt(document.getElementById('qCorrect').value);
   const editId = document.getElementById('editQuestionId').value;
-  if (!category || !day || !text || opts.some(o => !o)) {
+  if (!category || !text || opts.some(o => !o)) {
     showToast('എല്ലാ വിവരങ്ങളും നൽകുക', 'error'); return;
   }
   this.disabled = true;
   try {
     if (editId) {
       await _supabase.from('Question').update({
-        sessionDay: day, category, questionText: text, options: opts, correctAnswer: correct
+        category, questionText: text, options: opts, correctAnswer: correct
       }).eq('id', editId);
     } else {
+      // Get next order index
+      const { data: existing } = await _supabase.from('Question').select('orderIndex')
+        .eq('category', category).order('orderIndex', { ascending: false }).limit(1);
+      const nextIdx = (existing && existing[0]) ? (existing[0].orderIndex || 0) + 1 : 1;
       await _supabase.from('Question').insert({
-        sessionDay: day, category, questionText: text, options: opts, correctAnswer: correct
+        category, questionText: text, options: opts, correctAnswer: correct, orderIndex: nextIdx
       });
     }
     showToast('✅ Saved', 'success');
     document.getElementById('questionForm').classList.add('hidden');
-    await loadAdminQuestions(category, day);
+    await loadAdminQuestions(category);
   } catch (err) { showToast(err.message, 'error'); }
   finally { this.disabled = false; }
 });
@@ -1725,7 +1674,6 @@ window.editQuestion = function(id) {
   document.getElementById('editQuestionId').value = id;
   document.getElementById('formTitle').textContent = 'Edit Question';
   document.getElementById('qCategory').value = q.category;
-  document.getElementById('qDay').value = q.sessionDay;
   document.getElementById('qText').value = q.questionText;
   ['qOpt0','qOpt1','qOpt2','qOpt3'].forEach((f, i) => document.getElementById(f).value = q.options[i] || '');
   document.getElementById('qCorrect').value = q.correctAnswer;
@@ -1737,25 +1685,20 @@ window.deleteQuestion = async function(id) {
   try {
     await _supabase.from('Question').delete().eq('id', id);
     showToast('Deleted', 'success');
-    await loadAdminQuestions(window.adminCurrentCategory, window.adminCurrentDay);
+    await loadAdminQuestions(window.adminCurrentCategory);
   } catch (err) { showToast(err.message, 'error'); }
 };
 
-async function loadAdminQuestions(category, day) {
+async function loadAdminQuestions(category) {
   window.adminCurrentCategory = category;
-  window.adminCurrentDay = day;
   const table = document.getElementById('adminQuestionsTable');
   table.innerHTML = '<div class="text-center text-muted">Loading...</div>';
   try {
     const { data: qs } = await _supabase.from('Question')
-      .select('*').eq('category', category).eq('sessionDay', day).order('id');
+      .select('*').eq('category', category).order('orderIndex');
     window.questionsCache = qs || [];
-
-    const { data: allSessions } = await _supabase.from('QuizSession').select('*');
-    updateDayTabs(allSessions || []);
-
     if (window.questionsCache.length === 0) {
-      table.innerHTML = `<div class="text-center text-muted">${catBadge(category)} — Day ${day}-ന് ചോദ്യങ്ങളില്ല.</div>`;
+      table.innerHTML = `<div class="text-center text-muted">${catBadge(category)}-ന് ചോദ്യങ്ങളില്ല.</div>`;
       return;
     }
     let html = '<table><thead><tr><th>#</th><th>Q</th><th>Options</th><th>Correct</th><th></th></tr></thead><tbody>';
@@ -1763,7 +1706,7 @@ async function loadAdminQuestions(category, day) {
       html += `<tr>
         <td>${i+1}</td>
         <td>${q.questionText}</td>
-        <td>${q.options.map((o,j)=>String.fromCharCode(65+j)+'. '+o).join(' | ')}</td>
+        <td style="font-size:.75rem;">${q.options.map((o,j)=>String.fromCharCode(65+j)+'. '+o).join(' | ')}</td>
         <td><span style="color:#10b981;font-weight:700;">${q.options[q.correctAnswer]}</span></td>
         <td>
           <button class="btn btn-primary btn-sm" onclick="editQuestion('${q.id}')">✏️</button>
@@ -1773,26 +1716,30 @@ async function loadAdminQuestions(category, day) {
     });
     html += '</tbody></table>';
     table.innerHTML = html;
+    document.querySelectorAll('.admin-tab[data-qcat]').forEach(t => {
+      t.classList.toggle('active', t.dataset.qcat === category);
+    });
   } catch (err) { table.innerHTML = 'Error'; }
 }
 
 /* RANKINGS */
-let pdfBlobForPreview = null;
+function switchRankingCategory(cat) {
+  currentRankingCategory = cat;
+  document.querySelectorAll('.admin-tab[data-rcat]').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.admin-tab[data-rcat="${cat}"]`).classList.add('active');
+  loadAdminRankings(cat);
+}
 
-async function loadAdminRankings(category, day) {
+async function loadAdminRankings(category) {
   currentRankingCategory = category;
-  currentRankingDay = day;
   const c = document.getElementById('adminRankListContainer');
   c.innerHTML = '<div class="text-center text-muted">Loading...</div>';
-  document.getElementById('overallRankContainer').classList.add('hidden');
   try {
     const { data: attempts } = await _supabase.from('Attempt')
       .select('*, Student(studentName, chestNumber, madrasa, category)')
-      .eq('sessionDay', day).eq('category', category).eq('status', 'COMPLETED');
+      .eq('category', category).eq('status', 'COMPLETED');
     if (!attempts || attempts.length === 0) {
-      c.innerHTML = `<div class="text-center text-muted">${catBadge(category)} — Day ${day}: No submissions.</div>`;
-      const { data: allSessions } = await _supabase.from('QuizSession').select('*');
-      updateDayTabs(allSessions || []);
+      c.innerHTML = `<div class="text-center text-muted">${catBadge(category)}: No submissions.</div>`;
       return;
     }
     const ranked = attempts.map(a => ({
@@ -1815,55 +1762,12 @@ async function loadAdminRankings(category, day) {
     });
     html += '</tbody></table>';
     c.innerHTML = html;
-
-    const { data: allSessions } = await _supabase.from('QuizSession').select('*');
-    updateDayTabs(allSessions || []);
   } catch (err) { c.innerHTML = 'Error'; }
 }
 
-document.getElementById('loadOverallRankBtn').addEventListener('click', async function() {
-  const container = document.getElementById('overallRankContainer');
-  const list = document.getElementById('overallRankList');
-  container.classList.remove('hidden');
-  list.innerHTML = 'Loading...';
-  try {
-    const { data: attempts } = await _supabase.from('Attempt')
-      .select('*, Student(studentName, chestNumber, madrasa)')
-      .eq('category', currentRankingCategory)
-      .eq('status', 'COMPLETED');
-    if (!attempts || attempts.length === 0) { list.innerHTML = 'No data'; return; }
-    const map = {};
-    attempts.forEach(a => {
-      const id = a.studentId;
-      if (!map[id]) map[id] = { studentId: id, name: a.Student?.studentName || '?',
-        chest: a.Student?.chestNumber || '?', madrasa: a.Student?.madrasa || '?',
-        totalScore: 0, days: new Set() };
-      map[id].totalScore += (a.score || 0);
-      map[id].days.add(a.sessionDay);
-    });
-    const ranked = Object.values(map).map(s => ({ ...s, days: s.days.size }));
-    ranked.sort((a, b) => b.totalScore - a.totalScore);
-    let html = `<div style="text-align:center;margin-bottom:10px;">${catBadge(currentRankingCategory)} <span style="color:var(--gold);font-weight:700;">Overall</span></div>`;
-    html += '<table><thead><tr><th>Rank</th><th>Chest</th><th>Name</th><th>Madrasa</th><th>Total</th><th>Days</th></tr></thead><tbody>';
-    ranked.forEach((r, i) => {
-      const rank = i + 1;
-      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
-      html += `<tr>
-        <td><strong>${medal}${rank}</strong></td>
-        <td>${r.chest}</td>
-        <td>${r.name}</td>
-        <td>${r.madrasa}</td>
-        <td style="color:#fbbf24;font-weight:700;">${r.totalScore}</td>
-        <td>${r.days}</td>
-      </tr>`;
-    });
-    html += '</tbody></table>';
-    list.innerHTML = html;
-  } catch (err) { list.innerHTML = 'Error: ' + err.message; }
-});
-
 /* PDF */
 let pdfReady = false;
+let pdfBlobForPreview = null;
 function loadScript(src) {
   return new Promise((res, rej) => {
     const s = document.createElement('script');
@@ -1916,14 +1820,13 @@ document.getElementById('pdfDownloadBtn').addEventListener('click', () => {
   showToast('✅ Downloaded', 'success');
 });
 
-document.getElementById('downloadDayRankBtn').addEventListener('click', async function() {
+document.getElementById('downloadRankBtn').addEventListener('click', async function() {
   this.disabled = true;
   try {
     const loaded = await loadPDFLibraries();
     if (!loaded) { showToast('PDF library failed', 'error'); return; }
     const { data: attempts } = await _supabase.from('Attempt')
       .select('*, Student(studentName, chestNumber, madrasa)')
-      .eq('sessionDay', currentRankingDay)
       .eq('category', currentRankingCategory)
       .eq('status', 'COMPLETED');
     if (!attempts || attempts.length === 0) { showToast('No data', 'error'); return; }
@@ -1938,58 +1841,12 @@ document.getElementById('downloadDayRankBtn').addEventListener('click', async fu
     doc.setFontSize(15);
     doc.text('SKSBV NOORUSSALAM MADRASA', pw/2, 16, { align: 'center' });
     doc.setFontSize(11);
-    doc.text(currentRankingCategory, pw/2, 24, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text(`Day ${currentRankingDay} Rankings`, pw/2, 32, { align: 'center' });
+    doc.text(currentRankingCategory + ' — Ranking', pw/2, 24, { align: 'center' });
     const rows = ranked.map((r, i) => [i+1, r.Student?.chestNumber || '—',
       r.Student?.studentName || '—', r.Student?.madrasa || '—', r.score || 0, r.timeTaken + 's']);
     if (typeof doc.autoTable === 'function') {
       doc.autoTable({
         head: [['Rank','Chest','Name','Madrasa','Score','Time']],
-        body: rows, startY: 40, theme: 'striped',
-        headStyles: { fillColor: [30,41,59], textColor: [255,255,255] },
-        bodyStyles: { fontSize: 9 }
-      });
-    }
-    const blob = doc.output('blob');
-    showPdfPreview(blob);
-  } catch (e) { showToast(e.message, 'error'); }
-  finally { this.disabled = false; }
-});
-
-document.getElementById('downloadOverallRankBtn').addEventListener('click', async function() {
-  this.disabled = true;
-  try {
-    const loaded = await loadPDFLibraries();
-    if (!loaded) { showToast('PDF load failed', 'error'); return; }
-    const { data: attempts } = await _supabase.from('Attempt')
-      .select('*, Student(studentName, chestNumber, madrasa)')
-      .eq('category', currentRankingCategory)
-      .eq('status', 'COMPLETED');
-    if (!attempts || attempts.length === 0) { showToast('No data', 'error'); return; }
-    const map = {};
-    attempts.forEach(a => {
-      const id = a.studentId;
-      if (!map[id]) map[id] = { name: a.Student?.studentName || '?',
-        chest: a.Student?.chestNumber || '?', madrasa: a.Student?.madrasa || '?',
-        totalScore: 0, days: new Set() };
-      map[id].totalScore += (a.score || 0);
-      map[id].days.add(a.sessionDay);
-    });
-    const ranked = Object.values(map).map(s => ({ ...s, days: s.days.size }));
-    ranked.sort((a, b) => b.totalScore - a.totalScore);
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const pw = doc.internal.pageSize.getWidth();
-    doc.setFontSize(15);
-    doc.text('SKSBV NOORUSSALAM MADRASA', pw/2, 16, { align: 'center' });
-    doc.setFontSize(11);
-    doc.text(`${currentRankingCategory} — Overall`, pw/2, 24, { align: 'center' });
-    const rows = ranked.map((r, i) => [i+1, r.chest, r.name, r.madrasa, r.totalScore, r.days]);
-    if (typeof doc.autoTable === 'function') {
-      doc.autoTable({
-        head: [['Rank','Chest','Name','Madrasa','Total','Days']],
         body: rows, startY: 34, theme: 'striped',
         headStyles: { fillColor: [30,41,59], textColor: [255,255,255] },
         bodyStyles: { fontSize: 9 }
@@ -2008,14 +1865,13 @@ function openHelp() {
     '2 വിഭാഗങ്ങൾ:\n' +
     '• സന്തുഷ്ട കുടുംബം ടെസ്റ്റ്\n' +
     '• കുരുന്നുകൾ ടെസ്റ്റ്\n\n' +
-    '⏰ Session: രണ്ട് വിഭാഗത്തിനും ഒരേ സമയം\n' +
+    '⏰ Session: ഒരു ദിവസം, രണ്ട് വിഭാഗത്തിനും ഒരേ സമയം\n' +
     '❓ Questions: Category-wise വ്യത്യസ്തം\n' +
-    '🏆 Rankings: Category-wise separate\n\n' +
-    '1. അഡ്മിൻ നൽകിയ ചെസ്റ്റ് നമ്പർ ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക.\n' +
-    '2. വിവരങ്ങൾ പരിശോധിച്ച് സ്ഥിരീകരിക്കുക.\n' +
-    '3. ടെസ്റ്റ് ആരംഭിക്കുക.\n' +
-    '4. ഓരോ ചോദ്യത്തിനും ഉത്തരം നിർബന്ധം.\n' +
-    '5. ശരി +5, തെറ്റ് −3.'
+    '🏆 Rankings: Category-wise separate\n' +
+    '🎯 Scoring: ശരി +5, തെറ്റ് −3\n\n' +
+    '1. ചെസ്റ്റ് നമ്പർ നൽകി ലോഗിൻ\n' +
+    '2. വിവരങ്ങൾ പരിശോധിച്ച് സ്ഥിരീകരിക്കുക\n' +
+    '3. ടെസ്റ്റ് ആരംഭിക്കുക'
   );
 }
 
@@ -2029,7 +1885,7 @@ document.addEventListener('scroll', () => {
     h.classList.toggle('scrolled', window.scrollY > 10));
 });
 
-console.log('🚀 സന്തുഷ്ട കുടുംബം + കുരുന്നുകൾ loaded');
+console.log('🚀 സന്തുഷ്ട കുടുംബം + കുരുന്നുകൾ (single-day) loaded');
 </script>
 </body>
 </html>
