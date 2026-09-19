@@ -975,15 +975,30 @@ document.getElementById('adminLoginForm').addEventListener('submit', function(e)
   let tapCount = 0, tapTimer = null;
   const logo = document.getElementById('secretAdminTrigger');
   if (!logo) return;
-  logo.addEventListener('click', () => {
+  logo.style.cursor = 'pointer';  // Clickable feel
+  logo.addEventListener('click', (e) => {
+    e.stopPropagation();
     tapCount++;
+    console.log('👆 Logo tap:', tapCount);
     clearTimeout(tapTimer);
-    tapTimer = setTimeout(() => { tapCount = 0; }, 1500);
-    if (tapCount >= 2 && tapCount < 5) {
-      logo.style.transform = `scale(${1 + tapCount * 0.05})`;
-      setTimeout(() => logo.style.transform = 'scale(1)', 200);
+    tapTimer = setTimeout(() => { 
+      console.log('🔄 Tap reset');
+      tapCount = 0; 
+    }, 3000);  // ← 3 sec window
+    
+    // Visual feedback on each tap
+    logo.style.transform = `scale(${1 + tapCount * 0.08})`;
+    setTimeout(() => logo.style.transform = 'scale(1)', 150);
+    
+    if (tapCount >= 3) {  // ← 3 taps is enough
+      console.log('🔓 Admin modal opening!');
+      tapCount = 0;
+      document.getElementById('adminLoginModal').classList.remove('hidden');
+      document.getElementById('adminLoginMsg').textContent = '';
+      setTimeout(() => document.getElementById('adminPassInput')?.focus(), 200);
     }
-    if (tapCount >= 5) {
+  });
+})();
       tapCount = 0;
       document.getElementById('adminLoginModal').classList.remove('hidden');
       document.getElementById('adminLoginMsg').textContent = '';
