@@ -5107,7 +5107,6 @@ async function saveClassTraits(){
 }
 /* ===== SETTINGS ACTIONS ===== */
 async function saveSetting(key,elId){var val=document.getElementById(elId).value.trim();if(!val){showToast('Required','error');return;}try{await supabaseClient.from('settings').upsert({key:key,value:val},{onConflict:'key'});SETTINGS_CACHE[key]=val;if(key==='examsList'){EXAMS_LIST=val.split(',').map(function(s){return s.trim();});populateDynamicDropdowns();}if(key==='traitsList')TRAITS_LIST=val.split(',').map(function(s){return s.trim();});if(key==='minWithdraw'){MIN_WITHDRAW=parseInt(val)||100;var e=document.getElementById('swMinAmount');if(e)e.textContent=MIN_WITHDRAW;}showToast('✅ Saved','success');}catch(e){showToast('❌ '+e.message,'error');}}
-}
 function previewSubjectMatrix(){
   var val = document.getElementById('settingsClassSubjects').value.trim();
   var parsed = parseClassExamSubjects(val);
@@ -6432,31 +6431,6 @@ async function confirmBlockStudent(e, sid) {
     loadStudentsForAdmin();
     
     // Try to send notification (optional)
-async function confirmBlockStudent(e, sid) {
-  e.preventDefault();
-  var reason = document.getElementById('blockReasonInput').value.trim();
-  if (!reason) { showToast('കാരണം എഴുതുക', 'error'); return; }
-  
-  showLoading(true);
-  try {
-    var r = await supabaseClient.from('students').update({
-      is_blocked: true,
-      block_reason: reason,
-      blocked_at: new Date().toISOString(),
-      blocked_by: 'Admin'
-    }).eq('studentid', sid);
-    
-    if (r.error) throw r.error;
-    
-    showToast('🔒 Blocked successfully', 'success');
-    closeModal('globalModal');
-    loadStudentsForAdmin();
-  } catch(e) {
-    showToast('❌ ' + e.message, 'error');
-  }
-  showLoading(false);
-}
-    
   } catch(e) {
     showToast('❌ ' + e.message, 'error');
   }
