@@ -1,5 +1,9 @@
-const CACHE_NAME = 'noorussalam-v16';
-const RUNTIME_CACHE = 'noorussalam-runtime-v16';
+/* ============================================================ */
+/* 🔧 NOORUSSALAM MADRASA — Service Worker v17                  */
+/* ============================================================ */
+
+const CACHE_NAME = 'noorussalam-v17';
+const RUNTIME_CACHE = 'noorussalam-runtime-v17';
 
 const CORE_FILES = [
   './',
@@ -9,6 +13,8 @@ const CORE_FILES = [
 
 const OPTIONAL_PAGES = [
   './index.html',
+  './gallery.html',
+  './contact.html',
   './student-zone.html',
   './fees.html',
   './calendar.html'
@@ -27,19 +33,20 @@ const CDN_RESOURCES = [
   'https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap'
 ];
 
+/* ─── Install ─── */
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      console.log('[SW] Installing v16...');
+      console.log('[SW v17] Installing...');
 
       for (const url of CORE_FILES) {
         try { await cache.add(url); console.log('[SW] ✅ Core:', url); }
-        catch (e) { console.log('[SW] ⚠️ Skip core:', url); }
+        catch (e) { console.log('[SW] ⚠️ Skip:', url); }
       }
       for (const url of OPTIONAL_PAGES) {
         try { await cache.add(url); console.log('[SW] ✅ Optional:', url); }
-        catch (e) { console.log('[SW] ⚠️ Skip optional:', url); }
+        catch (e) { console.log('[SW] ⚠️ Skip:', url); }
       }
       for (const url of CDN_RESOURCES) {
         try { await cache.add(url); console.log('[SW] ✅ CDN:', url); }
@@ -51,6 +58,7 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+/* ─── Activate ─── */
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
@@ -58,20 +66,22 @@ self.addEventListener('activate', event => {
       await Promise.all(
         names.map(name => {
           if (name !== CACHE_NAME && name !== RUNTIME_CACHE) {
-            console.log('[SW] 🗑️ Deleting old cache:', name);
+            console.log('[SW] 🗑️ Deleting old:', name);
             return caches.delete(name);
           }
         })
       );
       await self.clients.claim();
-      console.log('[SW] ✅ Activated');
+      console.log('[SW] ✅ Activated v17');
     })()
   );
 });
 
+/* ─── Fetch ─── */
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
+
   const url = new URL(req.url);
 
   if (url.hostname.includes('supabase.co')) return;
@@ -89,6 +99,8 @@ self.addEventListener('fetch', event => {
         if (cached) return cached;
         const path = url.pathname;
         if (path.includes('login')) return (await caches.match('./login.html')) || (await caches.match('./index.html'));
+        if (path.includes('gallery')) return (await caches.match('./gallery.html')) || (await caches.match('./login.html'));
+        if (path.includes('contact')) return (await caches.match('./contact.html')) || (await caches.match('./login.html'));
         if (path.includes('student-zone')) return (await caches.match('./student-zone.html')) || (await caches.match('./login.html'));
         if (path.includes('fees')) return (await caches.match('./fees.html')) || (await caches.match('./login.html'));
         if (path.includes('calendar')) return (await caches.match('./calendar.html')) || (await caches.match('./login.html'));
@@ -131,12 +143,12 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Everything else
   event.respondWith(
     caches.match(req).then(cached => cached || fetch(req).catch(() => cached))
   );
 });
 
+/* ─── Message ─── */
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
