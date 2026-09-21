@@ -6023,26 +6023,35 @@ async function loadNotificationsAdmin(){
       if(tt==='all')targetLabel='<span style="background:rgba(34,211,238,.15);color:#67e8f9;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">🌟 All</span>';
       else if(tt==='student')targetLabel='<span style="background:rgba(251,191,36,.15);color:#fcd34d;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">👤 '+escapeHtml(n.target_student||'—')+'</span>';
       else targetLabel='<span style="background:rgba(59,139,255,.15);color:#7db3ff;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">📚 Class '+escapeHtml(n.target_class||'—')+'</span>';
-      h+='<tr><td>'+(i+1)+'</td>...<td><button class="btn-sm approve" onclick="editNotification('+n.id+')" title="Edit">✏️</button> <button class="btn-sm reject" onclick="deleteNotification('+n.id+')">🗑️</button></td></tr>';
+      h+='<tr><td>'+(i+1)+'</td><td><strong>'+escapeHtml(n.title)+'</strong></td><td><span style="font-size:.68rem;color:'+(n.type==='urgent'?'#fca5a5':n.type==='important'?'#fcd34d':'#9db8dd')+';font-weight:800;text-transform:uppercase;">'+escapeHtml(n.type||'general')+'</span></td><td>'+targetLabel+'</td><td>'+formatDate(n.created_at)+'</td><td><button class="btn-sm approve" onclick="editNotification('+n.id+')" title="Edit" style="padding:5px 10px;">✏️</button> <button class="btn-sm reject" onclick="deleteNotification('+n.id+')">🗑️</button></td></tr>';
     });
     h+='</tbody></table>';
     wrap.innerHTML=h;
   }catch(e){wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message)+'</div>';}
 }
 
-function openNotificationForm(notif) {
+function openNotificationForm(notif){
   var e = notif || {};
   var isEdit = !!e.id;
+  
   modalTitleSpan.innerText = isEdit ? '✏️ Edit Notification' : '🔔 Send Notification';
   
+  // Determine target type
   var tt = e.target_type || (e.target_class === 'all' ? 'all' : 'class');
   if (e.target_student) tt = 'student';
   
-  modalBodyDiv.innerHTML = '<form onsubmit="saveNotification(event,' + (e.id || 'null') + ')">' +
+  modalBodyDiv.innerHTML = 
+    '<form onsubmit="saveNotification(event,' + (e.id || 'null') + ')">' +
+    
+    // Title
     '<div class="mb-3"><label class="text-white-50 small">Title *</label>' +
     '<input type="text" id="notif_title" required class="modal-form-input" maxlength="100" value="' + escapeHtml(e.title || '') + '"></div>' +
+    
+    // Message
     '<div class="mb-3"><label class="text-white-50 small">Message *</label>' +
     '<textarea id="notif_msg" required class="modal-form-input" style="min-height:90px;" maxlength="500">' + escapeHtml(e.message || '') + '</textarea></div>' +
+    
+    // Type + Target
     '<div class="row g-3">' +
       '<div class="col-md-6"><label class="text-white-50 small">Type</label>' +
       '<select id="notif_type" class="modal-form-input">' +
@@ -6057,20 +6066,35 @@ function openNotificationForm(notif) {
         '<option value="student"' + (tt === 'student' ? ' selected' : '') + '>👤 Specific Student</option>' +
       '</select></div>' +
     '</div>' +
+    
+    // Class dropdown
     '<div class="mt-3" id="notif_class_wrap" style="display:' + (tt === 'class' ? 'block' : 'none') + ';">' +
       '<label class="text-white-50 small">Class</label>' +
       '<select id="notif_class" class="modal-form-input">' +
-        [1,2,3,4,5,6,7,8,9,10].map(function(c) {
+        [1,2,3,4,5,6,7,8,9,10].map(function(c){
           return '<option value="' + c + '"' + (String(e.target_class) === String(c) ? ' selected' : '') + '>Class ' + c + '</option>';
         }).join('') +
       '</select></div>' +
+    
+    // Student ID input
     '<div class="mt-3" id="notif_student_wrap" style="display:' + (tt === 'student' ? 'block' : 'none') + ';">' +
       '<label class="text-white-50 small">Student ID</label>' +
       '<input type="text" id="notif_student" class="modal-form-input" placeholder="e.g., NSM001" value="' + escapeHtml(e.target_student || '') + '" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\');">' +
       '<small class="text-white-50" style="font-size:.7rem;">Student ID കൃത്യമായി നൽകുക</small></div>' +
+    
+    // Edit info note
+    (isEdit ? '<div class="mt-3" style="background:rgba(251,191,36,.10);border:1px solid rgba(251,191,36,.3);border-radius:12px;padding:10px 14px;font-size:.75rem;color:#fcd34d;"><i class="fas fa-info-circle"></i> Edit ചെയ്യുമ്പോൾ <b>Push notification വീണ്ടും അയക്കില്ല</b>. Students-ന് പുതിയ അറിയിപ്പ് list-ൽ കാണും.</div>' : '') +
+    
+    // Buttons
     '<div class="d-flex gap-2 mt-4">' +
-      '<button type="submit" class="btn-update flex-grow-1"><i class="fas fa-' + (isEdit ? 'save' : 'paper-plane') + '"></i> ' + (isEdit ? 'Update' : 'Send') + '</button>' +
-      '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div></form>';
+      '<button type="submit" class="btn-update flex-grow-1">' +
+        '<i class="fas fa-' + (isEdit ? 'save' : 'paper-plane') + '"></i> ' + (isEdit ? 'Update' : 'Send') +
+      '</button>' +
+      '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button>' +
+    '</div>' +
+    
+    '</form>';
+  
   modal.style.display = 'flex';
 }
 function onNotifTargetChange(){
@@ -6079,13 +6103,18 @@ function onNotifTargetChange(){
   document.getElementById('notif_student_wrap').style.display=(t==='student')?'block':'none';
 }
 
-async function saveNotification(e, id) {
+async function saveNotification(e, id){
   e.preventDefault();
+  
   var title = document.getElementById('notif_title').value.trim();
   var msg = document.getElementById('notif_msg').value.trim();
   var type = document.getElementById('notif_type').value;
   var targetType = document.getElementById('notif_target_type').value;
-  if (!title || !msg) { showToast('Title & Message required', 'error'); return; }
+  
+  if(!title || !msg){
+    showToast('Title & Message required', 'error');
+    return;
+  }
   
   var payload = {
     title: title,
@@ -6096,39 +6125,44 @@ async function saveNotification(e, id) {
     target_student: null
   };
   
-  if (targetType === 'all') {
+  if(targetType === 'all'){
     payload.target_class = 'all';
-  } else if (targetType === 'class') {
+  }else if(targetType === 'class'){
     var cls = document.getElementById('notif_class').value;
-    if (!cls) { showToast('Class select ചെയ്യുക', 'error'); return; }
+    if(!cls){showToast('Class select ചെയ്യുക', 'error');return;}
     payload.target_class = cls;
-  } else if (targetType === 'student') {
+  }else if(targetType === 'student'){
     var sid = document.getElementById('notif_student').value.trim().toUpperCase();
-    if (!sid) { showToast('Student ID നൽകുക', 'error'); return; }
-    try {
+    if(!sid){showToast('Student ID നൽകുക', 'error');return;}
+    try{
       var chk = await supabaseClient.from('students').select('studentid,class').eq('studentid', sid).single();
-      if (chk.error || !chk.data) { showToast('Student ID കണ്ടെത്തിയില്ല', 'error'); return; }
+      if(chk.error || !chk.data){showToast('Student ID കണ്ടെത്തിയില്ല', 'error');return;}
       payload.target_student = sid;
       payload.target_class = chk.data.class;
-    } catch (err) { showToast('❌ Verify failed', 'error'); return; }
+    }catch(err){
+      showToast('❌ Verify failed', 'error');
+      return;
+    }
   }
   
-  try {
-    if (id) {
-      // EDIT — update only, don't re-trigger push
+  try{
+    if(id){
+      // ✏️ EDIT MODE — update only (no push)
       var r = await supabaseClient.from('notifications').update(payload).eq('id', id);
-      if (r.error) throw r.error;
-      showToast('✅ Updated', 'success');
-    } else {
-      // NEW — insert (will trigger push via webhook)
+      if(r.error) throw r.error;
+      showToast('✅ Updated successfully', 'success');
+    }else{
+      // 🔔 NEW — insert (push will be sent via trigger)
       var r2 = await supabaseClient.from('notifications').insert(payload);
-      if (r2.error) throw r2.error;
-      showToast('✅ Sent', 'success');
-      if (typeof confetti !== 'undefined') confetti({ particleCount: 60, spread: 70, origin: { y: .7 } });
+      if(r2.error) throw r2.error;
+      showToast('✅ Sent successfully', 'success');
+      if(typeof confetti !== 'undefined') confetti({particleCount: 60, spread: 70, origin: { y: .7 }});
     }
     closeModal('globalModal');
     loadNotificationsAdmin();
-  } catch (err) { showToast('❌ ' + err.message, 'error'); }
+  }catch(err){
+    showToast('❌ ' + err.message, 'error');
+  }
 }
 async function editNotification(id) {
   try {
@@ -6136,7 +6170,14 @@ async function editNotification(id) {
     if (r.data) openNotificationForm(r.data);
   } catch (e) { showToast('❌ ' + e.message, 'error'); }
 }
-
+/* 🆕 Edit Notification */
+async function editNotification(id){
+  try{
+    var r=await supabaseClient.from('notifications').select('*').eq('id',id).single();
+    if(r.error||!r.data){showToast('Notification കണ്ടെത്തിയില്ല','error');return;}
+    openNotificationForm(r.data);
+  }catch(e){showToast('❌ '+e.message,'error');}
+}
 async function deleteNotification(id){
   if(!confirm('Delete?'))return;
   await supabaseClient.from('notifications').delete().eq('id',id);
@@ -8326,7 +8367,7 @@ Object.assign(window,{
   loadAllEvents,openEventForm,saveEvent,deleteEvent,loadAttendanceForAdmin,bulkUpdateAttendance,loadAllActivities,openActivityForm,saveActivity,deleteActivity,
   loadMarksEntry,saveMarksBulk,saveSetting,saveClassSubjectsUI,selectAdminClass,closeSettingsTab,showTimetable,showHomework,showLibrary,
   openNotificationsModal,closeNotificationsModal,loadTimetableAdmin,openTimetableForm,saveTimetable,deleteTimetable,
-  loadHomeworkAdmin,openHomeworkForm,saveHomework,deleteHomework,loadNotificationsAdmin,openNotificationForm,saveNotification,deleteNotification,onNotifTargetChange,
+  loadHomeworkAdmin,openHomeworkForm,saveHomework,deleteHomework,loadNotificationsAdmin,openNotificationForm,saveNotification,deleteNotification,onNotifTargetChange,editNotification,
   loadLibraryAdmin,openLibraryForm,saveLibraryItem,deleteLibrary,
   openProfilePhotoPicker,uploadProfilePhoto,handleCropFile,recalcAttendancePercentages,getFilteredStudentIds,showExamMarks,onStudentExamChange,
   renderStudentExamMarks,getStudentBalance,refreshStudentAttendance,calculateGrade,showExtracurricular,
@@ -8368,7 +8409,6 @@ Object.assign(window,{
   /* 🆕 Ticker + Notifications */
   loadTickerMessages,positionTicker,updateAppBadge,askNotificationPermission,
   checkUnreadNotifications,openGuestNotifications,subscribePublicNotifications,
-  editNotification,
   subscribePushNotifications,  // 🆕
 });
 
