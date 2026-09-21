@@ -2526,6 +2526,7 @@ body.light-mode .pala-amount{background:linear-gradient(100deg,#0a1a3f,#0891b2);
 const SUPABASE_URL='https://dmjjtmimrozzqknduqas.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_e7EXyQvriYYgw9KDlu-5dA_Jcjdw9bg';
 const DEFAULT_ADMIN_PASSWORD='MADRASA2026';
+const VAPID_PUBLIC_KEY='BO6nEKTqJIs-kHnA-mKxNMnn9OK3oD6l4KCr2ZEjz3M2tK9PEltJfwIp7ip9Jic20h_Qd0cnRIofHqTEacDrPqc';
 const GEMINI_EDGE_FN=SUPABASE_URL+'/functions/v1/gemini-chat';
 
 let supabaseClient=null;
@@ -3128,6 +3129,18 @@ document.getElementById('loginForm').addEventListener('submit',async function(e)
     showAIAssistant();
     await initNewFeatures();
     enableBodyScroll();
+        /* 🔔 Push Notification Setup */
+    setTimeout(async function(){
+      if(Notification.permission==='granted'){
+        await subscribePushNotifications();
+      }else if(Notification.permission==='default'){
+        var perm=await Notification.requestPermission();
+        if(perm==='granted'){
+          await subscribePushNotifications();
+        }
+      }
+    },2500);
+    
     showToast('Welcome '+currentUser.name+' ✨','success');
   }catch(err){
     console.error('Login error:',err);
@@ -6010,65 +6023,118 @@ async function loadNotificationsAdmin(){
       if(tt==='all')targetLabel='<span style="background:rgba(34,211,238,.15);color:#67e8f9;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">🌟 All</span>';
       else if(tt==='student')targetLabel='<span style="background:rgba(251,191,36,.15);color:#fcd34d;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">👤 '+escapeHtml(n.target_student||'—')+'</span>';
       else targetLabel='<span style="background:rgba(59,139,255,.15);color:#7db3ff;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">📚 Class '+escapeHtml(n.target_class||'—')+'</span>';
-      h+='<tr><td>'+(i+1)+'</td><td><strong>'+escapeHtml(n.title)+'</strong></td><td><span style="font-size:.68rem;color:'+(n.type==='urgent'?'#fca5a5':n.type==='important'?'#fcd34d':'#9db8dd')+';font-weight:800;text-transform:uppercase;">'+escapeHtml(n.type||'general')+'</span></td><td>'+targetLabel+'</td><td>'+formatDate(n.created_at)+'</td><td><button class="btn-sm reject" onclick="deleteNotification('+n.id+')">🗑️</button></td></tr>';
+      h+='<tr><td>'+(i+1)+'</td>...<td><button class="btn-sm approve" onclick="editNotification('+n.id+')" title="Edit">✏️</button> <button class="btn-sm reject" onclick="deleteNotification('+n.id+')">🗑️</button></td></tr>';
     });
     h+='</tbody></table>';
     wrap.innerHTML=h;
   }catch(e){wrap.innerHTML='<div class="empty-state">Error: '+escapeHtml(e.message)+'</div>';}
 }
 
-function openNotificationForm(){
-  modalTitleSpan.innerText='🔔 Send Notification';
-  modalBodyDiv.innerHTML='<form onsubmit="saveNotification(event)">'+
-    '<div class="mb-3"><label class="text-white-50 small">Title *</label><input type="text" id="notif_title" required class="modal-form-input" maxlength="100"></div>'+
-    '<div class="mb-3"><label class="text-white-50 small">Message *</label><textarea id="notif_msg" required class="modal-form-input" style="min-height:90px;" maxlength="500"></textarea></div>'+
-    '<div class="row g-3">'+
-      '<div class="col-md-6"><label class="text-white-50 small">Type</label><select id="notif_type" class="modal-form-input"><option value="general">📢 General</option><option value="important">⚡ Important</option><option value="urgent">🚨 Urgent</option></select></div>'+
-      '<div class="col-md-6"><label class="text-white-50 small">🎯 Target</label><select id="notif_target_type" class="modal-form-input" onchange="onNotifTargetChange()"><option value="all">🌟 All Students</option><option value="class">📚 Class-wise</option><option value="student">👤 Specific Student</option></select></div>'+
-    '</div>'+
-    '<div class="mt-3" id="notif_class_wrap" style="display:none;"><label class="text-white-50 small">Class</label><select id="notif_class" class="modal-form-input">'+[1,2,3,4,5,6,7,8,9,10].map(function(c){return'<option value="'+c+'">Class '+c+'</option>';}).join('')+'</select></div>'+
-    '<div class="mt-3" id="notif_student_wrap" style="display:none;"><label class="text-white-50 small">Student ID</label><input type="text" id="notif_student" class="modal-form-input" placeholder="e.g., NSM001" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\');"><small class="text-white-50" style="font-size:.7rem;">Student ID കൃത്യമായി നൽകുക</small></div>'+
-    '<div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1"><i class="fas fa-paper-plane"></i> Send</button><button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div></form>';
-  modal.style.display='flex';
+function openNotificationForm(notif) {
+  var e = notif || {};
+  var isEdit = !!e.id;
+  modalTitleSpan.innerText = isEdit ? '✏️ Edit Notification' : '🔔 Send Notification';
+  
+  var tt = e.target_type || (e.target_class === 'all' ? 'all' : 'class');
+  if (e.target_student) tt = 'student';
+  
+  modalBodyDiv.innerHTML = '<form onsubmit="saveNotification(event,' + (e.id || 'null') + ')">' +
+    '<div class="mb-3"><label class="text-white-50 small">Title *</label>' +
+    '<input type="text" id="notif_title" required class="modal-form-input" maxlength="100" value="' + escapeHtml(e.title || '') + '"></div>' +
+    '<div class="mb-3"><label class="text-white-50 small">Message *</label>' +
+    '<textarea id="notif_msg" required class="modal-form-input" style="min-height:90px;" maxlength="500">' + escapeHtml(e.message || '') + '</textarea></div>' +
+    '<div class="row g-3">' +
+      '<div class="col-md-6"><label class="text-white-50 small">Type</label>' +
+      '<select id="notif_type" class="modal-form-input">' +
+        '<option value="general"' + (e.type === 'general' || !e.type ? ' selected' : '') + '>📢 General</option>' +
+        '<option value="important"' + (e.type === 'important' ? ' selected' : '') + '>⚡ Important</option>' +
+        '<option value="urgent"' + (e.type === 'urgent' ? ' selected' : '') + '>🚨 Urgent</option>' +
+      '</select></div>' +
+      '<div class="col-md-6"><label class="text-white-50 small">🎯 Target</label>' +
+      '<select id="notif_target_type" class="modal-form-input" onchange="onNotifTargetChange()">' +
+        '<option value="all"' + (tt === 'all' ? ' selected' : '') + '>🌟 All Students</option>' +
+        '<option value="class"' + (tt === 'class' ? ' selected' : '') + '>📚 Class-wise</option>' +
+        '<option value="student"' + (tt === 'student' ? ' selected' : '') + '>👤 Specific Student</option>' +
+      '</select></div>' +
+    '</div>' +
+    '<div class="mt-3" id="notif_class_wrap" style="display:' + (tt === 'class' ? 'block' : 'none') + ';">' +
+      '<label class="text-white-50 small">Class</label>' +
+      '<select id="notif_class" class="modal-form-input">' +
+        [1,2,3,4,5,6,7,8,9,10].map(function(c) {
+          return '<option value="' + c + '"' + (String(e.target_class) === String(c) ? ' selected' : '') + '>Class ' + c + '</option>';
+        }).join('') +
+      '</select></div>' +
+    '<div class="mt-3" id="notif_student_wrap" style="display:' + (tt === 'student' ? 'block' : 'none') + ';">' +
+      '<label class="text-white-50 small">Student ID</label>' +
+      '<input type="text" id="notif_student" class="modal-form-input" placeholder="e.g., NSM001" value="' + escapeHtml(e.target_student || '') + '" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\');">' +
+      '<small class="text-white-50" style="font-size:.7rem;">Student ID കൃത്യമായി നൽകുക</small></div>' +
+    '<div class="d-flex gap-2 mt-4">' +
+      '<button type="submit" class="btn-update flex-grow-1"><i class="fas fa-' + (isEdit ? 'save' : 'paper-plane') + '"></i> ' + (isEdit ? 'Update' : 'Send') + '</button>' +
+      '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div></form>';
+  modal.style.display = 'flex';
 }
-
 function onNotifTargetChange(){
   var t=document.getElementById('notif_target_type').value;
   document.getElementById('notif_class_wrap').style.display=(t==='class')?'block':'none';
   document.getElementById('notif_student_wrap').style.display=(t==='student')?'block':'none';
 }
 
-async function saveNotification(e){
+async function saveNotification(e, id) {
   e.preventDefault();
-  var title=document.getElementById('notif_title').value.trim();
-  var msg=document.getElementById('notif_msg').value.trim();
-  var type=document.getElementById('notif_type').value;
-  var targetType=document.getElementById('notif_target_type').value;
-  if(!title||!msg){showToast('Title & Message required','error');return;}
-  var payload={title:title,message:msg,type:type,target_type:targetType,target_class:null,target_student:null};
-  if(targetType==='all'){payload.target_class='all';}
-  else if(targetType==='class'){
-    var cls=document.getElementById('notif_class').value;
-    if(!cls){showToast('Class select ചെയ്യുക','error');return;}
-    payload.target_class=cls;
-  }else if(targetType==='student'){
-    var sid=document.getElementById('notif_student').value.trim().toUpperCase();
-    if(!sid){showToast('Student ID നൽകുക','error');return;}
-    try{
-      var chk=await supabaseClient.from('students').select('studentid,class').eq('studentid',sid).single();
-      if(chk.error||!chk.data){showToast('Student ID കണ്ടെത്തിയില്ല','error');return;}
-      payload.target_student=sid;
-      payload.target_class=chk.data.class;
-    }catch(err){showToast('❌ Verify failed','error');return;}
+  var title = document.getElementById('notif_title').value.trim();
+  var msg = document.getElementById('notif_msg').value.trim();
+  var type = document.getElementById('notif_type').value;
+  var targetType = document.getElementById('notif_target_type').value;
+  if (!title || !msg) { showToast('Title & Message required', 'error'); return; }
+  
+  var payload = {
+    title: title,
+    message: msg,
+    type: type,
+    target_type: targetType,
+    target_class: null,
+    target_student: null
+  };
+  
+  if (targetType === 'all') {
+    payload.target_class = 'all';
+  } else if (targetType === 'class') {
+    var cls = document.getElementById('notif_class').value;
+    if (!cls) { showToast('Class select ചെയ്യുക', 'error'); return; }
+    payload.target_class = cls;
+  } else if (targetType === 'student') {
+    var sid = document.getElementById('notif_student').value.trim().toUpperCase();
+    if (!sid) { showToast('Student ID നൽകുക', 'error'); return; }
+    try {
+      var chk = await supabaseClient.from('students').select('studentid,class').eq('studentid', sid).single();
+      if (chk.error || !chk.data) { showToast('Student ID കണ്ടെത്തിയില്ല', 'error'); return; }
+      payload.target_student = sid;
+      payload.target_class = chk.data.class;
+    } catch (err) { showToast('❌ Verify failed', 'error'); return; }
   }
-  try{
-    var r=await supabaseClient.from('notifications').insert(payload);
-    if(r.error)throw r.error;
-    showToast('✅ Sent','success');
+  
+  try {
+    if (id) {
+      // EDIT — update only, don't re-trigger push
+      var r = await supabaseClient.from('notifications').update(payload).eq('id', id);
+      if (r.error) throw r.error;
+      showToast('✅ Updated', 'success');
+    } else {
+      // NEW — insert (will trigger push via webhook)
+      var r2 = await supabaseClient.from('notifications').insert(payload);
+      if (r2.error) throw r2.error;
+      showToast('✅ Sent', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 60, spread: 70, origin: { y: .7 } });
+    }
     closeModal('globalModal');
     loadNotificationsAdmin();
-    if(typeof confetti!=='undefined')confetti({particleCount:60,spread:70,origin:{y:.7}});
-  }catch(err){showToast('❌ '+err.message,'error');}
+  } catch (err) { showToast('❌ ' + err.message, 'error'); }
+}
+async function editNotification(id) {
+  try {
+    var r = await supabaseClient.from('notifications').select('*').eq('id', id).single();
+    if (r.data) openNotificationForm(r.data);
+  } catch (e) { showToast('❌ ' + e.message, 'error'); }
 }
 
 async function deleteNotification(id){
@@ -8121,6 +8187,111 @@ function subscribePublicNotifications(){
     }).subscribe();
   }catch(e){console.warn('Subscribe error:',e);}
 }
+/* ============================================================ */
+/* 🔔 PUSH SUBSCRIPTION (App closed-ൽ പോലും notification)     */
+/* ============================================================ */
+const VAPID_PUBLIC_KEY = 'BO6nEKTqJIs-kHnA-mKxNMnn9OK3oD6l4KCr2ZEjz3M2tK9PEltJfwIp7ip9Jic20h_Qd0cnRIofHqTEacDrPqc'; // 👈 Generate ചെയ്ത key
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function subscribePushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.log('❌ Push not supported');
+    return false;
+  }
+  if (Notification.permission !== 'granted') {
+    const p = await Notification.requestPermission();
+    if (p !== 'granted') return false;
+  }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    // Save subscription to Supabase
+    const subJson = sub.toJSON();
+    const sid = currentUser ? currentUser.studentId : 'GUEST';
+    const cls = currentUser ? currentUser.class : null;
+    
+    await supabaseClient.from('push_subscriptions').upsert({
+      studentid: sid,
+      class: cls,
+      endpoint: subJson.endpoint,
+      p256dh: subJson.keys.p256dh,
+      auth: subJson.keys.auth,
+      user_agent: navigator.userAgent,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'studentid,endpoint' });
+    
+    console.log('✅ Push subscription saved');
+    return true;
+  } catch (err) {
+    console.error('❌ Push subscribe error:', err);
+    return false;
+  }
+}
+/* ============================================================ */
+/* 🔔 PUSH SUBSCRIPTION — Phone Address Save                   */
+/* ============================================================ */
+async function subscribePushNotifications(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)){
+    console.log('❌ Push not supported');
+    return false;
+  }
+  if(Notification.permission!=='granted'){
+    console.log('⚠️ Notification permission not granted');
+    return false;
+  }
+  try{
+    var reg=await navigator.serviceWorker.ready;
+    var sub=await reg.pushManager.getSubscription();
+    
+    if(!sub){
+      // Base64 to Uint8Array converter
+      var padding='='.repeat((4-VAPID_PUBLIC_KEY.length%4)%4);
+      var base64=(VAPID_PUBLIC_KEY+padding).replace(/-/g,'+').replace(/_/g,'/');
+      var raw=atob(base64);
+      var arr=Uint8Array.from([].map.call(raw,function(c){return c.charCodeAt(0);}));
+      
+      sub=await reg.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:arr
+      });
+    }
+    
+    // Save to Supabase
+    var j=sub.toJSON();
+    var sid=currentUser?currentUser.studentId:'GUEST';
+    var cls=currentUser?currentUser.class:null;
+    
+    var r=await supabaseClient.from('push_subscriptions').upsert({
+      studentid:sid,
+      class:cls,
+      endpoint:j.endpoint,
+      p256dh:j.keys.p256dh,
+      auth:j.keys.auth,
+      updated_at:new Date().toISOString()
+    },{onConflict:'studentid,endpoint'});
+    
+    if(r.error)throw r.error;
+    
+    console.log('✅ Push subscription saved:',sid);
+    localStorage.setItem('noor_push_subscribed','true');
+    return true;
+  }catch(err){
+    console.error('❌ Push subscribe error:',err);
+    return false;
+  }
+}
 
 window.addEventListener('load',function(){
   setTimeout(function(){loadTickerMessages();positionTicker();},1200);
@@ -8197,7 +8368,9 @@ Object.assign(window,{
   enableBodyScroll,disableBodyScroll,
   /* 🆕 Ticker + Notifications */
   loadTickerMessages,positionTicker,updateAppBadge,askNotificationPermission,
-  checkUnreadNotifications,openGuestNotifications,subscribePublicNotifications
+  checkUnreadNotifications,openGuestNotifications,subscribePublicNotifications,
+  editNotification,
+  subscribePushNotifications,  // 🆕
 });
 
 /* ============================================================ */
@@ -8211,6 +8384,12 @@ async function initApp(){
   console.log('%c✅ Noorussalam Madrasa v22.3 Ultimate+ Edition','color:#22d3ee;font-weight:bold;font-size:14px;');
   console.log('%c🔓 Scroll system: FIXED','color:#6ee7b7;font-weight:bold;');
   console.log('%c📱 Mobile navbar: HIDDEN','color:#fbbf24;font-weight:bold;');
+  // initApp() ഫങ്ക്ഷനിൽ കൂട്ടിച്ചേർക്കുക
+setTimeout(async () => {
+  if (Notification.permission === 'granted') {
+    await subscribePushNotifications();
+  }
+}, 3000);
 }
 
 document.addEventListener('visibilitychange',function(){
