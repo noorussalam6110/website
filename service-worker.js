@@ -1,9 +1,9 @@
 /* ============================================================ */
-/* 🔧 NOORUSSALAM MADRASA — Service Worker v17                  */
+/* 🔧 NOORUSSALAM MADRASA — Service Worker v18                  */
 /* ============================================================ */
 
-const CACHE_NAME = 'noorussalam-v17';
-const RUNTIME_CACHE = 'noorussalam-runtime-v17';
+const CACHE_NAME = 'noorussalam-v18';
+const RUNTIME_CACHE = 'noorussalam-runtime-v18';
 
 const CORE_FILES = [
   './',
@@ -33,12 +33,14 @@ const CDN_RESOURCES = [
   'https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@300;400;500;600;700;800&display=swap'
 ];
 
+/* ──────────────────────────────────────────────────────────── */
 /* ─── Install ─── */
+/* ──────────────────────────────────────────────────────────── */
 self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      console.log('[SW v17] Installing...');
+      console.log('[SW v18] Installing...');
 
       for (const url of CORE_FILES) {
         try { await cache.add(url); console.log('[SW] ✅ Core:', url); }
@@ -58,7 +60,9 @@ self.addEventListener('install', event => {
   self.skipWaiting();
 });
 
+/* ──────────────────────────────────────────────────────────── */
 /* ─── Activate ─── */
+/* ──────────────────────────────────────────────────────────── */
 self.addEventListener('activate', event => {
   event.waitUntil(
     (async () => {
@@ -72,18 +76,21 @@ self.addEventListener('activate', event => {
         })
       );
       await self.clients.claim();
-      console.log('[SW] ✅ Activated v17');
+      console.log('[SW] ✅ Activated v18');
     })()
   );
 });
 
+/* ──────────────────────────────────────────────────────────── */
 /* ─── Fetch ─── */
+/* ──────────────────────────────────────────────────────────── */
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
 
+  // Skip Supabase API calls
   if (url.hostname.includes('supabase.co')) return;
   if (!url.protocol.startsWith('http')) return;
 
@@ -143,28 +150,55 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Default: cache first, then network
   event.respondWith(
     caches.match(req).then(cached => cached || fetch(req).catch(() => cached))
   );
 });
 
-/* ─── Message ─── */
+/* ──────────────────────────────────────────────────────────── */
+/* ─── Message Handler ─── */
+/* ──────────────────────────────────────────────────────────── */
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
+
 /* ============================================================ */
-/* 🔔 PUSH NOTIFICATION HANDLER                                 */
+/* 🔔 PUSH NOTIFICATION HANDLER                                  */
 /* ============================================================ */
 self.addEventListener('push', function(event) {
-  let data = { title: 'Noorussalam', body: 'പുതിയ അറിയിപ്പ്', count: 1 };
-  try { if (event.data) data = { ...data, ...event.data.json() }; } catch (e) {}
+  let data = {
+    title: 'Noorussalam',
+    body: 'പുതിയ അറിയിപ്പ്',
+    count: 1,
+    url: '/'
+  };
+  
+  try {
+    if (event.data) {
+      data = Object.assign({}, data, event.data.json());
+    }
+  } catch (e) {
+    console.log('[SW] Push data parse error:', e);
+  }
+  
+  console.log('[SW] 📩 Push received:', data.title);
+  
   event.waitUntil(
     (async () => {
-      if ('setAppBadge' in self.navigator) {
-        await self.navigator.setAppBadge(data.count || 1);
+      // Try badge update (safe — wrapped in try/catch)
+      try {
+        if ('setAppBadge' in self.navigator) {
+          await self.navigator.setAppBadge(data.count || 1);
+          console.log('[SW] ✅ Badge set');
+        }
+      } catch (e) {
+        console.log('[SW] Badge not supported:', e);
       }
+      
+      // Show notification
       await self.registration.showNotification(data.title, {
         body: data.body,
         icon: 'https://i.postimg.cc/DznFT7L9/IMG-3167.png',
@@ -172,18 +206,62 @@ self.addEventListener('push', function(event) {
         tag: 'nsm-' + Date.now(),
         renotify: true,
         vibrate: [200, 100, 200],
+        requireInteraction: false,
+        data: { url: data.url || '/' }
       });
+      
+      console.log('[SW] ✅ Notification shown');
     })()
   );
 });
 
+/* ──────────────────────────────────────────────────────────── */
+/* ─── Notification Click ─── */
+/* ──────────────────────────────────────────────────────────── */
 self.addEventListener('notificationclick', function(event) {
+  console.log('[SW] 🔔 Notification clicked');
   event.notification.close();
-  if ('clearAppBadge' in self.navigator) self.navigator.clearAppBadge();
+  
+  // Clear badge
+  try {
+    if ('clearAppBadge' in self.navigator) {
+      self.navigator.clearAppBadge();
+    }
+  } catch (e) {
+    console.log('[SW] Clear badge error:', e);
+  }
+  
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const c of list) { if ('focus' in c) return c.focus(); }
-      if (clients.openWindow) return clients.openWindow('/');
+    clients.matchAll({ 
+      type: 'window', 
+      includeUncontrolled: true 
+    }).then((clientList) => {
+      // Try to focus an existing window
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          console.log('[SW] Focusing existing window');
+          return client.focus();
+        }
+      }
+      // Otherwise, open a new window
+      if (clients.openWindow) {
+        console.log('[SW] Opening new window:', targetUrl);
+        return clients.openWindow(targetUrl);
+      }
     })
   );
+});
+
+/* ──────────────────────────────────────────────────────────── */
+/* ─── Notification Close ─── */
+/* ──────────────────────────────────────────────────────────── */
+self.addEventListener('notificationclose', function(event) {
+  console.log('[SW] 🔕 Notification closed by user');
+  try {
+    if ('clearAppBadge' in self.navigator) {
+      self.navigator.clearAppBadge();
+    }
+  } catch (e) {}
 });
