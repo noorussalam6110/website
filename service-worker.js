@@ -154,3 +154,36 @@ self.addEventListener('message', event => {
     self.skipWaiting();
   }
 });
+/* ============================================================ */
+/* 🔔 PUSH NOTIFICATION HANDLER                                 */
+/* ============================================================ */
+self.addEventListener('push', function(event) {
+  let data = { title: 'Noorussalam', body: 'പുതിയ അറിയിപ്പ്', count: 1 };
+  try { if (event.data) data = { ...data, ...event.data.json() }; } catch (e) {}
+  event.waitUntil(
+    (async () => {
+      if ('setAppBadge' in self.navigator) {
+        await self.navigator.setAppBadge(data.count || 1);
+      }
+      await self.registration.showNotification(data.title, {
+        body: data.body,
+        icon: 'https://i.postimg.cc/DznFT7L9/IMG-3167.png',
+        badge: 'https://i.postimg.cc/DznFT7L9/IMG-3167.png',
+        tag: 'nsm-' + Date.now(),
+        renotify: true,
+        vibrate: [200, 100, 200],
+      });
+    })()
+  );
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+  if ('clearAppBadge' in self.navigator) self.navigator.clearAppBadge();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) { if ('focus' in c) return c.focus(); }
+      if (clients.openWindow) return clients.openWindow('/');
+    })
+  );
+});
