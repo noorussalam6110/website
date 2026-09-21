@@ -1304,8 +1304,14 @@ body.light-mode .pala-amount{background:linear-gradient(100deg,#0a1a3f,#0891b2);
 
           <button type="button" class="nsm-btn-secondary" onclick="openPublicCreationsFeed()">
             <i class="fas fa-images"></i>
-            <span>View Public Gallery</span>
-          </button>
+           <span>View Public Gallery</span>
+        </button>
+
+        <button type="button" class="nsm-btn-secondary" onclick="window.location.href='index.html'">
+          <i class="fas fa-home"></i>
+          <span>Home</span>
+        </button>
+          
         </form>
 
         <div class="nsm-card-footer">
@@ -1914,7 +1920,7 @@ body.light-mode .pala-amount{background:linear-gradient(100deg,#0a1a3f,#0891b2);
   </div>
 </div>
 
-<button class="ai-fab" id="aiFab" onclick="toggleAIChat()"><i class="fas fa-robot"></i></button>
+<button class="ai-fab show" id="aiFab" onclick="toggleAIChat()"><i class="fas fa-robot"></i></button>
 <div class="ai-panel" id="aiPanel">
   <div class="ai-head">
     <div class="ai-head-left">
@@ -1923,7 +1929,7 @@ body.light-mode .pala-amount{background:linear-gradient(100deg,#0a1a3f,#0891b2);
     </div>
     <div class="ai-head-actions" style="display:flex;gap:6px;"><button class="ai-head-btn" onclick="clearAIChat()" title="New chat"><i class="fas fa-rotate-right"></i></button><button class="ai-head-btn danger" onclick="toggleAIChat()" title="Close"><i class="fas fa-times"></i></button></div>
   </div>
-  <div class="ai-body" id="aiBody"><div class="ai-msg bot" id="aiWelcomeMsg">അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.</div></div>
+  <div class="ai-body" id="aiBody"><div class="ai-msg bot" id="aiWelcomeMsg">അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM Assistant</b>.<br><br>🏛️ <b>നൂറുസ്സലാം മദ്രസ</b>-യെക്കുറിച്ച് എന്തും ചോദിക്കാം!<br><br>ഉദാ: "മദ്രസ എവിടെ?", "സ്ഥാപകർ ആരാണ്?", "സമയം എന്താണ്?"</div></div>
   <div class="ai-quick"><button class="ai-chip" onclick="aiQuick('എന്റെ സമ്പാദ്യം എത്ര?')">💰 സമ്പാദ്യം</button><button class="ai-chip" onclick="aiQuick('എന്റെ ഹാജർ')">📆 ഹാജർ</button><button class="ai-chip" onclick="aiQuick('എന്റെ റിസൾട്ട്')">📊 റിസൾട്ട്</button></div>
   <div class="ai-foot"><input type="text" class="ai-input" id="aiInput" placeholder="എന്തെങ്കിലും ചോദിക്കൂ..." onkeydown="if(event.key==='Enter')sendAIMessage()" autocomplete="off"><button class="ai-mic-btn" id="aiMicBtn" onclick="toggleVoiceInput()" title="Voice input"><i class="fas fa-microphone"></i></button><button class="ai-send" onclick="sendAIMessage()" title="Send"><i class="fas fa-paper-plane"></i></button></div>
 </div>
@@ -2566,8 +2572,9 @@ function logout(){
   dashboardSection.style.display='none';
   adminSection.style.display='none';
   loginSection.style.display='flex';
-  document.getElementById('aiFab').classList.remove('show');
+  document.getElementById('aiFab').classList.add('show');
   document.getElementById('aiPanel').classList.remove('open');
+  aiOpen=false;aiGuestMode=true;aiHistory=[];
   if(notifChannel){supabaseClient.removeChannel(notifChannel);notifChannel=null;}
   if(window._lbInterval){clearInterval(window._lbInterval);window._lbInterval=null;}
   stopLeaderboardAutoScroll();
@@ -2964,9 +2971,68 @@ function showAIAssistant(){
 
 var aiOpen=false,aiHistory=[];
 function toggleAIChat(){
-  if(!currentUser){showToast('Login first','error');return;}
+  if(!currentUser){aiGuestMode=true;}
   aiOpen=!aiOpen;
   document.getElementById('aiPanel').classList.toggle('open',aiOpen);
+
+  var nameEl=document.getElementById('aiStudentNameText');
+  if(nameEl)nameEl.textContent=currentUser?currentUser.name:'Guest';
+
+  // Quick chips — user login vs guest
+  var qc=document.querySelector('.ai-quick');
+  if(qc){
+    if(currentUser){
+      qc.innerHTML='<button class="ai-chip" onclick="aiQuick(\'എന്റെ സമ്പാദ്യം എത്ര?\')">💰 സമ്പാദ്യം</button><button class="ai-chip" onclick="aiQuick(\'എന്റെ ഹാജർ\')">📆 ഹാജർ</button><button class="ai-chip" onclick="aiQuick(\'എന്റെ റിസൾട്ട്\')">📊 റിസൾട്ട്</button>';
+    } else {
+      qc.innerHTML='<button class="ai-chip" onclick="aiQuick(\'മദ്രസ എവിടെ?\')">📍 സ്ഥലം</button><button class="ai-chip" onclick="aiQuick(\'സ്ഥാപകർ ആരാണ്?\')">🏛️ സ്ഥാപകർ</button><button class="ai-chip" onclick="aiQuick(\'സമയം എന്താണ്?\')">🕐 സമയം</button><button class="ai-chip" onclick="aiQuick(\'എങ്ങനെ ലോഗിൻ ചെയ്യാം?\')">🔐 Login</button>';
+    }
+  }
+}
+var aiGuestMode=false;
+
+const MADRASA_INFO={
+  name:'NOORUSSALAM MADRASA',
+  nameMl:'നൂറുസ്സലാം മദ്രസ',
+  location:'Kambippalam, Kerala Estate',
+  locationMl:'കമ്പിപ്പാലം, കേരള എസ്റ്റേറ്റ്',
+  founders:'പട്ട മുഹമ്മദ്, തോട്ടുങ്ങൽ മുഹമ്മദ് കുട്ടി, പട്ടാണി ഇസ്മായിൽ മുസ്ലിയാർ',
+  timings:'ശനി മുതൽ വ്യാഴം വരെ: രാവിലെ 6:00 - 10:00',
+  contact:'+91 70346 78818',
+  classesInfo:'Class 1 മുതൽ Class 10 വരെ',
+  about:'ഗുണനിലവാരമുള്ള വിദ്യാഭ്യാസവും മൂല്യബോധവും നൽകുന്ന മദ്രസ'
+};
+
+function madrasaGuestAnswer(q){
+  var t=(q||'').toLowerCase().trim();
+  if(!t)return null;
+  if(/^(hi|hello|hai|hey|salam|assalam|ഹലോ|സലാം|ഹായ്|അസ്സലാം)[\s!.]*$/.test(t)){
+    return 'വ അലൈക്കും സലാം! 👋<br><br>ഞാൻ <b>NSM Assistant</b>. <b>നൂറുസ്സലാം മദ്രസ</b>-യെക്കുറിച്ച് എന്തും ചോദിക്കാം!';
+  }
+  if(/(founder|സ്ഥാപക|ഉസ്താദ്|ustad|history|ചരിത്രം|ആരാണ്)/.test(t)){
+    return '🏛️ <b>സ്ഥാപകർ</b><br>'+MADRASA_INFO.founders;
+  }
+  if(/(location|where|എവിടെ|സ്ഥലം|address|വിലാസം|place)/.test(t)){
+    return '📍 <b>'+MADRASA_INFO.name+'</b><br>'+MADRASA_INFO.locationMl+'<br>'+MADRASA_INFO.location;
+  }
+  if(/(timing|time|സമയം|hours|open|close|class time)/.test(t)){
+    return '🕐 <b>മദ്രസ സമയം</b><br>'+MADRASA_INFO.timings;
+  }
+  if(/(contact|phone|ഫോൺ|നമ്പർ|call|വിളിക്ക)/.test(t)){
+    return '📞 <b>ബന്ധപ്പെടാൻ</b><br>'+MADRASA_INFO.contact;
+  }
+  if(/(class|ക്ലാസ്|grade|which class|standard)/.test(t)){
+    return '🎓 <b>ക്ലാസുകൾ</b><br>'+MADRASA_INFO.classesInfo;
+  }
+  if(/(madrasa|മദ്രസ|noorussalam|നൂറു|about|വിവരം|info)/.test(t)){
+    return '🏛️ <b>'+MADRASA_INFO.name+'</b> ('+MADRASA_INFO.nameMl+')<br><br>📍 '+MADRASA_INFO.locationMl+'<br>🕌 '+MADRASA_INFO.about+'<br>🎓 '+MADRASA_INFO.classesInfo;
+  }
+  if(/(login|ലോഗിൻ|sign in|access|portal|password|പാസ്‌വേഡ്)/.test(t)){
+    return '🔐 <b>Login ചെയ്യാൻ</b><br>1️⃣ Student ID നൽകുക (ഡയറിയിലെ UID)<br>2️⃣ "Access Portal" ക്ലിക്ക് ചെയ്യുക<br><br>💡 ID മറന്നാൽ ഓഫീസിൽ ബന്ധപ്പെടുക: <b>'+MADRASA_INFO.contact+'</b>';
+  }
+  if(/(help|സഹായം|എന്ത് ചെയ്യാം|what can you)/.test(t)){
+    return '🤖 <b>ഞാൻ ഇവയെക്കുറിച്ച് പറയാം:</b><br>• 🏛️ മദ്രസയെക്കുറിച്ച്<br>• 📍 സ്ഥലം<br>• 🏛️ സ്ഥാപകർ<br>• 🕐 സമയം<br>• 📞 ബന്ധപ്പെടാൻ<br>• 🎓 ക്ലാസുകൾ<br>• 🔐 Login സഹായം';
+  }
+  return '🤔 ക്ഷമിക്കണം, എനിക്കത് മനസ്സിലായില്ല.<br><br>💡 <b>Login ചെയ്താൽ</b> നിങ്ങളുടെ റിസൾട്ട്, ഹാജർ, സമ്പാദ്യം തുടങ്ങിയവ കൂടി പറയാൻ കഴിയും!<br><br>അല്ലെങ്കിൽ <b>മദ്രസയെക്കുറിച്ച്</b> എന്തെങ്കിലും ചോദിക്കൂ.';
 }
 
 function aiQuick(t){document.getElementById('aiInput').value=t;sendAIMessage();}
@@ -2999,7 +3065,7 @@ function clearAIChat(){
   if(_aiSending)return;
   var b=document.getElementById('aiBody');if(!b)return;
   b.innerHTML='';aiHistory=[];
-  var welcome=currentUser?'അസ്സലാമു അലൈക്കും <b>'+escapeHtml(currentUser.name||'')+'</b>! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.<br><br>എന്തെങ്കിലും ചോദിക്കൂ 👇':'അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM AI Assistant</b>.';
+  var welcome=currentUser?'അസ്സലാമു അലൈക്കും <b>'+escapeHtml(currentUser.name||'')+'</b>! 👋<br><br>ഞാൻ <b>NSM Assistant</b>.<br><br>എന്തെങ്കിലും ചോദിക്കൂ 👇':'അസ്സലാമു അലൈക്കും! 👋<br><br>ഞാൻ <b>NSM Assistant</b>.<br><br>🏛️ <b>നൂറുസ്സലാം മദ്രസ</b>-യെക്കുറിച്ച് എന്തും ചോദിക്കാം!';
   var d=document.createElement('div');d.className='ai-msg bot';d.id='aiWelcomeMsg';
   var now=new Date();
   d.setAttribute('data-time',String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0'));
@@ -3034,7 +3100,6 @@ function showTypingIndicator(){
 function removeTypingIndicator(){var el=document.getElementById('aiTypingIndicator');if(el&&el.parentNode)el.parentNode.removeChild(el);}
 
 async function sendAIMessage(){
-  if(!currentUser){showToast('Login first','error');return;}
   if(_aiSending)return;
   var input=document.getElementById('aiInput');
   var sendBtn=document.querySelector('.ai-send');
@@ -3042,6 +3107,7 @@ async function sendAIMessage(){
   input.value='';aiAddMsg(escapeHtml(q),'user');
   aiHistory.push({role:'user',text:q});
   _aiSending=true;input.disabled=true;if(sendBtn)sendBtn.disabled=true;
+
   var local=quickLocalAnswer(q);
   if(local){
     setTimeout(function(){
@@ -3050,6 +3116,19 @@ async function sendAIMessage(){
     },250);
     return;
   }
+
+  /* 🆕 GUEST MODE — no login, madrasa info only */
+  if(!currentUser){
+    showTypingIndicator();
+    setTimeout(function(){
+      removeTypingIndicator();
+      var answer=madrasaGuestAnswer(q);
+      aiAddMsg(answer,'bot');aiHistory.push({role:'bot',text:answer});
+      _aiSending=false;input.disabled=false;if(sendBtn)sendBtn.disabled=false;input.focus();
+    },500);
+    return;
+  }
+
   showTypingIndicator();
   var answer=null;
   try{
