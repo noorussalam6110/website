@@ -1,9 +1,9 @@
 /* ============================================================ */
-/* 🔧 NOORUSSALAM MADRASA — Service Worker v18                  */
+/* 🔧 NOORUSSALAM MADRASA — Service Worker v19                  */
 /* ============================================================ */
 
-const CACHE_NAME = 'noorussalam-v18';
-const RUNTIME_CACHE = 'noorussalam-runtime-v18';
+const CACHE_NAME = 'noorussalam-v19';
+const RUNTIME_CACHE = 'noorussalam-runtime-v19';
 
 const CORE_FILES = [
   './',
@@ -40,8 +40,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      console.log('[SW v18] Installing...');
-
+      console.log('[SW v19] Installing...');
       for (const url of CORE_FILES) {
         try { await cache.add(url); console.log('[SW] ✅ Core:', url); }
         catch (e) { console.log('[SW] ⚠️ Skip:', url); }
@@ -76,7 +75,7 @@ self.addEventListener('activate', event => {
         })
       );
       await self.clients.claim();
-      console.log('[SW] ✅ Activated v18');
+      console.log('[SW] ✅ Activated v19');
     })()
   );
 });
@@ -89,8 +88,6 @@ self.addEventListener('fetch', event => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
-
-  // Skip Supabase API calls
   if (url.hostname.includes('supabase.co')) return;
   if (!url.protocol.startsWith('http')) return;
 
@@ -150,14 +147,13 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Default: cache first, then network
   event.respondWith(
     caches.match(req).then(cached => cached || fetch(req).catch(() => cached))
   );
 });
 
 /* ──────────────────────────────────────────────────────────── */
-/* ─── Message Handler ─── */
+/* ─── Message ─── */
 /* ──────────────────────────────────────────────────────────── */
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -184,21 +180,16 @@ self.addEventListener('push', function(event) {
     console.log('[SW] Push data parse error:', e);
   }
   
-  console.log('[SW] 📩 Push received:', data.title);
+  console.log('[SW] 📩 Push received:', data.title, '| URL:', data.url);
   
   event.waitUntil(
     (async () => {
-      // Try badge update (safe — wrapped in try/catch)
       try {
         if ('setAppBadge' in self.navigator) {
           await self.navigator.setAppBadge(data.count || 1);
-          console.log('[SW] ✅ Badge set');
         }
-      } catch (e) {
-        console.log('[SW] Badge not supported:', e);
-      }
+      } catch (e) {}
       
-      // Show notification
       await self.registration.showNotification(data.title, {
         body: data.body,
         icon: 'https://i.postimg.cc/DznFT7L9/IMG-3167.png',
@@ -215,39 +206,75 @@ self.addEventListener('push', function(event) {
   );
 });
 
-/* ──────────────────────────────────────────────────────────── */
-/* ─── Notification Click ─── */
-/* ──────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════ */
+/* 🎯 NOTIFICATION CLICK — ഇവിടെ ആണ് പ്രധാന function!           */
+/* ═══════════════════════════════════════════════════════════ */
 self.addEventListener('notificationclick', function(event) {
   console.log('[SW] 🔔 Notification clicked');
   event.notification.close();
+  
+  // Get URL from notification data
+  var targetUrl = '/';
+  if (event.notification.data && event.notification.data.url) {
+    targetUrl = event.notification.data.url;
+  }
+  
+  console.log('[SW] Opening URL:', targetUrl);
   
   // Clear badge
   try {
     if ('clearAppBadge' in self.navigator) {
       self.navigator.clearAppBadge();
     }
-  } catch (e) {
-    console.log('[SW] Clear badge error:', e);
-  }
-  
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  } catch (e) {}
   
   event.waitUntil(
     clients.matchAll({ 
       type: 'window', 
       includeUncontrolled: true 
-    }).then((clientList) => {
-      // Try to focus an existing window
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          console.log('[SW] Focusing existing window');
-          return client.focus();
+    }).then(function(clientList) {
+      // External URL - open new window
+      if (targetUrl.startsWith('http')) {
+        // Check if URL is same origin
+        var isSameOrigin = targetUrl.includes(self.location.origin);
+        
+        // Try to focus existing window first (for same origin)
+        if (isSameOrigin) {
+          for (var i = 0; i < clientList.length; i++) {
+            var client = clientList[i];
+            if (client.url.includes(self.location.origin) && 'focus' in client) {
+              if ('navigate' in client && targetUrl !== client.url) {
+                return client.navigate(targetUrl).then(function() {
+                  return client.focus();
+                });
+              }
+              return client.focus();
+            }
+          }
+        }
+        
+        // External or no existing window - open new
+        if (clients.openWindow) {
+          return clients.openWindow(targetUrl);
+        }
+        return;
+      }
+      
+      // Internal URL (starts with /)
+      for (var j = 0; j < clientList.length; j++) {
+        var c = clientList[j];
+        if (c.url.includes(self.location.origin) && 'focus' in c) {
+          if ('navigate' in c && targetUrl !== '/') {
+            return c.navigate(targetUrl).then(function() {
+              return c.focus();
+            });
+          }
+          return c.focus();
         }
       }
-      // Otherwise, open a new window
+      
+      // No existing window - open new
       if (clients.openWindow) {
-        console.log('[SW] Opening new window:', targetUrl);
         return clients.openWindow(targetUrl);
       }
     })
@@ -258,7 +285,7 @@ self.addEventListener('notificationclick', function(event) {
 /* ─── Notification Close ─── */
 /* ──────────────────────────────────────────────────────────── */
 self.addEventListener('notificationclose', function(event) {
-  console.log('[SW] 🔕 Notification closed by user');
+  console.log('[SW] 🔕 Notification closed');
   try {
     if ('clearAppBadge' in self.navigator) {
       self.navigator.clearAppBadge();
