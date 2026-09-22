@@ -3238,8 +3238,11 @@ async function openNotificationsModal(){
       var i=n.type==='urgent'?'fa-exclamation-triangle':n.type==='important'?'fa-exclamation-circle':'fa-info-circle';
       var tt=n.target_type||(n.target_class==='all'?'all':'class');
       var badge=tt==='student'?'<span style="background:rgba(251,191,36,.15);color:#fcd34d;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">👤 Personal</span>':tt==='class'?'<span style="background:rgba(59,139,255,.15);color:#7db3ff;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">📚 Class</span>':'<span style="background:rgba(34,211,238,.15);color:#67e8f9;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">🌟 All</span>';
-      return'<div class="notif-item '+c+'"><div class="d-flex justify-content-between mb-2 flex-wrap gap-2"><strong class="text-white" style="font-size:.88rem;"><i class="fas '+i+' me-2"></i>'+escapeHtml(n.title)+badge+'</strong><small class="text-white-50" style="font-size:.7rem;">'+formatDate(n.created_at)+'</small></div><p class="text-white-50 mb-0" style="font-size:.82rem;">'+escapeHtml(n.message)+'</p></div>';
-    }).join('');
+var linkHtml = '';
+if(n.link_url){
+  linkHtml = '<a href="'+escapeHtml(n.link_url)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:.78rem;color:#67e8f9;text-decoration:none;padding:6px 12px;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.3);border-radius:20px;font-weight:700;transition:.2s;"><i class="fas fa-external-link-alt"></i> Open Link</a>';
+}
+  return'<div class="notif-item '+c+'"><div class="d-flex justify-content-between mb-2 flex-wrap gap-2"><strong class="text-white" style="font-size:.88rem;"><i class="fas '+i+' me-2"></i>'+escapeHtml(n.title)+badge+'</strong><small class="text-white-50" style="font-size:.7rem;">'+formatDate(n.created_at)+'</small></div><p class="text-white-50 mb-0" style="font-size:.82rem;">'+escapeHtml(n.message)+'</p>'+linkHtml+'</div>';    }).join('');
   }catch(e){list.innerHTML='<div class="text-center py-3 text-white-50">Error</div>';}
 }
 
@@ -6013,6 +6016,10 @@ function openNotificationForm(notif){
     // Message
     '<div class="mb-3"><label class="text-white-50 small">Message *</label>' +
     '<textarea id="notif_msg" required class="modal-form-input" style="min-height:90px;" maxlength="500">' + escapeHtml(e.message || '') + '</textarea></div>' +
+        // 🆕 Link URL (Optional)
+    '<div class="mb-3"><label class="text-white-50 small"><i class="fas fa-link" style="color:#22d3ee;"></i> Link URL <span style="color:#6d88ad;">(Optional)</span></label>' +
+    '<input type="url" id="notif_link" class="modal-form-input" placeholder="https://example.com/page" value="' + escapeHtml(e.link_url || '') + '">' +
+    '<small class="text-white-50" style="font-size:.7rem;display:block;margin-top:4px;"><i class="fas fa-lightbulb" style="color:#fcd34d;"></i> Student notification tap ചെയ്യുമ്പോൾ ഈ link open ആകും</small></div>' +
     
     // Type + Target
     '<div class="row g-3">' +
@@ -6079,14 +6086,16 @@ async function saveNotification(e, id){
     return;
   }
   
-  var payload = {
-    title: title,
-    message: msg,
-    type: type,
-    target_type: targetType,
-    target_class: null,
-    target_student: null
-  };
+var linkUrl = document.getElementById('notif_link') ? document.getElementById('notif_link').value.trim() : '';
+var payload = {
+  title: title,
+  message: msg,
+  type: type,
+  target_type: targetType,
+  target_class: null,
+  target_student: null,
+  link_url: linkUrl || null
+};
   
   if(targetType === 'all'){
     payload.target_class = 'all';
@@ -8072,9 +8081,9 @@ async function loadTickerMessages(){
   var messages=[];
   try{
     if(supabaseClient){
-      var r=await supabaseClient.from('notifications').select('title, message, type, created_at').eq('target_type','all').order('created_at',{ascending:false}).limit(10);
+      var r=await supabaseClient.from('notifications').select('title, message, type, created_at, link_url').eq('target_type','all').order('created_at',{ascending:false}).limit(10);
       if(r.data&&r.data.length>0){
-        messages=r.data.map(function(n){return{text:n.title+(n.message?' — '+n.message:''),type:n.type||'general'};});
+        messages=r.data.map(function(n){return{text:n.title+(n.message?' — '+n.message:''),type:n.type||'general',link:n.link_url||null};});
       }
     }
   }catch(e){console.warn('Ticker DB error:',e);}
@@ -8089,7 +8098,9 @@ async function loadTickerMessages(){
   var items=messages.map(function(m){
     var icon=m.type==='urgent'?'fa-circle-exclamation':m.type==='important'?'fa-bolt':'fa-bullhorn';
     var cls=m.type==='urgent'?'urgent':'';
-    return '<span class="nsm-ticker-item '+cls+'" onclick="openGuestNotifications()"><i class="fas '+icon+'"></i><span>'+escapeHtml(m.text)+'</span></span><span class="nsm-ticker-dot">◆</span>';
+   var clickHandler = m.link ? 'onclick="window.open(\''+escapeHtml(m.link)+'\',\'_blank\')"' : 'onclick="openGuestNotifications()"';
+var linkIcon = m.link ? ' <i class="fas fa-external-link-alt" style="font-size:.7rem;margin-left:4px;"></i>' : '';
+return '<span class="nsm-ticker-item '+cls+'" '+clickHandler+' style="cursor:pointer;"><i class="fas '+icon+'"></i><span>'+escapeHtml(m.text)+linkIcon+'</span></span><span class="nsm-ticker-dot">◆</span>';
   }).join('');
   track.innerHTML=items+items;
   ticker.style.display='flex';
@@ -8165,7 +8176,11 @@ async function openGuestNotifications(){
     list.innerHTML=r.data.map(function(n){
       var c=n.type==='urgent'?'urgent':n.type==='important'?'important':'';
       var i=n.type==='urgent'?'fa-exclamation-triangle':n.type==='important'?'fa-exclamation-circle':'fa-info-circle';
-      return '<div class="notif-item '+c+'"><div class="d-flex justify-content-between mb-2 flex-wrap gap-2"><strong class="text-white" style="font-size:.88rem;"><i class="fas '+i+' me-2"></i>'+escapeHtml(n.title)+'</strong><small class="text-white-50" style="font-size:.7rem;">'+formatDate(n.created_at)+'</small></div><p class="text-white-50 mb-0" style="font-size:.82rem;">'+escapeHtml(n.message)+'</p></div>';
+      var linkHtml = '';
+if(n.link_url){
+  linkHtml = '<a href="'+escapeHtml(n.link_url)+'" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;font-size:.78rem;color:#67e8f9;text-decoration:none;padding:6px 12px;background:rgba(34,211,238,.10);border:1px solid rgba(34,211,238,.3);border-radius:20px;font-weight:700;"><i class="fas fa-external-link-alt"></i> Open Link</a>';
+}
+   return '<div class="notif-item '+c+'"><div class="d-flex justify-content-between mb-2 flex-wrap gap-2"><strong class="text-white" style="font-size:.88rem;"><i class="fas '+i+' me-2"></i>'+escapeHtml(n.title)+'</strong><small class="text-white-50" style="font-size:.7rem;">'+formatDate(n.created_at)+'</small></div><p class="text-white-50 mb-0" style="font-size:.82rem;">'+escapeHtml(n.message)+'</p>'+linkHtml+'</div>';
     }).join('');
     if(!currentUser){
       list.innerHTML+='<div style="margin-top:16px;padding:12px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:14px;text-align:center;"><p style="color:#fff;font-size:.82rem;margin:0 0 10px;">🔐 Personal notifications കാണാൻ Login ചെയ്യുക</p><button class="pf-cta-btn" onclick="closeNotificationsModal()"><i class="fas fa-sign-in-alt"></i> Login</button></div>';
