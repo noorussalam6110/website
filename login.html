@@ -5757,16 +5757,15 @@ async function downloadPaymentsPDF(){
   showToast('✅ Downloaded','success');
 }
 /* ============================================================ */
-/* 📄 STUDENTS PDF — Class + Roll ordered                       */
+/* 📄 STUDENTS PDF — Class + Roll + Phone                       */
 /* ============================================================ */
 async function downloadStudentsPDF(){
   showLoading(true);
   
   try {
-    // ⭐ Step 1: Fetch all students (ignore current filter)
+    // ⭐ Step 1: Fetch all students (with phone)
     var q = supabaseClient.from('students').select('*');
     
-    // If specific class selected → only that class
     if(currentAdminClass && currentAdminClass !== 'all'){
       q = q.eq('class', currentAdminClass);
     }
@@ -5803,7 +5802,6 @@ async function downloadStudentsPDF(){
     doc.setFillColor(21, 71, 168);
     doc.rect(0, 0, pageW, 80, 'F');
     
-    // Logo (optional)
     try {
       var logoData = await getLogoDataUrl();
       if(logoData) doc.addImage(logoData, 'PNG', 40, 15, 50, 50);
@@ -5856,13 +5854,12 @@ async function downloadStudentsPDF(){
     doc.setFont(undefined, 'normal');
     doc.text(new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }), pageW - 130, y + 5);
     
-    // Class summary (small text)
     y += 22;
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     doc.text('Breakdown: ' + classSummary, 42, y);
     
-    // ─── Table ──────────────────────────────────
+    // ─── Table with PHONE column ───────────────
     var tableStartY = y + 15;
     
     var tableBody = [];
@@ -5871,12 +5868,12 @@ async function downloadStudentsPDF(){
     var slNo = 0;
     
     list.forEach(function(s){
-      // Class group header (when All Classes)
+      // Class group header (when "All Classes")
       if(sc && s.class !== lastClass){
         tableBody.push([
           {
             content: 'CLASS ' + (s.class || '—'),
-            colSpan: 6,
+            colSpan: 7,   // ⭐ Now 7 columns (was 6)
             styles: {
               fillColor: [30, 107, 224],
               textColor: [255, 255, 255],
@@ -5887,10 +5884,27 @@ async function downloadStudentsPDF(){
           }
         ]);
         lastClass = s.class;
-        slNo = 0; // Reset serial per class
+        slNo = 0;
       }
       
       slNo++;
+      
+      // ⭐ Phone formatting
+      var phone = (s.phone || s.parent_mobile || '').toString().trim();
+      if(phone && phone !== '—'){
+        // Format: if 10 digits → "9876543210"
+        // If has country code → clean it
+        var cleanPhone = phone.replace(/[^0-9+]/g, '');
+        // Remove +91 / 91 prefix if present
+        if(cleanPhone.length === 12 && cleanPhone.startsWith('91')){
+          cleanPhone = cleanPhone.substring(2);
+        } else if(cleanPhone.length === 13 && cleanPhone.startsWith('+91')){
+          cleanPhone = cleanPhone.substring(3);
+        }
+        phone = cleanPhone || '—';
+      } else {
+        phone = '—';
+      }
       
       tableBody.push([
         String(slNo),
@@ -5898,18 +5912,19 @@ async function downloadStudentsPDF(){
         s.studentid || '—',
         s.name || '—',
         s.class || '—',
-        s.fathername || '—'
+        s.fathername || '—',   // Father's name
+        phone                  // ⭐ Phone column
       ]);
     });
     
     doc.autoTable({
       startY: tableStartY,
-      head: [['#', 'Roll', 'Student ID', 'Name', 'Class', "Father's Name"]],
+      head: [['#', 'Roll', 'Student ID', 'Name', 'Class', "Father's Name", 'Phone']],
       body: tableBody,
       theme: 'grid',
       styles: {
-        fontSize: 8.5,
-        cellPadding: 5,
+        fontSize: 8,
+        cellPadding: 4,
         textColor: [0, 0, 0],
         lineColor: [200, 215, 240],
         lineWidth: 0.3
@@ -5918,31 +5933,26 @@ async function downloadStudentsPDF(){
         fillColor: [21, 71, 168],
         textColor: [255, 255, 255],
         fontStyle: 'bold',
-        fontSize: 9.5,
+        fontSize: 9,
         halign: 'center'
       },
       columnStyles: {
-        0: { cellWidth: 30, halign: 'center', fontStyle: 'bold' },      // #
-        1: { cellWidth: 50, halign: 'center', fontStyle: 'bold', textColor: [8, 145, 178] }, // Roll
-        2: { cellWidth: 90, halign: 'center' },                         // ID
-        3: { cellWidth: 'auto', halign: 'left' },                       // Name
-        4: { cellWidth: 45, halign: 'center' },                         // Class
-        5: { cellWidth: 110, halign: 'left' }                           // Father
+        0: { cellWidth: 25, halign: 'center', fontStyle: 'bold' },                                    // #
+        1: { cellWidth: 40, halign: 'center', fontStyle: 'bold', textColor: [8, 145, 178] },          // Roll
+        2: { cellWidth: 78, halign: 'center', fontSize: 7.5 },                                        // ID
+        3: { cellWidth: 'auto', halign: 'left' },                                                     // Name
+        4: { cellWidth: 38, halign: 'center' },                                                       // Class
+        5: { cellWidth: 95, halign: 'left' },                                                         // Father
+        6: { cellWidth: 80, halign: 'center', fontStyle: 'bold', textColor: [5, 150, 105] }           // ⭐ Phone
       },
       alternateRowStyles: {
         fillColor: [248, 250, 252]
       },
       didDrawPage: function(data) {
-        // Footer
         var pageNum = doc.internal.getCurrentPageInfo().pageNumber;
         doc.setFontSize(8);
         doc.setTextColor(120, 120, 120);
-        doc.text(
-          'Page ' + pageNum,
-          pageW / 2,
-          pageH - 20,
-          { align: 'center' }
-        );
+        doc.text('Page ' + pageNum, pageW / 2, pageH - 20, { align: 'center' });
         doc.setFontSize(7);
         doc.text(
           'Noorussalam Madrasa • Generated: ' + new Date().toLocaleString('en-IN'),
