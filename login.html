@@ -3588,6 +3588,27 @@ document.getElementById('loginForm').addEventListener('submit',async function(e)
       localStorage.setItem('noor_last_id',raw);
       showToast('🔐 Admin Panel','success');
       enableBodyScroll();
+            // ✅ NEW: Session restore-ലും daily tracking
+      try {
+        var today = new Date().toISOString().split('T')[0];
+        var trackKey = 'noor_last_track_' + currentUser.studentId;
+        var lastTrack = localStorage.getItem(trackKey);
+        
+        if (lastTrack !== today) {
+          // ഇന്ന് track ചെയ്തിട്ടില്ല → track ചെയ്യുക
+          var sr = await supabaseClient.from('students')
+            .select('studentid, name, class')
+            .eq('studentid', currentUser.studentId)
+            .single();
+          if (sr.data && typeof trackLogin === 'function') {
+            await trackLogin(sr.data);
+            localStorage.setItem(trackKey, today);
+            console.log('✅ Session login tracked');
+          }
+        }
+      } catch(trackErr) {
+        console.warn('Session track error:', trackErr);
+      }
       showLoading(false);
       return;
     }
@@ -3638,7 +3659,17 @@ document.getElementById('loginForm').addEventListener('submit',async function(e)
         }
       }
     },2500);
+      // ✅ NEW: Login tracking into login_logs table
+    try {
+      if (typeof trackLogin === 'function') {
+        await trackLogin(student);
+        console.log('✅ Login tracked for', student.studentid);
+      }
+    } catch(trackErr) {
+      console.warn('⚠️ trackLogin failed:', trackErr);
+    }
 
+    showToast('Welcome '+currentUser.name+' ✨','success');
     showToast('Welcome '+currentUser.name+' ✨','success');
   }catch(err){
     console.error('Login error:',err);
@@ -7903,17 +7934,67 @@ async function loadStudentFeeData(){
 
   try{
     var settings = await loadFeeSettings();
-    var parentMobile = String(currentUser.parentMobile || currentUser.phone || '').replace(/\D/g,'').slice(-10);
+    var sid = currentUser.studentId;
+    var parent = null;
 
-    if(!parentMobile || parentMobile.length !== 10){
-      wrap.innerHTML = '<div style="text-align:center;padding:50px 20px;"><i class="fas fa-phone-slash" style="font-size:3rem;color:#fca5a5;opacity:.5;"></i><h4 style="color:#0f172a;margin-top:14px;">ഫോൺ നമ്പർ ലഭ്യമല്ല</h4><p style="color:#64748b;font-size:.82rem;">മദ്രസ ഓഫീസിൽ ബന്ധപ്പെടുക.</p></div>';
-      return;
+    // ⭐ METHOD 1: Direct via students.fee_parent_id (Fastest)
+    try {
+      var sr = await supabaseClient.from('students')
+        .select('fee_parent_id')
+        .eq('studentid', sid)
+        .single();
+      
+      if (sr.data && sr.data.fee_parent_id) {
+        var pr = await supabaseClient.from('fee_parents')
+          .select('*')
+          .eq('id', sr.data.fee_parent_id)
+          .single();
+        if (pr.data) {
+          parent = pr.data;
+          console.log('✅ Fee parent found via fee_parent_id');
+        }
+      }
+    } catch(e) { console.warn('Method 1 (fee_parent_id) failed:', e.message); }
+
+    // ⭐ METHOD 2: Search inside student_ids array (UID list)
+    if (!parent) {
+      try {
+        var r2 = await supabaseClient.from('fee_parents')
+          .select('*')
+          .contains('student_ids', [sid])
+          .maybeSingle();
+        
+        if (r2.data) {
+          parent = r2.data;
+          console.log('✅ Fee parent found via student_ids array');
+        }
+      } catch(e) { console.warn('Method 2 (student_ids) failed:', e.message); }
     }
 
-    var parent = await getFeeParentByMobile(parentMobile);
+    // ⭐ METHOD 3: Fallback — Mobile match (purana data-ക്ക്)
+    if (!parent) {
+      try {
+        var parentMobile = String(currentUser.parentMobile || currentUser.phone || '')
+          .replace(/\D/g,'').slice(-10);
+        
+        if (parentMobile.length === 10) {
+          parent = await getFeeParentByMobile(parentMobile);
+          if (parent) console.log('✅ Fee parent found via mobile (fallback)');
+        }
+      } catch(e) { console.warn('Method 3 (mobile) failed:', e.message); }
+    }
 
-    if(!parent){
-      wrap.innerHTML = '<div style="text-align:center;padding:50px 20px;"><i class="fas fa-folder-open" style="font-size:3.5rem;color:#b45309;opacity:.4;"></i><h4 style="color:#0f172a;margin-top:16px;">ഫീസ് വിവരങ്ങൾ കണ്ടെത്തിയില്ല</h4><p style="color:#64748b;font-size:.82rem;margin-top:8px;">ഫോൺ: <b style="color:#0891b2;">'+parentMobile+'</b><br>ഈ നമ്പർ സിസ്റ്റത്തിൽ രജിസ്റ്റർ ചെയ്തിട്ടില്ല.</p></div>';
+    // ❌ ഒന്നും കണ്ടെത്തിയില്ല → Error message
+    if (!parent) {
+      wrap.innerHTML = 
+        '<div style="text-align:center;padding:50px 20px;">' +
+        '<i class="fas fa-folder-open" style="font-size:3.5rem;color:#b45309;opacity:.4;"></i>' +
+        '<h4 style="color:#0f172a;margin-top:16px;">ഫീസ് വിവരങ്ങൾ കണ്ടെത്തിയില്ല</h4>' +
+        '<p style="color:#64748b;font-size:.82rem;margin-top:8px;line-height:1.7;">' +
+        'Student UID: <b style="color:#0891b2;">' + sid + '</b><br>' +
+        'ഈ UID fee system-ൽ link ചെയ്തിട്ടില്ല.<br>' +
+        'ദയവായി മദ്രസ ഓഫീസിൽ ബന്ധപ്പെടുക.</p>' +
+        '</div>';
       return;
     }
 
@@ -8047,48 +8128,191 @@ function renderFeeParentsTable(){
   wrap.innerHTML = h;
 }
 
-function openFeeParentForm(id){
+async function openFeeParentForm(id){
   var p = id ? feeParentsData.find(function(x){return x.id===id;}) : {};
   var isEdit = !!id;
+  
+  // എല്ലാ students-ന്റെയും list എടുക്കുക
+  var studentsList = [];
+  try {
+    var sr = await supabaseClient.from('students')
+      .select('studentid, name, class')
+      .order('class')
+      .order('name');
+    studentsList = sr.data || [];
+  } catch(e) {
+    console.warn('Load students error:', e);
+  }
+  
+  // ഇപ്പോൾ select ചെയ്തിരിക്കുന്ന UID-കൾ
+  var selectedIds = p.student_ids || [];
+  
   modalTitleSpan.innerText = isEdit ? '✏️ Edit Fee Record' : '➕ Add Fee Parent';
+  
   modalBodyDiv.innerHTML =
-    '<form onsubmit="saveFeeParent(event,'+(id||'null')+')">'+
-    '<div class="row g-3">'+
-    '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Parent Name *</label><input type="text" id="fp_name" class="modal-form-input" value="'+escapeHtml(p.parent_name||'')+'" required></div>'+
-    '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Mobile (10 digits) *</label><input type="tel" id="fp_mobile" class="modal-form-input" maxlength="10" value="'+escapeHtml(p.mobile||'')+'" required></div>'+
-    '<div class="col-12"><label style="color:#475569;font-size:.78rem;">Children (comma separated)</label><input type="text" id="fp_children" class="modal-form-input" value="'+escapeHtml(p.student_names||'')+'" placeholder="Ahmed, Fatima"></div>'+
-    '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Last Paid Month</label><input type="month" id="fp_lastmonth" class="modal-form-input" value="'+(p.last_paid_month||'')+'"></div>'+
-    '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Last Paid Date</label><input type="date" id="fp_lastdate" class="modal-form-input" value="'+(p.last_paid_date||'')+'"></div>'+
-    '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Months Paid</label><input type="number" id="fp_paid" class="modal-form-input" min="0" value="'+(p.paid_months||0)+'"></div>'+
-    '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Previous Balance (₹)</label><input type="number" id="fp_prev" class="modal-form-input" min="0" value="'+(p.previous_balance||0)+'"></div>'+
-    '</div>'+
-    '<div class="d-flex gap-2 mt-4"><button type="submit" class="btn-update flex-grow-1"><i class="fas fa-save"></i> Save</button><button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div>'+
-    '</form>';
+    '<form onsubmit="saveFeeParent(event,' + (id || 'null') + ')">' +
+    '<div class="row g-3">' +
+    
+    // Parent Name
+    '<div class="col-md-6">' +
+    '<label style="color:#475569;font-size:.78rem;">Parent Name *</label>' +
+    '<input type="text" id="fp_name" class="modal-form-input" value="' + escapeHtml(p.parent_name || '') + '" required>' +
+    '</div>' +
+    
+    // Mobile
+    '<div class="col-md-6">' +
+    '<label style="color:#475569;font-size:.78rem;">Mobile (10 digits) *</label>' +
+    '<input type="tel" id="fp_mobile" class="modal-form-input" maxlength="10" value="' + escapeHtml(p.mobile || '') + '" required>' +
+    '</div>' +
+    
+    // ⭐ NEW: STUDENT UID MULTI-SELECT
+    '<div class="col-12">' +
+    '<label style="color:#475569;font-size:.78rem;">🎓 കുട്ടികൾ (Student UID തിരഞ്ഞെടുക്കുക) *</label>' +
+    '<div style="border:1.5px solid rgba(100,116,139,.25);border-radius:14px;padding:10px;background:#f8fafc;">' +
+    
+    // Search box
+    '<input type="text" id="fp_student_search" class="modal-form-input mb-2" ' +
+    'placeholder="🔍 Name / UID / Class തിരയുക..." ' +
+    'oninput="filterFeeStudentPicker()" style="font-size:.82rem;">' +
+    
+    // Checkbox list
+    '<div id="fp_student_picker" style="max-height:220px;overflow-y:auto;">' +
+    studentsList.map(function(s){
+      var checked = selectedIds.indexOf(s.studentid) > -1 ? 'checked' : '';
+      var searchText = (s.name + ' ' + s.studentid + ' ' + s.class).toLowerCase();
+      return '<label class="fee-student-item" data-search="' + escapeHtml(searchText) + '" ' +
+        'style="display:flex;align-items:center;gap:8px;padding:6px 10px;margin-bottom:4px;' +
+        'background:#fff;border:1px solid rgba(180,200,230,.5);border-radius:10px;' +
+        'cursor:pointer;font-size:.82rem;">' +
+        '<input type="checkbox" class="fp-student-chk" value="' + escapeHtml(s.studentid) + '" ' + checked + '>' +
+        '<span style="color:#0f172a;font-weight:700;">' + escapeHtml(s.name) + '</span>' +
+        '<span style="background:#ecfeff;color:#0891b2;padding:2px 8px;border-radius:20px;' +
+        'font-size:.68rem;font-weight:800;margin-left:auto;">' + escapeHtml(s.studentid) + '</span>' +
+        '<span style="background:#eff6ff;color:#1e40af;padding:2px 8px;border-radius:20px;' +
+        'font-size:.68rem;font-weight:800;">C' + escapeHtml(s.class) + '</span>' +
+        '</label>';
+    }).join('') +
+    '</div></div>' +
+    '<div style="font-size:.72rem;color:#0891b2;margin-top:6px;">' +
+    '<i class="fas fa-info-circle"></i> ഈ UID-കളിലേക്കാണ് fee notification പോകുന്നത്' +
+    '</div>' +
+    '</div>' +
+    
+    // Last Paid Month
+    '<div class="col-md-6">' +
+    '<label style="color:#475569;font-size:.78rem;">Last Paid Month</label>' +
+    '<input type="month" id="fp_lastmonth" class="modal-form-input" value="' + (p.last_paid_month || '') + '">' +
+    '</div>' +
+    
+    // Last Paid Date
+    '<div class="col-md-6">' +
+    '<label style="color:#475569;font-size:.78rem;">Last Paid Date</label>' +
+    '<input type="date" id="fp_lastdate" class="modal-form-input" value="' + (p.last_paid_date || '') + '">' +
+    '</div>' +
+    
+    // Months Paid
+    '<div class="col-md-6">' +
+    '<label style="color:#475569;font-size:.78rem;">Months Paid</label>' +
+    '<input type="number" id="fp_paid" class="modal-form-input" min="0" value="' + (p.paid_months || 0) + '">' +
+    '</div>' +
+    
+    // Previous Balance
+    '<div class="col-md-6">' +
+    '<label style="color:#475569;font-size:.78rem;">Previous Balance (₹)</label>' +
+    '<input type="number" id="fp_prev" class="modal-form-input" min="0" value="' + (p.previous_balance || 0) + '">' +
+    '</div>' +
+    
+    '</div>' +
+    
+    // Buttons
+    '<div class="d-flex gap-2 mt-4">' +
+    '<button type="submit" class="btn-update flex-grow-1"><i class="fas fa-save"></i> Save</button>' +
+    '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button>' +
+    '</div></form>';
+    
   modal.style.display = 'flex';
+}
+
+// Search filter helper
+function filterFeeStudentPicker(){
+  var q = (document.getElementById('fp_student_search')?.value || '').toLowerCase().trim();
+  document.querySelectorAll('.fee-student-item').forEach(function(el){
+    el.style.display = (!q || el.dataset.search.indexOf(q) > -1) ? 'flex' : 'none';
+  });
 }
 
 function editFeeParent(id){ openFeeParentForm(id); }
 
 async function saveFeeParent(e, id){
   e.preventDefault();
+  
+  // Step 1: Tick ചെയ്ത UID-കൾ collect ചെയ്യുക
+  var selectedStudentIds = Array.from(document.querySelectorAll('.fp-student-chk:checked'))
+    .map(function(c){ return c.value; });
+  
+  if (selectedStudentIds.length === 0) {
+    showToast('⚠️ കുറഞ്ഞത് ഒരു കുട്ടിയെ തിരഞ്ഞെടുക്കുക', 'error');
+    return;
+  }
+  
+  // Step 2: Student names auto-fill
+  var studentNames = [];
+  try {
+    var sr = await supabaseClient.from('students')
+      .select('studentid, name')
+      .in('studentid', selectedStudentIds);
+    studentNames = (sr.data || []).map(function(s){ return s.name; });
+  } catch(e) {}
+  
+  // Step 3: Save object
   var obj = {
     parent_name: document.getElementById('fp_name').value.trim(),
     mobile: document.getElementById('fp_mobile').value.trim(),
-    student_names: document.getElementById('fp_children').value.trim() || null,
+    student_ids: selectedStudentIds,           // ⭐ NEW: UID array
+    student_names: studentNames.join(', ') || null,
     last_paid_month: document.getElementById('fp_lastmonth').value || null,
     last_paid_date: document.getElementById('fp_lastdate').value || null,
     paid_months: parseInt(document.getElementById('fp_paid').value) || 0,
     previous_balance: parseFloat(document.getElementById('fp_prev').value) || 0,
     updated_at: new Date().toISOString()
   };
-  if(!obj.parent_name || obj.mobile.length !== 10){ showToast('Name & 10-digit mobile required','error'); return; }
-  try{
-    if(id) await supabaseClient.from('fee_parents').update(obj).eq('id',id);
-    else   await supabaseClient.from('fee_parents').insert(obj);
-    showToast(id?'✅ Updated':'✅ Added','success');
+  
+  if (!obj.parent_name || obj.mobile.length !== 10) {
+    showToast('Name & 10-digit mobile required', 'error');
+    return;
+  }
+  
+  try {
+    var savedId = id;
+    
+    // Step 4: Insert or Update
+    if (id) {
+      await supabaseClient.from('fee_parents').update(obj).eq('id', id);
+    } else {
+      var ins = await supabaseClient.from('fee_parents').insert(obj).select().single();
+      if (ins.data) savedId = ins.data.id;
+    }
+    
+    // Step 5: students.fee_parent_id reverse link update
+    if (savedId) {
+      // പഴയ links clear ചെയ്യുക
+      await supabaseClient.from('students')
+        .update({ fee_parent_id: null })
+        .eq('fee_parent_id', savedId);
+      
+      // പുതിയ links set ചെയ്യുക
+      await supabaseClient.from('students')
+        .update({ fee_parent_id: savedId })
+        .in('studentid', selectedStudentIds);
+    }
+    
+    showToast(id ? '✅ Updated' : '✅ Added', 'success');
     closeModal('globalModal');
     loadFeeParentsAdmin();
-  }catch(e){ showToast('❌ '+e.message,'error'); }
+    
+  } catch(err) {
+    showToast('❌ ' + err.message, 'error');
+  }
 }
 
 async function deleteFeeParent(id){
