@@ -2131,15 +2131,16 @@ body.light-mode .new-badge{
       <div class="admin-table-wrap" id="eventsWrap"></div>
     </div>
 
-<div id="adminFeeParentsTab" class="admin-tab-content" style="display:none;">
-  <div class="admin-toolbar">
-    <button class="btn-load" onclick="loadFeeParentsAdmin()"><i class="fas fa-sync-alt"></i> Refresh</button>
-    <button class="btn-update" onclick="openFeeParentForm()"><i class="fas fa-plus"></i> Add Parent</button>
-    <button class="btn-update" onclick="openFeeSettingsForm()" style="background:linear-gradient(100deg,#06b6d4,#22d3ee);color:#fff;"><i class="fas fa-cog"></i> Fee Settings</button>
-    <button class="btn-update" onclick="openMonthsElapsedModal()" style="background:linear-gradient(100deg,#f59e0b,#fbbf24);color:#03132e;"><i class="fas fa-calendar-alt"></i> Set Months Elapsed</button>
-    <button class="btn-pdf" onclick="downloadFeeParentsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
-    <input type="text" id="feeParentSearch" placeholder="🔍 Search mobile / name" oninput="filterFeeParents()" class="modal-form-input" style="width:auto;padding:9px 15px;">
-  </div>
+    <div id="adminFeeParentsTab" class="admin-tab-content" style="display:none;">
+      <div class="admin-toolbar">
+        <button class="btn-load" onclick="loadFeeParentsAdmin()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <button class="btn-update" onclick="openFeeParentForm()"><i class="fas fa-plus"></i> Add Parent</button>
+        <button class="btn-update" onclick="openFeeSettingsForm()" style="background:linear-gradient(100deg,#06b6d4,#22d3ee);color:#fff;"><i class="fas fa-cog"></i> Fee Settings</button>
+        <input type="text" id="feeParentSearch" placeholder="🔍 Search mobile / name" oninput="filterFeeParents()" class="modal-form-input" style="width:auto;padding:9px 15px;">
+      </div>
+      <div class="admin-summary" id="feeAdminSummary"></div>
+      <div class="admin-table-wrap" id="feeParentsWrap"></div>
+    </div>
 
     <div id="adminNoticeTab" class="admin-tab-content" style="display:none;">
       <div class="admin-toolbar">
@@ -8783,545 +8784,6 @@ function goToFees(){
   openStudentFees();
 }
 
-/* ============================================================ */
-/* 💰 FEE PARENTS — SET MONTHS ELAPSED MODAL                   */
-/* ============================================================ */
-async function openMonthsElapsedModal(){
-  var s = FEE_SETTINGS_CACHE || {};
-  modalTitleSpan.innerText = '📅 Set Months Elapsed';
-  modalBodyDiv.innerHTML =
-    '<div style="background:#eff6ff;border:1px solid rgba(59,130,246,.3);border-radius:14px;padding:14px 16px;margin-bottom:18px;">' +
-      '<div style="font-weight:800;color:#1e40af;font-size:.85rem;margin-bottom:6px;"><i class="fas fa-info-circle"></i> എന്താണ് ഇത്?</div>' +
-      '<div style="font-size:.78rem;color:#475569;line-height:1.7;">' +
-        'ഓരോ വിദ്യാർത്ഥിക്കും ഇതുവരെ എത്ര മാസത്തെ ഫീസ് അടക്കേണ്ടതാണ് എന്നത് നിർണ്ണയിക്കുന്നു. ' +
-        '<b>Automatic</b> ആയി Start Month-ൽ നിന്നും കണക്കാക്കും. ' +
-        'ഇവിടെ manual value നൽകിയാൽ automatic-നെ <b>മറികടക്കും</b>.' +
-      '</div>' +
-    '</div>' +
-    '<div style="background:#fef3c7;border:1px solid rgba(180,83,9,.3);border-radius:14px;padding:14px 16px;margin-bottom:18px;">' +
-      '<div style="font-size:.82rem;color:#78350f;">' +
-        '<b>📊 ഇപ്പോഴത്തെ value:</b> ' +
-        '<span style="color:#b45309;font-weight:900;font-size:1.05rem;">' + 
-          (s.monthsElapsed !== null && s.monthsElapsed !== undefined ? s.monthsElapsed + ' മാസം' : 'Auto (Automatic)') +
-        '</span>' +
-      '</div>' +
-      '<div style="font-size:.72rem;color:#78350f;margin-top:6px;">Start Month: <b>' + (s.startMonth || '—') + '</b></div>' +
-    '</div>' +
-    '<form onsubmit="saveMonthsElapsed(event)">' +
-      '<div class="mb-3">' +
-        '<label style="color:#475569;font-size:.78rem;">Months Elapsed (manual override) *</label>' +
-        '<input type="number" id="monthsElapsedInput" class="modal-form-input" min="0" max="120" required ' +
-          'value="' + (s.monthsElapsed !== null && s.monthsElapsed !== undefined ? s.monthsElapsed : '') + '" ' +
-          'placeholder="e.g., 6">' +
-        '<small style="color:#64748b;font-size:.7rem;display:block;margin-top:6px;">' +
-          '<i class="fas fa-lightbulb" style="color:#b45309;"></i> ' +
-          'ഒരു സംഖ്യ നൽകിയാൽ ആ value ഉപയോഗിക്കും. ' +
-          'Auto-യിലേക്ക് മടങ്ങാൻ "Clear" ചെയ്യുക.' +
-        '</small>' +
-      '</div>' +
-      '<div class="d-flex gap-2 mt-4 flex-wrap">' +
-        '<button type="submit" class="btn-update flex-grow-1"><i class="fas fa-save"></i> Save</button>' +
-        '<button type="button" class="btn-cancel" onclick="clearMonthsElapsed()" style="background:#fee2e2;color:#dc2626;border:1px solid rgba(220,38,38,.3);">' +
-          '<i class="fas fa-eraser"></i> Clear (Auto)' +
-        '</button>' +
-        '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button>' +
-      '</div>' +
-    '</form>';
-  modal.style.display = 'flex';
-}
-
-async function saveMonthsElapsed(e){
-  e.preventDefault();
-  var val = document.getElementById('monthsElapsedInput').value.trim();
-  if(val === '' || isNaN(parseInt(val))) {
-    showToast('ശരിയായ സംഖ്യ നൽകുക', 'error');
-    return;
-  }
-  try{
-    await supabaseClient.from('fee_settings').upsert(
-      {setting_key: 'months_elapsed', value: String(parseInt(val))},
-      {onConflict: 'setting_key'}
-    );
-    await loadFeeSettings();
-    showToast('✅ Months Elapsed updated: ' + val, 'success');
-    closeModal('globalModal');
-    renderFeeAdminSummary();
-    renderFeeParentsTable();
-    if(typeof confetti !== 'undefined') confetti({particleCount: 80, spread: 70, origin: {y: .7}});
-  }catch(err){
-    showToast('❌ ' + err.message, 'error');
-  }
-}
-
-async function clearMonthsElapsed(){
-  if(!confirm('Manual value clear ചെയ്ത് Auto-യിലേക്ക് മാറണോ?')) return;
-  try{
-    await supabaseClient.from('fee_settings').upsert(
-      {setting_key: 'months_elapsed', value: ''},
-      {onConflict: 'setting_key'}
-    );
-    await loadFeeSettings();
-    showToast('✅ Auto-mode activated', 'success');
-    closeModal('globalModal');
-    renderFeeAdminSummary();
-    renderFeeParentsTable();
-  }catch(err){
-    showToast('❌ ' + err.message, 'error');
-  }
-}
-
-/* ============================================================ */
-/* 📜 PAYMENT HISTORY VIEWER                                   */
-/* ============================================================ */
-async function viewFeePaymentHistory(parentId){
-  var parent = feeParentsData.find(function(p){ return p.id === parentId; });
-  if(!parent){ showToast('Parent not found', 'error'); return; }
-
-  modalTitleSpan.innerText = '📜 Payment History';
-  modalBodyDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border" style="color:#2563eb"></div></div>';
-  modal.style.display = 'flex';
-
-  try{
-    var history = [];
-    try{
-      history = parent.payment_history 
-        ? (typeof parent.payment_history === 'string' 
-            ? JSON.parse(parent.payment_history) 
-            : parent.payment_history) 
-        : [];
-    }catch(e){ history = []; }
-
-    // If no history in parent record, try to fetch from payments table
-    if(history.length === 0){
-      try{
-        var r = await supabaseClient.from('payments')
-          .select('*')
-          .eq('studentid', parent.mobile) // in case payments are logged
-          .order('date', {ascending: false})
-          .limit(50);
-        // fallback: no meaningful data
-      }catch(e){}
-    }
-
-    var h = '';
-
-    // Parent header
-    h += '<div style="background:linear-gradient(135deg,#dbeafe,#eff6ff);border:1.6px solid rgba(59,130,246,.4);border-radius:18px;padding:16px;margin-bottom:16px;">';
-    h += '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">';
-    h += '<div style="width:54px;height:54px;border-radius:50%;background:linear-gradient(140deg,#1e6be0,#22d3ee);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.2rem;flex-shrink:0;">' + escapeHtml((parent.parent_name||'?').charAt(0).toUpperCase()) + '</div>';
-    h += '<div style="flex:1;min-width:180px;">';
-    h += '<div style="color:#0f172a;font-weight:900;font-size:1.05rem;">' + escapeHtml(parent.parent_name||'—') + '</div>';
-    h += '<div style="color:#64748b;font-size:.78rem;margin-top:3px;"><i class="fas fa-mobile-alt"></i> ' + escapeHtml(parent.mobile||'—') + '</div>';
-    if(parent.student_names) {
-      h += '<div style="color:#0891b2;font-size:.76rem;margin-top:3px;"><i class="fas fa-user-graduate"></i> ' + escapeHtml(parent.student_names) + '</div>';
-    }
-    h += '</div></div></div>';
-
-    // Summary stats
-    var totalPaid = 0;
-    history.forEach(function(entry){
-      totalPaid += Number(entry.amount) || 0;
-    });
-
-    h += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px;">';
-    h += '<div style="background:#ecfdf5;border:1px solid rgba(5,150,105,.3);border-radius:14px;padding:12px;text-align:center;">';
-    h += '<div style="font-size:1.35rem;font-weight:900;color:#059669;">' + history.length + '</div>';
-    h += '<div style="font-size:.65rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Total Payments</div></div>';
-    h += '<div style="background:#fef3c7;border:1px solid rgba(180,83,9,.3);border-radius:14px;padding:12px;text-align:center;">';
-    h += '<div style="font-size:1.35rem;font-weight:900;color:#b45309;">₹' + totalPaid.toLocaleString('en-IN') + '</div>';
-    h += '<div style="font-size:.65rem;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-top:4px;">Total Amount</div></div>';
-    h += '</div>';
-
-    // Payment entries
-    if(history.length === 0){
-      h += '<div style="background:#f8fafc;border:2px dashed rgba(100,116,139,.3);border-radius:16px;padding:40px 20px;text-align:center;">';
-      h += '<i class="fas fa-receipt" style="font-size:2.5rem;color:#94a3b8;opacity:.4;display:block;margin-bottom:10px;"></i>';
-      h += '<div style="color:#0f172a;font-weight:800;font-size:.92rem;">ഇതുവരെ പേയ്‌മെന്റുകൾ ഇല്ല</div>';
-      h += '<div style="color:#64748b;font-size:.78rem;margin-top:6px;">"✅ Mark as Paid" button ഉപയോഗിച്ച് add ചെയ്യുക</div>';
-      h += '</div>';
-    }else{
-      // Sort by date descending
-      history.sort(function(a,b){
-        var da = a.date ? new Date(a.date).getTime() : 0;
-        var db = b.date ? new Date(b.date).getTime() : 0;
-        return db - da;
-      });
-
-      h += '<div style="font-weight:800;color:#0f172a;font-size:.9rem;margin-bottom:10px;"><i class="fas fa-list" style="color:#0891b2;"></i> Payment Records</div>';
-      
-      history.forEach(function(entry, idx){
-        var monthML = formatFeeMonthML(entry.month);
-        var dateStr = entry.date ? formatDate(entry.date) : '—';
-        var amt = Number(entry.amount) || 0;
-        
-        h += '<div style="background:#f8fafc;border:1px solid rgba(180,200,230,.5);border-left:4px solid #10b981;border-radius:14px;padding:12px 14px;margin-bottom:8px;">';
-        h += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">';
-        h += '<div style="flex:1;min-width:180px;">';
-        h += '<div style="color:#0f172a;font-weight:800;font-size:.88rem;"><i class="fas fa-calendar-check" style="color:#059669;"></i> ' + monthML + '</div>';
-        h += '<div style="color:#64748b;font-size:.72rem;margin-top:4px;"><i class="far fa-clock"></i> Paid on: ' + dateStr + '</div>';
-        if(entry.paidBy){
-          h += '<div style="color:#94a3b8;font-size:.68rem;margin-top:2px;">By: ' + escapeHtml(entry.paidBy) + '</div>';
-        }
-        h += '</div>';
-        h += '<div style="text-align:right;">';
-        h += '<div style="font-size:1.15rem;font-weight:900;color:#059669;">₹' + amt.toLocaleString('en-IN') + '</div>';
-        h += '<div style="font-size:.62rem;color:#94a3b8;margin-top:2px;">#' + (idx+1) + '</div>';
-        h += '</div>';
-        h += '</div></div>';
-      });
-    }
-
-    // Close button
-    h += '<div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;">';
-    h += '<button class="btn-update flex-grow-1" onclick="closeModal(\'globalModal\');editFeeParent(' + parent.id + ');"><i class="fas fa-pen"></i> Edit Parent</button>';
-    h += '<button class="btn-pdf" onclick="downloadFeeParentHistoryPDF(' + parent.id + ')"><i class="fas fa-file-pdf"></i> PDF</button>';
-    h += '<button class="btn-cancel" onclick="closeModal(\'globalModal\')">Close</button>';
-    h += '</div>';
-
-    modalBodyDiv.innerHTML = h;
-
-  }catch(err){
-    console.error('History error:', err);
-    modalBodyDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#dc2626;">❌ Error: ' + escapeHtml(err.message) + '</div>';
-  }
-}
-
-/* ============================================================ */
-/* 📄 INDIVIDUAL PARENT HISTORY PDF                            */
-/* ============================================================ */
-async function downloadFeeParentHistoryPDF(parentId){
-  var parent = feeParentsData.find(function(p){ return p.id === parentId; });
-  if(!parent){ showToast('Parent not found', 'error'); return; }
-
-  showLoading(true);
-  try{
-    var history = [];
-    try{
-      history = parent.payment_history 
-        ? (typeof parent.payment_history === 'string' 
-            ? JSON.parse(parent.payment_history) 
-            : parent.payment_history) 
-        : [];
-    }catch(e){ history = []; }
-
-    history.sort(function(a,b){
-      var da = a.date ? new Date(a.date).getTime() : 0;
-      var db = b.date ? new Date(b.date).getTime() : 0;
-      return da - db;
-    });
-
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({orientation: 'portrait', unit: 'pt', format: 'a4'});
-    var pageW = doc.internal.pageSize.getWidth();
-    var pageH = doc.internal.pageSize.getHeight();
-
-    // Header
-    doc.setFillColor(21, 71, 168);
-    doc.rect(0, 0, pageW, 90, 'F');
-
-    try{
-      var logoData = await getLogoDataUrl();
-      if(logoData) doc.addImage(logoData, 'PNG', 40, 20, 50, 50);
-    }catch(e){}
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    doc.text('NOORUSSALAM MADRASA', pageW / 2, 38, {align: 'center'});
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
-    doc.text('Fee Payment History', pageW / 2, 56, {align: 'center'});
-    doc.setFontSize(9);
-    doc.text('Generated: ' + new Date().toLocaleString('en-IN'), pageW / 2, 74, {align: 'center'});
-
-    // Parent info
-    var y = 115;
-    doc.setTextColor(0, 0, 0);
-    doc.setFillColor(240, 245, 255);
-    doc.rect(40, y - 12, pageW - 80, 70, 'F');
-    doc.setDrawColor(30, 107, 224);
-    doc.setLineWidth(0.8);
-    doc.rect(40, y - 12, pageW - 80, 70);
-
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('Parent Name:', 50, y + 6);
-    doc.setFont(undefined, 'normal');
-    doc.text(String(parent.parent_name || '—'), 140, y + 6);
-
-    doc.setFont(undefined, 'bold');
-    doc.text('Mobile:', 340, y + 6);
-    doc.setFont(undefined, 'normal');
-    doc.text(String(parent.mobile || '—'), 395, y + 6);
-
-    doc.setFont(undefined, 'bold');
-    doc.text('Children:', 50, y + 28);
-    doc.setFont(undefined, 'normal');
-    doc.text(String(parent.student_names || '—'), 140, y + 28);
-
-    doc.setFont(undefined, 'bold');
-    doc.text('Paid Months:', 340, y + 28);
-    doc.setFont(undefined, 'normal');
-    doc.text(String(parent.paid_months || 0), 410, y + 28);
-
-    doc.setFont(undefined, 'bold');
-    doc.text('Previous Balance:', 50, y + 50);
-    doc.setFont(undefined, 'normal');
-    doc.text('₹' + (parent.previous_balance || 0).toLocaleString('en-IN'), 155, y + 50);
-
-    doc.setFont(undefined, 'bold');
-    doc.text('Last Paid:', 340, y + 50);
-    doc.setFont(undefined, 'normal');
-    doc.text(formatFeeMonthML(parent.last_paid_month), 400, y + 50);
-
-    y += 90;
-
-    // Table
-    var rows = history.map(function(entry, idx){
-      return [
-        String(idx + 1),
-        formatFeeMonthML(entry.month),
-        entry.date ? formatDate(entry.date) : '—',
-        'Rs.' + (Number(entry.amount) || 0).toLocaleString('en-IN'),
-        entry.paidBy || '—'
-      ];
-    });
-
-    if(rows.length === 0){
-      doc.setFontSize(11);
-      doc.setTextColor(100, 100, 100);
-      doc.text('No payment records found.', pageW / 2, y + 40, {align: 'center'});
-    }else{
-      doc.autoTable({
-        startY: y,
-        head: [['#', 'Month', 'Date Paid', 'Amount', 'Paid By']],
-        body: rows,
-        theme: 'grid',
-        styles: {fontSize: 9, cellPadding: 5, textColor: [0, 0, 0]},
-        headStyles: {fillColor: [21, 71, 168], textColor: [255, 255, 255], fontStyle: 'bold'},
-        columnStyles: {
-          0: {cellWidth: 30, halign: 'center'},
-          1: {cellWidth: 110},
-          2: {cellWidth: 100, halign: 'center'},
-          3: {cellWidth: 90, halign: 'right'},
-          4: {cellWidth: 'auto'}
-        },
-        alternateRowStyles: {fillColor: [248, 250, 252]}
-      });
-
-      // Total
-      var total = history.reduce(function(sum, e){ return sum + (Number(e.amount) || 0); }, 0);
-      var finalY = doc.lastAutoTable.finalY + 15;
-      doc.setFillColor(240, 245, 255);
-      doc.rect(40, finalY, pageW - 80, 24, 'F');
-      doc.setFontSize(11);
-      doc.setFont(undefined, 'bold');
-      doc.text('Total Paid:', 50, finalY + 16);
-      doc.setTextColor(5, 150, 105);
-      doc.text('Rs. ' + total.toLocaleString('en-IN'), pageW - 50, finalY + 16, {align: 'right'});
-    }
-
-    // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text('Page 1', pageW / 2, pageH - 20, {align: 'center'});
-    doc.setFontSize(7);
-    doc.text('Noorussalam Madrasa • Fee Management System', pageW / 2, pageH - 8, {align: 'center'});
-
-    var safeName = String(parent.parent_name || 'Parent').replace(/[^a-zA-Z0-9]/g, '_');
-    doc.save('Fee_History_' + safeName + '_' + parent.mobile + '.pdf');
-    showToast('✅ PDF Downloaded', 'success');
-    if(typeof confetti !== 'undefined') confetti({particleCount: 80, spread: 70, origin: {y: .7}});
-  }catch(err){
-    console.error('PDF error:', err);
-    showToast('❌ PDF failed: ' + err.message, 'error');
-  }
-  showLoading(false);
-}
-
-/* ============================================================ */
-/* 📄 FEE PARENTS LIST — PDF (Full Table)                      */
-/* ============================================================ */
-async function downloadFeeParentsPDF(){
-  if(!feeParentsData || feeParentsData.length === 0){
-    showToast('No data to download', 'error');
-    return;
-  }
-
-  showLoading(true);
-  try{
-    var fee = FEE_SETTINGS_CACHE.monthlyFee || 200;
-    var me = calcMonthsElapsed(FEE_SETTINGS_CACHE.startMonth, FEE_SETTINGS_CACHE.monthsElapsed);
-
-    var jsPDF = window.jspdf.jsPDF;
-    var doc = new jsPDF({orientation: 'landscape', unit: 'pt', format: 'a4'});
-    var pageW = doc.internal.pageSize.getWidth();
-    var pageH = doc.internal.pageSize.getHeight();
-
-    // Header
-    doc.setFillColor(21, 71, 168);
-    doc.rect(0, 0, pageW, 80, 'F');
-
-    try{
-      var logoData = await getLogoDataUrl();
-      if(logoData) doc.addImage(logoData, 'PNG', 30, 15, 50, 50);
-    }catch(e){}
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont(undefined, 'bold');
-    doc.text('NOORUSSALAM MADRASA', pageW / 2, 32, {align: 'center'});
-    doc.setFontSize(11);
-    doc.setFont(undefined, 'normal');
-    doc.text('Fee Parents List — Monthly Fee: Rs. ' + fee, pageW / 2, 50, {align: 'center'});
-    doc.setFontSize(9);
-    doc.text('Months Elapsed: ' + me + ' | Total Parents: ' + feeParentsData.length + ' | Generated: ' + new Date().toLocaleDateString('en-IN'), pageW / 2, 68, {align: 'center'});
-
-    // Build table data — sorted by parent name
-    var sorted = feeParentsData.slice().sort(function(a, b){
-      return (a.parent_name || '').localeCompare(b.parent_name || '');
-    });
-
-    var rows = sorted.map(function(p, idx){
-      var pm = Math.max(0, me - (p.paid_months || 0));
-      var tp = (pm * fee) + (p.previous_balance || 0);
-      var status = tp > 0 ? 'Pending' : tp < 0 ? 'Advance' : 'Paid';
-      return [
-        String(idx + 1),
-        p.parent_name || '—',
-        p.mobile || '—',
-        p.student_names || '—',
-        String(p.paid_months || 0),
-        String(pm),
-        'Rs.' + tp.toLocaleString('en-IN'),
-        status
-      ];
-    });
-
-    doc.autoTable({
-      startY: 100,
-      head: [['#', 'Parent Name', 'Mobile', 'Children', 'Paid', 'Pending', 'Total Due', 'Status']],
-      body: rows,
-      theme: 'grid',
-      styles: {fontSize: 8, cellPadding: 4, textColor: [0, 0, 0]},
-      headStyles: {fillColor: [21, 71, 168], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center'},
-      columnStyles: {
-        0: {cellWidth: 28, halign: 'center'},
-        1: {cellWidth: 110},
-        2: {cellWidth: 75, halign: 'center'},
-        3: {cellWidth: 'auto'},
-        4: {cellWidth: 45, halign: 'center'},
-        5: {cellWidth: 55, halign: 'center'},
-        6: {cellWidth: 75, halign: 'right', fontStyle: 'bold'},
-        7: {cellWidth: 60, halign: 'center'}
-      },
-      alternateRowStyles: {fillColor: [248, 250, 252]},
-      didParseCell: function(data){
-        if(data.section === 'body' && data.column.index === 7){
-          if(data.cell.raw === 'Pending') data.cell.styles.textColor = [220, 38, 38];
-          else if(data.cell.raw === 'Paid') data.cell.styles.textColor = [5, 150, 105];
-          else data.cell.styles.textColor = [8, 145, 178];
-        }
-      },
-      didDrawPage: function(data){
-        var pageNum = doc.internal.getCurrentPageInfo().pageNumber;
-        doc.setFontSize(8);
-        doc.setTextColor(120, 120, 120);
-        doc.text('Page ' + pageNum, pageW / 2, pageH - 20, {align: 'center'});
-        doc.setFontSize(7);
-        doc.text('Noorussalam Madrasa • Fee Management System', pageW / 2, pageH - 8, {align: 'center'});
-      }
-    });
-
-    // Summary below table
-    var finalY = doc.lastAutoTable.finalY + 15;
-    if(finalY < pageH - 60){
-      var totalDue = 0, totalPending = 0, totalPaid = 0;
-      feeParentsData.forEach(function(p){
-        var pm = Math.max(0, me - (p.paid_months || 0));
-        var tp = (pm * fee) + (p.previous_balance || 0);
-        totalDue += tp;
-        if(tp > 0) totalPending++;
-        else totalPaid++;
-      });
-
-      doc.setFillColor(240, 245, 255);
-      doc.rect(40, finalY, pageW - 80, 40, 'F');
-      doc.setDrawColor(30, 107, 224);
-      doc.setLineWidth(0.8);
-      doc.rect(40, finalY, pageW - 80, 40);
-
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.setFont(undefined, 'bold');
-      doc.text('Summary:', 50, finalY + 16);
-      doc.setFont(undefined, 'normal');
-      doc.setFontSize(9);
-      doc.text('Total Parents: ' + feeParentsData.length, 120, finalY + 16);
-      doc.text('Pending: ' + totalPending, 260, finalY + 16);
-      doc.text('Paid: ' + totalPaid, 380, finalY + 16);
-      doc.setFont(undefined, 'bold');
-      doc.setTextColor(180, 83, 9);
-      doc.text('Total Due: Rs. ' + totalDue.toLocaleString('en-IN'), 480, finalY + 16);
-    }
-
-    doc.save('Fee_Parents_' + new Date().toISOString().split('T')[0] + '.pdf');
-    showToast('✅ PDF Downloaded — ' + feeParentsData.length + ' parents', 'success');
-    if(typeof confetti !== 'undefined') confetti({particleCount: 100, spread: 70, origin: {y: .7}});
-  }catch(err){
-    console.error('PDF error:', err);
-    showToast('❌ PDF failed: ' + err.message, 'error');
-  }
-  showLoading(false);
-}
-
-/* ============================================================ */
-/* 🔄 UPDATE renderFeeParentsTable — Add History Button         */
-/* ============================================================ */
-var _origRenderFeeParentsTable = renderFeeParentsTable;
-renderFeeParentsTable = function(){
-  var wrap = document.getElementById('feeParentsWrap');
-  if(!wrap) return;
-  if(filteredFeeParents.length === 0){
-    wrap.innerHTML = '<div style="text-align:center;padding:30px;color:#64748b;">No records</div>';
-    return;
-  }
-  var fee = FEE_SETTINGS_CACHE.monthlyFee || 200;
-  var me = calcMonthsElapsed(FEE_SETTINGS_CACHE.startMonth, FEE_SETTINGS_CACHE.monthsElapsed);
-  var h = '<table><thead><tr><th>#</th><th>Parent</th><th>Mobile</th><th>Paid</th><th>Due</th><th>Actions</th></tr></thead><tbody>';
-  filteredFeeParents.forEach(function(p, i){
-    var pm = Math.max(0, me - (p.paid_months||0));
-    var tp = (pm * fee) + (p.previous_balance||0);
-    var sc = tp > 0 ? '#dc2626' : tp < 0 ? '#0891b2' : '#059669';
-    var historyCount = 0;
-    try{
-      var hist = p.payment_history 
-        ? (typeof p.payment_history === 'string' ? JSON.parse(p.payment_history) : p.payment_history) 
-        : [];
-      historyCount = hist.length;
-    }catch(e){}
-    
-    h += '<tr><td>'+(i+1)+'</td>';
-    h += '<td><strong>'+escapeHtml(p.parent_name)+'</strong>'+(p.student_names?'<br><small style="color:#94a3b8;font-size:.7rem;">'+escapeHtml(p.student_names)+'</small>':'')+'</td>';
-    h += '<td>'+escapeHtml(p.mobile)+'</td>';
-    h += '<td>'+(p.paid_months||0)+' / '+me+'</td>';
-    h += '<td style="color:'+sc+';font-weight:900;">₹'+tp.toLocaleString('en-IN')+'</td>';
-    h += '<td>';
-    h += '<button onclick="markFeePaid('+p.id+')" title="Mark Paid" style="background:linear-gradient(100deg,#059669,#34d399);color:#fff;border:none;padding:5px 12px;border-radius:30px;font-size:.7rem;font-weight:700;cursor:pointer;margin-right:4px;">✅</button>';
-    h += '<button onclick="viewFeePaymentHistory('+p.id+')" title="Payment History" style="background:linear-gradient(100deg,#f59e0b,#fbbf24);color:#03132e;border:none;padding:5px 12px;border-radius:30px;font-size:.7rem;font-weight:700;cursor:pointer;margin-right:4px;position:relative;">📜';
-    if(historyCount > 0){
-      h += '<span style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:.58rem;padding:1px 5px;border-radius:10px;font-weight:900;">'+historyCount+'</span>';
-    }
-    h += '</button>';
-    h += '<button onclick="editFeeParent('+p.id+')" title="Edit" style="background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;border:none;padding:5px 12px;border-radius:30px;font-size:.7rem;font-weight:700;cursor:pointer;margin-right:4px;">✏️</button>';
-    h += '<button onclick="deleteFeeParent('+p.id+')" title="Delete" style="background:linear-gradient(100deg,#b91c1c,#f87171);color:#fff;border:none;padding:5px 12px;border-radius:30px;font-size:.7rem;font-weight:700;cursor:pointer;">🗑️</button>';
-    h += '</td></tr>';
-  });
-  h += '</tbody></table>';
-  wrap.innerHTML = h;
-};
-
-console.log('✅ Fee Extended Functions loaded — History + Months + PDFs');
 console.log('✅ PART 7 loaded — Admin Secondary + Creations + Notice + Fees');
 </script>
 <!-- ============================================================ -->
@@ -11836,62 +11298,52 @@ async function countNewItems(cat){
   if(!seenAt) return 0;
 
   try{
-    // ⭐ Fetch rows (no complex OR filters) — filter client-side
     var q = supabaseClient.from(cfg.table)
-      .select('*')
+      .select('id', { count: 'exact', head: true })
       .gt(cfg.dateCol, seenAt);
 
-    var r = await q;
-    if(r.error){ 
-      console.warn('countNewItems(' + cat + '):', r.error.message); 
-      return 0; 
+    // Class filter (exact match)
+    if(cfg.filterEq){
+      cfg.filterEq.forEach(function(col){
+        if(col === 'class'){
+          q = q.eq('class', String(currentUser.class));
+        }
+      });
     }
 
-    var cls = String(currentUser.class || '');
-    var items = r.data || [];
+    // Class OR "all" filter
+    if(cfg.filterOrAll){
+      var cls = String(currentUser.class);
+      cfg.filterOrAll.forEach(function(col){
+        if(col === 'class'){
+          q = q.or('class.eq.all,class.eq.' + cls);
+        } else if(col === 'target_class'){
+          // matches: "all", exact class, or comma list containing class
+          q = q.or(
+            'target_class.eq.all,' +
+            'target_class.eq.' + cls + ',' +
+            'target_class.like.' + cls + ',%' + ',' +
+            'target_class.like.%,' + cls + ',' +
+            'target_class.like.%,' + cls + ',%'
+          );
+        }
+      });
+    }
 
-    var matched = items.filter(function(item){
-      // ✅ Approved creations only, exclude own
-      if(cfg.filterApproved){
-        if(!item.approved) return false;
-        if(item.studentid === currentUser.studentId) return false;
-      }
+    // Approved creations only, exclude own
+    if(cfg.filterApproved){
+      q = q.eq('approved', true).neq('studentid', currentUser.studentId);
+    }
 
-      // ✅ Exact class match (homework, lessons)
-      if(cfg.filterEq && cfg.filterEq.indexOf('class') > -1){
-        if(String(item.class) !== cls) return false;
-      }
-
-      // ✅ Class OR "all" (downloads, library, notice, competitions)
-      if(cfg.filterOrAll){
-        var ok = false;
-        cfg.filterOrAll.forEach(function(col){
-          if(col === 'class'){
-            var v = String(item.class || '');
-            if(v === 'all' || v === cls) ok = true;
-          } else if(col === 'target_class'){
-            var t = String(item.target_class || '');
-            if(t === 'all' || t === cls) {
-              ok = true;
-            } else if(t){
-              // comma-separated list check
-              var arr = t.split(',').map(function(s){ return s.trim(); });
-              if(arr.indexOf(cls) > -1) ok = true;
-            }
-          }
-        });
-        if(!ok) return false;
-      }
-
-      return true;
-    });
-
-    return matched.length;
+    var r = await q;
+    if(r.error){ console.warn('countNewItems(' + cat + '):', r.error.message); return 0; }
+    return r.count || 0;
   } catch(e){
     console.warn('countNewItems(' + cat + ') err:', e);
     return 0;
   }
 }
+
 /* ============================================================ */
 /* 🎨 Render badge on tile                                      */
 /* ============================================================ */
@@ -12042,13 +11494,7 @@ Object.assign(window, {
   markAllBadgesSeen,
   initBadgeSystem,
   countNewItems,
-  initBadgeSeenTimes,          // ✅ comma ചേർത്തു
-  openMonthsElapsedModal,
-  saveMonthsElapsed,
-  clearMonthsElapsed,
-  viewFeePaymentHistory,
-  downloadFeeParentHistoryPDF,
-  downloadFeeParentsPDF
+  initBadgeSeenTimes
 });
 
 console.log('✅ PART 10 loaded — Quick Action badges active');
