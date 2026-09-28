@@ -11836,52 +11836,62 @@ async function countNewItems(cat){
   if(!seenAt) return 0;
 
   try{
+    // ⭐ Fetch rows (no complex OR filters) — filter client-side
     var q = supabaseClient.from(cfg.table)
-      .select('id', { count: 'exact', head: true })
+      .select('*')
       .gt(cfg.dateCol, seenAt);
 
-    // Class filter (exact match)
-    if(cfg.filterEq){
-      cfg.filterEq.forEach(function(col){
-        if(col === 'class'){
-          q = q.eq('class', String(currentUser.class));
-        }
-      });
-    }
-
-    // Class OR "all" filter
-    if(cfg.filterOrAll){
-      var cls = String(currentUser.class);
-      cfg.filterOrAll.forEach(function(col){
-        if(col === 'class'){
-          q = q.or('class.eq.all,class.eq.' + cls);
-        } else if(col === 'target_class'){
-          // matches: "all", exact class, or comma list containing class
-          q = q.or(
-            'target_class.eq.all,' +
-            'target_class.eq.' + cls + ',' +
-            'target_class.like.' + cls + ',%' + ',' +
-            'target_class.like.%,' + cls + ',' +
-            'target_class.like.%,' + cls + ',%'
-          );
-        }
-      });
-    }
-
-    // Approved creations only, exclude own
-    if(cfg.filterApproved){
-      q = q.eq('approved', true).neq('studentid', currentUser.studentId);
-    }
-
     var r = await q;
-    if(r.error){ console.warn('countNewItems(' + cat + '):', r.error.message); return 0; }
-    return r.count || 0;
+    if(r.error){ 
+      console.warn('countNewItems(' + cat + '):', r.error.message); 
+      return 0; 
+    }
+
+    var cls = String(currentUser.class || '');
+    var items = r.data || [];
+
+    var matched = items.filter(function(item){
+      // ✅ Approved creations only, exclude own
+      if(cfg.filterApproved){
+        if(!item.approved) return false;
+        if(item.studentid === currentUser.studentId) return false;
+      }
+
+      // ✅ Exact class match (homework, lessons)
+      if(cfg.filterEq && cfg.filterEq.indexOf('class') > -1){
+        if(String(item.class) !== cls) return false;
+      }
+
+      // ✅ Class OR "all" (downloads, library, notice, competitions)
+      if(cfg.filterOrAll){
+        var ok = false;
+        cfg.filterOrAll.forEach(function(col){
+          if(col === 'class'){
+            var v = String(item.class || '');
+            if(v === 'all' || v === cls) ok = true;
+          } else if(col === 'target_class'){
+            var t = String(item.target_class || '');
+            if(t === 'all' || t === cls) {
+              ok = true;
+            } else if(t){
+              // comma-separated list check
+              var arr = t.split(',').map(function(s){ return s.trim(); });
+              if(arr.indexOf(cls) > -1) ok = true;
+            }
+          }
+        });
+        if(!ok) return false;
+      }
+
+      return true;
+    });
+
+    return matched.length;
   } catch(e){
     console.warn('countNewItems(' + cat + ') err:', e);
     return 0;
   }
 }
-
 /* ============================================================ */
 /* 🎨 Render badge on tile                                      */
 /* ============================================================ */
