@@ -13423,5 +13423,1336 @@ console.log('✅ PART 10 loaded — Quick Action badges active');
   console.log('   → creation stats: window.loadCreationStats()');
 })();
 </script>
+<!-- ============================================================ -->
+<!-- 📋 SURVEY SYSTEM PATCH — Noorussalam v24.0                   -->
+<!-- ============================================================ -->
+<style>
+/* ============================================================ */
+/* 📋 SURVEY POPUP — Student Side (Attractive)                  */
+/* ============================================================ */
+.survey-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 8, 28, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  z-index: 100000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+  animation: surveyFadeIn .4s ease;
+}
+.survey-overlay.open { display: flex; }
+@keyframes surveyFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.survey-card {
+  background: linear-gradient(155deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 28px;
+  padding: 32px 28px 26px;
+  max-width: 580px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow:
+    0 40px 90px -30px rgba(0,0,0,.85),
+    0 0 0 1px rgba(108,92,231,.15),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  animation: surveyCardIn .55s cubic-bezier(.34,1.56,.64,1);
+  overflow-x: hidden;
+}
+@keyframes surveyCardIn {
+  0%   { opacity: 0; transform: translateY(50px) scale(.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.survey-card::before {
+  content: '';
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  background: linear-gradient(45deg, #6C5CE7, #00cec9, #fd79a8, #fdcb6e, #6C5CE7);
+  background-size: 400% 400%;
+  border-radius: 30px;
+  z-index: -1;
+  animation: surveyGlow 6s ease infinite;
+  filter: blur(10px);
+  opacity: .75;
+}
+@keyframes surveyGlow {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+
+/* Header */
+.survey-header {
+  text-align: center;
+  margin-bottom: 22px;
+  position: relative;
+}
+.survey-icon {
+  width: 78px;
+  height: 78px;
+  margin: 0 auto 14px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #6C5CE7, #a29bfe, #00cec9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  color: #fff;
+  box-shadow: 0 15px 35px -12px rgba(108,92,231,.7);
+  animation: surveyIconFloat 3s ease-in-out infinite;
+  position: relative;
+}
+@keyframes surveyIconFloat {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50%     { transform: translateY(-6px) rotate(-4deg); }
+}
+.survey-icon::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #6C5CE7, #00cec9);
+  z-index: -1;
+  opacity: .35;
+  filter: blur(15px);
+  animation: surveyIconPulse 2s ease-in-out infinite;
+}
+@keyframes surveyIconPulse {
+  0%,100% { opacity: .35; transform: scale(1); }
+  50%     { opacity: .6; transform: scale(1.15); }
+}
+.survey-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 8px;
+  line-height: 1.35;
+  background: linear-gradient(135deg, #6C5CE7, #00cec9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.survey-desc {
+  color: #64748b;
+  font-size: .88rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Student Info Badge */
+.survey-student-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1.5px solid rgba(59,130,246,.3);
+  border-radius: 18px;
+  padding: 14px 18px;
+  margin: 20px 0 22px;
+}
+.survey-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: linear-gradient(140deg, #1e6be0, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px -6px rgba(30,107,224,.5);
+}
+.survey-student-info { flex: 1; min-width: 0; }
+.survey-student-name {
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 1rem;
+  margin: 0 0 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.survey-student-class {
+  color: #0891b2;
+  font-size: .78rem;
+  font-weight: 700;
+  margin: 0;
+}
+.survey-student-class i { color: #0891b2; }
+
+/* Question Card */
+.survey-q {
+  background: #fff;
+  border: 1.5px solid rgba(180,200,230,.6);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  transition: all .3s ease;
+}
+.survey-q:focus-within {
+  border-color: #6C5CE7;
+  box-shadow: 0 10px 30px -12px rgba(108,92,231,.4);
+  transform: translateY(-2px);
+}
+.survey-q-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.survey-q-no {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #6C5CE7, #a29bfe);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: .85rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px -4px rgba(108,92,231,.5);
+}
+.survey-q-text {
+  flex: 1;
+  color: #0f172a;
+  font-weight: 700;
+  font-size: .94rem;
+  line-height: 1.5;
+  padding-top: 4px;
+}
+.survey-q-text .required-star {
+  color: #ef4444;
+  margin-left: 3px;
+}
+.survey-q-input {
+  width: 100%;
+  min-height: 60px;
+  background: #f8fafc;
+  border: 1.5px solid rgba(100,116,139,.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #0f172a;
+  font-family: 'Anek Malayalam', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  transition: all .25s ease;
+}
+.survey-q-input:focus {
+  background: #fff;
+  border-color: #6C5CE7;
+  box-shadow: 0 0 0 4px rgba(108,92,231,.12);
+}
+.survey-q-input::placeholder {
+  color: #94a3b8;
+  font-size: .86rem;
+}
+
+/* Action Buttons */
+.survey-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.survey-btn {
+  flex: 1;
+  min-width: 140px;
+  border: none;
+  padding: 15px 22px;
+  border-radius: 60px;
+  font-family: inherit;
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: all .3s ease;
+  letter-spacing: .3px;
+}
+.survey-btn.submit {
+  background: linear-gradient(135deg, #6C5CE7, #4834d4, #00cec9);
+  background-size: 200% 200%;
+  color: #fff;
+  box-shadow: 0 14px 32px -12px rgba(108,92,231,.85),
+              inset 0 1px 0 rgba(255,255,255,.3);
+  animation: surveyBtnFlow 5s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+@keyframes surveyBtnFlow {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+.survey-btn.submit:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 20px 40px -12px rgba(108,92,231,1);
+}
+.survey-btn.submit:active { transform: translateY(-1px) scale(.99); }
+.survey-btn.submit::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.3);
+  transform: translate(-50%, -50%);
+  transition: width .6s, height .6s;
+}
+.survey-btn.submit:hover::before {
+  width: 400px; height: 400px;
+}
+.survey-btn.submit:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+}
+.survey-btn.later {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid rgba(100,116,139,.25);
+  flex: 0.7;
+}
+.survey-btn.later:hover {
+  background: #e2e8f0;
+  transform: translateY(-2px);
+}
+.survey-btn.later i { color: #94a3b8; }
+
+/* Postpone Info */
+.survey-postpone-info {
+  text-align: center;
+  margin-top: 14px;
+  font-size: .74rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.survey-postpone-info i { color: #b45309; }
+
+/* Admin Preview */
+.survey-preview-box {
+  background: #f8fafc;
+  border: 1.5px dashed rgba(108,92,231,.35);
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.survey-preview-box h5 {
+  font-size: .88rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.survey-preview-box h5 i { color: #6C5CE7; }
+.survey-preview-item {
+  background: #fff;
+  border: 1px solid rgba(180,200,230,.6);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  font-size: .84rem;
+  color: #0f172a;
+  line-height: 1.5;
+}
+.survey-preview-item .pq-no {
+  display: inline-block;
+  background: linear-gradient(140deg, #6C5CE7, #a29bfe);
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  text-align: center;
+  line-height: 24px;
+  font-weight: 900;
+  font-size: .7rem;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* Admin Response Table */
+.survey-stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.survey-stat {
+  background: linear-gradient(140deg, #fff, #f8fafc);
+  border: 1px solid rgba(180,200,230,.5);
+  border-radius: 16px;
+  padding: 14px;
+  text-align: center;
+  transition: transform .25s ease;
+}
+.survey-stat:hover { transform: translateY(-3px); }
+.survey-stat .num {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #6C5CE7;
+  line-height: 1;
+}
+.survey-stat .lbl {
+  font-size: .6rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+  font-weight: 800;
+}
+
+/* Toggle Switch (On/Off) */
+.survey-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border: 1.5px solid rgba(8,145,178,.3);
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+}
+.survey-toggle-label {
+  flex: 1;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: .94rem;
+}
+.survey-toggle-label small {
+  display: block;
+  color: #64748b;
+  font-size: .74rem;
+  font-weight: 600;
+  margin-top: 3px;
+}
+.survey-toggle {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  border-radius: 30px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background .3s ease;
+  flex-shrink: 0;
+  border: none;
+  outline: none;
+}
+.survey-toggle.on {
+  background: linear-gradient(135deg, #059669, #34d399);
+}
+.survey-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+.survey-toggle.on::after { left: 29px; }
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .survey-card {
+    padding: 26px 20px 22px;
+    border-radius: 24px;
+    max-height: 94vh;
+  }
+  .survey-icon { width: 68px; height: 68px; font-size: 1.9rem; border-radius: 20px; }
+  .survey-title { font-size: 1.15rem; }
+  .survey-desc { font-size: .82rem; }
+  .survey-student-badge { padding: 12px 14px; gap: 10px; }
+  .survey-avatar { width: 42px; height: 42px; font-size: 1.1rem; }
+  .survey-student-name { font-size: .92rem; }
+  .survey-q { padding: 14px 16px; margin-bottom: 12px; }
+  .survey-q-text { font-size: .86rem; }
+  .survey-q-input { font-size: 16px; }
+  .survey-btn { padding: 13px 18px; font-size: .86rem; }
+  .survey-actions { gap: 8px; }
+}
+</style>
+
+<!-- Survey Popup HTML -->
+<div class="survey-overlay" id="surveyPopup">
+  <div class="survey-card">
+    <div class="survey-header">
+      <div class="survey-icon">📝</div>
+      <h2 class="survey-title" id="surveyPopupTitle">വിദ്യാർത്ഥി അഭിപ്രായ സർവേ</h2>
+      <p class="survey-desc" id="surveyPopupDesc">നിങ്ങളുടെ അഭിപ്രായം ഞങ്ങൾക്ക് വിലപ്പെട്ടതാണ്.</p>
+    </div>
+
+    <div class="survey-student-badge">
+      <div class="survey-avatar" id="surveyAvatar">S</div>
+      <div class="survey-student-info">
+        <p class="survey-student-name" id="surveyStudentName">Loading...</p>
+        <p class="survey-student-class" id="surveyStudentClass">
+          <i class="fas fa-graduation-cap"></i> <span>Class —</span>
+        </p>
+      </div>
+    </div>
+
+    <form id="surveyForm" onsubmit="submitSurvey(event)">
+      <div id="surveyQuestionsArea">
+        <!-- Questions injected dynamically -->
+      </div>
+
+      <div class="survey-actions">
+        <button type="submit" class="survey-btn submit" id="surveySubmitBtn">
+          <i class="fas fa-paper-plane"></i> സമർപ്പിക്കുക
+        </button>
+        <button type="button" class="survey-btn later" onclick="postponeSurvey()">
+          <i class="fas fa-clock"></i> പിന്നീട്
+        </button>
+      </div>
+
+      <div class="survey-postpone-info">
+        <i class="fas fa-info-circle"></i>
+        <span id="surveyPostponeText">"പിന്നീട്" ക്ലിക്ക് ചെയ്താൽ 24 മണിക്കൂറിനുശേഷം വീണ്ടും ഓർമ്മിപ്പിക്കും</span>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  console.log('📋 Loading Survey System v24.0...');
+
+  /* ============================================================
+     🌐 GLOBAL STATE
+     ============================================================ */
+  window.SURVEY_STATE = {
+    enabled: false,
+    settings: {},
+    questions: [],
+    currentStudent: null,
+    postponeHours: 24
+  };
+
+  /* ============================================================
+     📥 LOAD SURVEY SETTINGS (cache)
+     ============================================================ */
+  window.loadSurveySettings = async function(){
+    if(!supabaseClient) return false;
+    try{
+      var r = await supabaseClient.from('survey_settings').select('*');
+      if(r.error) throw r.error;
+      var settings = {};
+      (r.data || []).forEach(function(s){ settings[s.setting_key] = s.value; });
+      window.SURVEY_STATE.settings = settings;
+      window.SURVEY_STATE.enabled = (settings.survey_enabled === 'true');
+      window.SURVEY_STATE.postponeHours = parseInt(settings.postpone_hours) || 24;
+      return true;
+    }catch(e){
+      console.warn('loadSurveySettings:', e.message);
+      return false;
+    }
+  };
+
+  window.loadSurveyQuestions = async function(){
+    if(!supabaseClient) return [];
+    try{
+      var r = await supabaseClient.from('survey_questions')
+        .select('*')
+        .eq('is_active', true)
+        .order('q_no');
+      if(r.error) throw r.error;
+      window.SURVEY_STATE.questions = (r.data || []).slice(0, 3);
+      return window.SURVEY_STATE.questions;
+    }catch(e){
+      console.warn('loadSurveyQuestions:', e.message);
+      return [];
+    }
+  };
+
+  /* ============================================================
+     ✅ CHECK IF STUDENT ALREADY SUBMITTED
+     ============================================================ */
+  window.hasSurveySubmitted = async function(studentId){
+    if(!supabaseClient || !studentId) return false;
+    try{
+      var r = await supabaseClient.from('survey_responses')
+        .select('id').eq('studentid', studentId).maybeSingle();
+      return !!r.data;
+    }catch(e){ return false; }
+  };
+
+  /* ============================================================
+     ⏰ CHECK POSTPONE STATUS
+     ============================================================ */
+  window.isSurveyPostponed = function(){
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if(!u) return false;
+    try{
+      var key = 'survey_postponed_until_' + u.studentId;
+      var until = parseInt(localStorage.getItem(key) || '0');
+      return Date.now() < until;
+    }catch(e){ return false; }
+  };
+
+  window.postponeSurvey = function(){
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if(!u) return;
+    var hours = window.SURVEY_STATE.postponeHours || 24;
+    var until = Date.now() + (hours * 60 * 60 * 1000);
+    try{
+      localStorage.setItem('survey_postponed_until_' + u.studentId, until.toString());
+    }catch(e){}
+    document.getElementById('surveyPopup').classList.remove('open');
+    if(typeof showToast === 'function'){
+      showToast('⏰ ' + hours + ' മണിക്കൂറിനുശേഷം വീണ്ടും ഓർമ്മിപ്പിക്കും','info');
+    }
+  };
+
+  /* ============================================================
+     🎨 SHOW SURVEY POPUP
+     ============================================================ */
+  window.showSurveyPopup = async function(){
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if(!u) return;
+
+    // Reload settings & questions
+    await window.loadSurveySettings();
+    if(!window.SURVEY_STATE.enabled) return;
+
+    // Check postpone
+    if(window.isSurveyPostponed()) return;
+
+    // Check already submitted
+    var submitted = await window.hasSurveySubmitted(u.studentId);
+    if(submitted) return;
+
+    var questions = await window.loadSurveyQuestions();
+    if(questions.length === 0) return;
+
+    // Inject data
+    var avatar = document.getElementById('surveyAvatar');
+    if(avatar){
+      if(u.photo && (u.photo.startsWith('http') || u.photo.startsWith('data:'))){
+        avatar.innerHTML = '<img src="' + u.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">';
+      } else {
+        avatar.textContent = (u.name || 'S').charAt(0).toUpperCase();
+      }
+    }
+    document.getElementById('surveyStudentName').textContent = u.name || 'Student';
+    document.getElementById('surveyStudentClass').innerHTML =
+      '<i class="fas fa-graduation-cap"></i> Class ' + (u.class || '—') +
+      ' • ID: ' + u.studentId;
+    document.getElementById('surveyPopupTitle').textContent =
+      window.SURVEY_STATE.settings.survey_title || 'വിദ്യാർത്ഥി അഭിപ്രായ സർവേ';
+    document.getElementById('surveyPopupDesc').textContent =
+      window.SURVEY_STATE.settings.survey_description || '';
+    document.getElementById('surveyPostponeText').textContent =
+      '"പിന്നീട്" ക്ലിക്ക് ചെയ്താൽ ' + window.SURVEY_STATE.postponeHours + ' മണിക്കൂറിനുശേഷം വീണ്ടും ഓർമ്മിപ്പിക്കും';
+
+    // Render questions
+    var area = document.getElementById('surveyQuestionsArea');
+    area.innerHTML = questions.map(function(q){
+      return '<div class="survey-q">' +
+        '<div class="survey-q-head">' +
+          '<div class="survey-q-no">' + q.q_no + '</div>' +
+          '<div class="survey-q-text">' + window.escapeHtml(q.question_ml) +
+            (q.is_required ? '<span class="required-star">*</span>' : '') +
+          '</div>' +
+        '</div>' +
+        '<textarea class="survey-q-input" ' +
+          'data-qno="' + q.q_no + '" ' +
+          'data-required="' + (q.is_required ? 'true' : 'false') + '" ' +
+          'placeholder="' + window.escapeHtml(q.placeholder_ml || '') + '" ' +
+          'maxlength="1000"></textarea>' +
+        '</div>';
+    }).join('');
+
+    // Show
+    document.getElementById('surveyPopup').classList.add('open');
+    document.body.style.overflow = 'hidden';
+
+    // Sparkles
+    if(typeof window.spawnSparkles === 'function'){
+      setTimeout(function(){ window.spawnSparkles(6); }, 400);
+    }
+  };
+
+  /* ============================================================
+     📤 SUBMIT SURVEY
+     ============================================================ */
+  window.submitSurvey = async function(e){
+    if(e) e.preventDefault();
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if(!u){ showToast('Login first','error'); return; }
+
+    var inputs = document.querySelectorAll('.survey-q-input');
+    var answers = { 1:'', 2:'', 3:'' };
+    var hasError = false;
+
+    inputs.forEach(function(inp){
+      var qno = inp.dataset.qno;
+      var req = inp.dataset.required === 'true';
+      var val = (inp.value || '').trim();
+      if(req && !val){
+        inp.style.borderColor = '#ef4444';
+        inp.style.background = '#fef2f2';
+        hasError = true;
+      } else {
+        inp.style.borderColor = '';
+        inp.style.background = '';
+      }
+      answers[qno] = val;
+    });
+
+    if(hasError){
+      showToast('⚠️ നിർബന്ധിത ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക','error');
+      return;
+    }
+
+    var btn = document.getElementById('surveySubmitBtn');
+    if(btn){ btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> സമർപ്പിക്കുന്നു...'; }
+
+    try{
+      var device = /Android/i.test(navigator.userAgent) ? 'Android'
+                 : /iPhone|iPad/i.test(navigator.userAgent) ? 'iOS'
+                 : 'Web';
+
+      var payload = {
+        studentid: u.studentId,
+        student_name: u.name || '',
+        student_class: u.class || '',
+        q1_answer: answers[1] || null,
+        q2_answer: answers[2] || null,
+        q3_answer: answers[3] || null,
+        device: device
+      };
+
+      var r = await supabaseClient.from('survey_responses')
+        .upsert(payload, { onConflict: 'studentid' });
+      if(r.error) throw r.error;
+
+      // Clear postpone
+      try{ localStorage.removeItem('survey_postponed_until_' + u.studentId); }catch(e){}
+
+      // Success celebration
+      if(typeof confetti !== 'undefined'){
+        confetti({
+          particleCount: 140,
+          spread: 90,
+          origin: { y: .6 },
+          colors: ['#6C5CE7','#00cec9','#fd79a8','#fdcb6e','#a29bfe']
+        });
+      }
+      if(typeof window.showAchievement === 'function'){
+        window.showAchievement('✅', 'സർവേ സമർപ്പിച്ചു!', 'നന്ദി — നിങ്ങളുടെ അഭിപ്രായം വിലപ്പെട്ടതാണ്');
+      } else if(typeof showToast === 'function'){
+        showToast('✅ സർവേ സമർപ്പിച്ചു! നന്ദി 🌟','success');
+      }
+      if(typeof window.spawnSparkles === 'function') window.spawnSparkles(12);
+
+      // Close
+      document.getElementById('surveyPopup').classList.remove('open');
+      document.body.style.overflow = '';
+
+    }catch(err){
+      console.error('submitSurvey:', err);
+      showToast('❌ ' + (err.message || 'Error'),'error');
+    }
+
+    if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> സമർപ്പിക്കുക'; }
+  };
+
+  /* ============================================================
+     🔗 HOOK INTO LOGIN — Auto-show survey after login
+     ============================================================ */
+  var _origUpdate = window.updateDashboardUI;
+  if(typeof _origUpdate === 'function'){
+    window.updateDashboardUI = function(){
+      _origUpdate.apply(this, arguments);
+      setTimeout(function(){
+        window.showSurveyPopup();
+      }, 3500);
+    };
+  }
+
+  // Also hook on dashboard show (for session restore)
+  var _dash = document.getElementById('dashboardSection');
+  if(_dash){
+    var _obs = new MutationObserver(function(){
+      if(_dash.style.display === 'block' &&
+         (window.currentUser || (typeof currentUser !== 'undefined' && currentUser))){
+        setTimeout(function(){
+          var popup = document.getElementById('surveyPopup');
+          if(popup && !popup.classList.contains('open')){
+            window.showSurveyPopup();
+          }
+        }, 3000);
+      }
+    });
+    _obs.observe(_dash, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  /* ============================================================
+     🛡️ ADMIN PANEL — Survey Management Tab
+     ============================================================ */
+  window.loadSurveyAdmin = async function(){
+    var wrap = document.getElementById('surveyAdminWrap');
+    if(!wrap) return;
+    wrap.innerHTML = '<div class="loading-tx"><div class="spinner-sm"></div></div>';
+
+    try{
+      await window.loadSurveySettings();
+      var qr = await supabaseClient.from('survey_questions').select('*').order('q_no');
+      var questions = qr.data || [];
+      var rr = await supabaseClient.from('survey_responses').select('*').order('submitted_at', { ascending: false });
+      var responses = rr.data || [];
+
+      // Stats
+      var totalStudents = 0;
+      try{
+        var sr = await supabaseClient.from('students').select('id', { count: 'exact', head: true });
+        totalStudents = sr.count || 0;
+      }catch(e){}
+
+      var enabled = window.SURVEY_STATE.enabled;
+      var pending = Math.max(0, totalStudents - responses.length);
+
+      var html = '';
+
+      // Toggle
+      html += '<div class="survey-toggle-wrap">' +
+        '<div class="survey-toggle-label">' +
+          'സർവേ Popup ' + (enabled ? '<span style="color:#059669;">✅ ON</span>' : '<span style="color:#dc2626;">❌ OFF</span>') +
+          '<small>' + (enabled ? 'Login ചെയ്യുന്ന എല്ലാ കുട്ടികൾക്കും popup കാണിക്കും' : 'Popup ഇപ്പോൾ പ്രവർത്തിക്കുന്നില്ല') + '</small>' +
+        '</div>' +
+        '<button class="survey-toggle ' + (enabled ? 'on' : '') + '" ' +
+          'onclick="window.toggleSurvey()" title="Toggle"></button>' +
+      '</div>';
+
+      // Stats
+      html += '<div class="survey-stat-cards">' +
+        '<div class="survey-stat"><div class="num">' + totalStudents + '</div><div class="lbl">Total Students</div></div>' +
+        '<div class="survey-stat"><div class="num" style="color:#059669;">' + responses.length + '</div><div class="lbl">Submitted</div></div>' +
+        '<div class="survey-stat"><div class="num" style="color:#b45309;">' + pending + '</div><div class="lbl">Pending</div></div>' +
+        '<div class="survey-stat"><div class="num" style="color:#0891b2;">' + questions.filter(function(q){return q.is_active;}).length + '</div><div class="lbl">Active Q</div></div>' +
+      '</div>';
+
+      // Action buttons
+      html += '<div class="d-flex gap-2 flex-wrap mb-3">' +
+        '<button class="btn-update" onclick="window.openSurveyQuestionsForm()"><i class="fas fa-edit"></i> ചോദ്യങ്ങൾ Edit ചെയ്യുക</button>' +
+        '<button class="btn-update" onclick="window.openSurveySettingsForm()" style="background:linear-gradient(100deg,#0891b2,#22d3ee);color:#fff;"><i class="fas fa-cog"></i> Settings</button>' +
+        '<button class="btn-pdf" onclick="window.downloadSurveyPDF()"><i class="fas fa-file-pdf"></i> PDF Report</button>' +
+        '<button class="btn-cancel" onclick="window.previewSurveyAdmin()" style="background:#eff6ff;color:#1e40af;border:1px solid rgba(30,64,175,.3);"><i class="fas fa-eye"></i> Preview</button>' +
+        '<input type="text" id="surveySearchInput" placeholder="🔍 Search student..." ' +
+          'oninput="window.filterSurveyResponses()" class="modal-form-input" ' +
+          'style="width:auto;padding:9px 15px;min-width:200px;">' +
+        '<button class="btn-cancel" onclick="window.clearAllSurveyResponses()" ' +
+          'style="background:#fee2e2;color:#dc2626;border:1px solid rgba(220,38,38,.3);">' +
+          '<i class="fas fa-trash"></i> Clear All</button>' +
+      '</div>';
+
+      // Current Questions Preview
+      html += '<div class="survey-preview-box">' +
+        '<h5><i class="fas fa-list-ol"></i> നിലവിലുള്ള ചോദ്യങ്ങൾ (Max 3)</h5>';
+      if(questions.length === 0){
+        html += '<div style="color:#64748b;text-align:center;padding:14px;">ചോദ്യങ്ങൾ ഇല്ല — "ചോദ്യങ്ങൾ Edit ചെയ്യുക" ക്ലിക്ക് ചെയ്യുക</div>';
+      } else {
+        questions.forEach(function(q){
+          html += '<div class="survey-preview-item">' +
+            '<span class="pq-no">' + q.q_no + '</span>' +
+            '<strong style="color:#0f172a;">' + window.escapeHtml(q.question_ml) + '</strong>' +
+            (q.is_required ? ' <span style="color:#ef4444;font-size:.7rem;">*</span>' : '') +
+            (q.is_active ? '' : ' <span style="color:#dc2626;font-size:.68rem;font-weight:800;">[INACTIVE]</span>') +
+            (q.placeholder_ml ? '<div style="color:#94a3b8;font-size:.72rem;margin-top:4px;font-style:italic;">Placeholder: ' + window.escapeHtml(q.placeholder_ml) + '</div>' : '') +
+            '</div>';
+        });
+      }
+      html += '</div>';
+
+      // Responses Table
+      html += '<h5 style="color:#0f172a;font-weight:800;font-size:.94rem;margin:18px 0 10px;">' +
+        '<i class="fas fa-inbox" style="color:#6C5CE7;"></i> Responses (' + responses.length + ')</h5>';
+
+      if(responses.length === 0){
+        html += '<div class="empty-state">ഇതുവരെ ഒരു response-ഉം ഇല്ല</div>';
+      } else {
+        html += '<div class="admin-table-wrap"><table id="surveyResponsesTable"><thead><tr>' +
+          '<th>#</th><th>Student</th><th>Class</th>' +
+          '<th>Q1</th><th>Q2</th><th>Q3</th>' +
+          '<th>Date</th><th>Action</th>' +
+        '</tr></thead><tbody>';
+        responses.forEach(function(r, i){
+          html += '<tr data-student="' + window.escapeHtml((r.student_name||'').toLowerCase() + ' ' + (r.studentid||'').toLowerCase()) + '">' +
+            '<td>' + (i + 1) + '</td>' +
+            '<td><strong>' + window.escapeHtml(r.student_name || '—') + '</strong>' +
+              '<br><small style="color:#94a3b8;">' + window.escapeHtml(r.studentid) + '</small></td>' +
+            '<td><span style="background:#ecfeff;color:#0891b2;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:800;">C' + window.escapeHtml(r.student_class || '—') + '</span></td>' +
+            '<td style="max-width:200px;font-size:.78rem;">' + (window.escapeHtml(r.q1_answer || '—').substring(0, 80)) + '</td>' +
+            '<td style="max-width:200px;font-size:.78rem;">' + (window.escapeHtml(r.q2_answer || '—').substring(0, 80)) + '</td>' +
+            '<td style="max-width:200px;font-size:.78rem;">' + (window.escapeHtml(r.q3_answer || '—').substring(0, 80)) + '</td>' +
+            '<td style="white-space:nowrap;font-size:.72rem;color:#64748b;">' + window.formatDate(r.submitted_at) + '</td>' +
+            '<td>' +
+              '<button class="btn-sm approve" onclick="window.viewSurveyResponse(' + r.id + ')" title="View">👁️</button> ' +
+              '<button class="btn-sm reject" onclick="window.deleteSurveyResponse(' + r.id + ')" title="Delete">🗑️</button>' +
+            '</td>' +
+          '</tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+
+      wrap.innerHTML = html;
+
+      // Store responses for later use
+      window._surveyResponses = responses;
+      window._surveyQuestions = questions;
+    }catch(e){
+      console.error('loadSurveyAdmin:', e);
+      wrap.innerHTML = '<div class="empty-state">Error: ' + window.escapeHtml(e.message) + '</div>';
+    }
+  };
+
+  /* ============================================================
+     🎛️ TOGGLE SURVEY ON/OFF
+     ============================================================ */
+  window.toggleSurvey = async function(){
+    try{
+      var newState = !window.SURVEY_STATE.enabled;
+      await supabaseClient.from('survey_settings')
+        .upsert({ setting_key: 'survey_enabled', value: newState ? 'true' : 'false' },
+                { onConflict: 'setting_key' });
+      window.SURVEY_STATE.enabled = newState;
+      showToast(newState ? '✅ Survey ON — എല്ലാ login-ലും popup കാണും' : '❌ Survey OFF',
+                newState ? 'success' : 'info');
+      if(typeof confetti !== 'undefined' && newState){
+        confetti({ particleCount: 60, spread: 70, origin: { y: .7 } });
+      }
+      window.loadSurveyAdmin();
+    }catch(e){
+      showToast('❌ ' + e.message,'error');
+    }
+  };
+
+  /* ============================================================
+     ✏️ EDIT QUESTIONS (Admin)
+     ============================================================ */
+  window.openSurveyQuestionsForm = async function(){
+    var questions = window._surveyQuestions || [];
+    var qMap = {};
+    questions.forEach(function(q){ qMap[q.q_no] = q; });
+
+    window.modalTitleSpan.innerText = '✏️ Survey Questions (Max 3)';
+    var html = '<div style="background:#ecfeff;border:1px solid rgba(8,145,178,.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:.78rem;color:#0891b2;line-height:1.6;">' +
+      '<i class="fas fa-info-circle"></i> <b>മലയാളം യൂണിക്കോഡ്</b> ഫോണ്ടിൽ ചോദ്യങ്ങൾ എഴുതാം. Max 3 ചോദ്യങ്ങൾ.' +
+      '</div>';
+
+    for(var i = 1; i <= 3; i++){
+      var q = qMap[i] || {};
+      html += '<div class="survey-preview-box" style="margin-bottom:14px;">' +
+        '<h5><span class="pq-no">' + i + '</span> ചോദ്യം ' + i + '</h5>' +
+        '<div class="mb-3">' +
+          '<label style="color:#475569;font-size:.78rem;">ചോദ്യം (Malayalam) *</label>' +
+          '<input type="text" id="sq_text_' + i + '" class="modal-form-input" ' +
+            'value="' + window.escapeHtml(q.question_ml || '') + '" ' +
+            'placeholder="ഉദാ: നിങ്ങളുടെ പ്രിയപ്പെട്ട വിഷയം?" ' +
+            'style="font-family:\'Anek Malayalam\',sans-serif;">' +
+        '</div>' +
+        '<div class="mb-3">' +
+          '<label style="color:#475569;font-size:.78rem;">Placeholder (Optional)</label>' +
+          '<input type="text" id="sq_ph_' + i + '" class="modal-form-input" ' +
+            'value="' + window.escapeHtml(q.placeholder_ml || '') + '" ' +
+            'placeholder="ഉദാ: നിങ്ങളുടെ ഉത്തരം..." ' +
+            'style="font-family:\'Anek Malayalam\',sans-serif;">' +
+        '</div>' +
+        '<div class="d-flex gap-3 flex-wrap">' +
+          '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#475569;">' +
+            '<input type="checkbox" id="sq_req_' + i + '" ' + (q.is_required !== false ? 'checked' : '') + '> ' +
+            'നിർബന്ധം' +
+          '</label>' +
+          '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.82rem;color:#475569;">' +
+            '<input type="checkbox" id="sq_act_' + i + '" ' + (q.is_active !== false ? 'checked' : '') + '> ' +
+            'Active' +
+          '</label>' +
+        '</div>' +
+      '</div>';
+    }
+
+    html += '<div class="d-flex gap-2 mt-4">' +
+      '<button type="button" class="btn-update flex-grow-1" onclick="window.saveSurveyQuestions()">' +
+        '<i class="fas fa-save"></i> Save Questions</button>' +
+      '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button>' +
+    '</div>';
+
+    window.modalBodyDiv.innerHTML = html;
+    window.modal.style.display = 'flex';
+  };
+
+  window.saveSurveyQuestions = async function(){
+    try{
+      for(var i = 1; i <= 3; i++){
+        var text = document.getElementById('sq_text_' + i).value.trim();
+        var ph = document.getElementById('sq_ph_' + i).value.trim() || null;
+        var req = document.getElementById('sq_req_' + i).checked;
+        var act = document.getElementById('sq_act_' + i).checked;
+
+        if(!text){
+          // Delete question if empty
+          await supabaseClient.from('survey_questions').delete().eq('q_no', i);
+          continue;
+        }
+
+        await supabaseClient.from('survey_questions').upsert({
+          q_no: i,
+          question_ml: text,
+          placeholder_ml: ph,
+          is_required: req,
+          is_active: act,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'q_no' });
+      }
+      showToast('✅ ചോദ്യങ്ങൾ സേവ് ചെയ്തു','success');
+      if(typeof confetti !== 'undefined') confetti({ particleCount: 70, spread: 70, origin: { y: .7 } });
+      closeModal('globalModal');
+      window.loadSurveyAdmin();
+    }catch(e){
+      showToast('❌ ' + e.message,'error');
+    }
+  };
+
+  /* ============================================================
+     ⚙️ SETTINGS FORM (Title, Description, Postpone hours)
+     ============================================================ */
+  window.openSurveySettingsForm = function(){
+    var s = window.SURVEY_STATE.settings;
+    window.modalTitleSpan.innerText = '⚙️ Survey Settings';
+    window.modalBodyDiv.innerHTML =
+      '<div class="mb-3">' +
+        '<label style="color:#475569;font-size:.78rem;">സർവേ Title *</label>' +
+        '<input type="text" id="ss_title" class="modal-form-input" ' +
+          'value="' + window.escapeHtml(s.survey_title || 'വിദ്യാർത്ഥി അഭിപ്രായ സർവേ') + '" ' +
+          'style="font-family:\'Anek Malayalam\',sans-serif;">' +
+      '</div>' +
+      '<div class="mb-3">' +
+        '<label style="color:#475569;font-size:.78rem;">Description</label>' +
+        '<textarea id="ss_desc" class="modal-form-input" style="min-height:80px;font-family:\'Anek Malayalam\',sans-serif;">' +
+          window.escapeHtml(s.survey_description || '') + '</textarea>' +
+      '</div>' +
+      '<div class="mb-3">' +
+        '<label style="color:#475569;font-size:.78rem;">Postpone Hours (പിന്നീട് ക്ലിക്ക് ചെയ്താൽ എത്ര മണിക്കൂർ?)</label>' +
+        '<input type="number" id="ss_hours" class="modal-form-input" min="1" max="168" ' +
+          'value="' + (s.postpone_hours || 24) + '">' +
+        '<small style="color:#64748b;display:block;margin-top:4px;font-size:.7rem;">' +
+          'Default: 24 hours. Max: 168 (1 week)</small>' +
+      '</div>' +
+      '<div class="d-flex gap-2 mt-4">' +
+        '<button type="button" class="btn-update flex-grow-1" onclick="window.saveSurveySettings()">' +
+          '<i class="fas fa-save"></i> Save</button>' +
+        '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button>' +
+      '</div>';
+    window.modal.style.display = 'flex';
+  };
+
+  window.saveSurveySettings = async function(){
+    try{
+      var title = document.getElementById('ss_title').value.trim();
+      var desc = document.getElementById('ss_desc').value.trim();
+      var hours = parseInt(document.getElementById('ss_hours').value) || 24;
+
+      await supabaseClient.from('survey_settings').upsert(
+        { setting_key: 'survey_title', value: title }, { onConflict: 'setting_key' });
+      await supabaseClient.from('survey_settings').upsert(
+        { setting_key: 'survey_description', value: desc }, { onConflict: 'setting_key' });
+      await supabaseClient.from('survey_settings').upsert(
+        { setting_key: 'postpone_hours', value: String(hours) }, { onConflict: 'setting_key' });
+
+      showToast('✅ Settings saved','success');
+      closeModal('globalModal');
+      await window.loadSurveySettings();
+      window.loadSurveyAdmin();
+    }catch(e){
+      showToast('❌ ' + e.message,'error');
+    }
+  };
+
+  /* ============================================================
+     👁️ VIEW SINGLE RESPONSE
+     ============================================================ */
+  window.viewSurveyResponse = function(id){
+    var r = (window._surveyResponses || []).find(function(x){ return x.id === id; });
+    if(!r) return;
+    var qs = window._surveyQuestions || [];
+
+    var html = '<div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:16px;padding:16px 18px;margin-bottom:16px;">' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(140deg,#6C5CE7,#22d3ee);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.3rem;flex-shrink:0;">' +
+          window.escapeHtml((r.student_name || 'S').charAt(0).toUpperCase()) +
+        '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="color:#0f172a;font-weight:800;font-size:1rem;">' + window.escapeHtml(r.student_name || '—') + '</div>' +
+          '<div style="color:#0891b2;font-size:.78rem;margin-top:3px;font-weight:700;">' +
+            'Class ' + window.escapeHtml(r.student_class || '—') + ' • ' + window.escapeHtml(r.studentid) +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+    var answers = [r.q1_answer, r.q2_answer, r.q3_answer];
+    qs.forEach(function(q, idx){
+      var ans = answers[idx];
+      html += '<div style="background:#f8fafc;border:1px solid rgba(180,200,230,.5);border-radius:14px;padding:14px 16px;margin-bottom:10px;">' +
+        '<div style="color:#6C5CE7;font-weight:800;font-size:.86rem;margin-bottom:8px;">' +
+          '<span class="pq-no">' + q.q_no + '</span> ' + window.escapeHtml(q.question_ml) +
+        '</div>' +
+        '<div style="color:#0f172a;font-size:.9rem;line-height:1.6;white-space:pre-wrap;background:#fff;padding:10px 14px;border-radius:10px;border:1px solid rgba(100,116,139,.15);">' +
+          (ans ? window.escapeHtml(ans) : '<em style="color:#94a3b8;">ഉത്തരം നൽകിയിട്ടില്ല</em>') +
+        '</div>' +
+      '</div>';
+    });
+
+    html += '<div style="margin-top:16px;padding:10px 14px;background:#ecfeff;border:1px solid rgba(8,145,178,.3);border-radius:12px;font-size:.74rem;color:#0891b2;">' +
+      '<i class="fas fa-clock"></i> Submitted: ' + window.formatDate(r.submitted_at) +
+      ' • Device: ' + window.escapeHtml(r.device || '—') +
+    '</div>';
+
+    window.modalTitleSpan.innerText = '📝 Survey Response';
+    window.modalBodyDiv.innerHTML = html;
+    window.modal.style.display = 'flex';
+  };
+
+  /* ============================================================
+     🗑️ DELETE RESPONSE
+     ============================================================ */
+  window.deleteSurveyResponse = async function(id){
+    if(!confirm('ഈ response ഡിലീറ്റ് ചെയ്യണോ?')) return;
+    try{
+      await supabaseClient.from('survey_responses').delete().eq('id', id);
+      showToast('🗑️ Deleted','info');
+      window.loadSurveyAdmin();
+    }catch(e){ showToast('❌ ' + e.message,'error'); }
+  };
+
+  window.clearAllSurveyResponses = async function(){
+    if(!confirm('എല്ലാ responses-ഉം ഡിലീറ്റ് ചെയ്യണോ? ഇത് പഴയപടിയാക്കാനാവില്ല!')) return;
+    if(!confirm('ഉറപ്പാണോ? എല്ലാ കുട്ടികൾക്കും വീണ്ടും popup കാണിക്കും.')) return;
+    try{
+      await supabaseClient.from('survey_responses').delete().neq('id', 0);
+      showToast('🗑️ All cleared','success');
+      window.loadSurveyAdmin();
+    }catch(e){ showToast('❌ ' + e.message,'error'); }
+  };
+
+  /* ============================================================
+     🔍 FILTER
+     ============================================================ */
+  window.filterSurveyResponses = function(){
+    var q = (document.getElementById('surveySearchInput')?.value || '').toLowerCase().trim();
+    var rows = document.querySelectorAll('#surveyResponsesTable tbody tr');
+    rows.forEach(function(row){
+      var hay = row.dataset.student || '';
+      row.style.display = (!q || hay.indexOf(q) > -1) ? '' : 'none';
+    });
+  };
+
+  /* ============================================================
+     👁️ ADMIN PREVIEW
+     ============================================================ */
+  window.previewSurveyAdmin = async function(){
+    var questions = window._surveyQuestions || [];
+    if(questions.length === 0){ showToast('ആദ്യം ചോദ്യങ്ങൾ ചേർക്കുക','error'); return; }
+
+    var activeQs = questions.filter(function(q){ return q.is_active; });
+    if(activeQs.length === 0){ showToast('Active ചോദ്യങ്ങൾ ഇല്ല','error'); return; }
+
+    window.modalTitleSpan.innerText = '👁️ Survey Preview (Admin View)';
+    var html = '<div class="survey-preview-box">' +
+      '<h5><i class="fas fa-eye"></i> കുട്ടികൾ ഇങ്ങനെ കാണും</h5>';
+    activeQs.forEach(function(q){
+      html += '<div class="survey-preview-item">' +
+        '<span class="pq-no">' + q.q_no + '</span>' +
+        '<strong>' + window.escapeHtml(q.question_ml) + '</strong>' +
+        (q.is_required ? ' <span style="color:#ef4444;">*</span>' : '') +
+        '<div style="margin-top:8px;padding:10px;background:#f8fafc;border:1px dashed rgba(100,116,139,.3);border-radius:8px;color:#94a3b8;font-size:.8rem;">' +
+          window.escapeHtml(q.placeholder_ml || 'ഉത്തരം ഇവിടെ...') +
+        '</div>' +
+      '</div>';
+    });
+    html += '</div>';
+    window.modalBodyDiv.innerHTML = html;
+    window.modal.style.display = 'flex';
+  };
+
+  /* ============================================================
+     📄 PDF REPORT
+     ============================================================ */
+  window.downloadSurveyPDF = async function(){
+    var responses = window._surveyResponses || [];
+    var questions = window._surveyQuestions || [];
+    if(responses.length === 0){ showToast('No responses yet','error'); return; }
+
+    if(typeof showLoading === 'function') showLoading(true);
+    try{
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      var pw = doc.internal.pageSize.getWidth();
+      var ph = doc.internal.pageSize.getHeight();
+
+      doc.setFillColor(108, 92, 231);
+      doc.rect(0, 0, pw, 75, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(17); doc.setFont(undefined, 'bold');
+      doc.text('NOORUSSALAM MADRASA', pw/2, 30, { align: 'center' });
+      doc.setFontSize(11); doc.setFont(undefined, 'normal');
+      doc.text('Survey Responses Report • ' + new Date().toLocaleDateString('en-IN'),
+               pw/2, 55, { align: 'center' });
+
+      doc.setTextColor(0, 0, 0);
+
+      var qTexts = [1, 2, 3].map(function(n){
+        var q = questions.find(function(x){ return x.q_no === n; });
+        return q ? ('Q' + n + ': ' + q.question_ml) : ('Q' + n);
+      });
+
+      var rows = responses.map(function(r, i){
+        return [
+          i + 1,
+          r.student_name || '',
+          r.student_class || '',
+          (r.q1_answer || '—'),
+          (r.q2_answer || '—'),
+          (r.q3_answer || '—'),
+          window.formatDate(r.submitted_at)
+        ];
+      });
+
+      doc.autoTable({
+        startY: 95,
+        head: [['#','Student','Class'].concat(qTexts).concat(['Date'])],
+        body: rows,
+        theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 5, lineColor: [200,215,240], lineWidth: 0.3, overflow: 'linebreak' },
+        headStyles: { fillColor: [108,92,231], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 22, halign: 'center' },
+          1: { cellWidth: 90 },
+          2: { cellWidth: 40, halign: 'center' },
+          3: { cellWidth: 'auto' },
+          4: { cellWidth: 'auto' },
+          5: { cellWidth: 'auto' },
+          6: { cellWidth: 70, halign: 'center', fontSize: 7.5 }
+        },
+        alternateRowStyles: { fillColor: [248,250,252] },
+        didDrawPage: function(){
+          var page = doc.internal.getCurrentPageInfo().pageNumber;
+          doc.setFontSize(8); doc.setTextColor(120,120,120);
+          doc.text('Page ' + page, pw/2, ph - 15, { align: 'center' });
+        }
+      });
+
+      doc.save('Survey_Responses_' + new Date().toISOString().split('T')[0] + '.pdf');
+      showToast('✅ PDF Downloaded','success');
+      if(typeof confetti !== 'undefined') confetti({ particleCount: 70, spread: 70, origin: { y: .7 } });
+    }catch(e){
+      console.error(e); showToast('❌ ' + e.message,'error');
+    }
+    if(typeof showLoading === 'function') showLoading(false);
+  };
+
+  /* ============================================================
+     🔗 INJECT ADMIN TAB + TAB CONTENT
+     ============================================================ */
+  function injectAdminTab(){
+    var tabs = document.getElementById('adminTabs');
+    if(!tabs) return false;
+    if(document.querySelector('.admin-tab[data-tab="survey"]')) return true;
+
+    var btn = document.createElement('button');
+    btn.className = 'admin-tab';
+    btn.dataset.tab = 'survey';
+    btn.innerHTML = '📋 Survey';
+    btn.onclick = function(){ window.switchAdminTab('survey'); };
+    tabs.appendChild(btn);
+
+    // Content container
+    var mainContent = document.getElementById('adminMainContent');
+    if(mainContent && !document.getElementById('adminSurveyTab')){
+      var div = document.createElement('div');
+      div.id = 'adminSurveyTab';
+      div.className = 'admin-tab-content';
+      div.style.display = 'none';
+      div.innerHTML = '<div id="surveyAdminWrap"></div>';
+      mainContent.appendChild(div);
+    }
+    return true;
+  }
+
+  var _origSwitch = window.switchAdminTab;
+  if(typeof _origSwitch === 'function'){
+    window.switchAdminTab = function(tab){
+      if(tab === 'survey'){
+        // Ensure UI exists
+        injectAdminTab();
+        document.getElementById('adminSettingsTab').style.display = 'none';
+        document.getElementById('adminMainContent').style.display = 'block';
+        document.getElementById('noClassMsg').style.display = 'none';
+        document.getElementById('selectedClassBadge').style.display = 'none';
+        document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('active'); });
+        var sBtn = document.querySelector('.admin-tab[data-tab="survey"]');
+        if(sBtn) sBtn.classList.add('active');
+        document.querySelectorAll('.admin-tab-content').forEach(function(c){ c.style.display = 'none'; });
+        var tab = document.getElementById('adminSurveyTab');
+        if(tab) tab.style.display = 'block';
+        window.loadSurveyAdmin();
+        return;
+      }
+      // Reset survey tab
+      var sTab = document.getElementById('adminSurveyTab');
+      if(sTab) sTab.style.display = 'none';
+      return _origSwitch.call(this, tab);
+    };
+  }
+
+  // Auto-inject after admin logs in
+  var _adminSec = document.getElementById('adminSection');
+  if(_adminSec){
+    var _obs2 = new MutationObserver(function(){
+      if(_adminSec.style.display === 'block'){
+        setTimeout(injectAdminTab, 600);
+      }
+    });
+    _obs2.observe(_adminSec, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  /* ============================================================
+     🚀 INIT — Load settings on app start
+     ============================================================ */
+  setTimeout(function(){
+    window.loadSurveySettings();
+  }, 1500);
+
+  console.log('✅ Survey System v24.0 loaded');
+  console.log('   → showSurveyPopup()');
+  console.log('   → loadSurveyAdmin()');
+  console.log('   → toggleSurvey()');
+  console.log('   → openSurveyQuestionsForm()');
+})();
+</script>
 </body>
 </html>
