@@ -12185,5 +12185,1243 @@ console.log('✅ PART 10 loaded — Quick Action badges active');
   console.log('   sendFeeWhatsAppAdmin:', typeof window.sendFeeWhatsAppAdmin);
 })();
 </script>
+<!-- ============================================================ -->
+<!-- 🔧 PATCH v24.0 — Fee Print | Moral 10-Mark | Extra Fix | Creation Boost -->
+<!-- ============================================================ -->
+<script>
+(function(){
+  console.log('🔧 Loading PATCH v24.0...');
+
+  /* ============================================================
+     1️⃣ GRADE CALCULATION FROM MARKS (out of 10)
+     ============================================================ */
+  window.gradeFromMarks10 = function(m){
+    var v = Number(m);
+    if(isNaN(v)) return 'D';
+    if(v >= 9) return 'A+';
+    if(v >= 8) return 'A';
+    if(v >= 7) return 'B+';
+    if(v >= 6) return 'B';
+    if(v >= 5) return 'C+';
+    if(v >= 4) return 'C';
+    if(v >= 3) return 'D+';
+    return 'D';
+  };
+
+  /* ============================================================
+     2️⃣ EXTRACURRICULAR — Fix NULL grade constraint
+     ============================================================ */
+  window.saveExtraBulk = async function(){
+    var wrap = document.getElementById('extraWrap');
+    var cats = JSON.parse(wrap.dataset.cats || '[]');
+    var month = document.getElementById('extraMonth').value;
+    if(!cats.length || !month){
+      showToast('Load data first','error'); return;
+    }
+    var rows = [];
+    window.extraData.forEach(function(s, sidx){
+      cats.forEach(function(c, ci){
+        var inp = wrap.querySelector('input[data-sidx="'+sidx+'"][data-ci="'+ci+'"]');
+        if(!inp) return;
+        var v = inp.value.trim();
+        if(v === '') return;
+        var num = parseFloat(v);
+        if(isNaN(num)) return;
+        if(num < 0) num = 0;
+        if(num > 10) num = 10;
+        // ✅ Compute grade from marks — fixes NULL constraint
+        var grade = window.gradeFromMarks10(num);
+        rows.push({
+          studentid: s.studentid,
+          month_year: month,
+          category: c,
+          marks: num,
+          grade: grade
+        });
+      });
+    });
+    if(!rows.length){ showToast('No data to save','error'); return; }
+    var ids = window.extraData.map(function(s){ return s.studentid; });
+    var btn = document.getElementById('extraSaveBtn');
+    if(btn){ btn.disabled = true; btn.innerHTML = 'Saving...'; }
+    try{
+      if(ids.length > 0){
+        await supabaseClient.from('extracurricular_grades')
+          .delete().eq('month_year', month).in('studentid', ids);
+      }
+      for(var i = 0; i < rows.length; i += 200){
+        var batch = rows.slice(i, i + 200);
+        var r = await supabaseClient.from('extracurricular_grades').insert(batch);
+        if(r.error){
+          // Fallback: if marks column missing, insert only grade as string
+          if(String(r.error.message).toLowerCase().includes('marks')){
+            console.warn('marks column missing — using grade only');
+            var fb = await supabaseClient.from('extracurricular_grades').insert(
+              batch.map(function(b){
+                return { studentid:b.studentid, month_year:b.month_year,
+                         category:b.category, grade:String(b.marks) };
+              })
+            );
+            if(fb.error) throw fb.error;
+          } else { throw r.error; }
+        }
+      }
+      showToast('✅ Saved ' + rows.length + ' entries','success');
+      if(typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 80, origin: { y: .7 } });
+      loadExtraAdmin();
+    }catch(e){
+      console.error(e);
+      showToast('❌ ' + e.message,'error');
+    }
+    if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; }
+  };
+
+  /* ============================================================
+     3️⃣ MORAL VALUES — 10-mark system
+     ============================================================ */
+  window.loadMoralValuesAdmin = async function(){
+    if(!currentAdminClass) return;
+    var wrap = document.getElementById('moralValuesAdminWrap');
+    wrap.innerHTML = '<div class="loading-tx"><div class="spinner-sm"></div></div>';
+    try{
+      var q = supabaseClient.from('students').select('studentid,name,class,moralvaluesgrade');
+      if(currentAdminClass !== 'all') q = q.eq('class', currentAdminClass);
+      q = q.order('class').order('name');
+      var r = await q;
+      window.moralValuesData = r.data || [];
+      if(window.moralValuesData.length === 0){
+        wrap.innerHTML = '<div class="empty-state">No students</div>'; return;
+      }
+      var ids = window.moralValuesData.map(function(s){ return s.studentid; });
+      var mvr = await supabaseClient.from('moral_values').select('*').in('studentid', ids);
+      var mvMap = {};
+      (mvr.data || []).forEach(function(m){
+        if(!mvMap[m.studentid]) mvMap[m.studentid] = {};
+        var stored = (m.marks !== null && m.marks !== undefined)
+          ? Number(m.marks) : parseFloat(m.grade);
+        mvMap[m.studentid][m.trait] = isNaN(stored) ? '' : String(stored);
+      });
+      window.moralValuesData.forEach(function(s){ s.traits = mvMap[s.studentid] || {}; });
+
+      var sc = (currentAdminClass === 'all');
+      var traits = (currentAdminClass && currentAdminClass !== 'all')
+        ? getTraitsForClass(currentAdminClass) : TRAITS_LIST.slice();
+
+      var h = '<div class="class-subjects-info" style="background:#fef3c7;border-color:rgba(180,83,9,.35);">' +
+              '<strong><i class="fas fa-info-circle"></i> ഓരോ trait-നും 0-10 മാർക്ക് നൽകുക — Grade auto കണക്കാക്കും</strong>' +
+              '</div>';
+      h += '<table><thead><tr><th>#</th><th>Name</th>' + (sc ? '<th>Class</th>' : '');
+      traits.forEach(function(t){
+        h += '<th style="text-align:center;font-size:.58rem;">' + escapeHtml(t) + '</th>';
+      });
+      h += '<th style="text-align:center;">Avg</th><th style="text-align:center;">Grade</th></tr></thead><tbody>';
+
+      window.moralValuesData.forEach(function(s, i){
+        var cid = String(s.studentid).replace(/[^a-zA-Z0-9]/g, '');
+        h += '<tr><td>' + (i + 1) + '</td><td><strong>' + escapeHtml(s.name) + '</strong></td>';
+        if(sc) h += '<td>' + escapeHtml(s.class || '') + '</td>';
+        traits.forEach(function(t){
+          var cur = s.traits[t] || '';
+          h += '<td style="text-align:center;">' +
+               '<input type="number" class="mv-marks-inp" ' +
+               'data-sid="' + escapeHtml(s.studentid) + '" ' +
+               'data-trait="' + escapeHtml(t) + '" ' +
+               'min="0" max="10" step="0.5" value="' + cur + '" ' +
+               'style="width:56px;padding:5px 6px;text-align:center;font-weight:700;' +
+               'border:1.5px solid rgba(100,116,139,.25);border-radius:8px;' +
+               'background:#fff;color:#0f172a;outline:none;font-family:inherit;" placeholder="—">' +
+               '</td>';
+        });
+        h += '<td style="text-align:center;"><span id="mv_avg_' + cid + '" style="color:#0891b2;font-weight:900;font-size:.85rem;">—</span></td>';
+        h += '<td style="text-align:center;"><span id="mv_overall_' + cid + '" style="color:#b45309;font-weight:900;font-size:.95rem;">' + (s.moralvaluesgrade || '—') + '</span></td>';
+        h += '</tr>';
+      });
+      h += '</tbody></table>';
+      h += '<div class="d-flex gap-3 justify-content-end mt-3 flex-wrap">' +
+           '<span style="color:#64748b;font-size:.75rem;display:flex;align-items:center;gap:6px;">' +
+           '<i class="fas fa-info-circle" style="color:#0891b2;"></i> Average + Grade auto കണക്കാക്കും</span>' +
+           '<button class="btn-update" id="mvSaveBtn" onclick="window.saveMoralValuesBulk()">' +
+           '<i class="fas fa-save"></i> Save All</button></div>';
+      wrap.innerHTML = h;
+
+      wrap.querySelectorAll('.mv-marks-inp').forEach(function(inp){
+        inp.addEventListener('input', function(){ window.recalcMoralOverall(this.dataset.sid); });
+      });
+      // Initial recalc
+      window.moralValuesData.forEach(function(s){ window.recalcMoralOverall(s.studentid); });
+    }catch(e){
+      wrap.innerHTML = '<div class="empty-state">Error: ' + escapeHtml(e.message) + '</div>';
+    }
+  };
+
+  window.recalcMoralOverall = function(sid){
+    var cid = String(sid).replace(/[^a-zA-Z0-9]/g, '');
+    var inputs = document.querySelectorAll('.mv-marks-inp[data-sid="' + sid + '"]');
+    var vals = [];
+    inputs.forEach(function(inp){
+      var v = parseFloat(inp.value);
+      if(!isNaN(v)) vals.push(Math.max(0, Math.min(10, v)));
+    });
+    var avgEl = document.getElementById('mv_avg_' + cid);
+    var grEl = document.getElementById('mv_overall_' + cid);
+    if(vals.length === 0){
+      if(avgEl) avgEl.textContent = '—';
+      if(grEl){ grEl.textContent = '—'; grEl.style.color = '#94a3b8'; }
+      return { avg: null, grade: null };
+    }
+    var avg = vals.reduce(function(a,b){ return a+b; }, 0) / vals.length;
+    var grade = window.gradeFromMarks10(avg);
+    if(avgEl) avgEl.textContent = avg.toFixed(2);
+    if(grEl){
+      grEl.textContent = grade;
+      var gc = (getGradeDetails(grade) || {}).color || '#b45309';
+      grEl.style.color = gc;
+    }
+    return { avg: avg, grade: grade };
+  };
+
+  window.saveMoralValuesBulk = async function(){
+    var btn = document.getElementById('mvSaveBtn');
+    if(btn){ btn.disabled = true; btn.innerHTML = 'Saving...'; }
+    try{
+      var records = [];
+      document.querySelectorAll('.mv-marks-inp').forEach(function(inp){
+        var sid = inp.dataset.sid;
+        var trait = inp.dataset.trait;
+        var v = parseFloat(inp.value);
+        if(!isNaN(v)){
+          v = Math.max(0, Math.min(10, v));
+          records.push({
+            studentid: sid,
+            trait: trait,
+            marks: v,
+            grade: window.gradeFromMarks10(v)
+          });
+        }
+      });
+      if(records.length === 0){
+        showToast('No marks entered','error');
+        if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; }
+        return;
+      }
+      // Compute overalls per student
+      var bySid = {};
+      records.forEach(function(rec){
+        if(!bySid[rec.studentid]) bySid[rec.studentid] = [];
+        bySid[rec.studentid].push(rec.marks);
+      });
+      var overallUpdates = {};
+      for(var sid in bySid){
+        var arr = bySid[sid];
+        var avg = arr.reduce(function(a,b){ return a+b; }, 0) / arr.length;
+        overallUpdates[sid] = {
+          avg: avg,
+          grade: window.gradeFromMarks10(avg)
+        };
+      }
+      var sids = Object.keys(overallUpdates);
+      // Delete old records
+      await supabaseClient.from('moral_values').delete().in('studentid', sids);
+      // Insert new with fallback
+      for(var i = 0; i < records.length; i += 200){
+        var batch = records.slice(i, i + 200);
+        var rr = await supabaseClient.from('moral_values').insert(batch);
+        if(rr.error){
+          if(String(rr.error.message).toLowerCase().includes('marks')){
+            console.warn('moral_values.marks missing — fallback');
+            var fb = await supabaseClient.from('moral_values').insert(
+              batch.map(function(b){
+                return { studentid:b.studentid, trait:b.trait, grade:String(b.marks) };
+              })
+            );
+            if(fb.error) throw fb.error;
+          } else { throw rr.error; }
+        }
+      }
+      // Update students' overall grade
+      for(var sid2 in overallUpdates){
+        var up = overallUpdates[sid2];
+        await supabaseClient.from('students').update({
+          moralvaluesgrade: up.grade,
+          moralvaluessub: 'Avg ' + up.avg.toFixed(2) + '/10'
+        }).eq('studentid', sid2);
+      }
+      showToast('✅ Saved ' + records.length + ' entries','success');
+      if(typeof confetti !== 'undefined') confetti({ particleCount: 120, spread: 90, origin: { y: .7 } });
+      loadMoralValuesAdmin();
+    }catch(e){
+      console.error(e);
+      showToast('❌ ' + e.message,'error');
+    }
+    if(btn){ btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; }
+  };
+
+  /* ============================================================
+     4️⃣ FEE PRINT — pending / paid / all filter
+     ============================================================ */
+  window.openFeePrintDialog = function(){
+    var list = window.filteredFeeParents || window.feeParentsData || [];
+    if(list.length === 0){
+      showToast('No records to print','error'); return;
+    }
+    var pending = 0, cleared = 0;
+    list.forEach(function(p){
+      var br = window.computeFeeBreakdown(p, window.FEE_SETTINGS_CACHE || {});
+      if(br.totalPending > 0) pending++; else cleared++;
+    });
+
+    window.modalTitleSpan.innerText = '🖨️ Print Fee Report';
+    window.modalBodyDiv.innerHTML =
+      '<div style="text-align:center;margin-bottom:20px;">' +
+        '<div style="width:70px;height:70px;margin:0 auto 12px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:linear-gradient(140deg,#1e6be0,#22d3ee);font-size:2rem;color:#fff;box-shadow:0 12px 28px -10px rgba(30,107,224,.7);">' +
+          '<i class="fas fa-file-pdf"></i></div>' +
+        '<h4 style="color:#0f172a;font-weight:800;margin:0 0 6px;">Fee Report PDF</h4>' +
+        '<p style="color:#64748b;font-size:.82rem;margin:0;">ഏത് status filter ചെയ്ത് പ്രിൻറ് എടുക്കണം?</p>' +
+      '</div>' +
+      '<div style="display:grid;gap:10px;margin-bottom:16px;">' +
+        '<label class="fee-print-opt" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:2px solid rgba(59,130,246,.3);border-radius:16px;cursor:pointer;transition:.2s;">' +
+          '<input type="radio" name="feePrintFilter" value="all" checked style="width:20px;height:20px;accent-color:#1e6be0;">' +
+          '<i class="fas fa-list" style="font-size:1.4rem;color:#1e6be0;"></i>' +
+          '<div style="flex:1;"><div style="color:#0f172a;font-weight:800;font-size:.94rem;">All Records</div>' +
+          '<div style="color:#64748b;font-size:.75rem;">Total ' + list.length + ' parents</div></div></label>' +
+        '<label class="fee-print-opt" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid rgba(180,83,9,.3);border-radius:16px;cursor:pointer;transition:.2s;">' +
+          '<input type="radio" name="feePrintFilter" value="pending" style="width:20px;height:20px;accent-color:#b45309;">' +
+          '<i class="fas fa-hourglass-half" style="font-size:1.4rem;color:#b45309;"></i>' +
+          '<div style="flex:1;"><div style="color:#0f172a;font-weight:800;font-size:.94rem;">⏳ Pending Only</div>' +
+          '<div style="color:#64748b;font-size:.75rem;">' + pending + ' parents with dues</div></div></label>' +
+        '<label class="fee-print-opt" style="display:flex;align-items:center;gap:14px;padding:16px 18px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border:2px solid rgba(5,150,105,.3);border-radius:16px;cursor:pointer;transition:.2s;">' +
+          '<input type="radio" name="feePrintFilter" value="paid" style="width:20px;height:20px;accent-color:#059669;">' +
+          '<i class="fas fa-check-circle" style="font-size:1.4rem;color:#059669;"></i>' +
+          '<div style="flex:1;"><div style="color:#0f172a;font-weight:800;font-size:.94rem;">✅ Paid / Advance Only</div>' +
+          '<div style="color:#64748b;font-size:.75rem;">' + cleared + ' parents cleared</div></div></label>' +
+      '</div>' +
+      '<div class="d-flex gap-2">' +
+        '<button type="button" class="btn-update flex-grow-1" onclick="window.printFeeReportPDF()" style="padding:14px 22px;">' +
+          '<i class="fas fa-download"></i> Download PDF</button>' +
+        '<button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')" style="padding:14px 22px;">Cancel</button>' +
+      '</div>';
+    window.modal.style.display = 'flex';
+  };
+
+  window.printFeeReportPDF = async function(){
+    var sel = document.querySelector('input[name="feePrintFilter"]:checked');
+    var filter = sel ? sel.value : 'all';
+    var list = (window.filteredFeeParents || window.feeParentsData || []).slice();
+
+    if(filter === 'pending'){
+      list = list.filter(function(p){
+        return window.computeFeeBreakdown(p, window.FEE_SETTINGS_CACHE || {}).totalPending > 0;
+      });
+    } else if(filter === 'paid'){
+      list = list.filter(function(p){
+        return window.computeFeeBreakdown(p, window.FEE_SETTINGS_CACHE || {}).totalPending <= 0;
+      });
+    }
+    if(list.length === 0){ showToast('No records for this filter','error'); return; }
+
+    closeModal('globalModal');
+    if(typeof showLoading === 'function') showLoading(true);
+
+    try{
+      var jsPDF = window.jspdf.jsPDF;
+      var doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      var pw = doc.internal.pageSize.getWidth();
+      var ph = doc.internal.pageSize.getHeight();
+
+      doc.setFillColor(21, 71, 168);
+      doc.rect(0, 0, pw, 80, 'F');
+      try{
+        var logoData = await window.getLogoDataUrl();
+        if(logoData) doc.addImage(logoData, 'PNG', 40, 12, 55, 55);
+      }catch(e){}
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18); doc.setFont(undefined, 'bold');
+      doc.text('NOORUSSALAM MADRASA', pw / 2, 32, { align: 'center' });
+      doc.setFontSize(11); doc.setFont(undefined, 'normal');
+      var titleMap = {
+        all: 'Fee Report — ALL RECORDS',
+        pending: 'Fee Report — PENDING ONLY',
+        paid: 'Fee Report — PAID / ADVANCE'
+      };
+      doc.text(titleMap[filter] + ' • ' + new Date().toLocaleDateString('en-IN'),
+               pw / 2, 55, { align: 'center' });
+
+      doc.setTextColor(0, 0, 0);
+      var rows = list.map(function(p, i){
+        var br = window.computeFeeBreakdown(p, window.FEE_SETTINGS_CACHE || {});
+        var status = br.totalPending > 0 ? 'Pending'
+                   : br.totalPending < 0 ? 'Advance' : 'Paid';
+        return [
+          i + 1, p.parent_name || '',
+          (p.student_ids || []).join(', '),
+          p.student_names || '', p.mobile || '',
+          window.formatFeeMonthEN(p.last_paid_month),
+          br.paidMonths, br.pendingMonths,
+          'Rs.' + br.totalPending.toLocaleString(), status
+        ];
+      });
+
+      doc.autoTable({
+        startY: 100,
+        head: [['#','Parent','UIDs','Students','Mobile','Last Paid','Paid Mos','Pend Mos','Due','Status']],
+        body: rows, theme: 'grid',
+        styles: { fontSize: 7.5, cellPadding: 4, lineColor: [200,215,240], lineWidth: 0.3 },
+        headStyles: { fillColor: [30,107,224], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+        columnStyles: {
+          0: { cellWidth: 22, halign: 'center' },
+          1: { cellWidth: 100 }, 2: { cellWidth: 100, fontSize: 6.5 },
+          3: { cellWidth: 100, fontSize: 6.5 }, 4: { cellWidth: 70, halign: 'center' },
+          5: { cellWidth: 80, halign: 'center' }, 6: { cellWidth: 50, halign: 'center' },
+          7: { cellWidth: 50, halign: 'center' },
+          8: { cellWidth: 70, halign: 'right', fontStyle: 'bold' },
+          9: { cellWidth: 60, halign: 'center', fontStyle: 'bold' }
+        },
+        alternateRowStyles: { fillColor: [248,250,252] },
+        didDrawPage: function(){
+          var page = doc.internal.getCurrentPageInfo().pageNumber;
+          doc.setFontSize(8); doc.setTextColor(120,120,120);
+          doc.text('Page ' + page, pw/2, ph - 15, { align: 'center' });
+        }
+      });
+
+      var suffix = filter === 'pending' ? 'Pending' : filter === 'paid' ? 'Paid' : 'All';
+      doc.save('Fee_' + suffix + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+      showToast('✅ PDF Downloaded','success');
+      if(typeof confetti !== 'undefined') confetti({ particleCount: 80, spread: 70, origin: { y: .7 } });
+    }catch(e){
+      console.error(e); showToast('❌ ' + e.message,'error');
+    }
+    if(typeof showLoading === 'function') showLoading(false);
+  };
+
+  /* ============================================================
+     5️⃣ CREATION ENCOURAGEMENT
+     ============================================================ */
+  var _origOpenCreations = window.openCreationsGallery;
+  window.openCreationsGallery = function(){
+    if(!currentUser){ showToast('Login first','error'); return; }
+    if(typeof _origOpenCreations === 'function'){
+      _origOpenCreations.call(this);
+    } else {
+      document.getElementById('creationsOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+      loadCreationsGallery();
+    }
+    setTimeout(window.showCreationEncouragement, 400);
+  };
+
+  window.showCreationEncouragement = function(){
+    var msgs = [
+      { icon:'🎨', title:'നിങ്ങളുടെ കലയെ പുറത്തുകൊണ്ടുവരൂ!', sub:'ഓരോ കുട്ടിയിലും ഒരു കലാകാരനുണ്ട്' },
+      { icon:'✍️', title:'എഴുത്തുകാർ ഇവിടെ കൂടൂ!', sub:'കവിത, കഥ — എല്ലാം സ്വാഗതം' },
+      { icon:'📖', title:'നിങ്ങളുടെ രചന ലോകം കാണട്ടെ!', sub:'ഓരോ സൃഷ്ടിയും ഒരു നക്ഷത്രമാണ് ⭐' },
+      { icon:'🎭', title:'പുതിയ സൃഷ്ടി പോസ്റ്റ് ചെയ്യൂ!', sub:'3+ സൃഷ്ടികൾ → 🎨 Creative Badge' }
+    ];
+    var m = msgs[Math.floor(Math.random() * msgs.length)];
+    showToast(m.icon + ' ' + m.title, 'success');
+    window.loadCreationStats();
+  };
+
+  window.loadCreationStats = async function(){
+    if(!currentUser || !supabaseClient) return;
+    try{
+      var r = await supabaseClient.from('student_creations')
+        .select('id', { count: 'exact', head: true })
+        .eq('studentid', currentUser.studentId);
+      var total = r.count || 0;
+      var header = document.querySelector('.creations-header');
+      if(!header) return;
+      var existing = header.parentNode.querySelector('.creation-motivation-banner');
+      if(existing) existing.remove();
+
+      var milestones = [1, 3, 5, 10, 20];
+      var next = milestones.find(function(m){ return total < m; });
+      var msg = total === 0
+        ? '🎨 നിങ്ങളുടെ ആദ്യ സൃഷ്ടി പോസ്റ്റ് ചെയ്യൂ!'
+        : '✨ ' + total + ' സൃഷ്ടി പോസ്റ്റ് ചെയ്തു!' +
+          (next ? ' അടുത്ത milestone: ' + next + ' 🎯' : ' 🏆 Legendary Creator!');
+
+      var banner = document.createElement('div');
+      banner.className = 'creation-motivation-banner';
+      banner.style.cssText = 'background:linear-gradient(135deg,#fce7f3,#ddd6fe);border:1.6px solid rgba(139,92,246,.35);border-radius:16px;padding:12px 18px;margin:0 0 14px;display:flex;align-items:center;gap:12px;font-size:.86rem;color:#0f172a;font-weight:700;animation:cardGlassIn .5s ease;';
+      banner.innerHTML =
+        '<i class="fas fa-sparkles" style="color:#8b5cf6;font-size:1.3rem;"></i>' +
+        '<span style="flex:1;">' + msg + '</span>' +
+        '<span style="background:#fff;color:#8b5cf6;padding:4px 12px;border-radius:20px;font-weight:900;font-size:.75rem;border:1px solid rgba(139,92,246,.3);">' + total + ' 📝</span>';
+      header.parentNode.insertBefore(banner, header.nextSibling);
+    }catch(e){ console.warn(e); }
+  };
+
+  /* ============================================================
+     6️⃣ EXTRA UI — Auto note about 10-mark system
+     ============================================================ */
+  var _origLoadExtra = window.loadExtraAdmin;
+  window.loadExtraAdmin = async function(){
+    if(typeof _origLoadExtra === 'function'){
+      await _origLoadExtra.call(this);
+    }
+    var wrap = document.getElementById('extraWrap');
+    if(wrap && !wrap.parentNode.querySelector('.extra-10mark-note')){
+      var info = document.createElement('div');
+      info.className = 'extra-10mark-note';
+      info.style.cssText = 'background:#fef3c7;border:1px solid rgba(180,83,9,.3);border-radius:12px;padding:10px 16px;margin-bottom:12px;font-size:.8rem;color:#b45309;font-weight:700;';
+      info.innerHTML = '<i class="fas fa-info-circle"></i> ഓരോ category-ക്കും 0-10 മാർക്ക് നൽകുക — Grade auto കണക്കാക്കും';
+      wrap.parentNode.insertBefore(info, wrap);
+    }
+  };
+
+  /* ============================================================
+     7️⃣ FIX NULL grades (auto-run on load)
+     ============================================================ */
+  window.fixNullExtraGrades = async function(){
+    if(!supabaseClient) return;
+    try{
+      var r = await supabaseClient.from('extracurricular_grades')
+        .select('id, marks, grade').is('grade', null);
+      if(!r.data || r.data.length === 0) return;
+      console.log('🔧 Fixing ' + r.data.length + ' null grades...');
+      for(var i = 0; i < r.data.length; i++){
+        var row = r.data[i];
+        var marks = Number(row.marks) || 0;
+        var grade = window.gradeFromMarks10(marks);
+        await supabaseClient.from('extracurricular_grades')
+          .update({ grade: grade }).eq('id', row.id);
+      }
+      console.log('✅ Fixed null grades');
+    }catch(e){ console.warn('fixNullExtraGrades:', e); }
+  };
+
+  /* ============================================================
+     8️⃣ Hook print button to Fee Admin tab
+     ============================================================ */
+  // Override the print handler in admin fee tab
+  document.addEventListener('DOMContentLoaded', function(){
+    // Auto-fix null grades on admin login
+    setTimeout(window.fixNullExtraGrades, 3000);
+  });
+
+  // Extend the fee admin toolbar to use new print dialog
+  var _origLoadFeeAdmin = window.loadFeeParentsAdmin;
+  window.loadFeeParentsAdmin = async function(){
+    if(typeof _origLoadFeeAdmin === 'function'){
+      await _origLoadFeeAdmin.call(this);
+    }
+    // Rebind the PDF button
+    setTimeout(function(){
+      var pdfBtn = document.querySelector('#adminFeeParentsTab .btn-update[onclick*="downloadFeeParentsPDF"]');
+      if(pdfBtn){
+        pdfBtn.setAttribute('onclick', 'window.openFeePrintDialog()');
+        pdfBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Print PDF';
+      }
+    }, 300);
+  };
+
+  console.log('✅ PATCH v24.0 loaded — All fixes active');
+})();
+</script>
+<!-- ============================================================ -->
+<!-- ✨ PATCH v24.0 — STUDENT PORTAL BEAUTIFICATION              -->
+<!-- Admin = functional | Student = beautiful                     -->
+<!-- ============================================================ -->
+<style>
+/* ============================================================ */
+/* 🌟 STUDENT DASHBOARD — Enhanced Beauty                       */
+/* ============================================================ */
+
+/* Floating Sparkles */
+.student-sparkle {
+  position: fixed;
+  pointer-events: none;
+  font-size: 1.2rem;
+  z-index: 1;
+  opacity: 0;
+  animation: sparkleFloat 4s ease-in-out forwards;
+}
+@keyframes sparkleFloat {
+  0%   { opacity: 0; transform: translateY(0) scale(.5); }
+  20%  { opacity: 1; transform: translateY(-30px) scale(1); }
+  100% { opacity: 0; transform: translateY(-120px) scale(.6); }
+}
+
+/* Welcome Greeting Banner */
+.student-welcome-banner {
+  background: linear-gradient(135deg, #6C5CE7 0%, #a29bfe 40%, #00cec9 100%);
+  background-size: 200% 200%;
+  animation: welcomeGradient 8s ease infinite;
+  border-radius: 22px;
+  padding: 22px 24px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #fff;
+  box-shadow: 0 20px 45px -20px rgba(108,92,231,.75),
+              inset 0 1px 0 rgba(255,255,255,.35);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes welcomeGradient {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+.student-welcome-banner::before {
+  content: '✨';
+  position: absolute;
+  right: -30px; top: -30px;
+  font-size: 8rem;
+  opacity: .08;
+  animation: decoFloat 6s ease-in-out infinite;
+}
+.student-welcome-banner .welcome-icon {
+  width: 56px; height: 56px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.22);
+  backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.7rem;
+  flex-shrink: 0;
+  animation: iconWave 2.5s ease infinite;
+}
+@keyframes iconWave {
+  0%,100% { transform: rotate(0deg) scale(1); }
+  25%     { transform: rotate(-12deg) scale(1.08); }
+  75%     { transform: rotate(12deg) scale(1.08); }
+}
+.student-welcome-banner .welcome-text {
+  flex: 1;
+  min-width: 0;
+}
+.student-welcome-banner h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+  color: #fff;
+  letter-spacing: .3px;
+  text-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.student-welcome-banner p {
+  font-size: .82rem;
+  margin: 0;
+  color: rgba(255,255,255,.92);
+  font-weight: 500;
+}
+
+/* Stats Card Shine */
+.stat-card-neon {
+  position: relative;
+  overflow: hidden;
+}
+.stat-card-neon::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(120deg,
+    transparent 30%,
+    rgba(255,255,255,.6) 50%,
+    transparent 70%);
+  transition: left .8s ease;
+  pointer-events: none;
+}
+.stat-card-neon:hover::after {
+  left: 140%;
+}
+
+/* Quick Action Tiles — Enhanced */
+.action-tile {
+  position: relative;
+  overflow: visible;
+}
+.action-tile::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 19px;
+  background: linear-gradient(135deg, #6C5CE7, #00cec9, #fd79a8);
+  opacity: 0;
+  transition: opacity .3s ease;
+  z-index: -1;
+  filter: blur(8px);
+}
+.action-tile:hover::before {
+  opacity: .35;
+}
+.action-tile:hover .action-ico {
+  transform: scale(1.12) rotate(-6deg);
+  box-shadow: 0 12px 28px -10px rgba(108,92,231,.7);
+}
+.action-tile .action-ico {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .35s ease;
+}
+
+/* Palathulli Hero — Enhanced */
+.palathulli-hero {
+  position: relative;
+  overflow: hidden;
+}
+.palathulli-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(circle at 30% 30%,
+    rgba(255,255,255,.15) 0%,
+    transparent 45%);
+  animation: palaShimmer 8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes palaShimmer {
+  0%,100% { transform: rotate(0deg) scale(1); }
+  50%     { transform: rotate(180deg) scale(1.2); }
+}
+.pala-amount {
+  filter: drop-shadow(0 4px 12px rgba(255,255,255,.35));
+  animation: amountPulse 3s ease-in-out infinite;
+}
+@keyframes amountPulse {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.03); }
+}
+
+/* Leaderboard Cards Hover */
+.lb-card {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .35s ease,
+              border-color .35s ease;
+}
+.lb-card:hover {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 20px 40px -18px rgba(251,191,36,.6);
+}
+.lb-card.rank-1:hover {
+  box-shadow: 0 20px 45px -15px rgba(251,191,36,.9),
+              inset 0 0 0 2px #fbbf24;
+}
+
+/* Daily Hub Cards — Hover Lift */
+.hub-card {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .35s ease;
+}
+.hub-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px -20px rgba(30,107,224,.4);
+}
+
+/* Prayer Time Active Pulse */
+.prayer-item.active {
+  animation: prayerPulse 2s ease infinite;
+  box-shadow: 0 0 0 0 rgba(16,185,129,.6);
+}
+@keyframes prayerPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,.6); }
+  50%     { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+}
+
+/* Dashboard Header Enhanced */
+.dashboard-header-glow {
+  position: relative;
+  overflow: hidden;
+}
+.dashboard-header-glow::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,.15),
+    transparent);
+  animation: headerShine 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes headerShine {
+  0%   { left: -100%; }
+  50%  { left: 100%; }
+  100% { left: 100%; }
+}
+
+/* Avatar Hover */
+.avatar-neon {
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .35s ease;
+}
+.avatar-neon:hover {
+  transform: scale(1.1) rotate(-6deg);
+  box-shadow: 0 12px 28px -8px rgba(34,211,238,.8);
+}
+
+/* ============================================================ */
+/* 🎨 CREATION GALLERY — Beauty Boost                          */
+/* ============================================================ */
+
+.creation-card {
+  transition: transform .4s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .4s ease,
+              border-color .4s ease;
+}
+.creation-card:hover {
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 28px 55px -20px rgba(236,72,153,.5);
+  border-color: rgba(236,72,153,.6);
+}
+.creation-card:hover .creation-thumb img {
+  transform: scale(1.08);
+}
+.creation-thumb img {
+  transition: transform .6s ease;
+}
+
+/* Motivational Big Banner */
+.creation-motivation-banner {
+  background: linear-gradient(135deg, #fce7f3, #ddd6fe, #cffafe);
+  background-size: 200% 200%;
+  animation: motivationGradient 6s ease infinite,
+             motivationSlideIn .5s ease;
+  border: 1.6px solid rgba(139,92,246,.4);
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: .88rem;
+  color: #0f172a;
+  font-weight: 700;
+  box-shadow: 0 8px 20px -10px rgba(139,92,246,.3);
+}
+@keyframes motivationGradient {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+.creation-motivation-banner i {
+  font-size: 1.5rem;
+  color: #8b5cf6;
+  animation: iconWave 2.5s ease infinite;
+}
+.creation-motivation-banner .progress-mini {
+  width: 60px;
+  height: 6px;
+  background: rgba(139,92,246,.2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.creation-motivation-banner .progress-mini div {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  transition: width .8s ease;
+}
+
+/* Upload Creation Button Enhanced */
+.btn-upload-creation {
+  position: relative;
+  overflow: hidden;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.btn-upload-creation:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 28px -10px rgba(236,72,153,.7);
+}
+.btn-upload-creation::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.35);
+  transform: translate(-50%, -50%);
+  transition: width .5s, height .5s;
+}
+.btn-upload-creation:hover::before {
+  width: 300px; height: 300px;
+}
+
+/* Creation Empty State — Encouraging */
+.creations-empty {
+  padding: 60px 24px !important;
+}
+.creations-empty i {
+  font-size: 4rem !important;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: floatIcon 3s ease-in-out infinite;
+}
+@keyframes floatIcon {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-12px); }
+}
+
+/* ============================================================ */
+/* 📱 STUDENT LOGIN — Beauty Polish                            */
+/* ============================================================ */
+
+.nsm-card {
+  animation: cardGlassIn .9s cubic-bezier(.34,1.56,.64,1) both,
+             cardBreathe 6s ease-in-out infinite 1s;
+}
+@keyframes cardBreathe {
+  0%,100% { transform: translateY(0) scale(1); }
+  50%     { transform: translateY(-4px) scale(1.005); }
+}
+
+.nsm-card-logo img {
+  animation: logoFloatGlass 4s ease-in-out infinite,
+             logoGlow 2s ease-in-out infinite;
+}
+@keyframes logoGlow {
+  0%,100% { filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(212,175,55,.6)); }
+  50%     { filter: drop-shadow(0 8px 20px rgba(0,0,0,.6)) drop-shadow(0 0 45px rgba(255,215,120,1)); }
+}
+
+.nsm-btn-primary {
+  position: relative;
+  overflow: hidden;
+  animation: btnBlueFlow 6s ease infinite,
+             btnPulse 3s ease-in-out infinite;
+}
+@keyframes btnPulse {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-2px); }
+}
+
+/* ============================================================ */
+/* 🎉 ACHIEVEMENT POPUP                                        */
+/* ============================================================ */
+
+.achievement-popup {
+  position: fixed;
+  top: 20px; left: 50%;
+  transform: translateX(-50%) translateY(-120px);
+  background: linear-gradient(135deg, #6C5CE7, #a29bfe, #00cec9);
+  background-size: 200% 200%;
+  animation: achievementIn .6s cubic-bezier(.34,1.56,.64,1) forwards,
+             achievementGradient 3s ease infinite;
+  color: #fff;
+  padding: 16px 26px;
+  border-radius: 60px;
+  box-shadow: 0 20px 45px -15px rgba(108,92,231,.85),
+              inset 0 1px 0 rgba(255,255,255,.4);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  z-index: 100000;
+  max-width: 92vw;
+}
+@keyframes achievementIn {
+  to { transform: translateX(-50%) translateY(0); }
+}
+@keyframes achievementGradient {
+  0%,100% { background-position: 0% 50%; }
+  50%     { background-position: 100% 50%; }
+}
+.achievement-popup .ach-icon {
+  font-size: 1.8rem;
+  animation: iconWave 2s ease infinite;
+}
+.achievement-popup .ach-text {
+  font-size: .92rem;
+  line-height: 1.3;
+}
+.achievement-popup .ach-sub {
+  font-size: .74rem;
+  opacity: .9;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* ============================================================ */
+/* 🌈 FLOATING GRADIENT ORBS (Dashboard BG)                    */
+/* ============================================================ */
+#dashboardSection {
+  position: relative;
+  overflow-x: hidden;
+}
+#dashboardSection::before {
+  content: '';
+  position: fixed;
+  top: -200px; right: -200px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108,92,231,.15), transparent 70%);
+  pointer-events: none;
+  animation: orbFloat1 15s ease-in-out infinite;
+  z-index: 0;
+}
+#dashboardSection::after {
+  content: '';
+  position: fixed;
+  bottom: -150px; left: -150px;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34,211,238,.15), transparent 70%);
+  pointer-events: none;
+  animation: orbFloat2 18s ease-in-out infinite;
+  z-index: 0;
+}
+
+/* ============================================================ */
+/* 📱 Mobile Polish                                            */
+/* ============================================================ */
+@media (max-width: 900px) {
+  .student-welcome-banner {
+    padding: 16px 18px;
+    border-radius: 18px;
+  }
+  .student-welcome-banner h3 { font-size: .98rem; }
+  .student-welcome-banner p  { font-size: .76rem; }
+  .student-welcome-banner .welcome-icon {
+    width: 46px; height: 46px;
+    font-size: 1.4rem;
+  }
+}
+</style>
+
+<script>
+(function(){
+  console.log('✨ Loading Student Beauty Patch v24.0...');
+
+  /* ============================================================
+     🌟 STUDENT SPARKLES — Floating Emojis
+     ============================================================ */
+  var SPARKLE_EMOJIS = ['✨','⭐','🌟','💫','🌸','💎','🎨','📚','🎯'];
+
+  window.spawnSparkles = function(count){
+    count = count || 8;
+    for(var i = 0; i < count; i++){
+      setTimeout(function(){
+        var s = document.createElement('div');
+        s.className = 'student-sparkle';
+        s.textContent = SPARKLE_EMOJIS[Math.floor(Math.random() * SPARKLE_EMOJIS.length)];
+        s.style.left = (Math.random() * 90 + 5) + 'vw';
+        s.style.top = (Math.random() * 60 + 20) + 'vh';
+        s.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+        document.body.appendChild(s);
+        setTimeout(function(){ s.remove(); }, 4000);
+      }, i * 180);
+    }
+  };
+
+  /* ============================================================
+     🎉 ACHIEVEMENT POPUP
+     ============================================================ */
+  window.showAchievement = function(icon, title, sub){
+    var existing = document.querySelector('.achievement-popup');
+    if(existing) existing.remove();
+    var popup = document.createElement('div');
+    popup.className = 'achievement-popup';
+    popup.innerHTML =
+      '<div class="ach-icon">' + (icon || '🏆') + '</div>' +
+      '<div><div class="ach-text">' + title + '</div>' +
+      (sub ? '<div class="ach-sub">' + sub + '</div>' : '') + '</div>';
+    document.body.appendChild(popup);
+    // Sparkles + confetti
+    if(typeof confetti !== 'undefined'){
+      confetti({ particleCount: 60, spread: 80, origin: { y: 0.2 }, colors: ['#6C5CE7','#00cec9','#fd79a8','#fdcb6e'] });
+    }
+    window.spawnSparkles(6);
+    setTimeout(function(){
+      popup.style.transition = 'transform .4s ease, opacity .4s ease';
+      popup.style.transform = 'translateX(-50%) translateY(-120px)';
+      popup.style.opacity = '0';
+      setTimeout(function(){ popup.remove(); }, 450);
+    }, 3500);
+  };
+
+  /* ============================================================
+     👋 WELCOME BANNER — Injects into Dashboard
+     ============================================================ */
+  window.injectWelcomeBanner = function(){
+    if(!window.currentUser && typeof currentUser === 'undefined') return;
+    var u = window.currentUser || currentUser;
+    if(!u) return;
+    var dash = document.getElementById('dashboardSection');
+    if(!dash) return;
+    var container = dash.querySelector('.container');
+    if(!container) return;
+    var header = container.querySelector('.dashboard-header-glow');
+    if(!header) return;
+    if(container.querySelector('.student-welcome-banner')) return;
+
+    var hour = new Date().getHours();
+    var greeting, emoji;
+    if(hour < 5)       { greeting = 'നല്ല രാത്രി'; emoji = '🌙'; }
+    else if(hour < 12) { greeting = 'സുപ്രഭാതം'; emoji = '🌅'; }
+    else if(hour < 17) { greeting = 'ശുഭ ഉച്ച'; emoji = '☀️'; }
+    else if(hour < 20) { greeting = 'ശുഭ സായാഹ്നം'; emoji = '🌇'; }
+    else               { greeting = 'ശുഭ രാത്രി'; emoji = '🌙'; }
+
+    var firstName = (u.name || 'Student').split(' ')[0];
+    var msgs = [
+      'ഇന്ന് ഒരു മികച്ച ദിവസമായിരിക്കട്ടെ!',
+      'നിങ്ങളുടെ പഠനം തുടരൂ — വിജയം അടുത്താണ്!',
+      'ഇന്നത്തെ ലക്ഷ്യം എന്താണ്?',
+      'ഓരോ ചുവടും നിങ്ങളെ വിജയത്തിലേക്ക് നയിക്കുന്നു!'
+    ];
+    var msg = msgs[Math.floor(Math.random() * msgs.length)];
+
+    var banner = document.createElement('div');
+    banner.className = 'student-welcome-banner';
+    banner.innerHTML =
+      '<div class="welcome-icon">' + emoji + '</div>' +
+      '<div class="welcome-text">' +
+        '<h3>' + greeting + ', ' + firstName + '! 🌟</h3>' +
+        '<p>' + msg + '</p>' +
+      '</div>';
+    header.parentNode.insertBefore(banner, header.nextSibling);
+  };
+
+  /* ============================================================
+     🎨 CREATION MOTIVATION — Enhanced with progress
+     ============================================================ */
+  window.loadCreationStats = async function(){
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if(!u || !supabaseClient) return;
+    try{
+      var r = await supabaseClient.from('student_creations')
+        .select('id', { count: 'exact', head: true })
+        .eq('studentid', u.studentId);
+      var total = r.count || 0;
+
+      var header = document.querySelector('.creations-header');
+      if(!header) return;
+      var existing = header.parentNode.querySelector('.creation-motivation-banner');
+      if(existing) existing.remove();
+
+      var milestones = [1, 3, 5, 10, 20];
+      var next = milestones.find(function(m){ return total < m; });
+      var prev = 0;
+      for(var i = milestones.length - 1; i >= 0; i--){
+        if(total >= milestones[i]){ prev = milestones[i]; break; }
+      }
+      var pct = 0;
+      if(next && prev !== next){
+        pct = Math.min(100, Math.round(((total - prev) / (next - prev)) * 100));
+      } else if(!next){
+        pct = 100;
+      }
+
+      var msg, bigIcon;
+      if(total === 0){
+        bigIcon = '🎨';
+        msg = 'നിങ്ങളുടെ ആദ്യ സൃഷ്ടി പോസ്റ്റ് ചെയ്യൂ!';
+      } else if(total === 1){
+        bigIcon = '🌟';
+        msg = 'ആദ്യ സൃഷ്ടി! തുടരൂ, അടുത്ത milestone 3 സൃഷ്ടികൾ!';
+      } else if(total < 3){
+        bigIcon = '⭐';
+        msg = total + ' സൃഷ്ടി! ' + (3 - total) + ' കൂടി ചേർത്താൽ 🎨 Creative Badge!';
+      } else if(total < 5){
+        bigIcon = '🎯';
+        msg = total + ' സൃഷ്ടി! 5-ൽ എത്തിയാൽ 🌟 Rising Star!';
+      } else if(total < 10){
+        bigIcon = '🏆';
+        msg = total + ' സൃഷ്ടി! 10-ൽ എത്തിയാൽ 👑 Master Creator!';
+      } else if(total < 20){
+        bigIcon = '👑';
+        msg = total + ' സൃഷ്ടി! 20-ൽ എത്തിയാൽ 💎 Legendary!';
+      } else {
+        bigIcon = '💎';
+        msg = '🏆 ' + total + ' സൃഷ്ടികൾ — Legendary Creator!';
+      }
+
+      var banner = document.createElement('div');
+      banner.className = 'creation-motivation-banner';
+      banner.innerHTML =
+        '<span style="font-size:1.6rem;">' + bigIcon + '</span>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="color:#0f172a;font-weight:800;font-size:.9rem;margin-bottom:6px;">' + msg + '</div>' +
+          '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<div class="progress-mini"><div style="width:' + pct + '%;"></div></div>' +
+            '<span style="font-size:.72rem;color:#8b5cf6;font-weight:800;">' +
+              total + (next ? '/' + next : '') +
+            '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div style="background:#fff;color:#8b5cf6;padding:5px 14px;border-radius:20px;font-weight:900;font-size:.78rem;border:1px solid rgba(139,92,246,.3);white-space:nowrap;">' +
+          total + ' 📝' +
+        '</div>';
+      header.parentNode.insertBefore(banner, header.nextSibling);
+    }catch(e){ console.warn('loadCreationStats:', e); }
+  };
+
+  /* ============================================================
+     🎉 CREATION POSTED — Celebration
+     ============================================================ */
+  var _origSubmitCreation = window.submitCreation;
+  if(typeof _origSubmitCreation === 'function'){
+    window.submitCreation = async function(e){
+      var before = false;
+      try{
+        var r = await supabaseClient.from('student_creations')
+          .select('id', { count: 'exact', head: true })
+          .eq('studentid', (window.currentUser || currentUser).studentId);
+        before = (r.count || 0) === 0;
+      }catch(err){}
+      var result = _origSubmitCreation.apply(this, arguments);
+      setTimeout(function(){
+        if(before){
+          window.showAchievement('🎨', 'ആദ്യ സൃഷ്ടി പോസ്റ്റ് ചെയ്തു!', 'ഇനി ഒന്നുകൂടി ചേർക്കൂ! 🌟');
+        } else {
+          window.showAchievement('✨', 'സൃഷ്ടി പോസ്റ്റ് ചെയ്തു!', 'നിങ്ങളുടെ കല മനോഹരമാണ്!');
+        }
+        window.spawnSparkles(10);
+        window.loadCreationStats();
+      }, 1800);
+      return result;
+    };
+  }
+
+  /* ============================================================
+     🌟 HOOK INTO LOGIN — Trigger welcome + sparkles
+     ============================================================ */
+  var _origUpdateDashboard = window.updateDashboardUI;
+  if(typeof _origUpdateDashboard === 'function'){
+    window.updateDashboardUI = function(){
+      _origUpdateDashboard.apply(this, arguments);
+      setTimeout(function(){
+        window.injectWelcomeBanner();
+        window.spawnSparkles(10);
+        if(typeof confetti !== 'undefined'){
+          confetti({
+            particleCount: 80,
+            spread: 90,
+            origin: { y: 0.3 },
+            colors: ['#6C5CE7','#00cec9','#fd79a8','#fdcb6e','#a29bfe']
+          });
+        }
+      }, 500);
+    };
+  }
+
+  /* ============================================================
+     ⏰ WELCOME — On dashboard show
+     ============================================================ */
+  var dash = document.getElementById('dashboardSection');
+  if(dash){
+    var obs = new MutationObserver(function(){
+      if(dash.style.display === 'block'){
+        setTimeout(function(){
+          window.injectWelcomeBanner();
+        }, 700);
+      }
+    });
+    obs.observe(dash, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  /* ============================================================
+     🎯 EXPORTS
+     ============================================================ */
+  console.log('✅ Student Beauty Patch v24.0 loaded');
+  console.log('   → sparkles: window.spawnSparkles()');
+  console.log('   → achievement: window.showAchievement(icon, title, sub)');
+  console.log('   → welcome: window.injectWelcomeBanner()');
+  console.log('   → creation stats: window.loadCreationStats()');
+})();
+</script>
 </body>
 </html>
