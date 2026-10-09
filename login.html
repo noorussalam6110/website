@@ -41884,5 +41884,1974 @@ body.emergency-perf * {
   console.log('   💡 PERF_v100_killAll() — manual kill switch');
 })();
 </script>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 📋 v101.0 — SURVEY AUTO-TRIGGER FIX                    -->
+<!-- Auto shows survey popup after student login            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<script id="survey-autotrigger-v101">
+(function(){
+  'use strict';
+  console.log('📋 Survey Auto-Trigger v101 loading...');
+
+  // ═══════════════════════════════════════════════════
+  // 🛡️ STEP 1: Ensure SURVEY_STATE exists
+  // ═══════════════════════════════════════════════════
+  if (!window.SURVEY_STATE) {
+    window.SURVEY_STATE = {
+      enabled: false,
+      settings: {},
+      questions: [],
+      currentStudent: null,
+      postponeHours: 24
+    };
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 📥 STEP 2: Robust settings loader (creates rows if missing)
+  // ═══════════════════════════════════════════════════
+  window.loadSurveySettings = async function() {
+    if (!supabaseClient) return false;
+    try {
+      var r = await supabaseClient.from('survey_settings').select('*');
+      if (r.error) {
+        if (/does not exist|relation/i.test(r.error.message || '')) {
+          console.warn('⚠️ survey_settings table missing');
+          return false;
+        }
+        throw r.error;
+      }
+      var settings = {};
+      (r.data || []).forEach(function(s) { settings[s.setting_key] = s.value; });
+
+      // Fill defaults if missing
+      if (settings.survey_enabled === undefined) {
+        try {
+          await supabaseClient.from('survey_settings').insert({
+            setting_key: 'survey_enabled', value: 'false'
+          });
+        } catch(e) {}
+        settings.survey_enabled = 'false';
+      }
+      if (settings.postpone_hours === undefined) {
+        try {
+          await supabaseClient.from('survey_settings').insert({
+            setting_key: 'postpone_hours', value: '24'
+          });
+        } catch(e) {}
+        settings.postpone_hours = '24';
+      }
+      if (settings.survey_title === undefined) {
+        settings.survey_title = 'വിദ്യാർത്ഥി അഭിപ്രായ സർവേ';
+      }
+      if (settings.survey_description === undefined) {
+        settings.survey_description = 'നിങ്ങളുടെ അഭിപ്രായം ഞങ്ങൾക്ക് വിലപ്പെട്ടതാണ്.';
+      }
+
+      window.SURVEY_STATE.settings = settings;
+      window.SURVEY_STATE.enabled = String(settings.survey_enabled).toLowerCase() === 'true';
+      window.SURVEY_STATE.postponeHours = parseInt(settings.postpone_hours) || 24;
+
+      console.log('📋 Survey settings loaded — enabled:', window.SURVEY_STATE.enabled);
+      return true;
+    } catch(e) {
+      console.warn('loadSurveySettings error:', e);
+      return false;
+    }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 📥 STEP 3: Robust questions loader
+  // ═══════════════════════════════════════════════════
+  window.loadSurveyQuestions = async function() {
+    if (!supabaseClient) return [];
+    try {
+      var r = await supabaseClient.from('survey_questions')
+        .select('*').eq('is_active', true).order('q_no');
+      if (r.error) throw r.error;
+      window.SURVEY_STATE.questions = (r.data || []).slice(0, 3);
+      return window.SURVEY_STATE.questions;
+    } catch(e) {
+      console.warn('loadSurveyQuestions error:', e);
+      return [];
+    }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // ✅ STEP 4: Check if already submitted
+  // ═══════════════════════════════════════════════════
+  window.hasSurveySubmitted = async function(studentId) {
+    if (!supabaseClient || !studentId) return false;
+    try {
+      var r = await supabaseClient.from('survey_responses')
+        .select('id').eq('studentid', studentId).maybeSingle();
+      return !!r.data;
+    } catch(e) { return false; }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // ⏰ STEP 5: Check postpone
+  // ═══════════════════════════════════════════════════
+  window.isSurveyPostponed = function() {
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (!u) return false;
+    try {
+      var key = 'survey_postponed_until_' + u.studentId;
+      var until = parseInt(localStorage.getItem(key) || '0');
+      return Date.now() < until;
+    } catch(e) { return false; }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🚀 STEP 6: THE MAIN AUTO-TRIGGER
+  // ═══════════════════════════════════════════════════
+  window.autoTriggerSurvey = async function() {
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+
+    if (!u) {
+      console.log('📋 No student — skip');
+      return;
+    }
+    if (!supabaseClient) {
+      console.log('📋 No supabase — skip');
+      return;
+    }
+    // Admin skip
+    if (window.isAdminMode || (typeof isAdminMode !== 'undefined' && isAdminMode)) {
+      return;
+    }
+    // Teacher skip
+    if (window.isTeacherMode || (typeof isTeacherMode !== 'undefined' && isTeacherMode)) {
+      return;
+    }
+
+    console.log('📋 Checking survey for', u.studentId, '...');
+
+    // 1. Load settings
+    await window.loadSurveySettings();
+    if (!window.SURVEY_STATE.enabled) {
+      console.log('📋 Survey DISABLED by admin');
+      return;
+    }
+
+    // 2. Check postpone
+    if (window.isSurveyPostponed()) {
+      console.log('📋 Survey postponed by student');
+      return;
+    }
+
+    // 3. Check already submitted
+    var submitted = await window.hasSurveySubmitted(u.studentId);
+    if (submitted) {
+      console.log('📋 Already submitted');
+      return;
+    }
+
+    // 4. Load questions
+    var qs = await window.loadSurveyQuestions();
+    if (qs.length === 0) {
+      console.log('📋 No active questions — skipping popup');
+      return;
+    }
+
+    // 5. Show popup!
+    console.log('✅ SHOWING SURVEY POPUP with', qs.length, 'questions');
+    window.showSurveyPopup();
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🎨 STEP 7: Popup builder (rebuild if missing)
+  // ═══════════════════════════════════════════════════
+  if (typeof window.showSurveyPopup !== 'function') {
+    console.log('⚠️ showSurveyPopup missing — rebuilding from v101');
+
+    window.showSurveyPopup = async function() {
+      var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+      if (!u) return;
+
+      var popup = document.getElementById('surveyPopup');
+      if (!popup) {
+        console.warn('❌ Survey popup DOM missing');
+        return;
+      }
+
+      var questions = window.SURVEY_STATE.questions || [];
+
+      // Avatar
+      var avatar = document.getElementById('surveyAvatar');
+      if (avatar) {
+        if (u.photo && (u.photo.startsWith('http') || u.photo.startsWith('data:'))) {
+          avatar.innerHTML = '<img src="' + u.photo + '" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">';
+        } else {
+          avatar.textContent = (u.name || 'S').charAt(0).toUpperCase();
+        }
+      }
+      var nameEl = document.getElementById('surveyStudentName');
+      if (nameEl) nameEl.textContent = u.name || 'Student';
+      var classEl = document.getElementById('surveyStudentClass');
+      if (classEl) classEl.innerHTML = '<i class="fas fa-graduation-cap"></i> Class ' + (u.class || '—') + ' • ID: ' + u.studentId;
+
+      var titleEl = document.getElementById('surveyPopupTitle');
+      if (titleEl) titleEl.textContent = window.SURVEY_STATE.settings.survey_title || 'വിദ്യാർത്ഥി അഭിപ്രായ സർവേ';
+      var descEl = document.getElementById('surveyPopupDesc');
+      if (descEl) descEl.textContent = window.SURVEY_STATE.settings.survey_description || '';
+
+      // Postpone text
+      var ppText = document.getElementById('surveyPostponeText');
+      if (ppText) {
+        ppText.textContent = '"പിന്നീട്" ക്ലിക്ക് ചെയ്താൽ ' + window.SURVEY_STATE.postponeHours + ' മണിക്കൂറിനുശേഷം വീണ്ടും ഓർമ്മിപ്പിക്കും';
+      }
+
+      // Questions
+      var area = document.getElementById('surveyQuestionsArea');
+      if (area) {
+        if (questions.length === 0) {
+          area.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;">No questions</div>';
+        } else {
+          area.innerHTML = questions.map(function(q, i) {
+            return '<div class="survey-q">' +
+              '<div class="survey-q-head">' +
+                '<div class="survey-q-no">' + (q.q_no || (i+1)) + '</div>' +
+                '<div class="survey-q-text">' +
+                  escapeHtml(q.question_ml) +
+                  (q.is_required ? '<span class="required-star">*</span>' : '') +
+                '</div>' +
+              '</div>' +
+              '<textarea class="survey-q-input" ' +
+                'data-qno="' + (q.q_no || (i+1)) + '" ' +
+                'data-required="' + (q.is_required ? 'true' : 'false') + '" ' +
+                'placeholder="' + escapeHtml(q.placeholder_ml || '') + '" ' +
+                'maxlength="1000"></textarea>' +
+            '</div>';
+          }).join('');
+        }
+      }
+
+      // Open
+      popup.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      if (typeof spawnSparkles === 'function') {
+        setTimeout(function() { spawnSparkles(6); }, 400);
+      }
+    };
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🔗 STEP 8: Hook into login chain
+  // ═══════════════════════════════════════════════════
+  function hookLogin() {
+    if (typeof window.completeLogin !== 'function') return false;
+    if (window.completeLogin._v101) return true;
+
+    var orig = window.completeLogin;
+    window.completeLogin = async function(student) {
+      var r = await orig.apply(this, arguments);
+      // Wait for dashboard to settle, then trigger survey
+      setTimeout(window.autoTriggerSurvey, 5000);
+      return r;
+    };
+    window.completeLogin._v101 = true;
+    console.log('✅ completeLogin hooked');
+    return true;
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🔗 STEP 9: Also trigger on session restore
+  // ═══════════════════════════════════════════════════
+  function hookSessionRestore() {
+    // If user is logged in but no survey shown, trigger after delay
+    var checkCount = 0;
+    var checkTimer = setInterval(function() {
+      checkCount++;
+      var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+      if (u && !u._surveyChecked) {
+        u._surveyChecked = true;
+        clearInterval(checkTimer);
+        setTimeout(window.autoTriggerSurvey, 3000);
+      }
+      if (checkCount > 60) clearInterval(checkTimer);
+    }, 1000);
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🔄 STEP 10: Also re-check when dashboard becomes visible
+  // ═══════════════════════════════════════════════════
+  function watchDashboard() {
+    var dash = document.getElementById('dashboardSection');
+    if (!dash || dash._v101watch) return;
+    dash._v101watch = true;
+
+    var lastShown = 0;
+    new MutationObserver(function() {
+      if (dash.style.display === 'block') {
+        var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+        if (!u) return;
+        var now = Date.now();
+        // Throttle to once every 30s
+        if (now - lastShown < 30000) return;
+        lastShown = now;
+        setTimeout(window.autoTriggerSurvey, 4000);
+      }
+    }).observe(dash, { attributes: true, attributeFilter: ['style'] });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🚀 INIT
+  // ═══════════════════════════════════════════════════
+  function init() {
+    if (!hookLogin()) {
+      // Retry if completeLogin not ready yet
+      setTimeout(hookLogin, 1500);
+      setTimeout(hookLogin, 3000);
+    }
+    hookSessionRestore();
+    watchDashboard();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(init, 3000);
+      setTimeout(init, 6000);
+    });
+  } else {
+    setTimeout(init, 3000);
+    setTimeout(init, 6000);
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🐛 DEBUG HELPERS
+  // ═══════════════════════════════════════════════════
+  window.SURVEY_debug = async function() {
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    console.log('=== SURVEY DEBUG v101 ===');
+    console.log('Student:', u ? u.studentId : 'NONE');
+    console.log('Enabled?', window.SURVEY_STATE.enabled);
+    console.log('Settings:', window.SURVEY_STATE.settings);
+    console.log('Postpone hours:', window.SURVEY_STATE.postponeHours);
+
+    // Force reload
+    await window.loadSurveySettings();
+    console.log('--- After reload ---');
+    console.log('Enabled?', window.SURVEY_STATE.enabled);
+
+    // Check postpone
+    var postponed = window.isSurveyPostponed();
+    console.log('Postponed?', postponed);
+    if (postponed && u) {
+      var key = 'survey_postponed_until_' + u.studentId;
+      var until = localStorage.getItem(key);
+      console.log('Until:', new Date(parseInt(until)).toLocaleString());
+    }
+
+    // Check submission
+    if (u) {
+      var submitted = await window.hasSurveySubmitted(u.studentId);
+      console.log('Already submitted?', submitted);
+    }
+
+    // Check questions
+    var qs = await window.loadSurveyQuestions();
+    console.log('Active questions:', qs.length);
+
+    // Check popup DOM
+    var popup = document.getElementById('surveyPopup');
+    console.log('Popup DOM exists?', !!popup);
+    if (popup) console.log('Popup is open?', popup.classList.contains('open'));
+  };
+
+  window.SURVEY_forceShow = async function() {
+    console.log('📋 Forcing survey popup...');
+    // Clear all blockers
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    if (u) {
+      try {
+        localStorage.removeItem('survey_postponed_until_' + u.studentId);
+      } catch(e) {}
+    }
+    await window.loadSurveySettings();
+    await window.loadSurveyQuestions();
+    window.SURVEY_STATE.enabled = true; // force
+    window.showSurveyPopup();
+  };
+
+  window.SURVEY_resetSubmission = async function(studentId) {
+    if (!studentId) {
+      var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+      if (!u) return;
+      studentId = u.studentId;
+    }
+    if (!confirm('Reset survey submission for ' + studentId + '?')) return;
+    try {
+      await supabaseClient.from('survey_responses').delete().eq('studentid', studentId);
+      try { localStorage.removeItem('survey_postponed_until_' + studentId); } catch(e) {}
+      showToast('✅ Reset done', 'success');
+      console.log('✅ Reset complete for', studentId);
+    } catch(e) {
+      showToast('❌ ' + e.message, 'error');
+    }
+  };
+
+  console.log('✅ Survey Auto-Trigger v101 ready');
+  console.log('   💡 SURVEY_debug() — diagnose');
+  console.log('   💡 SURVEY_forceShow() — manual show');
+  console.log('   💡 SURVEY_resetSubmission() — reset for re-test');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 📸 v102.0 — POSTER POPUP SYSTEM                        -->
+<!-- Admin uploads posters → Students see on login          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<style id="poster-popup-v102-css">
+/* ═══════════════════════════════════════════════════════ */
+/* 📸 POSTER POPUP (Student Side)                          */
+/* ═══════════════════════════════════════════════════════ */
+.poster-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5,10,25,.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 100250;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  animation: posterFade .35s ease;
+}
+.poster-popup-overlay.open { display: flex; }
+@keyframes posterFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.poster-popup-card {
+  max-width: 500px;
+  width: 100%;
+  background: #fff;
+  border-radius: 26px;
+  padding: 0;
+  margin: auto 0;
+  box-shadow: 0 40px 100px -30px rgba(0,0,0,.9),
+              0 0 100px -20px rgba(139,92,246,.5);
+  overflow: hidden;
+  position: relative;
+  animation: posterIn .5s cubic-bezier(.34,1.56,.64,1);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+@keyframes posterIn {
+  0% { opacity: 0; transform: scale(.9) translateY(30px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Header ribbon */
+.poster-popup-ribbon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ec4899 100%);
+  background-size: 200% 200%;
+  animation: ribbonFlow 5s ease infinite;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+@keyframes ribbonFlow {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.poster-popup-ribbon::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+  animation: ribbonShine 4s infinite;
+}
+@keyframes ribbonShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+.poster-popup-ribbon-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px -4px rgba(0,0,0,.3);
+}
+.poster-popup-ribbon-text {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+.poster-popup-ribbon-text h3 {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0,0,0,.3);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.poster-popup-ribbon-text p {
+  margin: 0;
+  font-size: .68rem;
+  opacity: .9;
+  font-weight: 700;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.poster-popup-close {
+  background: rgba(255,255,255,.2);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: .2s;
+  position: relative;
+  z-index: 3;
+}
+.poster-popup-close:hover { background: rgba(255,255,255,.35); transform: rotate(90deg); }
+
+/* Image stage */
+.poster-popup-image-wrap {
+  position: relative;
+  width: 100%;
+  background: #0a0a12;
+  flex: 1;
+  overflow: hidden;
+  cursor: zoom-in;
+  min-height: 200px;
+  max-height: 55dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.poster-popup-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: transform .3s;
+}
+.poster-popup-image-wrap:hover img { transform: scale(1.03); }
+
+/* Counter badge (if multiple) */
+.poster-popup-counter {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,.7);
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .5px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,.2);
+}
+
+/* Message body */
+.poster-popup-body {
+  padding: 16px 20px 8px;
+  flex-shrink: 0;
+}
+.poster-popup-title {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 8px;
+  line-height: 1.3;
+}
+.poster-popup-message {
+  font-size: .86rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+}
+.poster-popup-date-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: .68rem;
+  font-weight: 800;
+  margin-top: 10px;
+  border: 1px solid rgba(180,83,9,.25);
+}
+
+/* Actions */
+.poster-popup-actions {
+  padding: 12px 16px 16px;
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  background: #fff;
+  border-top: 1px solid rgba(100,116,139,.1);
+}
+.poster-popup-btn {
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: none;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: .86rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  transition: .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.poster-popup-btn:active { transform: scale(.96); }
+.poster-popup-btn.primary {
+  background: linear-gradient(100deg, #667eea, #764ba2);
+  color: #fff;
+  box-shadow: 0 10px 25px -10px rgba(102,126,234,.7);
+}
+.poster-popup-btn.dismiss {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1.5px solid rgba(100,116,139,.15);
+  flex: 0.7;
+}
+
+/* Multi-poster navigation */
+.poster-popup-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 10px;
+  background: #f8fafc;
+  border-bottom: 1px solid rgba(100,116,139,.08);
+}
+.poster-popup-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(100,116,139,.2);
+  background: #fff;
+  color: #475569;
+  font-size: .9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: .2s;
+}
+.poster-popup-nav-btn:hover:not(:disabled) {
+  background: #667eea;
+  color: #fff;
+  border-color: #667eea;
+}
+.poster-popup-nav-btn:disabled {
+  opacity: .3;
+  cursor: not-allowed;
+}
+.poster-popup-dots {
+  display: flex;
+  gap: 5px;
+}
+.poster-popup-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: .2s;
+}
+.poster-popup-dot.active {
+  background: #667eea;
+  width: 20px;
+  border-radius: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 📸 FULLSCREEN IMAGE VIEWER                              */
+/* ═══════════════════════════════════════════════════════ */
+.poster-fullscreen {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.98);
+  z-index: 100260;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  cursor: zoom-out;
+}
+.poster-fullscreen.open { display: flex; }
+.poster-fullscreen img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.poster-fullscreen-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3);
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🎛️ ADMIN POSTER MANAGER                                 */
+/* ═══════════════════════════════════════════════════════ */
+.poster-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+.poster-admin-card {
+  background: #fff;
+  border: 1.5px solid rgba(180,200,230,.5);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: .25s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.poster-admin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px -15px rgba(0,0,0,.2);
+}
+.poster-admin-card.inactive {
+  opacity: .55;
+  filter: grayscale(.3);
+}
+.poster-admin-card.expired {
+  opacity: .4;
+}
+.poster-admin-thumb {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #0a0a12;
+  overflow: hidden;
+  position: relative;
+}
+.poster-admin-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.poster-admin-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  font-size: .62rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2;
+}
+.poster-admin-status.live {
+  background: rgba(34,197,94,.9);
+  color: #fff;
+}
+.poster-admin-status.scheduled {
+  background: rgba(245,158,11,.9);
+  color: #fff;
+}
+.poster-admin-status.expired {
+  background: rgba(100,116,139,.9);
+  color: #fff;
+}
+.poster-admin-status.off {
+  background: rgba(220,38,38,.9);
+  color: #fff;
+}
+.poster-admin-body {
+  padding: 12px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.poster-admin-title {
+  font-weight: 800;
+  font-size: .88rem;
+  color: #0f172a;
+  margin: 0 0 6px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.poster-admin-dates {
+  font-size: .68rem;
+  color: #64748b;
+  margin-bottom: 6px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.poster-admin-dates i { color: #8b5cf6; }
+.poster-admin-target {
+  font-size: .64rem;
+  color: #0891b2;
+  background: #ecfeff;
+  padding: 3px 8px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: 800;
+  margin-bottom: 10px;
+  align-self: flex-start;
+}
+.poster-admin-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(100,116,139,.1);
+}
+.poster-admin-action {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: none;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: .68rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: .2s;
+  min-height: 32px;
+}
+.poster-admin-action.toggle {
+  background: #fef3c7;
+  color: #92400e;
+}
+.poster-admin-action.edit {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.poster-admin-action.delete {
+  background: #fee2e2;
+  color: #dc2626;
+}
+.poster-admin-action:hover {
+  filter: brightness(.93);
+  transform: translateY(-1px);
+}
+.poster-admin-action:active {
+  transform: scale(.96);
+}
+
+/* Upload preview */
+.poster-upload-preview {
+  width: 100%;
+  aspect-ratio: 4/3;
+  border: 2.5px dashed rgba(139,92,246,.4);
+  border-radius: 14px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  margin-bottom: 12px;
+  position: relative;
+  transition: .2s;
+}
+.poster-upload-preview:hover {
+  border-color: #8b5cf6;
+  background: #f3e8ff;
+}
+.poster-upload-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  background: #0a0a12;
+}
+.poster-upload-placeholder {
+  text-align: center;
+  padding: 20px;
+}
+.poster-upload-placeholder i {
+  font-size: 2.8rem;
+  color: #8b5cf6;
+  display: block;
+  margin-bottom: 10px;
+  opacity: .85;
+}
+.poster-upload-placeholder div {
+  font-size: .86rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+.poster-upload-placeholder small {
+  font-size: .72rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 📱 MOBILE                                               */
+/* ═══════════════════════════════════════════════════════ */
+@media (max-width: 500px) {
+  .poster-popup-card { border-radius: 20px; }
+  .poster-popup-ribbon { padding: 12px 14px; }
+  .poster-popup-ribbon-icon { width: 38px; height: 38px; font-size: 1.2rem; }
+  .poster-popup-ribbon-text h3 { font-size: .92rem; }
+  .poster-popup-ribbon-text p { font-size: .62rem; }
+  .poster-popup-image-wrap { max-height: 48dvh; }
+  .poster-popup-title { font-size: .98rem; }
+  .poster-popup-message { font-size: .82rem; }
+  .poster-popup-btn { font-size: .82rem; padding: 12px 14px; }
+  .poster-admin-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .poster-admin-body { padding: 10px; }
+  .poster-admin-title { font-size: .78rem; }
+  .poster-admin-action { font-size: .6rem; padding: 5px 6px; }
+  .poster-admin-action span { display: none; }
+  .poster-admin-action i { font-size: .85rem; }
+}
+@media (max-width: 380px) {
+  .poster-admin-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+<script id="poster-popup-v102-js">
+(function(){
+  'use strict';
+  console.log('📸 Poster Popup v102 loading...');
+
+  var BUCKET = 'posters';
+  var MAX_SIZE = 10 * 1024 * 1024;  // 10MB
+
+  // ═══════════════════════════════════════════════════
+  // 🌐 STATE
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102 = {
+    posters: [],
+    adminPosters: [],
+    currentIndex: 0,
+    shownThisSession: new Set(),
+    pendingFile: null
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 📥 FETCH ACTIVE POSTERS FOR STUDENT
+  // ═══════════════════════════════════════════════════
+  async function fetchActivePosters(studentClass) {
+    if (!supabaseClient) return [];
+    try {
+      var today = new Date().toISOString().split('T')[0];
+      var r = await supabaseClient.from('poster_popups')
+        .select('*')
+        .eq('is_active', true)
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .order('priority', { ascending: false })
+        .order('created_at', { ascending: false });
+
+      if (r.error) {
+        if (/does not exist|relation/i.test(r.error.message || '')) {
+          console.warn('⚠️ poster_popups table missing');
+          return [];
+        }
+        throw r.error;
+      }
+
+      var list = r.data || [];
+      // Filter by class
+      if (studentClass) {
+        list = list.filter(function(p) {
+          var t = String(p.target_class || 'all').trim();
+          if (t === 'all') return true;
+          var classes = t.split(',').map(function(x){ return x.trim(); });
+          return classes.indexOf(String(studentClass)) > -1;
+        });
+      }
+      return list;
+    } catch(e) {
+      console.warn('fetchActivePosters:', e);
+      return [];
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 👁️ SHOULD SHOW POSTER?  (Dismissal check)
+  // ═══════════════════════════════════════════════════
+  function shouldShowPoster(posterId) {
+    if (!currentUser) return false;
+    // Already shown this session
+    if (POSTER_V102.shownThisSession.has(posterId)) return false;
+    // Dismissed today
+    try {
+      var key = 'poster_dismissed_' + currentUser.studentId + '_' + posterId;
+      var dismissedAt = localStorage.getItem(key);
+      if (dismissedAt) {
+        var today = new Date().toISOString().split('T')[0];
+        var dismissedDate = new Date(parseInt(dismissedAt)).toISOString().split('T')[0];
+        if (dismissedDate === today) return false;
+      }
+    } catch(e) {}
+    return true;
+  }
+
+  function markPosterDismissed(posterId, permanent) {
+    if (!currentUser) return;
+    try {
+      var key = 'poster_dismissed_' + currentUser.studentId + '_' + posterId;
+      localStorage.setItem(key, Date.now().toString());
+      if (permanent) {
+        localStorage.setItem(key + '_perm', 'true');
+      }
+    } catch(e) {}
+    POSTER_V102.shownThisSession.add(posterId);
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🎬 SHOW POSTER POPUP
+  // ═══════════════════════════════════════════════════
+  async function showPosterPopup(posters) {
+    if (!posters || posters.length === 0) return;
+
+    // Filter out already shown
+    var toShow = posters.filter(function(p) { return shouldShowPoster(p.id); });
+    if (toShow.length === 0) {
+      console.log('📸 All posters already shown');
+      return;
+    }
+
+    POSTER_V102.posters = toShow;
+    POSTER_V102.currentIndex = 0;
+
+    buildPosterPopup();
+    renderPosterPopup();
+
+    var overlay = document.getElementById('posterPopupV102');
+    if (overlay) overlay.classList.add('open');
+
+    // Haptic
+    if (navigator.vibrate) {
+      try { navigator.vibrate([20, 30, 20]); } catch(e) {}
+    }
+
+    // Confetti sparkle (small)
+    if (typeof confetti !== 'undefined') {
+      setTimeout(function() {
+        confetti({
+          particleCount: 60, spread: 70, origin: { y: .3 },
+          colors: ['#667eea','#764ba2','#ec4899','#fbbf24']
+        });
+      }, 200);
+    }
+  }
+  window.POSTER_V102_show = showPosterPopup;
+
+  // ═══════════════════════════════════════════════════
+  // 🏗️ BUILD POPUP DOM (once)
+  // ═══════════════════════════════════════════════════
+  function buildPosterPopup() {
+    if (document.getElementById('posterPopupV102')) return;
+
+    var overlay = document.createElement('div');
+    overlay.id = 'posterPopupV102';
+    overlay.className = 'poster-popup-overlay';
+    overlay.innerHTML =
+      '<div class="poster-popup-card">' +
+        // Ribbon
+        '<div class="poster-popup-ribbon">' +
+          '<div class="poster-popup-ribbon-icon">📸</div>' +
+          '<div class="poster-popup-ribbon-text">' +
+            '<h3 id="posterRibbonTitle">വിശേഷ ദിവസം</h3>' +
+            '<p>Noorussalam Madrasa</p>' +
+          '</div>' +
+          '<button class="poster-popup-close" onclick="POSTER_V102_close()" aria-label="Close">' +
+            '<i class="fas fa-times"></i>' +
+          '</button>' +
+        '</div>' +
+        // Navigation (if multi)
+        '<div class="poster-popup-nav" id="posterNav" style="display:none;">' +
+          '<button class="poster-popup-nav-btn" onclick="POSTER_V102_prev()" id="posterPrevBtn">' +
+            '<i class="fas fa-chevron-left"></i>' +
+          '</button>' +
+          '<div class="poster-popup-dots" id="posterDots"></div>' +
+          '<button class="poster-popup-nav-btn" onclick="POSTER_V102_next()" id="posterNextBtn">' +
+            '<i class="fas fa-chevron-right"></i>' +
+          '</button>' +
+        '</div>' +
+        // Image stage
+        '<div class="poster-popup-image-wrap" onclick="POSTER_V102_fullscreen()">' +
+          '<img id="posterImg" src="" alt="Poster">' +
+          '<div class="poster-popup-counter" id="posterCounter" style="display:none;"></div>' +
+        '</div>' +
+        // Body
+        '<div class="poster-popup-body">' +
+          '<h2 class="poster-popup-title" id="posterTitle">—</h2>' +
+          '<p class="poster-popup-message" id="posterMessage" style="display:none;"></p>' +
+          '<div class="poster-popup-date-badge" id="posterDateBadge" style="display:none;">' +
+            '<i class="fas fa-calendar"></i> <span id="posterDateRange">—</span>' +
+          '</div>' +
+        '</div>' +
+        // Actions
+        '<div class="poster-popup-actions">' +
+          '<button class="poster-popup-btn dismiss" onclick="POSTER_V102_dismissToday()">' +
+            '<i class="fas fa-clock"></i> പിന്നീട്' +
+          '</button>' +
+          '<button class="poster-popup-btn primary" onclick="POSTER_V102_close()">' +
+            '<i class="fas fa-check"></i> മനസ്സിലായി' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    // Close on backdrop
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) window.POSTER_V102_close();
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🎨 RENDER CURRENT POSTER
+  // ═══════════════════════════════════════════════════
+  function renderPosterPopup() {
+    var posters = POSTER_V102.posters;
+    var idx = POSTER_V102.currentIndex;
+    var p = posters[idx];
+    if (!p) return;
+
+    // Image
+    var img = document.getElementById('posterImg');
+    if (img) img.src = p.image_url;
+
+    // Title
+    var title = document.getElementById('posterTitle');
+    if (title) title.textContent = p.title || '—';
+
+    // Message
+    var msg = document.getElementById('posterMessage');
+    if (msg) {
+      if (p.message && p.message.trim()) {
+        msg.textContent = p.message;
+        msg.style.display = 'block';
+      } else {
+        msg.style.display = 'none';
+      }
+    }
+
+    // Date badge
+    var badge = document.getElementById('posterDateBadge');
+    var rangeEl = document.getElementById('posterDateRange');
+    if (badge && rangeEl) {
+      if (p.start_date && p.end_date && p.start_date !== p.end_date) {
+        try {
+          var s = new Date(p.start_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short' });
+          var e = new Date(p.end_date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+          rangeEl.textContent = s + ' - ' + e;
+          badge.style.display = 'inline-flex';
+        } catch(err) { badge.style.display = 'none'; }
+      } else if (p.start_date) {
+        try {
+          var d = new Date(p.start_date).toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+          rangeEl.textContent = d;
+          badge.style.display = 'inline-flex';
+        } catch(err) { badge.style.display = 'none'; }
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    // Navigation (if more than 1)
+    var nav = document.getElementById('posterNav');
+    var dots = document.getElementById('posterDots');
+    var prevBtn = document.getElementById('posterPrevBtn');
+    var nextBtn = document.getElementById('posterNextBtn');
+    var counter = document.getElementById('posterCounter');
+
+    if (posters.length > 1) {
+      if (nav) nav.style.display = 'flex';
+      if (prevBtn) prevBtn.disabled = (idx === 0);
+      if (nextBtn) nextBtn.disabled = (idx === posters.length - 1);
+      if (counter) {
+        counter.textContent = (idx + 1) + ' / ' + posters.length;
+        counter.style.display = 'block';
+      }
+      if (dots) {
+        dots.innerHTML = posters.map(function(_, i) {
+          return '<div class="poster-popup-dot' + (i === idx ? ' active' : '') + '"></div>';
+        }).join('');
+      }
+    } else {
+      if (nav) nav.style.display = 'none';
+      if (counter) counter.style.display = 'none';
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🎬 ACTIONS
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_close = function() {
+    var p = POSTER_V102.posters[POSTER_V102.currentIndex];
+    if (p) markPosterDismissed(p.id, false);
+    var overlay = document.getElementById('posterPopupV102');
+    if (overlay) overlay.classList.remove('open');
+  };
+
+  window.POSTER_V102_dismissToday = function() {
+    var p = POSTER_V102.posters[POSTER_V102.currentIndex];
+    if (p) markPosterDismissed(p.id, false);
+    showToast('📸 ഇന്ന് വീണ്ടും കാണില്ല', 'info');
+    var overlay = document.getElementById('posterPopupV102');
+    if (overlay) overlay.classList.remove('open');
+  };
+
+  window.POSTER_V102_next = function() {
+    if (POSTER_V102.currentIndex < POSTER_V102.posters.length - 1) {
+      // Mark current as seen
+      var prevP = POSTER_V102.posters[POSTER_V102.currentIndex];
+      if (prevP) markPosterDismissed(prevP.id, false);
+      POSTER_V102.currentIndex++;
+      renderPosterPopup();
+      if (navigator.vibrate) try { navigator.vibrate(8); } catch(e) {}
+    }
+  };
+
+  window.POSTER_V102_prev = function() {
+    if (POSTER_V102.currentIndex > 0) {
+      POSTER_V102.currentIndex--;
+      renderPosterPopup();
+      if (navigator.vibrate) try { navigator.vibrate(8); } catch(e) {}
+    }
+  };
+
+  window.POSTER_V102_fullscreen = function() {
+    var p = POSTER_V102.posters[POSTER_V102.currentIndex];
+    if (!p) return;
+    var fs = document.getElementById('posterFullscreenV102');
+    if (!fs) {
+      fs = document.createElement('div');
+      fs.id = 'posterFullscreenV102';
+      fs.className = 'poster-fullscreen';
+      fs.innerHTML =
+        '<button class="poster-fullscreen-close" onclick="POSTER_V102_closeFullscreen(event)">' +
+          '<i class="fas fa-times"></i>' +
+        '</button>' +
+        '<img id="posterFullscreenImg" src="" alt="Poster">';
+      fs.addEventListener('click', function(e) {
+        if (e.target === fs) window.POSTER_V102_closeFullscreen(e);
+      });
+      document.body.appendChild(fs);
+    }
+    var img = document.getElementById('posterFullscreenImg');
+    if (img) img.src = p.image_url;
+    fs.classList.add('open');
+  };
+
+  window.POSTER_V102_closeFullscreen = function(e) {
+    if (e) e.stopPropagation();
+    var fs = document.getElementById('posterFullscreenV102');
+    if (fs) fs.classList.remove('open');
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🚀 TRIGGER — Called after login
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_autoCheck = async function() {
+    if (!currentUser || !supabaseClient) return;
+
+    // Skip admin/teacher
+    if (window.isAdminMode || (typeof isAdminMode !== 'undefined' && isAdminMode)) return;
+    if (window.isTeacherMode || (typeof isTeacherMode !== 'undefined' && isTeacherMode)) return;
+
+    // Only show when dashboard is visible
+    var dash = document.getElementById('dashboardSection');
+    if (!dash || dash.style.display !== 'block') return;
+
+    console.log('📸 Checking for posters...');
+    var posters = await fetchActivePosters(currentUser.class);
+    console.log('📸 Found', posters.length, 'active poster(s)');
+    if (posters.length > 0) {
+      showPosterPopup(posters);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🔗 HOOK LOGIN
+  // ═══════════════════════════════════════════════════
+  function hookLogin() {
+    if (typeof window.completeLogin !== 'function') return false;
+    if (window.completeLogin._v102) return true;
+
+    var orig = window.completeLogin;
+    window.completeLogin = async function(student) {
+      var r = await orig.apply(this, arguments);
+      // Wait for dashboard + survey to settle
+      setTimeout(window.POSTER_V102_autoCheck, 8000);
+      return r;
+    };
+    window.completeLogin._v102 = true;
+    console.log('✅ Login hooked');
+    return true;
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🔗 HOOK SESSION RESTORE
+  // ═══════════════════════════════════════════════════
+  function hookSessionRestore() {
+    var tries = 0;
+    var t = setInterval(function() {
+      tries++;
+      var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+      if (u && !u._posterChecked) {
+        u._posterChecked = true;
+        clearInterval(t);
+        setTimeout(window.POSTER_V102_autoCheck, 6000);
+      }
+      if (tries > 60) clearInterval(t);
+    }, 1000);
+  }
+
+  // ═══════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
+  // 📸 ADMIN PANEL — Poster Manager
+  // ═══════════════════════════════════════════════════
+  // ═══════════════════════════════════════════════════
+
+  function addPosterAdminTab() {
+    var tabs = document.getElementById('adminTabs');
+    if (!tabs) return;
+    if (tabs.querySelector('[data-tab="posters"]')) return;
+
+    var btn = document.createElement('button');
+    btn.className = 'admin-tab';
+    btn.dataset.tab = 'posters';
+    btn.innerHTML = '📸 Posters';
+    btn.onclick = function() { window.switchAdminTab('posters'); };
+    tabs.appendChild(btn);
+
+    var container = document.getElementById('adminMainContent');
+    if (!container) return;
+    if (document.getElementById('adminPostersTab')) return;
+
+    var div = document.createElement('div');
+    div.id = 'adminPostersTab';
+    div.className = 'admin-tab-content';
+    div.style.display = 'none';
+    div.innerHTML =
+      '<div class="admin-toolbar">' +
+        '<button class="btn-load" onclick="POSTER_V102_loadAdmin()">' +
+          '<i class="fas fa-sync-alt"></i> Refresh' +
+        '</button>' +
+        '<button class="btn-update" onclick="POSTER_V102_openForm()">' +
+          '<i class="fas fa-plus"></i> Add Poster' +
+        '</button>' +
+        '<input type="text" id="posterSearchInput" ' +
+               'placeholder="🔍 Search posters" ' +
+               'oninput="POSTER_V102_filterAdmin()">' +
+      '</div>' +
+      '<div class="admin-summary" id="posterAdminSummary"></div>' +
+      '<div class="poster-admin-grid" id="posterAdminGrid"></div>';
+
+    container.appendChild(div);
+  }
+
+  // Patch switchAdminTab
+  var _origSwitch = window.switchAdminTab;
+  window.switchAdminTab = function(tab) {
+    if (tab === 'posters') {
+      document.querySelectorAll('.admin-tab-content').forEach(function(c) { c.style.display = 'none'; });
+      document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('active'); });
+      var btn = document.querySelector('.admin-tab[data-tab="posters"]');
+      if (btn) btn.classList.add('active');
+      var el = document.getElementById('adminPostersTab');
+      if (el) el.style.display = 'block';
+      window.POSTER_V102_loadAdmin();
+      return;
+    }
+    return _origSwitch.apply(this, arguments);
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 📥 LOAD ADMIN POSTERS
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_loadAdmin = async function() {
+    var wrap = document.getElementById('posterAdminGrid');
+    if (!wrap) return;
+    wrap.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;"><div class="spinner-sm" style="margin:0 auto;"></div></div>';
+
+    try {
+      var r = await supabaseClient.from('poster_popups')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (r.error) throw r.error;
+      POSTER_V102.adminPosters = r.data || [];
+      renderPosterAdmin();
+    } catch(e) {
+      wrap.innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#dc2626;">' +
+          'Error: ' + escapeHtml(e.message) +
+        '</div>';
+    }
+  };
+
+  window.POSTER_V102_filterAdmin = function() {
+    var q = (document.getElementById('posterSearchInput')?.value || '').toLowerCase().trim();
+    if (!q) {
+      renderPosterAdmin();
+      return;
+    }
+    var filtered = POSTER_V102.adminPosters.filter(function(p) {
+      return (p.title || '').toLowerCase().indexOf(q) > -1 ||
+             (p.message || '').toLowerCase().indexOf(q) > -1;
+    });
+    renderPosterAdminList(filtered);
+  };
+
+  function renderPosterAdmin() {
+    var list = POSTER_V102.adminPosters || [];
+    var today = new Date().toISOString().split('T')[0];
+
+    // Summary
+    var sum = document.getElementById('posterAdminSummary');
+    if (sum) {
+      var live = list.filter(function(p) {
+        return p.is_active && p.start_date <= today && p.end_date >= today;
+      }).length;
+      var scheduled = list.filter(function(p) {
+        return p.is_active && p.start_date > today;
+      }).length;
+      var expired = list.filter(function(p) {
+        return p.end_date < today;
+      }).length;
+      var inactive = list.filter(function(p) { return !p.is_active; }).length;
+
+      sum.innerHTML =
+        '<div class="stat"><div class="num green">' + live + '</div><div class="label">Live Now</div></div>' +
+        '<div class="stat"><div class="num orange">' + scheduled + '</div><div class="label">Scheduled</div></div>' +
+        '<div class="stat"><div class="num" style="color:#64748b;">' + expired + '</div><div class="label">Expired</div></div>' +
+        '<div class="stat"><div class="num" style="color:#dc2626;">' + inactive + '</div><div class="label">Inactive</div></div>';
+    }
+
+    renderPosterAdminList(list);
+  }
+
+  function renderPosterAdminList(list) {
+    var wrap = document.getElementById('posterAdminGrid');
+    if (!wrap) return;
+
+    if (list.length === 0) {
+      wrap.innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#64748b;">' +
+          '<i class="fas fa-images" style="font-size:3rem;opacity:.3;display:block;margin-bottom:12px;"></i>' +
+          '<div style="font-weight:800;color:#0f172a;">ഇതുവരെ posters ഇല്ല</div>' +
+          '<div style="font-size:.8rem;margin-top:6px;">"Add Poster" click ചെയ്ത് തുടങ്ങൂ</div>' +
+        '</div>';
+      return;
+    }
+
+    var today = new Date().toISOString().split('T')[0];
+
+    wrap.innerHTML = list.map(function(p) {
+      var status = 'expired';
+      var statusLabel = 'Expired';
+      if (!p.is_active) {
+        status = 'off';
+        statusLabel = 'Inactive';
+      } else if (p.start_date > today) {
+        status = 'scheduled';
+        statusLabel = 'Scheduled';
+      } else if (p.end_date >= today) {
+        status = 'live';
+        statusLabel = '🔴 Live';
+      }
+
+      var targetText = p.target_class === 'all' ? '🌟 All Classes' : '📚 Class ' + p.target_class;
+      var dateRange = formatDateRange(p.start_date, p.end_date);
+      var cardClass = '';
+      if (status === 'off') cardClass = 'inactive';
+      else if (status === 'expired') cardClass = 'expired';
+
+      return '<div class="poster-admin-card ' + cardClass + '" data-id="' + p.id + '">' +
+        '<div class="poster-admin-thumb">' +
+          '<span class="poster-admin-status ' + status + '">' + statusLabel + '</span>' +
+          '<img src="' + escapeHtml(p.image_url) + '" alt="" loading="lazy">' +
+        '</div>' +
+        '<div class="poster-admin-body">' +
+          '<h4 class="poster-admin-title">' + escapeHtml(p.title) + '</h4>' +
+          '<div class="poster-admin-dates">' +
+            '<i class="fas fa-calendar"></i> ' + escapeHtml(dateRange) +
+          '</div>' +
+          '<span class="poster-admin-target">' + targetText + '</span>' +
+          '<div class="poster-admin-actions">' +
+            '<button class="poster-admin-action toggle" ' +
+                    'onclick="POSTER_V102_toggleActive(' + p.id + ')" ' +
+                    'title="Toggle Active">' +
+              '<i class="fas fa-power-off"></i> <span>Toggle</span>' +
+            '</button>' +
+            '<button class="poster-admin-action edit" ' +
+                    'onclick="POSTER_V102_openForm(' + p.id + ')" ' +
+                    'title="Edit">' +
+              '<i class="fas fa-pen"></i> <span>Edit</span>' +
+            '</button>' +
+            '<button class="poster-admin-action delete" ' +
+                    'onclick="POSTER_V102_delete(' + p.id + ')" ' +
+                    'title="Delete">' +
+              '<i class="fas fa-trash"></i>' +
+            '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function formatDateRange(s, e) {
+    try {
+      var sd = new Date(s).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+      var ed = new Date(e).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+      return s === e ? ed : sd + ' – ' + ed;
+    } catch(err) { return s + ' – ' + e; }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 📝 ADD/EDIT FORM
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_openForm = async function(id) {
+    var isEdit = !!id;
+    var p = isEdit ? (POSTER_V102.adminPosters || []).find(function(x) { return x.id === id; }) : {};
+
+    // Default dates: today to today + 7
+    var today = new Date().toISOString().split('T')[0];
+    var weekLater = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+
+    POSTER_V102.pendingFile = null;
+
+    modalTitleSpan.innerText = isEdit ? '✏️ Edit Poster' : '📸 Add Poster';
+    modalBodyDiv.innerHTML =
+      '<form onsubmit="event.preventDefault();POSTER_V102_save(' + (id || 'null') + ');">' +
+        // Image upload
+        '<div class="poster-upload-preview" id="posterUploadPreview" ' +
+             'onclick="document.getElementById(\'posterFileInput\').click()">' +
+          '<div class="poster-upload-placeholder" id="posterUploadPlaceholder">' +
+            '<i class="fas fa-cloud-upload-alt"></i>' +
+            '<div>Poster Image</div>' +
+            '<small>Tap ചെയ്ത് image select ചെയ്യുക (max 10MB)</small>' +
+          '</div>' +
+          '<img id="posterPreviewImg" ' +
+               'src="' + (p.image_url ? escapeHtml(p.image_url) : '') + '" ' +
+               'style="display:' + (p.image_url ? 'block' : 'none') + ';">' +
+        '</div>' +
+        '<input type="file" id="posterFileInput" accept="image/*" ' +
+               'style="display:none" onchange="POSTER_V102_handleFile(this)">' +
+
+        // Title
+        '<div class="mb-3">' +
+          '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+            '📝 Title *' +
+          '</label>' +
+          '<input type="text" id="posterTitleInput" class="modal-form-input" ' +
+                 'value="' + escapeHtml(p.title || '') + '" ' +
+                 'placeholder="e.g., പ്രവാചക ജന്മദിനം" ' +
+                 'required maxlength="100">' +
+        '</div>' +
+
+        // Message
+        '<div class="mb-3">' +
+          '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+            '💬 Message (Optional)' +
+          '</label>' +
+          '<textarea id="posterMessageInput" class="modal-form-input" ' +
+                    'style="min-height:70px;" maxlength="500" ' +
+                    'placeholder="ചെറിയ വിവരണം...">' +
+            escapeHtml(p.message || '') +
+          '</textarea>' +
+        '</div>' +
+
+        // Date range
+        '<div class="row g-2 mb-3">' +
+          '<div class="col-md-6">' +
+            '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+              '📅 Start Date *' +
+            '</label>' +
+            '<input type="date" id="posterStartInput" class="modal-form-input" ' +
+                   'value="' + (p.start_date || today) + '" required>' +
+          '</div>' +
+          '<div class="col-md-6">' +
+            '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+              '📅 End Date *' +
+            '</label>' +
+            '<input type="date" id="posterEndInput" class="modal-form-input" ' +
+                   'value="' + (p.end_date || weekLater) + '" required>' +
+          '</div>' +
+        '</div>' +
+
+        // Target + Priority
+        '<div class="row g-2 mb-3">' +
+          '<div class="col-md-7">' +
+            '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+              '🎯 Target Classes' +
+            '</label>' +
+            '<select id="posterTargetInput" class="modal-form-input">' +
+              '<option value="all"' + (p.target_class === 'all' || !p.target_class ? ' selected' : '') + '>🌟 All Classes</option>' +
+              [1,2,3,4,5,6,7,8,9,10].map(function(c) {
+                return '<option value="' + c + '"' +
+                  (String(p.target_class) === String(c) ? ' selected' : '') +
+                  '>Class ' + c + '</option>';
+              }).join('') +
+            '</select>' +
+          '</div>' +
+          '<div class="col-md-5">' +
+            '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+              '⭐ Priority' +
+            '</label>' +
+            '<select id="posterPriorityInput" class="modal-form-input">' +
+              '<option value="0"' + (p.priority === 0 ? ' selected' : '') + '>Normal</option>' +
+              '<option value="10"' + (p.priority === 10 ? ' selected' : '') + '>⚡ High</option>' +
+              '<option value="20"' + (p.priority === 20 ? ' selected' : '') + '>🚨 Urgent</option>' +
+            '</select>' +
+          '</div>' +
+        '</div>' +
+
+        // Active
+        '<div class="mb-3">' +
+          '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+            '✅ Status' +
+          '</label>' +
+          '<select id="posterActiveInput" class="modal-form-input">' +
+            '<option value="true"' + (p.is_active !== false ? ' selected' : '') + '>✅ Active (Live)</option>' +
+            '<option value="false"' + (p.is_active === false ? ' selected' : '') + '>🚫 Inactive</option>' +
+          '</select>' +
+        '</div>' +
+
+        // Buttons
+        '<div class="d-flex gap-2 mt-4">' +
+          '<button type="button" class="btn-cancel" ' +
+                  'onclick="closeModal(\'globalModal\')">Cancel</button>' +
+          '<button type="submit" class="btn-update flex-grow-1" id="posterSaveBtn">' +
+            '<i class="fas fa-save"></i> ' + (isEdit ? 'Update' : 'Save') +
+          '</button>' +
+        '</div>' +
+      '</form>';
+
+    modal.style.display = 'flex';
+
+    // Re-init preview
+    setTimeout(function() {
+      var preview = document.getElementById('posterPreviewImg');
+      var placeholder = document.getElementById('posterUploadPlaceholder');
+      if (preview && preview.src && preview.src.length > 10) {
+        preview.style.display = 'block';
+        if (placeholder) placeholder.style.display = 'none';
+      }
+    }, 100);
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 📤 HANDLE FILE PICK
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_handleFile = function(input) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      showToast('❌ Image only', 'error');
+      input.value = '';
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      showToast('❌ Max 10MB', 'error');
+      input.value = '';
+      return;
+    }
+
+    POSTER_V102.pendingFile = file;
+
+    // Preview
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById('posterPreviewImg');
+      var placeholder = document.getElementById('posterUploadPlaceholder');
+      if (preview) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 💾 SAVE POSTER
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_save = async function(id) {
+    var isEdit = !!id;
+    var title = (document.getElementById('posterTitleInput').value || '').trim();
+    var message = (document.getElementById('posterMessageInput').value || '').trim();
+    var startDate = document.getElementById('posterStartInput').value;
+    var endDate = document.getElementById('posterEndInput').value;
+    var targetClass = document.getElementById('posterTargetInput').value;
+    var priority = parseInt(document.getElementById('posterPriorityInput').value) || 0;
+    var isActive = document.getElementById('posterActiveInput').value === 'true';
+
+    // Validation
+    if (!title) { showToast('❌ Title required', 'error'); return; }
+    if (!startDate || !endDate) { showToast('❌ Dates required', 'error'); return; }
+    if (startDate > endDate) { showToast('❌ Start date < End date', 'error'); return; }
+
+    // Existing image URL (from edit)
+    var existingPoster = isEdit ? (POSTER_V102.adminPosters || []).find(function(x) { return x.id === id; }) : null;
+    var imageUrl = existingPoster ? existingPoster.image_url : null;
+
+    // If new file picked, upload
+    if (POSTER_V102.pendingFile) {
+      try {
+        showLoading(true);
+        var file = POSTER_V102.pendingFile;
+        var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        var filename = 'poster_' + Date.now() + '_' +
+                       Math.random().toString(36).slice(2, 8) + '.' + ext;
+
+        var up = await supabaseClient.storage.from(BUCKET).upload(filename, file, {
+          contentType: file.type,
+          cacheControl: '31536000',
+          upsert: false
+        });
+
+        if (up.error) throw up.error;
+
+        var pub = supabaseClient.storage.from(BUCKET).getPublicUrl(filename);
+        imageUrl = pub.data.publicUrl;
+        showLoading(false);
+      } catch(err) {
+        showLoading(false);
+        showToast('❌ Upload failed: ' + err.message, 'error');
+        return;
+      }
+    }
+
+    if (!imageUrl) {
+      showToast('❌ Image required', 'error');
+      return;
+    }
+
+    // Save to DB
+    var btn = document.getElementById('posterSaveBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      var payload = {
+        title: title,
+        message: message || null,
+        image_url: imageUrl,
+        start_date: startDate,
+        end_date: endDate,
+        target_class: targetClass,
+        priority: priority,
+        is_active: isActive,
+        updated_at: new Date().toISOString()
+      };
+
+      if (isEdit) {
+        var r = await supabaseClient.from('poster_popups').update(payload).eq('id', id);
+        if (r.error) throw r.error;
+        showToast('✅ Poster updated', 'success');
+      } else {
+        payload.created_by = 'ADMIN';
+        var r2 = await supabaseClient.from('poster_popups').insert(payload);
+        if (r2.error) throw r2.error;
+        showToast('✅ Poster created', 'success');
+      }
+
+      closeModal('globalModal');
+      POSTER_V102.pendingFile = null;
+      window.POSTER_V102_loadAdmin();
+
+      if (typeof confetti !== 'undefined') {
+        confetti({ particleCount: 80, spread: 70, origin: { y: .7 },
+                   colors: ['#667eea','#764ba2','#ec4899'] });
+      }
+    } catch(e) {
+      showToast('❌ ' + e.message, 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save'; }
+    }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🎛️ TOGGLE ACTIVE
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_toggleActive = async function(id) {
+    var p = (POSTER_V102.adminPosters || []).find(function(x) { return x.id === id; });
+    if (!p) return;
+    try {
+      await supabaseClient.from('poster_popups').update({
+        is_active: !p.is_active,
+        updated_at: new Date().toISOString()
+      }).eq('id', id);
+      showToast(p.is_active ? '🚫 Deactivated' : '✅ Activated', 'success');
+      window.POSTER_V102_loadAdmin();
+    } catch(e) {
+      showToast('❌ ' + e.message, 'error');
+    }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🗑️ DELETE POSTER
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_delete = async function(id) {
+    if (!confirm('🗑️ Delete this poster permanently?')) return;
+    try {
+      var p = (POSTER_V102.adminPosters || []).find(function(x) { return x.id === id; });
+      if (p && p.image_url) {
+        // Try to delete from storage too
+        try {
+          var parts = p.image_url.split('/posters/');
+          if (parts[1]) {
+            var path = parts[1].split('?')[0];
+            await supabaseClient.storage.from(BUCKET).remove([path]);
+          }
+        } catch(e) {}
+      }
+      await supabaseClient.from('poster_popups').delete().eq('id', id);
+      showToast('🗑️ Deleted', 'success');
+      window.POSTER_V102_loadAdmin();
+    } catch(e) {
+      showToast('❌ ' + e.message, 'error');
+    }
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🚀 INIT
+  // ═══════════════════════════════════════════════════
+  function init() {
+    addPosterAdminTab();
+    if (!hookLogin()) {
+      setTimeout(hookLogin, 1500);
+      setTimeout(hookLogin, 3000);
+    }
+    hookSessionRestore();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(init, 3500);
+      setTimeout(init, 6000);
+    });
+  } else {
+    setTimeout(init, 3500);
+    setTimeout(init, 6000);
+  }
+
+  // Periodic re-check for admin tab
+  setInterval(function() {
+    var adminSection = document.getElementById('adminSection');
+    if (adminSection && adminSection.style.display === 'block') {
+      addPosterAdminTab();
+    }
+  }, 5000);
+
+  // ═══════════════════════════════════════════════════
+  // 🐛 DEBUG
+  // ═══════════════════════════════════════════════════
+  window.POSTER_V102_debug = async function() {
+    console.log('=== POSTER DEBUG v102 ===');
+    var u = window.currentUser || (typeof currentUser !== 'undefined' ? currentUser : null);
+    console.log('Student:', u ? u.studentId : 'NONE');
+    console.log('Class:', u ? u.class : 'NONE');
+
+    if (u) {
+      var posters = await fetchActivePosters(u.class);
+      console.log('Active posters for student:', posters.length);
+      posters.forEach(function(p) {
+        console.log('  •', p.title, '| ID:', p.id, '| Shown today:',
+                    !shouldShowPoster(p.id) ? 'YES' : 'NO');
+      });
+    }
+
+    var overlay = document.getElementById('posterPopupV102');
+    console.log('Popup DOM exists?', !!overlay);
+    if (overlay) console.log('Popup is open?', overlay.classList.contains('open'));
+  };
+
+  window.POSTER_V102_reset = function() {
+    if (!currentUser) return;
+    var keys = [];
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf('poster_dismissed_' + currentUser.studentId) === 0) {
+        keys.push(k);
+      }
+    }
+    keys.forEach(function(k) { localStorage.removeItem(k); });
+    POSTER_V102.shownThisSession.clear();
+    showToast('✅ Poster state reset', 'success');
+    console.log('✅ Cleared', keys.length, 'dismissal records');
+  };
+
+  window.POSTER_V102_forceShow = async function() {
+    if (!currentUser) { showToast('❌ No user', 'error'); return; }
+    window.POSTER_V102_reset();
+    await window.POSTER_V102_autoCheck();
+  };
+
+  console.log('✅ Poster Popup v102 ready');
+  console.log('   💡 Admin → 📸 Posters tab');
+  console.log('   💡 POSTER_V102_debug() — diagnose');
+  console.log('   💡 POSTER_V102_forceShow() — manual test');
+  console.log('   💡 POSTER_V102_reset() — clear dismissed');
+})();
+</script>
 </body>
 </html>
