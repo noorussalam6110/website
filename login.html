@@ -41360,5 +41360,529 @@ function applyQuizVisibility() {
   console.log('   💡 QUIZ_V96_set("6", false) — disable Class 6');
 })();
 </script>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 🔥 v100.0 — EMERGENCY PHONE HANG FIX                  -->
+<!-- Kills all background loops, throttles everything      -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<style id="emergency-perf-v100">
+/* ═══════════════════════════════════════════════════════ */
+/* 🚫 KILL ALL HEAVY ANIMATIONS ON MOBILE                  */
+/* ═══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+
+  /* Kill ALL animations except essential ones */
+  * {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .15s !important;
+  }
+
+  /* Re-enable ONLY critical transitions */
+  .mob-bottom-nav,
+  .active-pill,
+  .chat-panel,
+  .modal-glass,
+  .chat-msg {
+    transition-duration: .2s !important;
+  }
+
+  /* Kill every decorative animation */
+  .nsm-hero-deco,
+  .pala-drop-deco,
+  .splash-logo,
+  .splash-title,
+  .splash-bar div,
+  .nsm-card::before,
+  .nsm-card::after,
+  .student-welcome-banner::before,
+  .student-welcome-banner .welcome-icon,
+  .stat-card-neon::after,
+  .dashboard-header-glow::after,
+  .action-tile::before,
+  .xp-widget::before,
+  .streak-widget::after,
+  .missions-widget::before,
+  .namaz-widget::before,
+  .namaz-widget::after,
+  .tasbeeh-widget::before,
+  .ai-fab,
+  .chat-fab,
+  .ai-dot,
+  .online-dot,
+  .friend-status-dot.online,
+  .prayer-item.active,
+  .xp-progress-bar::after,
+  .levelup-number,
+  .new-badge,
+  .notif-badge,
+  .chat-badge,
+  .frameGlow,
+  .av-preview-frame,
+  .friend-avatar .av-frame,
+  .streak-fire,
+  .namaz-streak-fire,
+  .ig-post-avatar::before,
+  .ai-welcome-icon {
+    animation: none !important;
+    filter: none !important;
+  }
+
+  /* Kill ALL backdrop-filter (huge GPU killer) */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* Only allow on critical UI */
+  .mob-bottom-nav,
+  .ai-panel,
+  .chat-panel,
+  .modal-glass,
+  .creation-lightbox {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+
+  /* Kill all drop-shadow filters */
+  img,
+  .nsm-nav-logo,
+  .nsm-card-logo img,
+  .splash-logo img,
+  .nsm-input-icon,
+  .action-ico,
+  .stat-ico,
+  .hub-ico,
+  .xp-level-badge,
+  .levelup-popup .levelup-number {
+    filter: none !important;
+    -webkit-filter: none !important;
+  }
+
+  /* Reduce box-shadow on mobile */
+  .stat-card-neon,
+  .action-tile,
+  .hub-card,
+  .xp-widget,
+  .streak-widget,
+  .missions-widget,
+  .namaz-widget,
+  .leaderboard-section,
+  .activity-timeline,
+  .chart-card {
+    box-shadow: 0 2px 6px -2px rgba(0,0,0,.08) !important;
+  }
+
+  /* content-visibility for long lists */
+  .leaderboard-scroll .lb-card,
+  .qa-grid .action-tile,
+  .feed-item,
+  .chat-msg,
+  .ig-post,
+  .mission-item,
+  .login-log-item,
+  .download-card,
+  .notification-item {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 60px;
+  }
+
+  /* Remove pulsing gradients */
+  .xp-widget,
+  .streak-widget,
+  .student-welcome-banner,
+  .palathulli-hero,
+  .achievement-popup {
+    animation: none !important;
+    background-size: 100% 100% !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🚫 REDUCED MOTION MODE                                   */
+/* ═══════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🚫 EMERGENCY MODE — Aggressive                            */
+/* ═══════════════════════════════════════════════════════ */
+body.emergency-perf * {
+  animation: none !important;
+  transition: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  will-change: auto !important;
+  transform-style: flat !important;
+}
+</style>
+
+<script id="emergency-perf-v100-js">
+(function(){
+  'use strict';
+  console.log('🔥 EMERGENCY PERF v100 loading...');
+
+  var IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 1. KILL ALL setInterval — Replace with throttled version
+  // ═══════════════════════════════════════════════════
+  var _activeIntervals = [];
+  var _origSetInterval = window.setInterval;
+  var _origClearInterval = window.clearInterval;
+
+  window.setInterval = function(fn, delay) {
+    // Force minimum 5 seconds on mobile
+    var minDelay = IS_MOBILE ? 5000 : 2000;
+    if (delay < minDelay) delay = minDelay;
+
+    // Wrap function to skip when app hidden
+    var wrapped = function() {
+      if (document.hidden) return;  // Skip when background
+      try { fn.apply(this, arguments); } catch(e) {}
+    };
+
+    var id = _origSetInterval.call(window, wrapped, delay);
+    _activeIntervals.push({ id: id, original: fn, delay: delay });
+    return id;
+  };
+
+  window.clearInterval = function(id) {
+    _activeIntervals = _activeIntervals.filter(function(x) { return x.id !== id; });
+    return _origClearInterval.call(window, id);
+  };
+
+  console.log('✅ Interval throttle active (' + _activeIntervals.length + ' after setup)');
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 2. KILL MutationObserver on body subtree
+  // ═══════════════════════════════════════════════════
+  var _origMO = window.MutationObserver;
+  if (_origMO) {
+    window.MutationObserver = function(callback) {
+      var throttled = (function() {
+        var pending = null;
+        var lastRun = 0;
+        var lastMutations = null;
+        return function(mutations, observer) {
+          lastMutations = mutations;
+          if (pending) return;
+          var now = Date.now();
+          var wait = Math.max(0, 800 - (now - lastRun));
+          pending = setTimeout(function() {
+            pending = null;
+            lastRun = Date.now();
+            try { callback(lastMutations, observer); } catch(e) {}
+          }, wait);
+        };
+      })();
+
+      var observer = new _origMO(throttled);
+
+      // Wrap observe — refuse subtree:true on body/html
+      var _origObserve = observer.observe.bind(observer);
+      observer.observe = function(target, options) {
+        if (options && options.subtree === true) {
+          if (target === document.body || target === document.documentElement) {
+            // Downgrade: watch only direct children, no subtree
+            options = Object.assign({}, options, { subtree: false });
+            console.warn('⚠️ Downgraded subtree:true observer on body');
+          }
+        }
+        // Force attributeFilter to reduce noise
+        if (options.attributes === true && !options.attributeFilter) {
+          options = Object.assign({}, options, {
+            attributeFilter: ['style', 'class']  // Only these
+          });
+        }
+        return _origObserve(target, options);
+      };
+
+      return observer;
+    };
+  }
+  console.log('✅ MutationObserver throttled (min 800ms)');
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 3. THROTTLE requestAnimationFrame — kill idle loops
+  // ═══════════════════════════════════════════════════
+  var _origRAF = window.requestAnimationFrame;
+  var _rafThrottle = {};
+  var _rafFrameCount = 0;
+
+  window.requestAnimationFrame = function(callback) {
+    // Skip when app hidden
+    if (document.hidden) return 0;
+
+    // Generic throttle: max 30fps instead of 60fps
+    _rafFrameCount++;
+    if (_rafFrameCount % 2 === 0) {
+      return _origRAF.call(window, callback);
+    } else {
+      // Queue for next frame
+      return _origRAF.call(window, function() {
+        _origRAF.call(window, callback);
+      });
+    }
+  };
+
+  console.log('✅ RAF throttled to ~30fps');
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 4. STOP LEADERBOARD AUTO-SCROLL (heavy RAF)
+  // ═══════════════════════════════════════════════════
+  function killAutoScroll() {
+    if (typeof window.stopLeaderboardAutoScroll === 'function') {
+      try { window.stopLeaderboardAutoScroll(); } catch(e) {}
+    }
+    // Also kill any RAF loop on the leaderboard
+    if (window._lbAutoScrollRAF) {
+      try { cancelAnimationFrame(window._lbAutoScrollRAF); } catch(e) {}
+      window._lbAutoScrollRAF = null;
+    }
+    if (window._lbInterval) {
+      try { clearInterval(window._lbInterval); } catch(e) {}
+      window._lbInterval = null;
+    }
+    console.log('✅ Leaderboard auto-scroll killed');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 5. STOP COUNTDOWNS (Prayer + Exam) on mobile
+  // ═══════════════════════════════════════════════════
+  function killCountdowns() {
+    if (window._prayerTickInterval) {
+      try { clearInterval(window._prayerTickInterval); } catch(e) {}
+      window._prayerTickInterval = null;
+    }
+    if (window._examTickInterval) {
+      try { clearInterval(window._examTickInterval); } catch(e) {}
+      window._examTickInterval = null;
+    }
+    console.log('✅ Countdown timers killed');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 6. STOP CHAT POLLING LOOPS
+  // ═══════════════════════════════════════════════════
+  function killChatLoops() {
+    // Chat badge polling — stop if exists
+    var keys = Object.keys(window).filter(function(k) {
+      return k.startsWith('_') && typeof window[k] === 'number' &&
+             (k.toLowerCase().indexOf('interval') > -1 ||
+              k.toLowerCase().indexOf('timer') > -1);
+    });
+    keys.forEach(function(k) {
+      try { clearInterval(window[k]); window[k] = null; } catch(e) {}
+    });
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 7. FREEZE "STUCK" PERIODIC CHECKS
+  // ═══════════════════════════════════════════════════
+  function freezePeriodicChecks() {
+    // From various scripts, these run every 500ms-3s:
+    // unlockLoginScroll (800ms) — kill
+    // updateFabVisibility (1500-2000ms) — kill
+    // forceTeacherScroll (3000ms) — kill
+    // checkScrollLock (500ms) — kill
+    // etc.
+
+    // Just clear any remaining setInterval that's < 4000ms
+    _activeIntervals.forEach(function(item) {
+      if (item.delay < 4000) {
+        try { _origClearInterval.call(window, item.id); } catch(e) {}
+      }
+    });
+    _activeIntervals = _activeIntervals.filter(function(x) { return x.delay >= 4000; });
+
+    console.log('✅ Froze ' + (_activeIntervals.length) + ' slow intervals (kept)');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 8. PAUSE ALL LOOPS WHEN APP HIDDEN
+  // ═══════════════════════════════════════════════════
+  document.addEventListener('visibilitychange', function() {
+    if (document.hidden) {
+      // App backgrounded — clear heavy stuff
+      killAutoScroll();
+      killCountdowns();
+    }
+  });
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 9. DETECT LOW-END DEVICE → add emergency class
+  // ═══════════════════════════════════════════════════
+  function detectAndTag() {
+    var cores = navigator.hardwareConcurrency || 4;
+    var mem = navigator.deviceMemory || 4;
+    var dpr = window.devicePixelRatio || 1;
+
+    if (cores <= 4 || mem <= 3 || (IS_MOBILE && dpr >= 3)) {
+      document.body.classList.add('emergency-perf');
+      console.log('🔴 EMERGENCY MODE: low-end device detected');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 10. REDUCE CHART ANIMATIONS
+  // ═══════════════════════════════════════════════════
+  function patchCharts() {
+    if (window.Chart && Chart.defaults) {
+      Chart.defaults.animation = false;
+      Chart.defaults.animations = { colors: false, x: false, y: false };
+      Chart.defaults.responsive = true;
+      Chart.defaults.maintainAspectRatio = false;
+      console.log('✅ Chart animations disabled');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 11. REDUCE CONFETTI ON MOBILE
+  // ═══════════════════════════════════════════════════
+  var _origConfetti = window.confetti;
+  if (typeof _origConfetti === 'function') {
+    window.confetti = function(opts) {
+      if (document.hidden) return;
+      if (IS_MOBILE && opts) {
+        opts.particleCount = Math.min(opts.particleCount || 30, 25);
+        opts.ticks = 100;
+      }
+      return _origConfetti.apply(this, arguments);
+    };
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 12. DISABLE ANIMATIONS INSIDE MODALS (if low-end)
+  // ═══════════════════════════════════════════════════
+  function patchModalOpen() {
+    if (!document.body.classList.contains('emergency-perf')) return;
+    // All modals — kill entrance animations
+    var style = document.createElement('style');
+    style.textContent = 
+      '.modal-glass, .ai-panel, .chat-panel, .quiz-modal-card, ' +
+      '.avatar-customizer-card, .add-friend-card, .report-modal-card, ' +
+      '.delete-confirm-card, .chat-image-lightbox, .creation-lightbox { ' +
+      '  animation: none !important; ' +
+      '}';
+    document.head.appendChild(style);
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 13. OVERRIDE HEAVY FUNCTIONS AFTER LOGIN
+  // ═══════════════════════════════════════════════════
+  function patchLoginChain() {
+    if (typeof window.completeLogin !== 'function') return;
+    if (window.completeLogin._v100) return;
+
+    var orig = window.completeLogin;
+    window.completeLogin = async function() {
+      var r = await orig.apply(this, arguments);
+      // Give UI 3 seconds to settle, then kill loops
+      setTimeout(function() {
+        killAutoScroll();
+        killCountdowns();
+        freezePeriodicChecks();
+        patchCharts();
+        patchModalOpen();
+      }, 3000);
+      return r;
+    };
+    window.completeLogin._v100 = true;
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🛑 14. TRIM DOM — Remove hidden elements
+  // ═══════════════════════════════════════════════════
+  function trimDOM() {
+    // Hide unused overlays by removing display:none content
+    // (Keep them, just don't render — better for on-demand)
+
+    // Kill empty SVG defs
+    document.querySelectorAll('svg defs:empty').forEach(function(el) { el.remove(); });
+
+    // Remove any leftover hidden modals from removed features
+    // Skip for now — risky
+
+    console.log('✅ DOM trimmed');
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🚀 INIT
+  // ═══════════════════════════════════════════════════
+  function init() {
+    detectAndTag();
+    killAutoScroll();
+    killCountdowns();
+    patchCharts();
+    patchLoginChain();
+    patchModalOpen();
+
+    // After 5 seconds, aggressive cleanup
+    setTimeout(function() {
+      freezePeriodicChecks();
+      console.log('🔥 Aggressive cleanup done — active intervals:', _activeIntervals.length);
+    }, 5000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(init, 500);
+      setTimeout(init, 2000);
+      setTimeout(init, 5000);
+    });
+  } else {
+    setTimeout(init, 500);
+    setTimeout(init, 2000);
+    setTimeout(init, 5000);
+  }
+
+  // ═══════════════════════════════════════════════════
+  // 🐛 DEBUG / MANUAL CONTROL
+  // ═══════════════════════════════════════════════════
+  window.PERF_v100_debug = function() {
+    console.log('=== PERF v100 DEBUG ===');
+    console.log('Mobile?', IS_MOBILE);
+    console.log('Emergency mode?', document.body.classList.contains('emergency-perf'));
+    console.log('Active intervals:', _activeIntervals.length);
+    _activeIntervals.forEach(function(x, i) {
+      console.log('  [' + i + '] delay=' + x.delay + 'ms');
+    });
+    console.log('Hidden?', document.hidden);
+    console.log('CPU cores:', navigator.hardwareConcurrency || 'unknown');
+    console.log('Device memory:', navigator.deviceMemory || 'unknown');
+    console.log('DPR:', window.devicePixelRatio);
+  };
+
+  window.PERF_v100_killAll = function() {
+    _activeIntervals.forEach(function(x) {
+      try { _origClearInterval.call(window, x.id); } catch(e) {}
+    });
+    _activeIntervals = [];
+    killAutoScroll();
+    killCountdowns();
+    document.body.classList.add('emergency-perf');
+    showToast('🔥 Kill switch activated', 'success');
+    console.log('✅ All intervals killed, emergency mode ON');
+  };
+
+  window.PERF_v100_restore = function() {
+    document.body.classList.remove('emergency-perf');
+    showToast('✅ Emergency mode off — reload to restore', 'info');
+  };
+
+  console.log('✅ EMERGENCY PERF v100 ready');
+  console.log('   💡 PERF_v100_debug() — check status');
+  console.log('   💡 PERF_v100_killAll() — manual kill switch');
+})();
+</script>
 </body>
 </html>
