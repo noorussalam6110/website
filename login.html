@@ -45398,5 +45398,308 @@ document.addEventListener('touchend', function(e) {
   console.log('   💡 MOBILE_DEBUG() — diagnose');
 })();
 </script>
+<script id="android-scroll-fix-v137">
+(function(){
+  'use strict';
+  var IS_ANDROID = /Android/i.test(navigator.userAgent);
+  if (!IS_ANDROID) return;
+  console.log('🤖 Android Scroll Fix v137 loading...');
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #1 — Override v136 aggressive CSS
+  // ═══════════════════════════════════════════════════
+  var css = document.createElement('style');
+  css.id = 'android-scroll-v137-css';
+  css.textContent = `
+    @media (max-width: 900px) {
+      /* ── REMOVE v136 aggressive rules ── */
+      html, body {
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: auto !important;      /* was: none */
+        overscroll-behavior: auto !important;
+        scroll-behavior: auto !important;             /* was: smooth */
+        touch-action: auto !important;                /* was: pan-y */
+        -webkit-user-drag: auto !important;
+      }
+
+      /* Body scroll — natural momentum */
+      body.logged-in,
+      body:not(.logged-in) {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        height: auto !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: auto !important;
+        scroll-behavior: auto !important;
+        touch-action: auto !important;
+      }
+
+      /* ── ANDROID SAFE AREA — Status bar is ~24-28px ── */
+      /* env() returns 0 on most Android — use fallback */
+      #dashboardSection,
+      #adminSection,
+      #teacherDashboardV60 {
+        padding-top: 28px !important;   /* Android status bar fallback */
+      }
+
+      .nsm-login-wrapper,
+      #loginSection {
+        padding-top: 28px !important;
+      }
+
+      /* Modals — push down from status bar */
+      #globalModal,
+      #passbookModal,
+      #notificationsModal,
+      #editProfileModal,
+      #helpModal,
+      .quiz-modal-overlay,
+      .avatar-customizer-modal,
+      .add-friend-modal,
+      .report-modal-overlay {
+        padding-top: 28px !important;
+      }
+
+      /* Chat / AI panels */
+      .chat-header,
+      .ai-head {
+        padding-top: calc(12px + 28px) !important;
+      }
+
+      /* Creations overlay */
+      #creationsOverlay {
+        padding-top: 28px !important;
+      }
+
+      /* Public feed header */
+      #publicFeedOverlay .pf-header {
+        padding-top: calc(10px + 28px) !important;
+      }
+
+      /* Bottom nav safe area */
+      body.logged-in .mob-bottom-nav {
+        bottom: calc(12px + env(safe-area-inset-bottom, 8px)) !important;
+        padding-bottom: max(8px, env(safe-area-inset-bottom, 8px)) !important;
+      }
+
+      /* Content bottom space */
+      #dashboardSection > .container,
+      #adminSection > .container,
+      #teacherDashboardV60 {
+        padding-bottom: 110px !important;
+      }
+    }
+  `;
+  document.head.appendChild(css);
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #2 — Kill v62 body drag listeners (Android)
+  // Capture phase, stop propagation aggressively
+  // ═══════════════════════════════════════════════════
+  document.addEventListener('touchstart', function(e) {
+    // Only block if not inside a real scroll container
+    var t = e.target;
+    if (t && t.closest) {
+      if (t.closest('.leaderboard-scroll, .ig-filter-chips, .emoji-cats, .chat-messages, .ai-body, .pf-feed, .chat-sidebar-list, .admin-table-wrap, .modal-glass, #modalContentBody')) {
+        return;
+      }
+    }
+    // Force clean dragging state
+    if (document.body.classList.contains('dragging')) {
+      document.body.classList.remove('dragging');
+    }
+    if (document.documentElement.classList.contains('dragging')) {
+      document.documentElement.classList.remove('dragging');
+    }
+  }, { passive: true, capture: true });
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #3 — Release body lock on Android scroll
+  // ═══════════════════════════════════════════════════
+  function androidReleaseLock() {
+    // Skip if modal is open
+    var modalOpen =
+      document.body.classList.contains('modal-open') ||
+      document.body.classList.contains('ai-panel-open') ||
+      document.body.classList.contains('teacher-login-open') ||
+      document.body.classList.contains('login-active');
+
+    if (modalOpen) return;
+
+    // Skip if any modal visible
+    var hasVisibleModal = false;
+    var modalIds = ['globalModal','passbookModal','studentWithdrawalModal',
+                    'notificationsModal','editProfileModal','topperModal',
+                    'uploadCreationModal','notesModal','noticeBoardModal',
+                    'findStudentIdModal','helpModal','creationLightbox'];
+    for (var i = 0; i < modalIds.length; i++) {
+      var el = document.getElementById(modalIds[i]);
+      if (el && (el.style.display === 'flex' || el.style.display === 'block' ||
+                 el.classList.contains('open'))) {
+        hasVisibleModal = true;
+        break;
+      }
+    }
+    if (hasVisibleModal) return;
+
+    // Release body:fixed lock
+    if (document.body.style.position === 'fixed') {
+      var y = parseInt(document.body.style.top || '0') * -1;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, Math.abs(y));
+    }
+
+    // Release overflow:hidden
+    if (document.body.style.overflow === 'hidden') document.body.style.overflow = '';
+    if (document.body.style.overflowY === 'hidden') document.body.style.overflowY = '';
+    if (document.documentElement.style.overflow === 'hidden') document.documentElement.style.overflow = '';
+    if (document.documentElement.style.overflowY === 'hidden') document.documentElement.style.overflowY = '';
+  }
+
+  // Fire on every scroll (safety net)
+  var _scrollTimer = null;
+  window.addEventListener('scroll', function() {
+    if (_scrollTimer) return;
+    _scrollTimer = setTimeout(function() {
+      _scrollTimer = null;
+      androidReleaseLock();
+    }, 250);
+  }, { passive: true });
+
+  // Fire on touch end (scroll complete)
+  window.addEventListener('touchend', function() {
+    setTimeout(androidReleaseLock, 300);
+  }, { passive: true });
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #4 — Ensure bottom nav positioned correctly
+  // ═══════════════════════════════════════════════════
+  function fixBottomNav() {
+    if (!document.body.classList.contains('logged-in')) return;
+    var nav = document.getElementById('mobBottomNav');
+    if (!nav) return;
+
+    var cs = getComputedStyle(nav);
+    if (cs.position !== 'fixed' || cs.display === 'none') {
+      nav.style.setProperty('position', 'fixed', 'important');
+      nav.style.setProperty('left', '12px', 'important');
+      nav.style.setProperty('right', '12px', 'important');
+      nav.style.setProperty('bottom', 'calc(12px + env(safe-area-inset-bottom, 8px))', 'important');
+      nav.style.setProperty('top', 'auto', 'important');
+      nav.style.setProperty('display', 'flex', 'important');
+      nav.style.setProperty('z-index', '99999', 'important');
+      nav.style.setProperty('transform', 'none', 'important');
+    }
+  }
+  setInterval(fixBottomNav, 3000);
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #5 — Android Chrome viewport height jitter
+  // Fixes address bar collapse/expand scroll jumps
+  // ═══════════════════════════════════════════════════
+  var _lastHeight = window.innerHeight;
+  window.addEventListener('resize', function() {
+    // Android Chrome fires resize when address bar hides/shows
+    var newH = window.innerHeight;
+    var diff = Math.abs(newH - _lastHeight);
+    _lastHeight = newH;
+
+    // If diff < 150px → it's address bar, not keyboard
+    if (diff > 0 && diff < 150) {
+      // Force a reflow to prevent content jump
+      var y = window.scrollY;
+      requestAnimationFrame(function() {
+        window.scrollTo(0, y);
+      });
+    }
+  }, { passive: true });
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #6 — Clean stuck 'dragging' class
+  // ═══════════════════════════════════════════════════
+  setInterval(function() {
+    if (document.body.classList.contains('dragging')) {
+      document.body.classList.remove('dragging');
+    }
+    if (document.documentElement.classList.contains('dragging')) {
+      document.documentElement.classList.remove('dragging');
+    }
+  }, 2000);
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #7 — Smooth-scroll-trigger disable
+  // Android-ൽ scroll-behavior: smooth causes jank
+  // ═══════════════════════════════════════════════════
+  document.querySelectorAll('a[href^="#"]').forEach(function(el) {
+    el.style.setProperty('scroll-behavior', 'auto', 'important');
+  });
+
+  // ═══════════════════════════════════════════════════
+  // 🐛 DEBUG
+  // ═══════════════════════════════════════════════════
+  window.ANDROID_DEBUG = function() {
+    console.log('=== ANDROID SCROLL DEBUG v137 ===');
+    console.log('User agent:', navigator.userAgent);
+    console.log('Is Android?', IS_ANDROID);
+    console.log('Viewport:', window.innerWidth + 'x' + window.innerHeight);
+    console.log('Body classes:', document.body.className);
+    console.log('Body position:', document.body.style.position || '(none)');
+    console.log('Body overflow:', document.body.style.overflow || '(none)');
+    console.log('HTML overflow:', document.documentElement.style.overflow || '(none)');
+    console.log('Body dragging?', document.body.classList.contains('dragging'));
+
+    var htmlCs = getComputedStyle(document.documentElement);
+    console.log('--- HTML computed ---');
+    console.log('overscroll-behavior-y:', htmlCs.overscrollBehaviorY);
+    console.log('scroll-behavior:', htmlCs.scrollBehavior);
+    console.log('touch-action:', htmlCs.touchAction);
+
+    var hdr = document.querySelector('#dashboardSection .dashboard-header-glow');
+    if (hdr) {
+      console.log('--- Header ---');
+      console.log('top:', hdr.getBoundingClientRect().top + 'px');
+      console.log('padding-top:', getComputedStyle(hdr).paddingTop);
+    }
+
+    var nav = document.getElementById('mobBottomNav');
+    if (nav) {
+      var ncs = getComputedStyle(nav);
+      console.log('--- Bottom Nav ---');
+      console.log('display:', ncs.display);
+      console.log('position:', ncs.position);
+      console.log('bottom:', ncs.bottom);
+    }
+
+    if (typeof showToast === 'function') showToast('🤖 Android debug in console', 'info');
+  };
+
+  // ═══════════════════════════════════════════════════
+  // 🚀 BOOT
+  // ═══════════════════════════════════════════════════
+  setTimeout(androidReleaseLock, 500);
+  setTimeout(androidReleaseLock, 2000);
+  setTimeout(androidReleaseLock, 5000);
+  setTimeout(fixBottomNav, 1000);
+  setTimeout(fixBottomNav, 3000);
+
+  console.log('✅ Android Scroll Fix v137 ready');
+  console.log('   🔴 overscroll-behavior: auto (was: none)');
+  console.log('   🔴 scroll-behavior: auto (was: smooth)');
+  console.log('   🔴 touch-action: auto (was: pan-y)');
+  console.log('   📏 Status bar padding: 28px');
+  console.log('   💡 ANDROID_DEBUG() — diagnose');
+})();
+</script>
 </body>
 </html>
