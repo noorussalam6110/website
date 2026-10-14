@@ -45015,5 +45015,388 @@ document.addEventListener('touchend', function(e) {
   console.log('   💡 TL_FORCE_SCROLL() — manual fix');
 })();
 </script>
+<script id="mobile-app-feel-v136">
+(function(){
+  'use strict';
+  var IS_MOBILE = window.matchMedia('(max-width: 900px)').matches;
+  if (!IS_MOBILE) return;
+  console.log('📱 Mobile App-Feel Fix v136 loading...');
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #1 — DISABLE FULL-SCREEN DRAG ON MOBILE
+  // v62 body drag causes "screen drags when scrolling"
+  // ═══════════════════════════════════════════════════
+  var css1 = document.createElement('style');
+  css1.id = 'v136-no-body-drag';
+  css1.textContent = `
+    /* Prevent body from being draggable on mobile */
+    @media (max-width: 900px) {
+      body, html {
+        cursor: auto !important;
+        -webkit-user-drag: none !important;
+        user-select: auto !important;
+        -webkit-user-select: auto !important;
+      }
+      body.dragging, html.dragging,
+      body.dragging *, html.dragging * {
+        cursor: auto !important;
+        user-select: auto !important;
+        -webkit-user-select: auto !important;
+      }
+    }
+  `;
+  document.head.appendChild(css1);
+
+  // Block v62 body touch drag by removing listeners
+  // We do this by intercepting touchstart on body with stopImmediatePropagation
+  document.body.addEventListener('touchstart', function(e) {
+    // Only block body-level drags, not inner scrollers
+    var t = e.target;
+    // Skip if inside a scrollable container that v62 attached to
+    if (t && t.closest && t.closest('.leaderboard-scroll, .ig-filter-chips, .emoji-cats, .chat-messages, .ai-body, .pf-feed')) {
+      return;
+    }
+    // Stop v62's body drag from firing
+    e.stopPropagation();
+  }, { passive: true, capture: true });
+
+  // Also block touchmove on body
+  document.body.addEventListener('touchmove', function(e) {
+    var t = e.target;
+    if (t && t.closest && t.closest('.leaderboard-scroll, .ig-filter-chips, .emoji-cats, .chat-messages, .ai-body, .pf-feed')) {
+      return;
+    }
+    // Only block if body was being dragged (v62 added .dragging class)
+    if (document.body.classList.contains('dragging') ||
+        document.documentElement.classList.contains('dragging')) {
+      e.stopPropagation();
+    }
+  }, { passive: true, capture: true });
+
+  // Clear dragging class periodically if stuck
+  setInterval(function() {
+    if (document.body.classList.contains('dragging')) {
+      document.body.classList.remove('dragging');
+    }
+    if (document.documentElement.classList.contains('dragging')) {
+      document.documentElement.classList.remove('dragging');
+    }
+  }, 2000);
+
+  // ═══════════════════════════════════════════════════
+  // ⚪ FIX #2 — SAFE AREA — Single source, no overlap
+  // ═══════════════════════════════════════════════════
+  var css2 = document.createElement('style');
+  css2.id = 'v136-safe-area-fix';
+  css2.textContent = `
+    @media (max-width: 900px) {
+      /* Reset ALL previous safe-area padding */
+      #dashboardSection,
+      #adminSection,
+      #dashboardSection > .container,
+      #adminSection > .container,
+      #teacherDashboardV60 {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      /* Login page — proper flow */
+      .nsm-login-wrapper,
+      #loginSection {
+        padding-top: env(safe-area-inset-top, 0px) !important;
+        margin-top: 0 !important;
+      }
+
+      /* Dashboard container — apply padding ONCE */
+      #dashboardSection {
+        padding-top: env(safe-area-inset-top, 0px) !important;
+      }
+
+      #dashboardSection > .container,
+      #adminSection > .container {
+        padding-top: 8px !important;
+      }
+
+      /* Admin section — same */
+      #adminSection {
+        padding-top: env(safe-area-inset-top, 0px) !important;
+      }
+
+      /* Teacher dashboard */
+      #teacherDashboardV60 {
+        padding-top: env(safe-area-inset-top, 0px) !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        padding-bottom: 100px !important;
+      }
+
+      /* Remove individual header padding bloat */
+      .dashboard-header-glow {
+        padding-top: 14px !important;
+        margin-top: 0 !important;
+      }
+
+      .td60-header {
+        padding-top: 14px !important;
+        margin-top: 0 !important;
+      }
+
+      /* Creations overlay — single padding */
+      #creationsOverlay {
+        padding-top: env(safe-area-inset-top, 0px) !important;
+      }
+      #creationsOverlay .creations-header,
+      #creationsOverlay .creations-container {
+        padding-top: 8px !important;
+        margin-top: 0 !important;
+      }
+
+      /* Public feed */
+      #publicFeedOverlay .pf-header {
+        padding-top: calc(10px + env(safe-area-inset-top, 0px)) !important;
+      }
+
+      /* Chat / AI panels */
+      .chat-panel, .ai-panel {
+        padding-top: 0 !important;
+      }
+      .chat-header, .ai-head {
+        padding-top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+      }
+    }
+  `;
+  document.head.appendChild(css2);
+
+  // ═══════════════════════════════════════════════════
+  // 🔴 FIX #3 — BOTTOM NAVBAR ALWAYS FIXED
+  // ═══════════════════════════════════════════════════
+  var css3 = document.createElement('style');
+  css3.id = 'v136-bottom-nav';
+  css3.textContent = `
+    @media (max-width: 900px) {
+      body.logged-in .mob-bottom-nav {
+        position: fixed !important;
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 12px !important;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+        top: auto !important;
+        transform: none !important;
+        display: flex !important;
+        z-index: 99999 !important;
+        margin: 0 !important;
+      }
+
+      /* Prevent bottom nav from hiding due to body:fixed */
+      body.logged-in {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        height: auto !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+    }
+  `;
+  document.head.appendChild(css3);
+
+  // Force bottom nav position every 3s (safety)
+  setInterval(function() {
+    if (!document.body.classList.contains('logged-in')) return;
+    if (window.innerWidth > 900) return;
+    var nav = document.getElementById('mobBottomNav');
+    if (!nav) return;
+
+    var cs = getComputedStyle(nav);
+    if (cs.position !== 'fixed' || cs.display === 'none') {
+      nav.style.setProperty('position', 'fixed', 'important');
+      nav.style.setProperty('left', '12px', 'important');
+      nav.style.setProperty('right', '12px', 'important');
+      nav.style.setProperty('bottom', 'calc(12px + env(safe-area-inset-bottom, 0px))', 'important');
+      nav.style.setProperty('top', 'auto', 'important');
+      nav.style.setProperty('display', 'flex', 'important');
+      nav.style.setProperty('z-index', '99999', 'important');
+      nav.style.setProperty('transform', 'none', 'important');
+    }
+
+    // Release body if locked
+    if (document.body.style.position === 'fixed') {
+      var y = parseInt(document.body.style.top || '0') * -1;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, Math.abs(y));
+    }
+  }, 3000);
+
+  // ═══════════════════════════════════════════════════
+  // 🔒 EXTRA — Release stuck body locks on every page
+  // ═══════════════════════════════════════════════════
+  function releaseStuckLocks() {
+    // Only if no modal is open
+    var modalOpen =
+      document.body.classList.contains('modal-open') ||
+      document.body.classList.contains('ai-panel-open') ||
+      document.body.classList.contains('teacher-login-open');
+
+    var hasOpenModal = false;
+    ['globalModal','passbookModal','studentWithdrawalModal','notificationsModal',
+     'editProfileModal','topperModal','uploadCreationModal','notesModal',
+     'noticeBoardModal','findStudentIdModal','helpModal'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && (el.style.display === 'flex' || el.style.display === 'block')) {
+        hasOpenModal = true;
+      }
+    });
+
+    if (modalOpen || hasOpenModal) return;
+
+    // Release position:fixed
+    if (document.body.style.position === 'fixed') {
+      var y = parseInt(document.body.style.top || '0') * -1;
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.height = '';
+      window.scrollTo(0, Math.abs(y));
+    }
+
+    // Release overflow hidden
+    if (document.body.style.overflow === 'hidden') {
+      document.body.style.overflow = '';
+    }
+    if (document.body.style.overflowY === 'hidden') {
+      document.body.style.overflowY = '';
+    }
+    if (document.documentElement.style.overflow === 'hidden') {
+      document.documentElement.style.overflow = '';
+    }
+    if (document.documentElement.style.overflowY === 'hidden') {
+      document.documentElement.style.overflowY = '';
+    }
+  }
+
+  // Run on visibility change
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      setTimeout(releaseStuckLocks, 100);
+    }
+  });
+
+  // Run on scroll start (safety)
+  window.addEventListener('scroll', function() {
+    if (document.body.style.position === 'fixed' &&
+        !document.body.classList.contains('modal-open') &&
+        !document.body.classList.contains('ai-panel-open')) {
+      releaseStuckLocks();
+    }
+  }, { passive: true });
+
+  // ═══════════════════════════════════════════════════
+  // 🎨 APP-LIKE FEEL — Smooth scroll, no bounce weirdness
+  // ═══════════════════════════════════════════════════
+  var css4 = document.createElement('style');
+  css4.id = 'v136-app-feel';
+  css4.textContent = `
+    @media (max-width: 900px) {
+      html, body {
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior-y: none !important;
+        scroll-behavior: smooth !important;
+        touch-action: pan-y !important;
+      }
+
+      /* Prevent horizontal bounce */
+      body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+      }
+
+      /* Smooth tap feedback */
+      .action-tile, .mob-nav-item, .btn-load, .btn-update,
+      .pala-btn, .nsm-btn-primary, .btn-exit {
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      /* Content bottom padding for bottom nav */
+      #dashboardSection > .container,
+      #adminSection > .container,
+      #teacherDashboardV60 {
+        padding-bottom: 100px !important;
+      }
+    }
+  `;
+  document.head.appendChild(css4);
+
+  // ═══════════════════════════════════════════════════
+  // 🐛 DEBUG
+  // ═══════════════════════════════════════════════════
+  window.MOBILE_DEBUG = function() {
+    console.log('=== MOBILE APP-FEEL DEBUG v136 ===');
+    console.log('Viewport width:', window.innerWidth);
+    console.log('Body classes:', document.body.className);
+    console.log('Body position:', document.body.style.position || '(none)');
+    console.log('Body overflow:', document.body.style.overflow || '(none)');
+    console.log('Body dragging?', document.body.classList.contains('dragging'));
+
+    // Bottom nav
+    var nav = document.getElementById('mobBottomNav');
+    if (nav) {
+      var cs = getComputedStyle(nav);
+      console.log('--- Bottom Nav ---');
+      console.log('display:', cs.display);
+      console.log('position:', cs.position);
+      console.log('bottom:', cs.bottom);
+      console.log('z-index:', cs.zIndex);
+    } else {
+      console.log('Bottom nav: NOT FOUND');
+    }
+
+    // Safe area test
+    var probe = document.createElement('div');
+    probe.style.cssText = 'position:fixed;top:0;height:env(safe-area-inset-top, 0px);width:1px;pointer-events:none;';
+    document.body.appendChild(probe);
+    var inset = probe.getBoundingClientRect().height;
+    document.body.removeChild(probe);
+    console.log('--- Safe Area ---');
+    console.log('inset-top:', inset + 'px');
+    console.log('(Note: 0 on Android without env support)');
+
+    // Header check
+    var hdr = document.querySelector('#dashboardSection .dashboard-header-glow');
+    if (hdr) {
+      console.log('--- Header ---');
+      console.log('top position:', hdr.getBoundingClientRect().top + 'px');
+      console.log('padding-top:', getComputedStyle(hdr).paddingTop);
+    }
+
+    if (typeof showToast === 'function') showToast('📱 Debug info in console', 'info');
+  };
+
+  // ═══════════════════════════════════════════════════
+  // BOOT
+  // ═══════════════════════════════════════════════════
+  setTimeout(releaseStuckLocks, 500);
+  setTimeout(releaseStuckLocks, 2000);
+  setTimeout(releaseStuckLocks, 5000);
+
+  console.log('✅ Mobile App-Feel v136 ready');
+  console.log('   🔴 Body drag disabled');
+  console.log('   ⚪ Safe-area overlap fixed');
+  console.log('   🔴 Bottom nav fixed');
+  console.log('   💡 MOBILE_DEBUG() — diagnose');
+})();
+</script>
 </body>
 </html>
