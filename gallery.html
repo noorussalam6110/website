@@ -893,6 +893,7 @@
       .gallery-header p { font-size: 0.9rem; }
     }
   </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -1125,9 +1126,21 @@
 <!-- GALLERY -->
 <section id="gallery" class="py-5">
   <div class="container">
-    <div class="row g-3">
+<!-- Admin Bar -->
+<div id="galleryAdminBar" style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+  <button id="galleryLoginBtn" onclick="GAL_adminLogin()" style="background:linear-gradient(135deg,#3a8df3,#5c9dff);color:#fff;border:none;padding:10px 20px;border-radius:50px;font-family:inherit;font-weight:700;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+    <i class="fas fa-lock"></i> Admin Login
+  </button>
+  <button id="galleryUploadBtn" onclick="GAL_openUpload()" style="display:none;background:linear-gradient(135deg,#059669,#34d399);color:#fff;border:none;padding:10px 20px;border-radius:50px;font-family:inherit;font-weight:700;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;">
+    <i class="fas fa-cloud-upload-alt"></i> Upload Photos
+  </button>
+  <button id="galleryLogoutBtn" onclick="GAL_adminLogout()" style="display:none;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.3);padding:10px 20px;border-radius:50px;font-family:inherit;font-weight:700;font-size:.85rem;cursor:pointer;align-items:center;gap:8px;">
+    <i class="fas fa-sign-out-alt"></i> Logout
+  </button>
+</div>
 
-      <!-- Gallery Images -->
+<div class="row g-3" id="galleryGrid">
+    <!-- Gallery Images will be loaded dynamically -->
       <div class="col-6 col-md-4 col-lg-3 gallery-item">
         <img src="https://i.ibb.co/d483vCpC/Whats-App-Image-2026-02-06-at-2-18-04-PM.jpg" class="img-fluid rounded shadow-sm" alt="Madrasa Event">
       </div>
@@ -1178,6 +1191,7 @@
       </div>
 
     </div>
+    <!-- (row closed above — dynamic content) -->
 
     <!-- Back to Home -->
     <div class="text-center mt-5">
@@ -1196,6 +1210,11 @@
     <button id="nextBtn">❯</button>
   </div>
   <img id="lightboxImage" src="" alt="">
+  <div id="lightboxInfo" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.75);backdrop-filter:blur(10px);color:#fff;padding:12px 24px;border-radius:50px;max-width:90%;text-align:center;display:none;">
+    <div id="lightboxTitle" style="font-weight:800;font-size:.95rem;"></div>
+    <div id="lightboxDesc" style="font-size:.78rem;opacity:.85;margin-top:3px;"></div>
+    <div id="lightboxCounter" style="font-size:.68rem;opacity:.6;margin-top:5px;"></div>
+  </div>
 </div>
 
 <!-- MODERN FOOTER -->
@@ -1405,8 +1424,738 @@
       }
     }
   });
-</script>
 
+</script>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 📸 GALLERY SUPABASE BACKEND — v1.0                      -->
+<!-- Admin Upload / Delete / Public View                     -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<script>
+(function(){
+  'use strict';
+  console.log('📸 Gallery Backend loading...');
+
+  // ═══════════════════════════════════════════════════════
+  // 🌐 CONFIG
+  // ═══════════════════════════════════════════════════════
+  const SUPABASE_URL = 'https://dmjjtmimrozzqknduqas.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_e7EXyQvriYYgw9KDlu-5dA_Jcjdw9bg';
+  const ADMIN_PASSWORD = 'MADRASA2026';           // ← Change this
+  const STORAGE_BUCKET = 'gallery';
+  const ADMIN_KEY = 'gal_admin_session';
+
+  let sb = null;
+  if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase ready');
+  } else {
+    console.error('❌ Supabase library missing');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🌐 STATE
+  // ═══════════════════════════════════════════════════════
+  const GAL = {
+    photos: [],
+    isAdmin: false,
+    currentIndex: 0,
+    pendingFiles: [],
+    deleting: false
+  };
+  window.GAL = GAL;
+
+  // ═══════════════════════════════════════════════════════
+  // 🔐 ADMIN AUTH (session storage based)
+  // ═══════════════════════════════════════════════════════
+  window.GAL_adminLogin = function(){
+    try {
+      if (sessionStorage.getItem(ADMIN_KEY) === 'yes') {
+        GAL.isAdmin = true;
+        applyAdminUI();
+        return;
+      }
+    } catch(e) {}
+
+    var pwd = prompt('🔐 Enter Admin Password:');
+    if (pwd === null) return;
+    if (pwd.trim() === ADMIN_PASSWORD) {
+      GAL.isAdmin = true;
+      try { sessionStorage.setItem(ADMIN_KEY, 'yes'); } catch(e) {}
+      applyAdminUI();
+      showGalToast('✅ Admin logged in', 'success');
+    } else {
+      showGalToast('❌ Wrong password', 'error');
+    }
+  };
+
+  window.GAL_adminLogout = function(){
+    GAL.isAdmin = false;
+    try { sessionStorage.removeItem(ADMIN_KEY); } catch(e) {}
+    applyAdminUI();
+    showGalToast('👋 Logged out', 'info');
+  };
+
+  function applyAdminUI(){
+    var lb = document.getElementById('galleryLoginBtn');
+    var ub = document.getElementById('galleryUploadBtn');
+    var ob = document.getElementById('galleryLogoutBtn');
+    if (GAL.isAdmin) {
+      if (lb) lb.style.display = 'none';
+      if (ub) { ub.style.display = 'inline-flex'; }
+      if (ob) { ob.style.display = 'inline-flex'; }
+      document.querySelectorAll('.gal-delete-btn').forEach(function(el){
+        el.style.display = 'flex';
+      });
+    } else {
+      if (lb) lb.style.display = 'inline-flex';
+      if (ub) ub.style.display = 'none';
+      if (ob) ob.style.display = 'none';
+      document.querySelectorAll('.gal-delete-btn').forEach(function(el){
+        el.style.display = 'none';
+      });
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 📸 LOAD PHOTOS
+  // ═══════════════════════════════════════════════════════
+  window.GAL_loadPhotos = async function(){
+    var grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+
+    // ═══ Hardcoded fallback photos (old gallery) ═══
+    var FALLBACK = [
+      'https://i.ibb.co/d483vCpC/Whats-App-Image-2026-02-06-at-2-18-04-PM.jpg',
+      'https://i.ibb.co/x8rD8PXk/Whats-App-Image-2026-02-06-at-2-18-58-PM.jpg',
+      'https://i.ibb.co/wFZd2RBs/Whats-App-Image-2026-02-06-at-2-18-05-PM-1.jpg',
+      'https://i.ibb.co/KPJJKfV/Whats-App-Image-2026-02-06-at-2-18-05-PM.jpg',
+      'https://i.ibb.co/FbjR9zTZ/Whats-App-Image-2025-10-28-at-3-43-55-PM.jpg',
+      'https://i.ibb.co/whNzN51r/Whats-App-Image-2025-10-28-at-3-43-48-PM.jpg',
+      'https://i.ibb.co/k6h2j78B/Whats-App-Image-2025-10-28-at-3-42-31-PM.jpg',
+      'https://i.ibb.co/yFJ24kWv/Whats-App-Image-2025-10-28-at-3-41-14-PM.jpg'
+    ];
+
+    grid.innerHTML =
+      '<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,.6);">' +
+        '<div style="display:inline-block;width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:#3a8df3;border-radius:50%;animation:galSpin .7s linear infinite;"></div>' +
+        '<div style="margin-top:12px;font-weight:700;">Loading photos...</div>' +
+      '</div>';
+
+    var photos = [];
+
+    // Load from Supabase
+    if (sb) {
+      try {
+        var r = await sb.from('gallery_photos')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .order('uploaded_at', { ascending: false });
+
+        if (!r.error && r.data) {
+          r.data.forEach(function(p){
+            photos.push({
+              id: p.id,
+              src: p.image_url,
+              title: p.title || '',
+              desc: p.description || '',
+              source: 'db'
+            });
+          });
+        }
+      } catch(e) {
+        console.warn('DB load error:', e);
+      }
+    }
+
+    // Fallback photos (only if no DB photos OR always)
+    var USE_FALLBACK_ALWAYS = true;   // ← set false if you want only DB photos
+    if (USE_FALLBACK_ALWAYS || photos.length === 0) {
+      FALLBACK.forEach(function(url){
+        photos.push({
+          id: null,
+          src: url,
+          title: '',
+          desc: '',
+          source: 'static'
+        });
+      });
+    }
+
+    GAL.photos = photos;
+    renderGrid();
+    applyAdminUI();
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🎨 RENDER GRID
+  // ═══════════════════════════════════════════════════════
+  function renderGrid(){
+    var grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+
+    if (GAL.photos.length === 0) {
+      grid.innerHTML =
+        '<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:rgba(255,255,255,.6);">' +
+          '<i class="fas fa-images" style="font-size:3rem;opacity:.4;display:block;margin-bottom:14px;"></i>' +
+          '<div style="font-weight:700;">No photos yet</div>' +
+        '</div>';
+      return;
+    }
+
+    var html = '';
+    GAL.photos.forEach(function(p, i){
+      var deleteBtn = p.source === 'db'
+        ? '<button class="gal-delete-btn" onclick="event.stopPropagation();GAL_deletePhoto(' + p.id + ', this)" title="Delete" style="display:' + (GAL.isAdmin ? 'flex' : 'none') + ';position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;border:none;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-size:.85rem;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.4);z-index:3;">' +
+            '<i class="fas fa-trash"></i></button>'
+        : '';
+      var titleChip = p.title
+        ? '<div style="position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);color:#fff;font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(p.title) + '</div>'
+        : '';
+
+      html += '<div class="col-6 col-md-4 col-lg-3 gallery-item" style="position:relative;">' +
+        '<img src="' + p.src + '" class="img-fluid rounded shadow-sm" alt="' + escapeHtml(p.title || 'Madrasa photo') + '" loading="lazy" data-gal-index="' + i + '">' +
+        deleteBtn +
+        titleChip +
+      '</div>';
+    });
+    grid.innerHTML = html;
+
+    // Attach click handlers
+    grid.querySelectorAll('img[data-gal-index]').forEach(function(img){
+      img.addEventListener('click', function(){
+        var idx = parseInt(this.dataset.galIndex);
+        openLightbox(idx);
+      });
+    });
+  }
+
+  function escapeHtml(s){
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, function(m){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m];
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🖼️ LIGHTBOX (Enhanced with title/desc/counter)
+  // ═══════════════════════════════════════════════════════
+  var lightbox, lightboxImage, lightboxTitle, lightboxDesc, lightboxCounter, lightboxInfo;
+  var autoSlideTimer = null;
+
+  function initLightbox(){
+    lightbox = document.getElementById('lightbox');
+    lightboxImage = document.getElementById('lightboxImage');
+    lightboxTitle = document.getElementById('lightboxTitle');
+    lightboxDesc = document.getElementById('lightboxDesc');
+    lightboxCounter = document.getElementById('lightboxCounter');
+    lightboxInfo = document.getElementById('lightboxInfo');
+
+    // Override existing handlers with clean ones
+    var closeBtn = document.getElementById('closeBtn');
+    var nextBtn = document.getElementById('nextBtn');
+    var prevBtn = document.getElementById('prevBtn');
+
+    if (closeBtn) closeBtn.onclick = closeLightbox;
+    if (nextBtn) nextBtn.onclick = function(){ nextPhoto(); };
+    if (prevBtn) prevBtn.onclick = function(){ prevPhoto(); };
+
+    if (lightbox) {
+      lightbox.onclick = function(e){
+        if (e.target === lightbox) closeLightbox();
+      };
+    }
+
+    document.addEventListener('keydown', function(e){
+      if (!lightbox || lightbox.style.display !== 'flex') return;
+      if (e.key === 'ArrowRight') nextPhoto();
+      if (e.key === 'ArrowLeft') prevPhoto();
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Touch swipe
+    var touchStartX = 0;
+    if (lightbox) {
+      lightbox.addEventListener('touchstart', function(e){
+        touchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      lightbox.addEventListener('touchend', function(e){
+        var dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 50) {
+          if (dx < 0) nextPhoto(); else prevPhoto();
+        }
+      }, { passive: true });
+    }
+  }
+
+  function openLightbox(idx){
+    if (!lightbox) initLightbox();
+    GAL.currentIndex = idx;
+    updateLightboxImage();
+    lightbox.style.display = 'flex';
+    startAutoSlide();
+  }
+
+  function updateLightboxImage(){
+    var p = GAL.photos[GAL.currentIndex];
+    if (!p) return;
+    if (lightboxImage) {
+      lightboxImage.style.opacity = 0;
+      setTimeout(function(){
+        lightboxImage.src = p.src;
+        lightboxImage.style.opacity = 1;
+      }, 120);
+    }
+    if (lightboxTitle) lightboxTitle.textContent = p.title || '';
+    if (lightboxDesc) lightboxDesc.textContent = p.desc || '';
+    if (lightboxCounter) lightboxCounter.textContent = (GAL.currentIndex + 1) + ' / ' + GAL.photos.length;
+    if (lightboxInfo) {
+      lightboxInfo.style.display = (p.title || p.desc) ? 'block' : 'none';
+    }
+  }
+
+  function nextPhoto(){
+    GAL.currentIndex = (GAL.currentIndex + 1) % GAL.photos.length;
+    updateLightboxImage();
+    restartAutoSlide();
+  }
+  function prevPhoto(){
+    GAL.currentIndex = (GAL.currentIndex - 1 + GAL.photos.length) % GAL.photos.length;
+    updateLightboxImage();
+    restartAutoSlide();
+  }
+  function closeLightbox(){
+    if (lightbox) lightbox.style.display = 'none';
+    stopAutoSlide();
+  }
+
+  function startAutoSlide(){
+    stopAutoSlide();
+    autoSlideTimer = setInterval(function(){
+      GAL.currentIndex = (GAL.currentIndex + 1) % GAL.photos.length;
+      updateLightboxImage();
+    }, 5000);
+  }
+  function restartAutoSlide(){ startAutoSlide(); }
+  function stopAutoSlide(){
+    if (autoSlideTimer) { clearInterval(autoSlideTimer); autoSlideTimer = null; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 📤 UPLOAD MODAL
+  // ═══════════════════════════════════════════════════════
+  window.GAL_openUpload = function(){
+    if (!GAL.isAdmin) { showGalToast('🔐 Admin login first', 'error'); return; }
+
+    var old = document.getElementById('galUploadModal');
+    if (old) old.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'galUploadModal';
+    modal.style.cssText =
+      'position:fixed;inset:0;background:rgba(5,10,30,.94);backdrop-filter:blur(18px);' +
+      '-webkit-backdrop-filter:blur(18px);z-index:10000;display:flex;align-items:flex-start;' +
+      'justify-content:center;padding:16px;overflow-y:auto;';
+
+    modal.innerHTML =
+      '<div style="background:linear-gradient(155deg,rgba(255,255,255,.14),rgba(255,255,255,.05));' +
+                  'backdrop-filter:blur(28px);border:1.5px solid rgba(58,141,243,.35);' +
+                  'border-radius:24px;max-width:600px;width:100%;margin:auto 0;' +
+                  'box-shadow:0 40px 90px -30px rgba(0,0,0,.9);overflow:hidden;color:#fff;">' +
+
+        // Header
+        '<div style="padding:18px 22px;background:linear-gradient(135deg,#0891b2,#22d3ee,#3a8df3);' +
+                    'display:flex;justify-content:space-between;align-items:center;gap:12px;">' +
+          '<div style="display:flex;align-items:center;gap:12px;">' +
+            '<div style="width:44px;height:44px;border-radius:14px;' +
+                        'background:rgba(255,255,255,.22);display:flex;align-items:center;' +
+                        'justify-content:center;font-size:1.3rem;">📸</div>' +
+            '<div>' +
+              '<div style="font-size:1.05rem;font-weight:900;">Upload Photos</div>' +
+              '<div style="font-size:.7rem;opacity:.9;letter-spacing:1.2px;text-transform:uppercase;font-weight:700;">Admin Panel</div>' +
+            '</div>' +
+          '</div>' +
+          '<button onclick="GAL_closeUpload()" style="background:rgba(255,255,255,.22);border:none;' +
+                  'color:#fff;width:38px;height:38px;border-radius:50%;font-size:1rem;cursor:pointer;">✕</button>' +
+        '</div>' +
+
+        // Body
+        '<div style="padding:20px 22px;">' +
+
+          // Dropzone
+          '<div id="galDropzone" style="border:2.5px dashed rgba(58,141,243,.5);' +
+                                        'border-radius:18px;background:rgba(58,141,243,.08);' +
+                                        'padding:30px 20px;text-align:center;cursor:pointer;' +
+                                        'transition:all .25s;margin-bottom:14px;">' +
+            '<input type="file" id="galFileInput" accept="image/*" multiple style="display:none;">' +
+            '<i class="fas fa-cloud-upload-alt" style="font-size:3rem;color:#3a8df3;display:block;margin-bottom:12px;opacity:.9;"></i>' +
+            '<div style="font-weight:800;font-size:1rem;color:#fff;margin-bottom:4px;">Click or drop photos here</div>' +
+            '<div style="font-size:.76rem;color:rgba(255,255,255,.7);">Multiple files support • Max 10MB each</div>' +
+          '</div>' +
+
+          // Preview area
+          '<div id="galPreviewGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:14px;"></div>' +
+
+          // Common fields
+          '<div style="margin-bottom:12px;">' +
+            '<label style="font-size:.76rem;font-weight:800;color:#fff;margin-bottom:5px;display:block;">Common Title (optional)</label>' +
+            '<input type="text" id="galTitleInput" maxlength="80" placeholder="e.g., Annual Day 2026" class="gal-input">' +
+          '</div>' +
+
+          '<div style="margin-bottom:12px;">' +
+            '<label style="font-size:.76rem;font-weight:800;color:#fff;margin-bottom:5px;display:block;">Common Description (optional)</label>' +
+            '<textarea id="galDescInput" maxlength="200" placeholder="Short description..." class="gal-input" style="min-height:60px;"></textarea>' +
+          '</div>' +
+
+          '<div style="margin-bottom:14px;">' +
+            '<label style="font-size:.76rem;font-weight:800;color:#fff;margin-bottom:5px;display:block;">Category</label>' +
+            '<select id="galCategoryInput" class="gal-input">' +
+              '<option value="general">📷 General</option>' +
+              '<option value="event">🎉 Event</option>' +
+              '<option value="class">📚 Classroom</option>' +
+              '<option value="sports">⚽ Sports</option>' +
+              '<option value="quran">📖 Quran</option>' +
+              '<option value="cultural">🎭 Cultural</option>' +
+            '</select>' +
+          '</div>' +
+
+          // Progress
+          '<div id="galProgress" style="display:none;margin-bottom:12px;background:rgba(58,141,243,.15);border-radius:10px;padding:10px 14px;font-size:.8rem;font-weight:700;">' +
+            '<i class="fas fa-spinner fa-spin"></i> <span id="galProgressText">Uploading...</span>' +
+          '</div>' +
+
+          // Actions
+          '<div style="display:flex;gap:10px;">' +
+            '<button onclick="GAL_closeUpload()" class="gal-btn gal-btn-secondary">Cancel</button>' +
+            '<button id="galSubmitBtn" onclick="GAL_submitUpload()" class="gal-btn gal-btn-primary">' +
+              '<i class="fas fa-upload"></i> Upload</button>' +
+          '</div>' +
+
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){ if (e.target === modal) GAL_closeUpload(); });
+
+    // Add shared styles
+    var style = document.getElementById('galModalStyles');
+    if (!style) {
+      style = document.createElement('style');
+      style.id = 'galModalStyles';
+      style.textContent =
+        '.gal-input{width:100%;padding:11px 14px;border:1.5px solid rgba(255,255,255,.2);' +
+        'border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-family:inherit;' +
+        'font-size:16px;font-weight:600;outline:none;transition:all .2s;}' +
+        '.gal-input:focus{border-color:#3a8df3;background:rgba(58,141,243,.15);box-shadow:0 0 0 4px rgba(58,141,243,.15);}' +
+        '.gal-input::placeholder{color:rgba(255,255,255,.5);}' +
+        '.gal-btn{padding:13px 22px;border-radius:14px;border:none;font-family:inherit;font-weight:800;' +
+        'font-size:.88rem;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;' +
+        'min-height:48px;transition:all .2s;}' +
+        '.gal-btn-secondary{background:rgba(255,255,255,.1);color:#fff;flex:.5;}' +
+        '.gal-btn-primary{background:linear-gradient(100deg,#059669,#34d399);color:#fff;flex:1;' +
+        'box-shadow:0 10px 25px -10px rgba(5,150,105,.8);}' +
+        '.gal-btn:active{transform:scale(.96);}' +
+        '.gal-btn:hover:not(:disabled){transform:translateY(-2px);}' +
+        '.gal-btn:disabled{opacity:.5;cursor:not-allowed;}' +
+        '.gal-prev{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;' +
+        'border:1.5px solid rgba(255,255,255,.2);}' +
+        '.gal-prev img{width:100%;height:100%;object-fit:cover;}' +
+        '.gal-prev button{position:absolute;top:4px;right:4px;width:22px;height:22px;' +
+        'border-radius:50%;border:none;background:rgba(220,38,38,.9);color:#fff;font-size:.7rem;' +
+        'cursor:pointer;display:flex;align-items:center;justify-content:center;}';
+      document.head.appendChild(style);
+    }
+
+    // Attach events
+    var dz = document.getElementById('galDropzone');
+    var fi = document.getElementById('galFileInput');
+
+    dz.onclick = function(){ fi.click(); };
+    fi.onchange = function(e){
+      addFiles(Array.from(e.target.files || []));
+      fi.value = '';
+    };
+    dz.addEventListener('dragover', function(e){
+      e.preventDefault();
+      dz.style.borderColor = '#34d399';
+      dz.style.background = 'rgba(52,211,153,.15)';
+    });
+    dz.addEventListener('dragleave', function(){
+      dz.style.borderColor = 'rgba(58,141,243,.5)';
+      dz.style.background = 'rgba(58,141,243,.08)';
+    });
+    dz.addEventListener('drop', function(e){
+      e.preventDefault();
+      dz.style.borderColor = 'rgba(58,141,243,.5)';
+      dz.style.background = 'rgba(58,141,243,.08)';
+      var files = Array.from(e.dataTransfer.files || []).filter(function(f){
+        return f.type.indexOf('image/') === 0;
+      });
+      addFiles(files);
+    });
+
+    GAL.pendingFiles = [];
+    renderPreview();
+  };
+
+  window.GAL_closeUpload = function(){
+    var m = document.getElementById('galUploadModal');
+    if (m) m.remove();
+    GAL.pendingFiles = [];
+  };
+
+  function addFiles(files){
+    files.forEach(function(f){
+      if (f.size > 10 * 1024 * 1024) {
+        showGalToast('⚠️ ' + f.name + ' — too large (10MB max)', 'error');
+        return;
+      }
+      if (f.type.indexOf('image/') !== 0) {
+        showGalToast('⚠️ ' + f.name + ' — not an image', 'error');
+        return;
+      }
+      GAL.pendingFiles.push(f);
+    });
+    renderPreview();
+  }
+
+  function renderPreview(){
+    var grid = document.getElementById('galPreviewGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    GAL.pendingFiles.forEach(function(f, i){
+      var url = URL.createObjectURL(f);
+      var div = document.createElement('div');
+      div.className = 'gal-prev';
+      div.innerHTML =
+        '<img src="' + url + '" alt="">' +
+        '<button onclick="GAL_removeFile(' + i + ')" title="Remove">✕</button>';
+      grid.appendChild(div);
+    });
+    // Update count
+    var submitBtn = document.getElementById('galSubmitBtn');
+    if (submitBtn) {
+      submitBtn.disabled = GAL.pendingFiles.length === 0;
+    }
+  }
+
+  window.GAL_removeFile = function(i){
+    GAL.pendingFiles.splice(i, 1);
+    renderPreview();
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 📤 SUBMIT UPLOAD
+  // ═══════════════════════════════════════════════════════
+  window.GAL_submitUpload = async function(){
+    if (!GAL.isAdmin) { showGalToast('🔐 Admin only', 'error'); return; }
+    if (!sb) { showGalToast('❌ Supabase not ready', 'error'); return; }
+    if (GAL.pendingFiles.length === 0) { showGalToast('❌ Select photos first', 'error'); return; }
+
+    var title = (document.getElementById('galTitleInput') || {}).value || '';
+    var desc = (document.getElementById('galDescInput') || {}).value || '';
+    var category = (document.getElementById('galCategoryInput') || {}).value || 'general';
+
+    var btn = document.getElementById('galSubmitBtn');
+    var progress = document.getElementById('galProgress');
+    var progressText = document.getElementById('galProgressText');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    if (progress) progress.style.display = 'block';
+
+    var success = 0, failed = 0;
+
+    for (var i = 0; i < GAL.pendingFiles.length; i++) {
+      var file = GAL.pendingFiles[i];
+      if (progressText) progressText.textContent = 'Uploading ' + (i + 1) + '/' + GAL.pendingFiles.length + '...';
+
+      try {
+        // Generate unique filename
+        var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        var filename = 'gal_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+        var path = filename;
+
+        // Upload to storage
+        var up = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
+          contentType: file.type,
+          cacheControl: '31536000',
+          upsert: false
+        });
+        if (up.error) throw up.error;
+
+        // Get public URL
+        var pub = sb.storage.from(STORAGE_BUCKET).getPublicUrl(filename);
+        var publicUrl = pub.data.publicUrl;
+
+        // Insert to DB
+        var ins = await sb.from('gallery_photos').insert({
+          title: title || file.name.replace(/\.[^.]+$/, ''),
+          description: desc || null,
+          image_url: publicUrl,
+          storage_path: path,
+          category: category,
+          uploaded_by: 'Admin'
+        });
+        if (ins.error) throw ins.error;
+
+        success++;
+      } catch(e) {
+        console.error('Upload failed:', e);
+        failed++;
+      }
+    }
+
+    if (progressText) progressText.textContent = 'Done!';
+    setTimeout(function(){
+      if (progress) progress.style.display = 'none';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+    }, 500);
+
+    if (failed === 0) {
+      showGalToast('✅ ' + success + ' photo(s) uploaded!', 'success');
+      if (typeof confetti !== 'undefined') {
+        confetti({ particleCount: 100, spread: 80, origin: { y: .7 } });
+      }
+    } else {
+      showGalToast('⚠️ ' + success + ' uploaded, ' + failed + ' failed', 'error');
+    }
+
+    GAL.pendingFiles = [];
+    setTimeout(function(){
+      GAL_closeUpload();
+      GAL_loadPhotos();
+    }, 800);
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🗑️ DELETE PHOTO
+  // ═══════════════════════════════════════════════════════
+  window.GAL_deletePhoto = async function(id, btnEl){
+    if (!GAL.isAdmin) { showGalToast('🔐 Admin only', 'error'); return; }
+    if (!sb) return;
+    if (!confirm('🗑️ ഈ ഫോട്ടോ ഡിലീറ്റ് ചെയ്യണോ?')) return;
+
+    if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+    try {
+      // Get photo info
+      var r = await sb.from('gallery_photos').select('*').eq('id', id).maybeSingle();
+      var photo = r.data;
+
+      // Delete from storage
+      if (photo && photo.storage_path) {
+        try {
+          await sb.storage.from(STORAGE_BUCKET).remove([photo.storage_path]);
+        } catch(e) { console.warn('Storage delete:', e); }
+      }
+
+      // Delete from DB
+      await sb.from('gallery_photos').delete().eq('id', id);
+
+      showGalToast('🗑️ Deleted', 'success');
+      if (navigator.vibrate) try { navigator.vibrate(20); } catch(e) {}
+
+      // Animate out
+      if (btnEl) {
+        var wrapper = btnEl.closest('.gallery-item');
+        if (wrapper) {
+          wrapper.style.transition = 'all .3s';
+          wrapper.style.opacity = '0';
+          wrapper.style.transform = 'scale(.9)';
+          setTimeout(function(){ GAL_loadPhotos(); }, 300);
+        } else {
+          GAL_loadPhotos();
+        }
+      }
+    } catch(e) {
+      console.error('Delete error:', e);
+      showGalToast('❌ ' + (e.message || 'Failed'), 'error');
+      if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = '<i class="fas fa-trash"></i>'; }
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🔔 TOAST
+  // ═══════════════════════════════════════════════════════
+  function showGalToast(msg, type){
+    var c = document.getElementById('galToastContainer');
+    if (!c) {
+      c = document.createElement('div');
+      c.id = 'galToastContainer';
+      c.style.cssText =
+        'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999999;' +
+        'display:flex;flex-direction:column;gap:8px;pointer-events:none;width:92%;max-width:400px;';
+      document.body.appendChild(c);
+    }
+    var t = document.createElement('div');
+    var bg = type === 'success' ? 'linear-gradient(100deg,#059669,#10b981)'
+           : type === 'error' ? 'linear-gradient(100deg,#991b1b,#ef4444)'
+           : 'linear-gradient(100deg,#1547a8,#3a8df3)';
+    var icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+    t.style.cssText =
+      'padding:13px 20px;border-radius:50px;font-weight:700;font-size:.85rem;' +
+      'background:' + bg + ';color:#fff;display:flex;align-items:center;gap:10px;' +
+      'box-shadow:0 18px 44px -18px rgba(0,0,0,.9);pointer-events:auto;' +
+      'font-family:Anek Malayalam,sans-serif;animation:galToastIn .3s ease;';
+    t.innerHTML = '<span>' + icon + '</span><span>' + msg + '</span>';
+    c.appendChild(t);
+
+    if (!document.getElementById('galToastStyles')) {
+      var st = document.createElement('style');
+      st.id = 'galToastStyles';
+      st.textContent =
+        '@keyframes galToastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}' +
+        '@keyframes galSpin{to{transform:rotate(360deg)}}';
+      document.head.appendChild(st);
+    }
+
+    setTimeout(function(){
+      t.style.transition = 'all .3s';
+      t.style.opacity = '0';
+      t.style.transform = 'translateY(20px)';
+      setTimeout(function(){ t.remove(); }, 300);
+    }, 3200);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🚀 INIT
+  // ═══════════════════════════════════════════════════════
+  function init(){
+    // Check existing admin session
+    try {
+      if (sessionStorage.getItem(ADMIN_KEY) === 'yes') {
+        GAL.isAdmin = true;
+      }
+    } catch(e) {}
+
+    // Wait for DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function(){
+        setTimeout(initLightbox, 200);
+        GAL_loadPhotos();
+      });
+    } else {
+      setTimeout(initLightbox, 200);
+      GAL_loadPhotos();
+    }
+  }
+
+  // Small delay to allow DOM to settle
+  setTimeout(init, 300);
+
+  // Debug
+  window.GAL_debug = function(){
+    console.log('=== GALLERY DEBUG ===');
+    console.log('Admin:', GAL.isAdmin);
+    console.log('Photos:', GAL.photos.length);
+    console.log('Pending files:', GAL.pendingFiles.length);
+    console.log('Supabase:', !!sb);
+  };
+
+  console.log('✅ Gallery Backend loaded');
+})();
+</script>
 </body>
 </html>
 
