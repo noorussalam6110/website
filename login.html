@@ -6900,12 +6900,28 @@ async function loadPaymentsForDate(){
     q=q.order('class').order('name');
     var sr=await q;
     var pr=await supabaseClient.from('payments').select('*').eq('date',date).eq('type','fee');
+    // 💰 Fetch cumulative totals for each student (all-time approved payments)
+    var sids=(sr.data||[]).map(function(x){return x.studentid;});
+    var totalsMap={};
+    if(sids.length>0){
+      try{
+        var allP=await supabaseClient.from('payments').select('studentid,debit,credit,approved').in('studentid',sids).eq('type','fee');
+        (allP.data||[]).forEach(function(p){
+          if(p.approved!==true)return;
+          if(!totalsMap[p.studentid])totalsMap[p.studentid]={paid:0,withdrawn:0};
+          totalsMap[p.studentid].paid+=Number(p.debit)||0;
+          totalsMap[p.studentid].withdrawn+=Number(p.credit)||0;
+        });
+      }catch(e){console.warn('Cumulative fetch failed:',e);}
+    }
     currentDatePayments=(sr.data||[]).map(function(x){
       var py=(pr.data||[]).find(function(y){return y.studentid===x.studentid;});
+      var t=totalsMap[x.studentid]||{paid:0,withdrawn:0};
       return{
         studentId:x.studentid,name:x.name||'',class:x.class||'',
         debit:py?Number(py.debit)||0:0,credit:py?Number(py.credit)||0:0,
-        exists:!!py,approved:py?py.approved:false
+        exists:!!py,approved:py?py.approved:false,
+        totalPaid:t.paid,totalWithdrawn:t.withdrawn
       };
     });
     applyPaymentsFilters();
@@ -6924,18 +6940,54 @@ function renderAdminTable(){
   var wrap=document.getElementById('adminTableWrap');
   if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}
   var sc=currentAdminClass==='all';
-  var h='<table><thead><tr><th>#</th><th>Student</th>'+(sc?'<th>Class</th>':'')+'<th>Debit</th><th>Credit</th><th>Status</th></tr></thead><tbody>';
+  var h='<table><thead><tr><th>#</th><th>Student</th>'+(sc?'<th>Class</th>':'')+'<th>Debit (Today)</th><th>Credit (Today)</th><th style="background:linear-gradient(180deg,#ecfdf5,#d1fae5);color:#059669;white-space:nowrap;">💰 Total Paid</th><th>Status</th></tr></thead><tbody>';
   filteredPayments.forEach(function(i,idx){
     var cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');
     var st=i.exists?'<span class="existing-badge '+(i.approved?'':'pending')+'">'+(i.approved?'✅':'⏳')+'</span>':'—';
+    var totalPaid=Number(i.totalPaid)||0;
+    var totalWithdrawn=Number(i.totalWithdrawn)||0;
+    var net=totalPaid-totalWithdrawn;
+    var netColor=net>0?'#059669':net<0?'#dc2626':'#64748b';
     h+='<tr><td>'+(idx+1)+'</td><td><strong>'+escapeHtml(i.name)+'</strong><br><small style="color:#94a3b8;">'+escapeHtml(i.studentId||'')+'</small></td>';
     if(sc)h+='<td>'+escapeHtml(i.class||'')+'</td>';
     h+='<td><input type="number" id="admin_debit_'+cid+'" value="'+i.debit+'" min="0"></td>';
     h+='<td><input type="number" id="admin_credit_'+cid+'" value="'+i.credit+'" min="0"></td>';
+    h+='<td style="text-align:right;background:#f0fdf4;border-left:2px solid rgba(5,150,105,.25);white-space:nowrap;">'
+      +'<div style="font-weight:900;color:#059669;font-size:.9rem;line-height:1.2;">₹'+totalPaid.toLocaleString('en-IN',{maximumFractionDigits:2})+'</div>';
+    if(totalWithdrawn>0){
+      h+='<div style="font-size:.6rem;color:#dc2626;font-weight:700;margin-top:2px;">− ₹'+totalWithdrawn.toLocaleString('en-IN')+'</div>';
+      h+='<div style="font-size:.6rem;color:'+netColor+';font-weight:800;">Net: ₹'+net.toLocaleString('en-IN')+'</div>';
+    }
+    h+='</td>';
     h+='<td>'+st+'</td></tr>';
   });
   h+='</tbody></table>';
   wrap.innerHTML=h;
+}
+
+// 🔄 LIVE TOTAL CALCULATOR
+function updateAdminTotals(){
+  if(!filteredPayments)return;
+  var totalDebit=0,totalCredit=0,paidCount=0;
+  filteredPayments.forEach(function(i){
+    var cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');
+    var d=document.getElementById('admin_debit_'+cid);
+    var c=document.getElementById('admin_credit_'+cid);
+    var dv=d?(parseFloat(d.value)||0):0;
+    var cv=c?(parseFloat(c.value)||0):0;
+    totalDebit+=dv;
+    totalCredit+=cv;
+    if(dv>0)paidCount++;
+  });
+  var net=totalDebit-totalCredit;
+  var td=document.getElementById('adminTotalDebit');
+  var tc=document.getElementById('adminTotalCredit');
+  var tn=document.getElementById('adminTotalNet');
+  var tcn=document.getElementById('adminTotalCount');
+  if(td)td.textContent='₹'+totalDebit.toLocaleString('en-IN',{maximumFractionDigits:2});
+  if(tc)tc.textContent='₹'+totalCredit.toLocaleString('en-IN',{maximumFractionDigits:2});
+  if(tn){tn.textContent='₹'+net.toLocaleString('en-IN',{maximumFractionDigits:2});tn.style.color=net>=0?'#1e40af':'#dc2626';}
+  if(tcn)tcn.textContent=paidCount;
 }
 
 function clearAdminForm(){
@@ -6969,7 +7021,11 @@ async function bulkUpdate(){
       var r=await supabaseClient.from('payments').insert(data.slice(i,i+200));
       if(r.error)throw r.error;
     }
-    showToast('✅ Updated '+data.length,'success');
+    // 💰 Calculate totals for the toast
+    var _tp=0,_tw=0;
+    data.forEach(function(x){_tp+=(x.debit||0);_tw+=(x.credit||0);});
+    var _net=_tp-_tw;
+    showToast('✅ '+data.length+' records saved — Paid: ₹'+_tp.toLocaleString('en-IN')+' | Net: ₹'+_net.toLocaleString('en-IN'),'success');
     loadPaymentsForDate();
   }catch(e){showToast('❌ '+e.message,'error');}
   btn.disabled=false;btn.textContent='Update';
