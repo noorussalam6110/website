@@ -291,6 +291,15 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
           <i class="fas fa-question-circle"></i> FAQ
         </button>
       </div>
+      <div class="sidebar-section">📚 സാഹിത്യ സമാജം</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="programs" onclick="switchTab('programs')">
+          <i class="fas fa-feather"></i> Literary Programs
+        </button>
+        <button class="sidebar-item" data-tab="registrations" onclick="switchTab('registrations')">
+          <i class="fas fa-clipboard-check"></i> Registrations
+        </button>
+      </div>
       <div class="sidebar-section">Communication</div>
       <div class="sidebar-nav">
         <button class="sidebar-item" data-tab="announcements" onclick="switchTab('announcements')">
@@ -914,7 +923,252 @@ async function rejectTesti(id){
     loadTab('subtest');
   } catch(e){ toast('❌ '+e.message, 'error'); }
 }
+/* ═══════════════════════════════════════════════════════ */
+/* 📚 ADMIN — LITERARY PROGRAMS                             */
+/* ═══════════════════════════════════════════════════════ */
+async function renderPrograms(el){
+  const data = await loadTable('sksbv_programs', 'program_date', false);
+  const ITEM_TYPES_OPTS = [
+    {value:'song', label:'🎵 ഗാനം'},
+    {value:'speech', label:'🎤 പ്രസംഗം'},
+    {value:'poem', label:'📝 കവിത'},
+    {value:'story', label:'📖 കഥ'},
+    {value:'essay', label:'✍️ ലേഖനം'},
+    {value:'quran', label:'📖 ഖുർആൻ പാരായണം'},
+    {value:'other', label:'🌟 മറ്റുള്ളവ'}
+  ];
+  const FIELDS = [
+    {name:'title', label:'Program Title', required:true, placeholder:'e.g., Annual Literary Fest 2025'},
+    {name:'theme', label:'പ്രമേയം (Theme)', placeholder:'e.g., നബി ﷺ — കാരുണ്യത്തിന്റെ മാതൃക'},
+    {name:'description', label:'Description', type:'textarea'},
+    {name:'program_date', label:'Program Date', type:'date', required:true},
+    {name:'program_time', label:'Time', placeholder:'e.g., 9:00 AM'},
+    {name:'venue', label:'Venue', placeholder:'Noorussalam Madrasa'},
+    {name:'registration_deadline', label:'Registration Deadline', type:'date'},
+    {name:'max_participants', label:'Max Participants', type:'number', placeholder:'50'},
+    {name:'status', label:'Status', type:'select', options:[
+      {value:'upcoming', label:'⏳ Upcoming'},
+      {value:'active', label:'🟢 Active'},
+      {value:'completed', label:'✅ Completed'},
+      {value:'cancelled', label:'❌ Cancelled'}
+    ]}
+  ];
 
+  // Get registration counts
+  const regCounts = {};
+  try {
+    const r = await supabaseClient.from('sksbv_program_registrations').select('program_id,status');
+    (r.data||[]).forEach(reg => {
+      if (!regCounts[reg.program_id]) regCounts[reg.program_id] = {total:0, approved:0, pending:0};
+      regCounts[reg.program_id].total++;
+      if (reg.status === 'approved') regCounts[reg.program_id].approved++;
+      else if (reg.status === 'pending') regCounts[reg.program_id].pending++;
+    });
+  } catch(e){}
+
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>📚 Literary Programs</h2><p>${data.length} programs • സാഹിത്യ സമാജം</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick='openModal("Create Program", ${JSON.stringify(FIELDS).replace(/'/g,"&#39;")}, null, "sksbv_programs")'>
+          <i class="fas fa-plus"></i> New Program
+        </button>
+      </div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-feather"></i><p>No programs yet. Create your first!</p></div>' : `
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        ${data.map(p => {
+          const cnt = regCounts[p.id] || {total:0, approved:0, pending:0};
+          const dt = p.program_date ? new Date(p.program_date) : null;
+          const statusColors = {upcoming:'warning', active:'success', completed:'info', cancelled:'danger'};
+          const statusIcons = {upcoming:'⏳', active:'🟢', completed:'✅', cancelled:'❌'};
+          return `
+            <div style="background:#fff;border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);border-left:4px solid ${p.status==='active'?'#059669':p.status==='cancelled'?'#dc2626':p.status==='completed'?'#64748b':'#f59e0b'};">
+              <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+                <div style="flex:1;min-width:200px;">
+                  <h3 style="margin:0 0 4px;font-size:1.05rem;font-weight:900;">${esc(p.title)}</h3>
+                  ${p.theme ? `<div style="font-size:.78rem;color:#7c3aed;font-weight:800;margin-bottom:6px;">📖 ${esc(p.theme)}</div>` : ''}
+                </div>
+                <span class="badge ${statusColors[p.status]||'info'}">${statusIcons[p.status]||''} ${esc(p.status||'upcoming')}</span>
+              </div>
+              <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--dim);font-weight:700;margin-bottom:10px;">
+                <span>📅 ${dt ? dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</span>
+                ${p.program_time ? `<span>🕐 ${esc(p.program_time)}</span>` : ''}
+                ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
+                ${p.registration_deadline ? `<span>⏰ Deadline: ${fmtDate(p.registration_deadline)}</span>` : ''}
+              </div>
+              ${p.description ? `<p style="font-size:.82rem;color:#475569;margin:0 0 12px;line-height:1.5;">${esc(p.description)}</p>` : ''}
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding-top:10px;border-top:1px solid rgba(100,116,139,.1);">
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <span class="badge info">👥 ${cnt.total}/${p.max_participants||'∞'}</span>
+                  <span class="badge success">✅ ${cnt.approved}</span>
+                  <span class="badge warning">⏳ ${cnt.pending}</span>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-primary btn-sm" onclick='openModal("Edit Program", ${JSON.stringify(FIELDS).replace(/'/g,"&#39;")}, ${JSON.stringify(p)}, "sksbv_programs")'>✏️ Edit</button>
+                  <button class="btn btn-success btn-sm" onclick="viewRegistrations(${p.id})">📋 View</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_programs', ${p.id})">🗑️</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `}
+  `;
+}
+
+function viewRegistrations(programId){
+  switchTab('registrations');
+  setTimeout(()=>{
+    const f = document.getElementById('regFilterProgram');
+    if (f){ f.value = programId; filterRegistrations(); }
+  }, 400);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 📋 ADMIN — REGISTRATIONS                                 */
+/* ═══════════════════════════════════════════════════════ */
+async function renderRegistrations(el){
+  const [regRes, progRes] = await Promise.all([
+    supabaseClient.from('sksbv_program_registrations').select('*').order('created_at', {ascending:false}),
+    supabaseClient.from('sksbv_programs').select('id,title')
+  ]);
+  const regs = regRes.data || [];
+  const programs = progRes.data || [];
+  const progMap = {};
+  programs.forEach(p => progMap[p.id] = p.title);
+
+  const pending = regs.filter(r => r.status === 'pending').length;
+  const approved = regs.filter(r => r.status === 'approved').length;
+  const rejected = regs.filter(r => r.status === 'rejected').length;
+
+  const typeIcons = {song:'🎵', speech:'🎤', poem:'📝', story:'📖', essay:'✍️', quran:'📖', other:'🌟'};
+  const typeLabels = {song:'ഗാനം', speech:'പ്രസംഗം', poem:'കവിത', story:'കഥ', essay:'ലേഖനം', quran:'ഖുർആൻ', other:'മറ്റുള്ളവ'};
+
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>📋 Registrations</h2><p>${regs.length} total</p></div>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
+      <div class="stat-card orange">
+        <div class="stat-num">${pending}</div>
+        <div class="stat-label">⏳ Pending</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-num">${approved}</div>
+        <div class="stat-label">✅ Approved</div>
+      </div>
+      <div class="stat-card pink">
+        <div class="stat-num">${rejected}</div>
+        <div class="stat-label">❌ Rejected</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
+      <select id="regFilterProgram" onchange="filterRegistrations()" style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;">
+        <option value="all">All Programs</option>
+        ${programs.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}
+      </select>
+      <select id="regFilterStatus" onchange="filterRegistrations()" style="padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;">
+        <option value="all">All Status</option>
+        <option value="pending">⏳ Pending</option>
+        <option value="approved">✅ Approved</option>
+        <option value="rejected">❌ Rejected</option>
+      </select>
+    </div>
+
+    <div id="regListWrap">
+      ${regs.length === 0 ? '<div class="empty-state"><i class="fas fa-clipboard"></i><p>No registrations yet</p></div>' : renderRegList(regs, progMap, typeIcons, typeLabels)}
+    </div>
+  `;
+
+  window._regsCache = regs;
+  window._progMapCache = progMap;
+  window._typeIconsCache = typeIcons;
+  window._typeLabelsCache = typeLabels;
+}
+
+function renderRegList(regs, progMap, typeIcons, typeLabels){
+  if (!regs || regs.length === 0) return '<div class="empty-state"><i class="fas fa-inbox"></i><p>No registrations</p></div>';
+  return `<div style="display:flex;flex-direction:column;gap:10px;">
+    ${regs.map(r => {
+      const sc = r.status==='approved'?'success':r.status==='rejected'?'danger':'warning';
+      const si = r.status==='approved'?'✅':r.status==='rejected'?'❌':'⏳';
+      return `<div style="background:#fff;border-radius:14px;padding:14px;border:1px solid var(--border);border-left:4px solid ${r.status==='approved'?'#059669':r.status==='rejected'?'#dc2626':'#f59e0b'};">
+        <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:180px;">
+            <div style="font-weight:900;font-size:.92rem;margin-bottom:3px;">${typeIcons[r.item_type]||'📝'} ${esc(r.item_title)}</div>
+            <div style="font-size:.72rem;color:var(--dim);font-weight:700;">
+              👤 ${esc(r.member_name||'—')} • Class ${esc(r.member_class||'—')} • 🏷️ ${typeLabels[r.item_type]||r.item_type}
+            </div>
+            <div style="font-size:.72rem;color:#0891b2;font-weight:700;margin-top:4px;">📚 ${esc(progMap[r.program_id]||'—')}</div>
+          </div>
+          <span class="badge ${sc}">${si} ${r.status}</span>
+        </div>
+        ${r.item_description ? `<p style="font-size:.8rem;color:#475569;margin:0 0 10px;line-height:1.5;padding:10px;background:#f8fafc;border-radius:8px;">${esc(r.item_description)}</p>` : ''}
+        ${r.admin_note ? `<div style="font-size:.74rem;color:#7c3aed;font-weight:700;margin-bottom:8px;"><i class="fas fa-comment"></i> Your note: ${esc(r.admin_note)}</div>` : ''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid rgba(100,116,139,.08);">
+          <small style="color:var(--dim);font-size:.68rem;align-self:center;flex:1;">⏱️ ${r.duration_minutes||'—'} min • ${fmtDate(r.created_at)}</small>
+          ${r.status === 'pending' ? `
+            <button class="btn btn-success btn-sm" onclick="approveRegistration(${r.id})">✅ Approve</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectRegistration(${r.id})">❌ Reject</button>
+          ` : `<button class="btn btn-ghost btn-sm" onclick="deleteRow('sksbv_program_registrations',${r.id})">🗑️</button>`}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function filterRegistrations(){
+  const progFilter = document.getElementById('regFilterProgram')?.value || 'all';
+  const statusFilter = document.getElementById('regFilterStatus')?.value || 'all';
+  let filtered = window._regsCache || [];
+  if (progFilter !== 'all') filtered = filtered.filter(r => String(r.program_id) === String(progFilter));
+  if (statusFilter !== 'all') filtered = filtered.filter(r => r.status === statusFilter);
+  const wrap = document.getElementById('regListWrap');
+  if (wrap) wrap.innerHTML = renderRegList(filtered, window._progMapCache, window._typeIconsCache, window._typeLabelsCache);
+}
+
+async function approveRegistration(id){
+  try {
+    const { data: reg } = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id',id).single();
+    const { data: prog } = await supabaseClient.from('sksbv_programs').select('title,program_date').eq('id',reg.program_id).single();
+    await supabaseClient.from('sksbv_program_registrations').update({status:'approved', reviewed_at:new Date().toISOString()}).eq('id', id);
+    // Notify member
+    try {
+      await supabaseClient.from('sksbv_notifications').insert({
+        title: '✅ Literary Registration Approved',
+        message: `നിങ്ങളുടെ "${reg.item_title}" (${reg.item_type}) — "${prog?.title}" program-ൽ approve ചെയ്തു! 📅 ${fmtDate(prog?.program_date)}`,
+        target_type: 'member',
+        target_member: reg.member_id
+      });
+    } catch(e){}
+    toast('✅ Approved & notified', 'success');
+    loadTab('registrations');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+async function rejectRegistration(id){
+  const note = prompt('Rejection reason (optional — will be shown to student):');
+  try {
+    const { data: reg } = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id',id).single();
+    await supabaseClient.from('sksbv_program_registrations').update({
+      status:'rejected', admin_note: note||null, reviewed_at: new Date().toISOString()
+    }).eq('id', id);
+    try {
+      await supabaseClient.from('sksbv_notifications').insert({
+        title: '❌ Registration Not Approved',
+        message: `നിങ്ങളുടെ "${reg.item_title}" — ${note ? 'കാരണം: '+note : 'admin-മായി ബന്ധപ്പെടുക.'}`,
+        target_type: 'member',
+        target_member: reg.member_id
+      });
+    } catch(e){}
+    toast('Rejected & notified', 'success');
+    loadTab('registrations');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
 /* ═══════════════════════════════════════════════════════ */
 /* 🗺️ TAB HANDLERS                                          */
 /* ═══════════════════════════════════════════════════════ */
@@ -1085,7 +1339,9 @@ const TAB_HANDLERS = {
   ),
   subphotos: renderPhotoSubs,
   suggestions: renderSuggestions,
-  subtest: renderTestiSubs
+  subtest: renderTestiSubs,
+  programs: renderPrograms,
+  registrations: renderRegistrations
 };
 
 /* ═══════════════════════════════════════════════════════ */
