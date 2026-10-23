@@ -462,11 +462,16 @@ async function renderDashboard(el){
     const recentSug = await supabaseClient.from('sksbv_suggestions')
       .select('*').eq('status','pending').order('created_at',{ascending:false}).limit(3);
 
-    el.innerHTML = `
+el.innerHTML = `
       <div class="content-header">
         <div>
           <h2>👋 Welcome, Admin</h2>
           <p>${new Date().toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</p>
+        </div>
+        <div class="content-actions">
+          <button class="btn btn-ghost" onclick="checkTableHealth()">
+            <i class="fas fa-stethoscope"></i> Health Check
+          </button>
         </div>
       </div>
 
@@ -660,41 +665,77 @@ async function saveCrud(){
 /* 📋 TABLE RENDERERS                                       */
 /* ═══════════════════════════════════════════════════════ */
 
-// ─── MEMBERS ───
+// ─── MEMBERS (UID-based) ───
 async function renderMembers(el){
   const data = await loadTable('sksbv_members', 'name');
+  
+  // Count students to show sync potential
+  let studentCount = 0;
+  try {
+    const sc = await supabaseClient.from('students').select('id', {count:'exact', head:true});
+    studentCount = sc.count || 0;
+  } catch(e){}
+  
+  const missingCount = Math.max(0, studentCount - data.length);
+  
   const MEMBER_FIELDS = [
-    {name:'member_id', label:'Member ID', required:true, placeholder:'SKSBV-001'},
+    {name:'member_id', label:'Student UID *', required:true, placeholder:'e.g., NSM001'},
     {name:'name', label:'Full Name', required:true},
     {name:'class', label:'Class'},
     {name:'roll_number', label:'Roll No'},
     {name:'phone', label:'Phone'},
-    {name:'pin', label:'PIN (4-digit)', placeholder:'1234'},
     {name:'role', label:'Role', type:'select', options:[
       {value:'member', label:'Member'},{value:'leader', label:'Leader'},{value:'admin', label:'Admin'}
     ]},
     {name:'position', label:'Position'},
     {name:'photo', label:'Photo', type:'file'}
   ];
+
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>👥 Members</h2><p>${data.length} total members</p></div>
+      <div>
+        <h2>👥 Members</h2>
+        <p>${data.length} SKSBV members • ${studentCount} students available • ${missingCount} not synced</p>
+      </div>
       <div class="content-actions">
+        <button class="btn btn-success" onclick="syncStudentsToMembers()" ${missingCount === 0 ? 'disabled style="opacity:.5;"' : ''}>
+          <i class="fas fa-sync"></i> Sync from Students (${missingCount})
+        </button>
         <button class="btn btn-primary" onclick='openModal("Add Member", ${JSON.stringify(MEMBER_FIELDS)}, null, "sksbv_members")'>
-          <i class="fas fa-plus"></i> Add Member
+          <i class="fas fa-plus"></i> Add Manually
         </button>
       </div>
     </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>No members yet</p></div>' : `
+
+    ${data.length === 0 ? `
+      <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p style="font-weight:800;font-size:1rem;color:#0f172a;">No SKSBV members yet</p>
+        <p style="font-size:.82rem;color:#64748b;margin-top:6px;">All ${studentCount} students-നെ ഒരുമിച്ച് import ചെയ്യാൻ "Sync from Students" click ചെയ്യുക</p>
+        <button class="btn btn-success" onclick="syncStudentsToMembers()" style="margin-top:16px;">
+          <i class="fas fa-sync"></i> Import All ${studentCount} Students
+        </button>
+      </div>
+    ` : `
       <div class="data-table"><table>
-        <thead><tr><th>Photo</th><th>Member ID</th><th>Name</th><th>Class</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <thead><tr>
+          <th>Photo</th>
+          <th>Student UID</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Roll</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr></thead>
         <tbody>
           ${data.map(m => `
             <tr>
               <td>${m.photo ? `<img src="${esc(m.photo)}">` : `<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(140deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${esc((m.name||'M').charAt(0))}</div>`}</td>
-              <td><strong>${esc(m.member_id)}</strong></td>
+              <td><strong style="color:#0891b2;font-family:monospace;letter-spacing:.5px;">${esc(m.member_id)}</strong></td>
               <td>${esc(m.name)}</td>
               <td>${esc(m.class||'—')}</td>
+              <td>${esc(m.roll_number||'—')}</td>
               <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
               <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
               <td>
@@ -707,6 +748,94 @@ async function renderMembers(el){
       </table></div>
     `}
   `;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🔄 SYNC STUDENTS → SKSBV MEMBERS                         */
+/* ═══════════════════════════════════════════════════════ */
+async function syncStudentsToMembers(){
+  if (!confirm('എല്ലാ students-നെയും SKSBV members ആയി import ചെയ്യണോ?\n\n✅ Student UID = Member ID\n✅ Duplicates skip ചെയ്യും')) return;
+  
+  const btn = event.target.closest('button');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...'; }
+  
+  let imported = 0, skipped = 0, errors = 0;
+  
+  try {
+    // 1. Fetch all students
+    const studentsRes = await supabaseClient
+      .from('students')
+      .select('studentid, name, class, photo, phone, fathername, dob, bloodgroup, roll')
+      .order('class')
+      .order('roll');
+    const students = studentsRes.data || [];
+    
+    if (students.length === 0) {
+      showToast('⚠️ No students in database', 'error');
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Sync'; }
+      return;
+    }
+    
+    // 2. Fetch existing SKSBV member IDs
+    const membersRes = await supabaseClient.from('sksbv_members').select('member_id');
+    const existingIds = new Set((membersRes.data || []).map(m => m.member_id));
+    
+    // 3. Prepare bulk inserts (skip existing)
+    const toInsert = [];
+    for (const s of students) {
+      if (existingIds.has(s.studentid)) {
+        skipped++;
+        continue;
+      }
+      toInsert.push({
+        member_id: s.studentid,        // UID = studentid
+        name: s.name || 'Student',
+        class: String(s.class || ''),
+        roll_number: s.roll || null,
+        photo: s.photo || null,
+        phone: s.phone || null,
+        parent_name: s.fathername || null,
+        dob: s.dob || null,
+        blood_group: s.bloodgroup || null,
+        role: 'member',
+        pin: 'auto',
+        is_active: true,
+        is_approved: true
+      });
+    }
+    
+    // 4. Bulk insert in batches of 50
+    for (let i = 0; i < toInsert.length; i += 50) {
+      const batch = toInsert.slice(i, i + 50);
+      const ins = await supabaseClient.from('sksbv_members').insert(batch);
+      if (ins.error) {
+        console.error('Batch error:', ins.error);
+        errors += batch.length;
+      } else {
+        imported += batch.length;
+      }
+    }
+    
+    // 5. Success message
+    let msg = `✅ Sync complete!\n\n`;
+    msg += `📥 Imported: ${imported}\n`;
+    msg += `⏭️ Skipped (already exist): ${skipped}\n`;
+    if (errors > 0) msg += `❌ Errors: ${errors}`;
+    
+    alert(msg);
+    showToast(`✅ ${imported} members imported`, 'success');
+    
+    if (typeof confetti !== 'undefined') {
+      confetti({ particleCount: 150, spread: 90, origin: { y: .6 },
+                 colors: ['#059669','#34d399','#fbbf24','#22d3ee'] });
+    }
+    
+    loadTab('members');
+  } catch(e) {
+    console.error('Sync error:', e);
+    showToast('❌ ' + e.message, 'error');
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sync"></i> Sync'; }
+  }
 }
 
 // ─── LEADERS ───
@@ -765,8 +894,7 @@ function makeSimpleRenderer(title, icon, table, orderCol, fields, cols){
           </button>
         </div>
       </div>
-      ${data.length === 0 ? `<div class="empty-state"><i class="fas fa-inbox"></i><p>No ${title} yet</p></div>` : `
-        <div class="data-table"><table>
+      ${data.length === 0 ? `<div class="empty-state"><i class="fas fa-inbox"></i><p style="font-weight:800;color:#0f172a;">No ${title} yet</p><p style="font-size:.8rem;color:#64748b;margin-top:6px;">"Add" button click ചെയ്ത് തുടങ്ങൂ</p></div>` : `        <div class="data-table"><table>
           <thead><tr>${cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Actions</th></tr></thead>
           <tbody>
             ${data.map(item => `
@@ -1343,7 +1471,90 @@ const TAB_HANDLERS = {
   programs: renderPrograms,
   registrations: renderRegistrations
 };
-
+/* ═══════════════════════════════════════════════════════ */
+/* 🏥 HEALTH CHECK — Which tables have data?               */
+/* ═══════════════════════════════════════════════════════ */
+async function checkTableHealth(){
+  const tables = [
+    'sksbv_members','sksbv_leaders','sksbv_committee','sksbv_class_reps',
+    'sksbv_past_leaders','sksbv_activities','sksbv_events','sksbv_gallery',
+    'sksbv_photo_submissions','sksbv_reports','sksbv_achievements',
+    'sksbv_announcements','sksbv_testimonials','sksbv_suggestions',
+    'sksbv_programs','sksbv_program_registrations','sksbv_videos','sksbv_faq',
+    'sksbv_mom','sksbv_downloads','sksbv_press','sksbv_notifications'
+  ];
+  
+  showToast('🏥 Checking all tables...', 'info');
+  
+  const results = await Promise.all(tables.map(async (t) => {
+    try {
+      const r = await supabaseClient.from(t).select('id', {count:'exact', head:true});
+      return { table: t, count: r.count || 0, error: r.error ? r.error.message : null };
+    } catch(e) {
+      return { table: t, count: -1, error: e.message };
+    }
+  }));
+  
+  // Also check students table
+  let studentsCount = 0;
+  try {
+    const sc = await supabaseClient.from('students').select('id', {count:'exact', head:true});
+    studentsCount = sc.count || 0;
+  } catch(e){}
+  
+  // Build modal
+  const modal = document.createElement('div');
+  modal.id = 'healthCheckModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.92);backdrop-filter:blur(16px);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;';
+  
+  const rowsHtml = results.map(r => {
+    const color = r.error ? '#dc2626' : r.count === 0 ? '#f59e0b' : '#059669';
+    const icon = r.error ? '❌' : r.count === 0 ? '⚠️' : '✅';
+    const sync = r.table === 'sksbv_members' && r.count < studentsCount
+      ? `<button onclick="syncStudentsToMembers();document.getElementById('healthCheckModal').remove()" style="background:#059669;color:#fff;border:none;padding:4px 10px;border-radius:20px;font-size:.65rem;font-weight:800;cursor:pointer;margin-left:8px;">Sync Now</button>`
+      : '';
+    return `<tr style="border-bottom:1px solid rgba(100,116,139,.1);">
+      <td style="padding:8px 10px;font-family:monospace;font-size:.74rem;">${r.table}</td>
+      <td style="padding:8px 10px;text-align:center;color:${color};font-weight:900;">${icon} ${r.error ? 'ERR' : r.count}</td>
+      <td style="padding:8px 10px;">${sync}</td>
+    </tr>`;
+  }).join('');
+  
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:22px;padding:24px;max-width:600px;width:100%;margin:auto 0;box-shadow:0 40px 90px -30px rgba(0,0,0,.5);max-height:88dvh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="margin:0;font-size:1.1rem;font-weight:900;">🏥 Database Health</h3>
+        <button onclick="document.getElementById('healthCheckModal').remove()" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;">✕</button>
+      </div>
+      
+      <div style="background:#eff6ff;padding:12px 14px;border-radius:12px;margin-bottom:14px;font-size:.82rem;">
+        <strong style="color:#1e40af;">👥 Students in portal:</strong>
+        <span style="font-size:1.1rem;font-weight:900;color:#0891b2;margin-left:8px;">${studentsCount}</span>
+      </div>
+      
+      <table style="width:100%;border-collapse:collapse;font-size:.8rem;">
+        <thead>
+          <tr style="background:#f0f6ff;">
+            <th style="padding:10px;text-align:left;font-size:.68rem;color:#1e40af;text-transform:uppercase;">Table</th>
+            <th style="padding:10px;text-align:center;font-size:.68rem;color:#1e40af;text-transform:uppercase;">Rows</th>
+            <th style="padding:10px;text-align:left;font-size:.68rem;color:#1e40af;text-transform:uppercase;">Action</th>
+          </tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      
+      <div style="margin-top:16px;padding:12px 14px;background:#f0fdf4;border-radius:10px;font-size:.74rem;color:#065f46;line-height:1.6;">
+        <strong>💡 എന്ത് ചെയ്യണം:</strong><br>
+        • <b>⚠️ 0 rows</b> — Admin panel-ൽ add ചെയ്യുക<br>
+        • <b>sksbv_members</b> empty ആണെങ്കിൽ "Sync Now" click ചെയ്യുക<br>
+        • <b>❌ ERR</b> — Table missing or RLS issue
+      </div>
+      
+      <button onclick="document.getElementById('healthCheckModal').remove()" style="width:100%;margin-top:14px;padding:12px;background:#f1f5f9;border:1.5px solid rgba(100,116,139,.2);border-radius:12px;font-weight:800;font-size:.86rem;cursor:pointer;">Close</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
 /* ═══════════════════════════════════════════════════════ */
 /* 🚀 INIT                                                  */
 /* ═══════════════════════════════════════════════════════ */
