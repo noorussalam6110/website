@@ -1,10 +1,7 @@
-/* ═══════════════════════════════════════════════════════ */
-/* 🔧 SKSBV CONFIG — Change these to your new project   */
-/* ═══════════════════════════════════════════════════════ */
 window.SKSBV_CONFIG = {
-  SUPABASE_URL: 'https://YOUR_NEW_PROJECT.supabase.co',
-  SUPABASE_ANON_KEY: 'YOUR_NEW_ANON_KEY_HERE',
-  ADMIN_USERNAME: 'sksbv_admin',
+  SUPABASE_URL: 'https://dmjjtmimrozzqknduqas.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_e7EXyQvriYYgw9KDlu-5dA_Jcjdw9bg',
+  ADMIN_USERNAME: 'sksbv',
   ADMIN_PASSWORD: 'SKSBV2026',
   STORAGE_BUCKET: 'sksbv-files',
   VERSION: '2.0'
