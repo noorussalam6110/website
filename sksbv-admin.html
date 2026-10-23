@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ml">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SKSBV Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sksbv-config.js"></script>
+<style>
+:root{
+  --primary:#6366f1; --primary-dark:#4f46e5; --accent:#8b5cf6;
+  --success:#059669; --danger:#dc2626; --warning:#f59e0b;
+  --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --dim:#64748b;
+  --border:rgba(100,116,139,.15);
+  --shadow:0 10px 30px -15px rgba(15,23,42,.2);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Anek Malayalam',sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ═══ LOGIN ═══ */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:linear-gradient(135deg,#667eea,#764ba2)}
+.login-card{background:#fff;border-radius:24px;padding:32px 28px;max-width:420px;width:100%;
+  box-shadow:0 40px 80px -20px rgba(0,0,0,.4)}
+.login-icon{width:80px;height:80px;margin:0 auto 20px;border-radius:20px;
+  background:linear-gradient(140deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;
+  font-size:2rem;color:#fff;box-shadow:0 15px 35px -10px rgba(102,126,234,.6)}
+.login-card h1{text-align:center;font-size:1.4rem;font-weight:900;margin:0 0 6px}
+.login-card p{text-align:center;color:var(--dim);font-size:.82rem;margin:0 0 24px}
+.login-input{width:100%;padding:14px 16px;border:2px solid var(--border);border-radius:14px;
+  font-family:inherit;font-size:16px;margin-bottom:12px;outline:none;background:#f8fafc}
+.login-input:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.15)}
+.login-btn{width:100%;padding:15px;border-radius:14px;border:none;
+  background:linear-gradient(100deg,#6366f1,#8b5cf6);color:#fff;font-family:inherit;font-weight:900;
+  font-size:.95rem;cursor:pointer;box-shadow:0 15px 30px -10px rgba(99,102,241,.6)}
+.login-btn:active{transform:scale(.98)}
+.login-error{background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:10px;
+  font-size:.78rem;font-weight:700;margin-bottom:12px;display:none}
+.login-back{text-align:center;margin-top:16px}
+.login-back a{color:var(--dim);font-size:.78rem;text-decoration:none;font-weight:700}
+
+/* ═══ APP LAYOUT ═══ */
+#appScreen{display:none;min-height:100vh}
+.app-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 20px;
+  padding-top:calc(16px + env(safe-area-inset-top,0px));
+  display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;
+  box-shadow:0 4px 20px -8px rgba(0,0,0,.3)}
+.app-header-left{display:flex;align-items:center;gap:12px}
+.app-logo{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.22);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.app-header h1{font-size:1rem;font-weight:900;margin:0;line-height:1.2}
+.app-header small{font-size:.68rem;opacity:.85;display:block;margin-top:2px}
+.logout-btn{background:rgba(255,255,255,.22);border:none;color:#fff;padding:9px 16px;
+  border-radius:10px;font-family:inherit;font-weight:800;font-size:.78rem;cursor:pointer;
+  display:flex;align-items:center;gap:6px}
+
+/* ═══ SIDEBAR ═══ */
+.app-layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 76px)}
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:16px 12px;
+  position:sticky;top:76px;height:calc(100vh - 76px);overflow-y:auto}
+.sidebar-nav{display:flex;flex-direction:column;gap:4px}
+.sidebar-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+  border:none;background:transparent;color:var(--dim);font-family:inherit;font-weight:700;
+  font-size:.86rem;cursor:pointer;text-align:left;width:100%;transition:all .2s}
+.sidebar-item:hover{background:#f1f5f9;color:var(--text)}
+.sidebar-item.active{background:linear-gradient(100deg,#6366f1,#8b5cf6);color:#fff;
+  box-shadow:0 6px 16px -6px rgba(99,102,241,.5)}
+.sidebar-item i{width:20px;text-align:center;font-size:1rem}
+.sidebar-section{font-size:.62rem;font-weight:900;color:#94a3b8;text-transform:uppercase;
+  letter-spacing:1px;padding:16px 14px 6px}
+
+.main-content{padding:24px;overflow-y:auto}
+.content-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  flex-wrap:wrap;margin-bottom:20px}
+.content-header h2{font-size:1.4rem;font-weight:900;margin:0 0 4px}
+.content-header p{color:var(--dim);font-size:.82rem;margin:0}
+.content-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ═══ BUTTONS ═══ */
+.btn{padding:10px 18px;border-radius:12px;border:none;font-family:inherit;font-weight:800;
+  font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+  transition:all .2s;min-height:42px}
+.btn-primary{background:linear-gradient(100deg,#6366f1,#8b5cf6);color:#fff;
+  box-shadow:0 8px 20px -8px rgba(99,102,241,.6)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-success{background:linear-gradient(100deg,#059669,#34d399);color:#fff}
+.btn-danger{background:linear-gradient(100deg,#dc2626,#ef4444);color:#fff}
+.btn-warning{background:linear-gradient(100deg,#f59e0b,#fbbf24);color:#03132e}
+.btn-ghost{background:#f1f5f9;color:var(--dim);border:1.5px solid var(--border)}
+.btn-sm{padding:6px 12px;font-size:.72rem;min-height:32px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ═══ STATS ═══ */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);
+  box-shadow:var(--shadow);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:3px;border-radius:99px;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.stat-card.green::before{background:linear-gradient(90deg,#059669,#34d399)}
+.stat-card.orange::before{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.stat-card.pink::before{background:linear-gradient(90deg,#ec4899,#f472b6)}
+.stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(120deg,#1a4fc4,#2b7cf0);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.7rem;color:var(--dim);font-weight:800;margin-top:4px;
+  text-transform:uppercase;letter-spacing:.5px}
+.stat-icon{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:12px;
+  background:#e0e7ff;color:#6366f1;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+
+/* ═══ TABLE ═══ */
+.data-table{background:#fff;border-radius:16px;border:1px solid var(--border);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;box-shadow:var(--shadow)}
+.data-table table{width:100%;border-collapse:collapse;font-size:.84rem;min-width:600px}
+.data-table th{padding:12px 14px;text-align:left;font-weight:900;font-size:.68rem;
+  text-transform:uppercase;color:#1e40af;background:#f0f6ff;border-bottom:2px solid rgba(59,130,246,.2);
+  letter-spacing:.5px;white-space:nowrap}
+.data-table td{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.08);vertical-align:middle}
+.data-table tr:hover td{background:#f8faff}
+.data-table img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.62rem;font-weight:900;
+  text-transform:uppercase;letter-spacing:.5px}
+.badge.success{background:rgba(5,150,105,.15);color:#059669}
+.badge.danger{background:rgba(220,38,38,.15);color:#dc2626}
+.badge.warning{background:rgba(245,158,11,.15);color:#b45309}
+.badge.info{background:rgba(59,130,246,.15);color:#1e40af}
+.badge.purple{background:rgba(139,92,246,.15);color:#7c3aed}
+
+/* ═══ MODAL ═══ */
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.9);backdrop-filter:blur(16px);
+  z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:16px;
+  padding-top:max(16px,env(safe-area-inset-top,16px));overflow-y:auto}
+.modal.open{display:flex}
+.modal-card{background:#fff;border-radius:22px;padding:24px;max-width:640px;width:100%;
+  margin:auto 0;max-height:calc(100dvh - 32px);overflow-y:auto;
+  box-shadow:0 40px 90px -30px rgba(0,0,0,.5);animation:slideUp .35s cubic-bezier(.34,1.4,.64,1)}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h3{font-size:1.1rem;font-weight:900;margin:0}
+.modal-close{background:#f1f5f9;border:none;width:38px;height:38px;border-radius:50%;
+  font-size:1rem;cursor:pointer;color:var(--dim)}
+.form-row{margin-bottom:14px}
+.form-row label{display:block;font-size:.76rem;font-weight:800;color:var(--dim);margin-bottom:6px}
+.form-row input,.form-row select,.form-row textarea{
+  width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-family:inherit;font-size:16px;background:#f8fafc;outline:none;color:var(--text)}
+.form-row input:focus,.form-row textarea:focus,.form-row select:focus{
+  border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.12)}
+.form-row textarea{min-height:80px;resize:vertical}
+.form-row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions .btn{flex:1;justify-content:center}
+
+/* ═══ FILE UPLOAD ═══ */
+.file-upload{width:100%;aspect-ratio:16/10;border:2.5px dashed rgba(99,102,241,.4);
+  border-radius:14px;background:#f8fafc;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;position:relative;margin-bottom:14px}
+.file-upload:hover{border-color:var(--primary);background:#eff6ff}
+.file-upload img{width:100%;height:100%;object-fit:cover}
+.file-upload-placeholder{text-align:center;padding:20px;color:var(--dim);font-weight:700;font-size:.82rem}
+.file-upload-placeholder i{font-size:2.5rem;color:var(--primary);display:block;margin-bottom:8px}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 24px;
+  border-radius:50px;font-weight:800;font-size:.86rem;z-index:2000;
+  box-shadow:0 20px 50px -12px rgba(99,102,241,.8);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:linear-gradient(135deg,#059669,#34d399)}
+.toast.error{background:linear-gradient(135deg,#dc2626,#ef4444)}
+
+/* ═══ EMPTY / LOADING ═══ */
+.empty-state{text-align:center;padding:60px 20px;color:var(--dim)}
+.empty-state i{font-size:3rem;opacity:.3;display:block;margin-bottom:12px;color:var(--primary)}
+.loading{text-align:center;padding:40px}
+.spinner{width:32px;height:32px;border:3px solid rgba(99,102,241,.2);border-top-color:var(--primary);
+  border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══ MOBILE ═══ */
+@media(max-width:900px){
+  .app-layout{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:76px;bottom:0;width:280px;z-index:50;
+    transform:translateX(-100%);transition:transform .3s;box-shadow:0 0 40px rgba(0,0,0,.2)}
+  .sidebar.open{transform:translateX(0)}
+  .main-content{padding:16px}
+  .content-header h2{font-size:1.15rem}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat-card{padding:16px}
+  .stat-num{font-size:1.4rem}
+  .form-row-grid{grid-template-columns:1fr}
+  .sidebar-toggle{display:flex!important}
+}
+.sidebar-toggle{display:none;background:rgba(255,255,255,.22);border:none;color:#fff;
+  width:44px;height:44px;border-radius:12px;font-size:1.1rem;cursor:pointer;
+  align-items:center;justify-content:center}
+.sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;display:none}
+.sidebar-backdrop.show{display:block}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon">🔐</div>
+    <h1>SKSBV Admin</h1>
+    <p>Super Admin Access</p>
+    <div class="login-error" id="loginError"></div>
+    <input type="text" class="login-input" id="admUser" placeholder="Username" autocomplete="username">
+    <input type="password" class="login-input" id="admPass" placeholder="Password" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter')SK_ADMIN_login()">
+    <button class="login-btn" onclick="SK_ADMIN_login()">Login →</button>
+    <div class="login-back"><a href="sksbv.html">← Back to SKSBV</a></div>
+  </div>
+</div>
+
+<!-- ═══ APP SCREEN ═══ -->
+<div id="appScreen">
+  <header class="app-header">
+    <div class="app-header-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+      <div class="app-logo">👑</div>
+      <div>
+        <h1>SKSBV Admin</h1>
+        <small>Super Admin Panel</small>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="SK_ADMIN_logout()">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section">Overview</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item active" data-tab="dashboard" onclick="switchTab('dashboard')">
+          <i class="fas fa-chart-pie"></i> Dashboard
+        </button>
+      </div>
+      <div class="sidebar-section">People</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="members" onclick="switchTab('members')">
+          <i class="fas fa-users"></i> Members
+        </button>
+        <button class="sidebar-item" data-tab="leaders" onclick="switchTab('leaders')">
+          <i class="fas fa-crown"></i> Leaders
+        </button>
+        <button class="sidebar-item" data-tab="committee" onclick="switchTab('committee')">
+          <i class="fas fa-user-tie"></i> Committee
+        </button>
+        <button class="sidebar-item" data-tab="classreps" onclick="switchTab('classreps')">
+          <i class="fas fa-user-graduate"></i> Class Reps
+        </button>
+        <button class="sidebar-item" data-tab="pastleaders" onclick="switchTab('pastleaders')">
+          <i class="fas fa-history"></i> Past Leaders
+        </button>
+      </div>
+      <div class="sidebar-section">Content</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="activities" onclick="switchTab('activities')">
+          <i class="fas fa-star"></i> Activities
+        </button>
+        <button class="sidebar-item" data-tab="events" onclick="switchTab('events')">
+          <i class="fas fa-calendar"></i> Events
+        </button>
+        <button class="sidebar-item" data-tab="gallery" onclick="switchTab('gallery')">
+          <i class="fas fa-images"></i> Gallery
+        </button>
+        <button class="sidebar-item" data-tab="videos" onclick="switchTab('videos')">
+          <i class="fas fa-video"></i> Videos
+        </button>
+        <button class="sidebar-item" data-tab="reports" onclick="switchTab('reports')">
+          <i class="fas fa-file-pdf"></i> Reports
+        </button>
+        <button class="sidebar-item" data-tab="downloads" onclick="switchTab('downloads')">
+          <i class="fas fa-download"></i> Downloads
+        </button>
+        <button class="sidebar-item" data-tab="achievements" onclick="switchTab('achievements')">
+          <i class="fas fa-trophy"></i> Achievements
+        </button>
+        <button class="sidebar-item" data-tab="press" onclick="switchTab('press')">
+          <i class="fas fa-newspaper"></i> Press
+        </button>
+        <button class="sidebar-item" data-tab="mom" onclick="switchTab('mom')">
+          <i class="fas fa-file-signature"></i> MOM
+        </button>
+        <button class="sidebar-item" data-tab="faq" onclick="switchTab('faq')">
+          <i class="fas fa-question-circle"></i> FAQ
+        </button>
+      </div>
+      <div class="sidebar-section">Communication</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="announcements" onclick="switchTab('announcements')">
+          <i class="fas fa-bullhorn"></i> Announcements
+        </button>
+        <button class="sidebar-item" data-tab="testimonials" onclick="switchTab('testimonials')">
+          <i class="fas fa-comment"></i> Testimonials
+        </button>
+      </div>
+      <div class="sidebar-section">Submissions</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="subphotos" onclick="switchTab('subphotos')">
+          <i class="fas fa-camera"></i> Photo Submissions
+        </button>
+        <button class="sidebar-item" data-tab="suggestions" onclick="switchTab('suggestions')">
+          <i class="fas fa-lightbulb"></i> Suggestions
+        </button>
+        <button class="sidebar-item" data-tab="subtest" onclick="switchTab('subtest')">
+          <i class="fas fa-quote-left"></i> Testi Submissions
+        </button>
+      </div>
+    </aside>
+    <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+
+    <main class="main-content" id="mainContent">
+      <div class="loading"><div class="spinner"></div><p>Loading...</p></div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════ */
+/* 🔧 SETUP                                                 */
+/* ═══════════════════════════════════════════════════════ */
+const CFG = window.SKSBV_CONFIG || {};
+const supabaseClient = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+let CURRENT_TAB = 'dashboard';
+let ADMIN_SESSION = null;
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🎨 HELPERS                                               */
+/* ═══════════════════════════════════════════════════════ */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return s==null?'':String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function fmtDate(d){ if(!d)return'—'; try{const dt=new Date(d); if(isNaN(dt))return d; return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){return d;} }
+function fmtDateInput(d){ if(!d)return''; try{return new Date(d).toISOString().split('T')[0];}catch(e){return'';} }
+function toast(msg, type='info'){
+  const t = $('toast'); if(!t) return;
+  t.className = 'toast ' + type + ' show';
+  const icons = {success:'✅', error:'❌', info:'ℹ️'};
+  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span><span>${esc(msg)}</span>`;
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+function confirmDel(msg){ return confirm(msg||'Delete this item?'); }
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🔐 AUTH                                                  */
+/* ═══════════════════════════════════════════════════════ */
+async function SK_ADMIN_login(){
+  const u = $('admUser').value.trim();
+  const p = $('admPass').value;
+  const err = $('loginError');
+  err.style.display = 'none';
+  if(!u || !p){ err.textContent = 'Fill both fields'; err.style.display = 'block'; return; }
+
+  // Hardcoded check from config (fallback)
+  if (u === CFG.ADMIN_USERNAME && p === CFG.ADMIN_PASSWORD){
+    ADMIN_SESSION = {username: u, role: 'admin', ts: Date.now()};
+    localStorage.setItem('sksbv_admin_session', JSON.stringify(ADMIN_SESSION));
+    showApp();
+    return;
+  }
+  // Also try DB admin check
+  try {
+    const r = await supabaseClient.from('sksbv_members').select('*')
+      .eq('member_id', u).eq('role', 'admin').eq('is_active', true).maybeSingle();
+    if (r.data && (r.data.pin === p || r.data.pin === 'admin123')){
+      ADMIN_SESSION = {username: u, name: r.data.name, role: 'admin', ts: Date.now()};
+      localStorage.setItem('sksbv_admin_session', JSON.stringify(ADMIN_SESSION));
+      showApp();
+      return;
+    }
+  } catch(e){ console.warn(e); }
+
+  err.textContent = '❌ Invalid credentials';
+  err.style.display = 'block';
+}
+
+function SK_ADMIN_logout(){
+  localStorage.removeItem('sksbv_admin_session');
+  location.reload();
+}
+
+function showApp(){
+  $('loginScreen').style.display = 'none';
+  $('appScreen').style.display = 'block';
+  loadTab('dashboard');
+}
+
+// Auto-login if session exists
+(function autoLogin(){
+  const s = localStorage.getItem('sksbv_admin_session');
+  if (s){
+    try{
+      ADMIN_SESSION = JSON.parse(s);
+      if (Date.now() - ADMIN_SESSION.ts < 7*24*60*60*1000){
+        showApp();
+      } else {
+        localStorage.removeItem('sksbv_admin_session');
+      }
+    }catch(e){}
+  }
+})();
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🎛️ TAB SYSTEM                                           */
+/* ═══════════════════════════════════════════════════════ */
+function switchTab(tab){
+  CURRENT_TAB = tab;
+  document.querySelectorAll('.sidebar-item').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  if (window.innerWidth <= 900) toggleSidebar(false);
+  loadTab(tab);
+}
+function toggleSidebar(force){
+  const sb = $('sidebar'), bd = $('sidebarBackdrop');
+  const open = force !== undefined ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  bd.classList.toggle('show', open);
+}
+
+function loadTab(tab){
+  const el = $('mainContent');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading...</p></div>';
+  const handler = TAB_HANDLERS[tab];
+  if (handler) handler(el);
+  else el.innerHTML = '<div class="empty-state"><i class="fas fa-wrench"></i><p>Tab not configured</p></div>';
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 📊 DASHBOARD                                             */
+/* ═══════════════════════════════════════════════════════ */
+async function renderDashboard(el){
+  try {
+    const stats = await Promise.all([
+      supabaseClient.from('sksbv_members').select('id', {count:'exact', head:true}),
+      supabaseClient.from('sksbv_events').select('id', {count:'exact', head:true}),
+      supabaseClient.from('sksbv_gallery').select('id', {count:'exact', head:true}),
+      supabaseClient.from('sksbv_photo_submissions').select('id', {count:'exact', head:true}).eq('status','pending'),
+      supabaseClient.from('sksbv_suggestions').select('id', {count:'exact', head:true}).eq('status','pending'),
+      supabaseClient.from('sksbv_member_testimonials').select('id', {count:'exact', head:true}).eq('status','pending')
+    ]);
+    const [mem, ev, gal, phsub, sug, tsub] = stats.map(s => s.count || 0);
+
+    // Recent submissions
+    const recentSub = await supabaseClient.from('sksbv_photo_submissions')
+      .select('*').eq('status','pending').order('created_at',{ascending:false}).limit(3);
+    const recentSug = await supabaseClient.from('sksbv_suggestions')
+      .select('*').eq('status','pending').order('created_at',{ascending:false}).limit(3);
+
+    el.innerHTML = `
+      <div class="content-header">
+        <div>
+          <h2>👋 Welcome, Admin</h2>
+          <p>${new Date().toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon"><i class="fas fa-users"></i></div>
+          <div class="stat-num">${mem}</div>
+          <div class="stat-label">Members</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon" style="background:#ecfdf5;color:#059669;"><i class="fas fa-calendar"></i></div>
+          <div class="stat-num">${ev}</div>
+          <div class="stat-label">Events</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-images"></i></div>
+          <div class="stat-num">${gal}</div>
+          <div class="stat-label">Gallery Photos</div>
+        </div>
+        <div class="stat-card pink">
+          <div class="stat-icon" style="background:#fce7f3;color:#be185d;"><i class="fas fa-inbox"></i></div>
+          <div class="stat-num">${phsub + sug + tsub}</div>
+          <div class="stat-label">Pending Reviews</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;">
+        <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);">
+          <h3 style="font-size:.95rem;font-weight:900;margin:0 0 14px;"><i class="fas fa-camera" style="color:var(--primary);"></i> Pending Photos (${phsub})</h3>
+          ${recentSub.data && recentSub.data.length > 0 ?
+            recentSub.data.map(p => `
+              <div style="padding:10px;background:#f8fafc;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:800;font-size:.82rem;">${esc(p.title||'Untitled')}</div>
+                  <div style="font-size:.7rem;color:var(--dim);margin-top:2px;">${esc(p.member_name||'—')}</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="switchTab('subphotos')">Review</button>
+              </div>
+            `).join('') : '<div style="text-align:center;padding:20px;color:var(--dim);font-size:.8rem;">No pending photos</div>'}
+        </div>
+
+        <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);">
+          <h3 style="font-size:.95rem;font-weight:900;margin:0 0 14px;"><i class="fas fa-lightbulb" style="color:var(--warning);"></i> Pending Suggestions (${sug})</h3>
+          ${recentSug.data && recentSug.data.length > 0 ?
+            recentSug.data.map(s => `
+              <div style="padding:10px;background:#f8fafc;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:800;font-size:.82rem;">${esc(s.title)}</div>
+                  <div style="font-size:.7rem;color:var(--dim);margin-top:2px;">${esc(s.member_name||'—')}</div>
+                </div>
+                <button class="btn btn-warning btn-sm" onclick="switchTab('suggestions')">Review</button>
+              </div>
+            `).join('') : '<div style="text-align:center;padding:20px;color:var(--dim);font-size:.8rem;">No pending suggestions</div>'}
+        </div>
+      </div>
+    `;
+  } catch(e){
+    el.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle" style="color:var(--danger);"></i><p>Error: ${esc(e.message)}</p></div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🎯 GENERIC CRUD HELPERS                                  */
+/* ═══════════════════════════════════════════════════════ */
+async function loadTable(table, orderCol='id', ascending=true){
+  try {
+    const { data, error } = await supabaseClient.from(table).select('*').order(orderCol, {ascending});
+    if (error) throw error;
+    return data || [];
+  } catch(e){
+    console.warn('Load error:', e);
+    return [];
+  }
+}
+
+async function deleteRow(table, id){
+  if (!confirmDel()) return;
+  try {
+    const { error } = await supabaseClient.from(table).delete().eq('id', id);
+    if (error) throw error;
+    toast('Deleted', 'success');
+    loadTab(CURRENT_TAB);
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+async function upsertRow(table, row, id){
+  try {
+    let r;
+    if (id) r = await supabaseClient.from(table).update(row).eq('id', id);
+    else r = await supabaseClient.from(table).insert(row);
+    if (r.error) throw r.error;
+    toast(id ? 'Updated' : 'Added', 'success');
+    closeModal();
+    loadTab(CURRENT_TAB);
+    return true;
+  } catch(e){
+    toast('❌ '+e.message, 'error');
+    return false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🪟 MODAL                                                 */
+/* ═══════════════════════════════════════════════════════ */
+let MODAL_FORM_DATA = {};
+function openModal(title, fields, existing, onSave){
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.id = 'crudModal';
+  const d = existing || {};
+  MODAL_FORM_DATA = {fields, existing: d, onSave, table: onSave.table, id: d.id};
+
+  const htmlFields = fields.map(f => renderField(f, d[f.name])).join('');
+
+  modal.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>${esc(title)}</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <form id="crudForm" onsubmit="event.preventDefault();saveCrud()">
+        ${htmlFields}
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+        </div>
+      </form>
+    </div>
+  `;
+  modal.addEventListener('click', e => { if(e.target===modal) closeModal(); });
+  document.body.appendChild(modal);
+}
+function closeModal(){
+  const m = $('crudModal');
+  if (m) m.remove();
+}
+function renderField(f, val){
+  if (f.type === 'textarea'){
+    return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
+      <textarea name="${f.name}" id="f_${f.name}" ${f.required?'required':''} placeholder="${esc(f.placeholder||'')}">${esc(val||'')}</textarea></div>`;
+  }
+  if (f.type === 'select'){
+    return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
+      <select name="${f.name}" id="f_${f.name}" ${f.required?'required':''}>
+        <option value="">— Select —</option>
+        ${(f.options||[]).map(o=>`<option value="${esc(o.value)}" ${val==o.value?'selected':''}>${esc(o.label)}</option>`).join('')}
+      </select></div>`;
+  }
+  if (f.type === 'file'){
+    return `<div class="form-row"><label>${esc(f.label)}</label>
+      <div class="file-upload" id="f_${f.name}_wrap" onclick="document.getElementById('f_${f.name}').click()">
+        ${val ? `<img src="${esc(val)}">` : `<div class="file-upload-placeholder"><i class="fas fa-cloud-upload-alt"></i>${esc(f.placeholder||'Tap to upload')}</div>`}
+      </div>
+      <input type="file" id="f_${f.name}" accept="${f.accept||'image/*'}" style="display:none" onchange="SK_handleUpload(this,'${f.name}')">
+      <input type="hidden" name="${f.name}" id="f_${f.name}_url" value="${esc(val||'')}">
+    </div>`;
+  }
+  return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
+    <input type="${f.type||'text'}" name="${f.name}" id="f_${f.name}" value="${esc(val||'')}" ${f.required?'required':''} placeholder="${esc(f.placeholder||'')}"></div>`;
+}
+async function SK_handleUpload(input, fieldName){
+  const file = input.files[0];
+  if (!file) return;
+  toast('Uploading...', 'info');
+  try {
+    const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+    const fn = `sksbv_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const { error } = await supabaseClient.storage.from(CFG.STORAGE_BUCKET).upload(fn, file);
+    if (error) throw error;
+    const { data } = supabaseClient.storage.from(CFG.STORAGE_BUCKET).getPublicUrl(fn);
+    const url = data.publicUrl;
+    $(`f_${fieldName}_url`).value = url;
+    const wrap = $(`f_${fieldName}_wrap`);
+    wrap.innerHTML = `<img src="${url}">`;
+    toast('Uploaded ✅', 'success');
+  } catch(e){
+    toast('❌ '+e.message, 'error');
+  }
+}
+async function saveCrud(){
+  const { fields, existing, table, id } = MODAL_FORM_DATA;
+  const row = {};
+  fields.forEach(f => {
+    if (f.type === 'file') row[f.name] = $(`f_${f.name}_url`).value || null;
+    else row[f.name] = $(`f_${f.name}`).value.trim() || null;
+  });
+  await upsertRow(table, row, id);
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 📋 TABLE RENDERERS                                       */
+/* ═══════════════════════════════════════════════════════ */
+
+// ─── MEMBERS ───
+async function renderMembers(el){
+  const data = await loadTable('sksbv_members', 'name');
+  const MEMBER_FIELDS = [
+    {name:'member_id', label:'Member ID', required:true, placeholder:'SKSBV-001'},
+    {name:'name', label:'Full Name', required:true},
+    {name:'class', label:'Class'},
+    {name:'roll_number', label:'Roll No'},
+    {name:'phone', label:'Phone'},
+    {name:'pin', label:'PIN (4-digit)', placeholder:'1234'},
+    {name:'role', label:'Role', type:'select', options:[
+      {value:'member', label:'Member'},{value:'leader', label:'Leader'},{value:'admin', label:'Admin'}
+    ]},
+    {name:'position', label:'Position'},
+    {name:'photo', label:'Photo', type:'file'}
+  ];
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>👥 Members</h2><p>${data.length} total members</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick='openModal("Add Member", ${JSON.stringify(MEMBER_FIELDS)}, null, "sksbv_members")'>
+          <i class="fas fa-plus"></i> Add Member
+        </button>
+      </div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>No members yet</p></div>' : `
+      <div class="data-table"><table>
+        <thead><tr><th>Photo</th><th>Member ID</th><th>Name</th><th>Class</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${data.map(m => `
+            <tr>
+              <td>${m.photo ? `<img src="${esc(m.photo)}">` : `<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(140deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${esc((m.name||'M').charAt(0))}</div>`}</td>
+              <td><strong>${esc(m.member_id)}</strong></td>
+              <td>${esc(m.name)}</td>
+              <td>${esc(m.class||'—')}</td>
+              <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
+              <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick='openModal("Edit Member", ${JSON.stringify(MEMBER_FIELDS)}, ${JSON.stringify(m)}, "sksbv_members")'>✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_members', ${m.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table></div>
+    `}
+  `;
+}
+
+// ─── LEADERS ───
+async function renderLeaders(el){
+  const data = await loadTable('sksbv_leaders', 'position_order');
+  const FIELDS = [
+    {name:'name', label:'Name', required:true},
+    {name:'role_ml', label:'Role (Malayalam)', required:true},
+    {name:'role_en', label:'Role (English)'},
+    {name:'bio', label:'Bio', type:'textarea'},
+    {name:'phone', label:'Phone'},
+    {name:'position_order', label:'Order', type:'number', placeholder:'1'},
+    {name:'photo', label:'Photo', type:'file'}
+  ];
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>👑 Leaders</h2><p>${data.length} leaders</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick='openModal("Add Leader", ${JSON.stringify(FIELDS)}, null, "sksbv_leaders")'>
+          <i class="fas fa-plus"></i> Add Leader
+        </button>
+      </div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-crown"></i><p>No leaders yet</p></div>' : `
+      <div class="data-table"><table>
+        <thead><tr><th>Photo</th><th>Order</th><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${data.map(l => `
+            <tr>
+              <td>${l.photo ? `<img src="${esc(l.photo)}">` : '—'}</td>
+              <td>${l.position_order||0}</td>
+              <td>${esc(l.name)}</td>
+              <td>${esc(l.role_ml)}</td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick='openModal("Edit Leader", ${JSON.stringify(FIELDS)}, ${JSON.stringify(l)}, "sksbv_leaders")'>✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_leaders', ${l.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table></div>
+    `}
+  `;
+}
+
+// ─── GENERIC simple table ───
+function makeSimpleRenderer(title, icon, table, orderCol, fields, cols){
+  return async function(el){
+    const data = await loadTable(table, orderCol);
+    el.innerHTML = `
+      <div class="content-header">
+        <div><h2>${icon} ${title}</h2><p>${data.length} items</p></div>
+        <div class="content-actions">
+          <button class="btn btn-primary" onclick='openModal("Add ${title}", ${JSON.stringify(fields)}, null, "${table}")'>
+            <i class="fas fa-plus"></i> Add
+          </button>
+        </div>
+      </div>
+      ${data.length === 0 ? `<div class="empty-state"><i class="fas fa-inbox"></i><p>No ${title} yet</p></div>` : `
+        <div class="data-table"><table>
+          <thead><tr>${cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Actions</th></tr></thead>
+          <tbody>
+            ${data.map(item => `
+              <tr>
+                ${cols.map(c => `<td>${c.render ? c.render(item) : esc(item[c.name]||'—')}</td>`).join('')}
+                <td>
+                  <button class="btn btn-primary btn-sm" onclick='openModal("Edit ${title}", ${JSON.stringify(fields)}, ${JSON.stringify(item)}, "${table}")'>✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteRow('${table}', ${item.id})">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table></div>
+      `}
+    `;
+  };
+}
+
+// ─── PHOTO SUBMISSIONS ───
+async function renderPhotoSubs(el){
+  const data = await loadTable('sksbv_photo_submissions', 'created_at', false);
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>📸 Photo Submissions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-camera"></i><p>No submissions</p></div>' : `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+        ${data.map(s => `
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);">
+            <img src="${esc(s.image_url)}" style="width:100%;aspect-ratio:4/3;object-fit:cover;">
+            <div style="padding:14px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                <span class="badge ${s.status==='pending'?'warning':s.status==='approved'?'success':'danger'}">${s.status}</span>
+                <small style="color:var(--dim);font-size:.68rem;">${fmtDate(s.created_at)}</small>
+              </div>
+              <div style="font-weight:800;font-size:.9rem;margin-bottom:4px;">${esc(s.title||'—')}</div>
+              <div style="font-size:.74rem;color:var(--dim);">By ${esc(s.member_name||s.member_id||'—')}</div>
+              ${s.status === 'pending' ? `
+                <div style="display:flex;gap:6px;margin-top:12px;">
+                  <button class="btn btn-success btn-sm" style="flex:1;justify-content:center;" onclick="approvePhotoSub(${s.id})">✅ Approve</button>
+                  <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;" onclick="rejectPhotoSub(${s.id})">❌ Reject</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+async function approvePhotoSub(id){
+  try {
+    const { data: sub } = await supabaseClient.from('sksbv_photo_submissions').select('*').eq('id',id).single();
+    if (!sub) return;
+    await supabaseClient.from('sksbv_photo_submissions').update({status:'approved', approved_at:new Date().toISOString()}).eq('id',id);
+    // Add to gallery
+    await supabaseClient.from('sksbv_gallery').insert({
+      title: sub.title, image_url: sub.image_url, category: sub.category, event_date: sub.event_date
+    });
+    toast('✅ Approved & added to gallery', 'success');
+    loadTab('subphotos');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+async function rejectPhotoSub(id){
+  const note = prompt('Reason for rejection (optional):');
+  try {
+    await supabaseClient.from('sksbv_photo_submissions').update({status:'rejected', admin_note:note||null}).eq('id',id);
+    toast('Rejected', 'success');
+    loadTab('subphotos');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+// ─── SUGGESTIONS ───
+async function renderSuggestions(el){
+  const data = await loadTable('sksbv_suggestions', 'created_at', false);
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>💡 Suggestions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-lightbulb"></i><p>No suggestions</p></div>' : `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${data.map(s => `
+          <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);border-left:4px solid ${s.status==='pending'?'#f59e0b':'#059669'};box-shadow:var(--shadow);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+              <strong style="font-size:.92rem;">${esc(s.title)}</strong>
+              <span class="badge ${s.status==='pending'?'warning':'success'}">${s.status}</span>
+            </div>
+            <div style="font-size:.72rem;color:var(--dim);margin-bottom:8px;">From: ${esc(s.member_name||s.member_id)} • ${fmtDate(s.created_at)}</div>
+            <div style="font-size:.86rem;color:#475569;line-height:1.6;white-space:pre-wrap;">${esc(s.suggestion)}</div>
+            ${s.admin_reply ? `<div style="margin-top:10px;padding:10px;background:#ecfdf5;border-radius:8px;font-size:.8rem;"><strong>Your reply:</strong> ${esc(s.admin_reply)}</div>` : ''}
+            <div style="display:flex;gap:6px;margin-top:12px;">
+              ${s.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="replySuggestion(${s.id})">💬 Reply & Review</button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_suggestions', ${s.id})">🗑️ Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+async function replySuggestion(id){
+  const reply = prompt('Reply to this suggestion:');
+  if (!reply) return;
+  try {
+    await supabaseClient.from('sksbv_suggestions').update({
+      status: 'reviewed', admin_reply: reply, replied_at: new Date().toISOString()
+    }).eq('id', id);
+    toast('✅ Replied', 'success');
+    loadTab('suggestions');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+// ─── TESTIMONIAL SUBMISSIONS ───
+async function renderTestiSubs(el){
+  const data = await loadTable('sksbv_member_testimonials', 'created_at', false);
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>💬 Testimonial Submissions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-quote-left"></i><p>No submissions</p></div>' : `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${data.map(t => `
+          <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <strong>${esc(t.member_name||t.member_id)}</strong>
+              <span class="badge ${t.status==='pending'?'warning':t.status==='approved'?'success':'danger'}">${t.status}</span>
+            </div>
+            <div style="font-size:.86rem;color:#475569;line-height:1.6;margin-bottom:12px;">"${esc(t.message)}"</div>
+            ${t.status === 'pending' ? `
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-success btn-sm" style="flex:1;justify-content:center;" onclick="approveTesti(${t.id})">✅ Approve</button>
+                <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;" onclick="rejectTesti(${t.id})">❌ Reject</button>
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+async function approveTesti(id){
+  try {
+    const { data: t } = await supabaseClient.from('sksbv_member_testimonials').select('*').eq('id',id).single();
+    await supabaseClient.from('sksbv_member_testimonials').update({status:'approved'}).eq('id',id);
+    await supabaseClient.from('sksbv_testimonials').insert({name:t.member_name||'Member', role:'SKSBV Member', message:t.message, is_active:true});
+    toast('✅ Approved & published', 'success');
+    loadTab('subtest');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+async function rejectTesti(id){
+  try {
+    await supabaseClient.from('sksbv_member_testimonials').update({status:'rejected'}).eq('id',id);
+    toast('Rejected', 'success');
+    loadTab('subtest');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🗺️ TAB HANDLERS                                          */
+/* ═══════════════════════════════════════════════════════ */
+const TAB_HANDLERS = {
+  dashboard: renderDashboard,
+  members: renderMembers,
+  leaders: renderLeaders,
+  committee: makeSimpleRenderer('Committee', '👔', 'sksbv_committee', 'position_order',
+    [
+      {name:'name', label:'Name', required:true},
+      {name:'role_ml', label:'Role', required:true},
+      {name:'department', label:'Department'},
+      {name:'phone', label:'Phone'},
+      {name:'position_order', label:'Order', type:'number'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'name', label:'Name'}, {name:'role_ml', label:'Role'}, {name:'department', label:'Dept'}]
+  ),
+  classreps: makeSimpleRenderer('Class Representatives', '🎓', 'sksbv_class_reps', 'class',
+    [
+      {name:'class', label:'Class', required:true},
+      {name:'name', label:'Name', required:true},
+      {name:'phone', label:'Phone'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'class', label:'Class'}, {name:'name', label:'Name'}, {name:'phone', label:'Phone'}]
+  ),
+  pastleaders: makeSimpleRenderer('Past Leaders', '📜', 'sksbv_past_leaders', 'year_from',
+    [
+      {name:'name', label:'Name', required:true},
+      {name:'role_ml', label:'Role'},
+      {name:'year_from', label:'From Year', type:'number'},
+      {name:'year_to', label:'To Year', type:'number'},
+      {name:'bio', label:'Bio', type:'textarea'},
+      {name:'current_occupation', label:'Current Occupation'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'name', label:'Name'}, {name:'role_ml', label:'Role'},
+     {name:'year_from', label:'From'}, {name:'year_to', label:'To'}]
+  ),
+  activities: makeSimpleRenderer('Activities', '⭐', 'sksbv_activities', 'id',
+    [
+      {name:'title_ml', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'icon', label:'Icon (emoji)', placeholder:'📚'},
+      {name:'category', label:'Category'}
+    ],
+    [{name:'icon', label:'Icon'}, {name:'title_ml', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  events: makeSimpleRenderer('Events', '📅', 'sksbv_events', 'event_date', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'event_date', label:'Date', type:'date', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'location', label:'Location'},
+      {name:'image_url', label:'Image', type:'file'}
+    ],
+    [{name:'event_date', label:'Date', render: e => fmtDate(e.event_date)},
+     {name:'title', label:'Title'}, {name:'location', label:'Location'}]
+  ),
+  gallery: makeSimpleRenderer('Gallery', '📸', 'sksbv_gallery', 'uploaded_at', false,
+    [
+      {name:'title', label:'Title'},
+      {name:'image_url', label:'Photo', type:'file', required:true},
+      {name:'category', label:'Category'},
+      {name:'event_date', label:'Event Date', type:'date'}
+    ],
+    [{name:'image_url', label:'Photo', render: e => `<img src="${esc(e.image_url)}" style="width:60px;height:60px;">`},
+     {name:'title', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  videos: makeSimpleRenderer('Videos', '📹', 'sksbv_videos', 'id',
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'video_url', label:'YouTube URL', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'category', label:'Category'}
+    ],
+    [{name:'title', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  reports: makeSimpleRenderer('Reports', '📄', 'sksbv_reports', 'year', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'file_url', label:'PDF File', type:'file', accept:'application/pdf,.pdf'},
+      {name:'report_type', label:'Type', type:'select', options:[
+        {value:'annual', label:'Annual'}, {value:'monthly', label:'Monthly'}, {value:'special', label:'Special'}
+      ]},
+      {name:'year', label:'Year', type:'number'}
+    ],
+    [{name:'title', label:'Title'}, {name:'year', label:'Year'},
+     {name:'file_url', label:'File', render: e => e.file_url ? `<a href="${esc(e.file_url)}" target="_blank" class="badge info">📄 View</a>` : '—'}]
+  ),
+  downloads: makeSimpleRenderer('Downloads', '📥', 'sksbv_downloads', 'id',
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'file_url', label:'File', type:'file', accept:'*/*'},
+      {name:'file_type', label:'File Type'},
+      {name:'category', label:'Category'}
+    ],
+    [{name:'title', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  achievements: makeSimpleRenderer('Achievements', '🏆', 'sksbv_achievements', 'year', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'icon', label:'Icon', placeholder:'🥇'},
+      {name:'year', label:'Year', type:'number'},
+      {name:'level', label:'Level'}
+    ],
+    [{name:'icon', label:'Icon'}, {name:'title', label:'Title'}, {name:'year', label:'Year'}]
+  ),
+  press: makeSimpleRenderer('Press Coverage', '📰', 'sksbv_press', 'publish_date', false,
+    [
+      {name:'title', label:'Headline', required:true},
+      {name:'source', label:'Source (newspaper)'},
+      {name:'publish_date', label:'Date', type:'date'},
+      {name:'link_url', label:'Link URL'},
+      {name:'image_url', label:'Image', type:'file'},
+      {name:'description', label:'Description', type:'textarea'}
+    ],
+    [{name:'title', label:'Title'}, {name:'source', label:'Source'},
+     {name:'publish_date', label:'Date', render: e => fmtDate(e.publish_date)}]
+  ),
+  mom: makeSimpleRenderer('MOM', '📝', 'sksbv_mom', 'meeting_date', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'meeting_date', label:'Meeting Date', type:'date'},
+      {name:'attendees', label:'Attendees'},
+      {name:'file_url', label:'PDF File', type:'file', accept:'application/pdf,.pdf'},
+      {name:'description', label:'Description', type:'textarea'}
+    ],
+    [{name:'title', label:'Title'}, {name:'meeting_date', label:'Date', render: e => fmtDate(e.meeting_date)}]
+  ),
+  faq: makeSimpleRenderer('FAQ', '❓', 'sksbv_faq', 'position_order',
+    [
+      {name:'question', label:'Question', required:true, type:'textarea'},
+      {name:'answer', label:'Answer', required:true, type:'textarea'},
+      {name:'position_order', label:'Order', type:'number'}
+    ],
+    [{name:'question', label:'Question'}, {name:'position_order', label:'Order'}]
+  ),
+  announcements: makeSimpleRenderer('Announcements', '📢', 'sksbv_announcements', 'created_at', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'message', label:'Message', required:true, type:'textarea'},
+      {name:'type', label:'Type', type:'select', options:[
+        {value:'general', label:'General'}, {value:'important', label:'Important'}, {value:'urgent', label:'Urgent'}
+      ]},
+      {name:'is_pinned', label:'Pin?', type:'select', options:[
+        {value:'false', label:'No'}, {value:'true', label:'Yes'}
+      ]},
+      {name:'is_members_only', label:'Members Only?', type:'select', options:[
+        {value:'false', label:'Public'}, {value:'true', label:'Members Only'}
+      ]}
+    ],
+    [{name:'title', label:'Title'}, {name:'type', label:'Type'},
+     {name:'is_pinned', label:'Pinned', render: e => e.is_pinned ? '📌' : '—'}]
+  ),
+  testimonials: makeSimpleRenderer('Testimonials', '💬', 'sksbv_testimonials', 'id',
+    [
+      {name:'name', label:'Name', required:true},
+      {name:'role', label:'Role/Title'},
+      {name:'message', label:'Message', required:true, type:'textarea'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'name', label:'Name'}, {name:'role', label:'Role'}, {name:'message', label:'Message'}]
+  ),
+  subphotos: renderPhotoSubs,
+  suggestions: renderSuggestions,
+  subtest: renderTestiSubs
+};
+
+/* ═══════════════════════════════════════════════════════ */
+/* 🚀 INIT                                                  */
+/* ═══════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+</script>
+</body>
+</html>
