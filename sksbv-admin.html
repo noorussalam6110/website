@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>SKSBV Admin Panel</title>
+<title>SKSBV Admin — സാഹിത്യ സമാജം</title>
 <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -50,6 +50,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 .sidebar-item.active{background:linear-gradient(100deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 6px 16px -6px rgba(99,102,241,.5)}
 .sidebar-item i{width:20px;text-align:center;font-size:1rem}
 .sidebar-section{font-size:.62rem;font-weight:900;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;padding:16px 14px 6px}
+.sidebar-section.samajam{color:#7c3aed}
 
 .main-content{padding:24px;overflow-y:auto}
 .content-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:20px}
@@ -101,10 +102,11 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 .form-row label{display:block;font-size:.76rem;font-weight:800;color:var(--dim);margin-bottom:6px}
 .form-row input,.form-row select,.form-row textarea{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:16px;background:#f8fafc;outline:none;color:var(--text)}
 .form-row input:focus,.form-row textarea:focus,.form-row select:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.12)}
-.form-row textarea{min-height:80px;resize:vertical}
+.form-row textarea{min-height:100px;resize:vertical}
 .form-row-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .modal-actions{display:flex;gap:10px;margin-top:20px}
 .modal-actions .btn{flex:1;justify-content:center}
+.form-hint{font-size:.68rem;color:var(--dim);margin-top:4px;font-weight:600}
 
 .file-upload{width:100%;aspect-ratio:16/10;border:2.5px dashed rgba(99,102,241,.4);border-radius:14px;background:#f8fafc;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;margin-bottom:14px}
 .file-upload:hover{border-color:var(--primary);background:#eff6ff}
@@ -112,7 +114,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 .file-upload-placeholder{text-align:center;padding:20px;color:var(--dim);font-weight:700;font-size:.82rem}
 .file-upload-placeholder i{font-size:2.5rem;color:var(--primary);display:block;margin-bottom:8px}
 
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 24px;border-radius:50px;font-weight:800;font-size:.86rem;z-index:2000;box-shadow:0 20px 50px -12px rgba(99,102,241,.8);transition:transform .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(120px);background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:14px 24px;border-radius:50px;font-weight:800;font-size:.86rem;z-index:2000;box-shadow:0 20px 50px -12px rgba(99,102,241,.8);transition:transform .4s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px;max-width:92vw}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.success{background:linear-gradient(135deg,#059669,#34d399)}
 .toast.error{background:linear-gradient(135deg,#dc2626,#ef4444)}
@@ -146,7 +148,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
   <div class="login-card">
     <div class="login-icon">🔐</div>
     <h1>SKSBV Admin</h1>
-    <p>Super Admin Access</p>
+    <p>സാഹിത്യ സമാജം — അഡ്മിൻ പാനൽ</p>
     <div class="login-error" id="loginError"></div>
     <input type="text" class="login-input" id="admUser" placeholder="Username" autocomplete="username">
     <input type="password" class="login-input" id="admPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')SK_ADMIN_login()">
@@ -159,10 +161,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
   <header class="app-header">
     <div class="app-header-left">
       <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
-      <div class="app-logo">👑</div>
+      <div class="app-logo">📚</div>
       <div>
         <h1>SKSBV Admin</h1>
-        <small>Super Admin Panel</small>
+        <small>സാഹിത്യ സമാജം</small>
       </div>
     </div>
     <button class="logout-btn" onclick="SK_ADMIN_logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -170,43 +172,17 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-section">Overview</div>
+      <div class="sidebar-section samajam">📚 സാഹിത്യ സമാജം</div>
       <div class="sidebar-nav">
-        <button class="sidebar-item active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> Dashboard</button>
+        <button class="sidebar-item active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> ഡാഷ്ബോർഡ്</button>
+        <button class="sidebar-item" data-tab="programs" onclick="switchTab('programs')"><i class="fas fa-feather"></i> പ്രോഗ്രാമുകൾ</button>
+        <button class="sidebar-item" data-tab="registrations" onclick="switchTab('registrations')"><i class="fas fa-clipboard-check"></i> രജിസ്ട്രേഷനുകൾ</button>
       </div>
-      <div class="sidebar-section">📚 സാഹിത്യ സമാജം</div>
+      <div class="sidebar-section">അംഗങ്ങൾ</div>
       <div class="sidebar-nav">
-        <button class="sidebar-item" data-tab="programs" onclick="switchTab('programs')"><i class="fas fa-feather"></i> Literary Programs</button>
-        <button class="sidebar-item" data-tab="registrations" onclick="switchTab('registrations')"><i class="fas fa-clipboard-check"></i> Registrations</button>
-      </div>
-      <div class="sidebar-section">People</div>
-      <div class="sidebar-nav">
-        <button class="sidebar-item" data-tab="members" onclick="switchTab('members')"><i class="fas fa-users"></i> Members</button>
-        <button class="sidebar-item" data-tab="leaders" onclick="switchTab('leaders')"><i class="fas fa-crown"></i> Leaders</button>
-        <button class="sidebar-item" data-tab="committee" onclick="switchTab('committee')"><i class="fas fa-user-tie"></i> Committee</button>
-        <button class="sidebar-item" data-tab="classreps" onclick="switchTab('classreps')"><i class="fas fa-user-graduate"></i> Class Reps</button>
-        <button class="sidebar-item" data-tab="pastleaders" onclick="switchTab('pastleaders')"><i class="fas fa-history"></i> Past Leaders</button>
-      </div>
-      <div class="sidebar-section">Content</div>
-      <div class="sidebar-nav">
-        <button class="sidebar-item" data-tab="activities" onclick="switchTab('activities')"><i class="fas fa-star"></i> Activities</button>
-        <button class="sidebar-item" data-tab="events" onclick="switchTab('events')"><i class="fas fa-calendar"></i> Events</button>
-        <button class="sidebar-item" data-tab="gallery" onclick="switchTab('gallery')"><i class="fas fa-images"></i> Gallery</button>
-        <button class="sidebar-item" data-tab="videos" onclick="switchTab('videos')"><i class="fas fa-video"></i> Videos</button>
-        <button class="sidebar-item" data-tab="reports" onclick="switchTab('reports')"><i class="fas fa-file-pdf"></i> Reports</button>
-        <button class="sidebar-item" data-tab="achievements" onclick="switchTab('achievements')"><i class="fas fa-trophy"></i> Achievements</button>
-        <button class="sidebar-item" data-tab="faq" onclick="switchTab('faq')"><i class="fas fa-question-circle"></i> FAQ</button>
-      </div>
-      <div class="sidebar-section">Communication</div>
-      <div class="sidebar-nav">
-        <button class="sidebar-item" data-tab="announcements" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</button>
-        <button class="sidebar-item" data-tab="testimonials" onclick="switchTab('testimonials')"><i class="fas fa-comment"></i> Testimonials</button>
-      </div>
-      <div class="sidebar-section">Submissions</div>
-      <div class="sidebar-nav">
-        <button class="sidebar-item" data-tab="subphotos" onclick="switchTab('subphotos')"><i class="fas fa-camera"></i> Photo Submissions</button>
-        <button class="sidebar-item" data-tab="suggestions" onclick="switchTab('suggestions')"><i class="fas fa-lightbulb"></i> Suggestions</button>
-        <button class="sidebar-item" data-tab="subtest" onclick="switchTab('subtest')"><i class="fas fa-quote-left"></i> Testi Submissions</button>
+        <button class="sidebar-item" data-tab="members" onclick="switchTab('members')"><i class="fas fa-users"></i> അംഗങ്ങൾ</button>
+        <button class="sidebar-item" data-tab="leaders" onclick="switchTab('leaders')"><i class="fas fa-crown"></i> ഭാരവാഹികൾ</button>
+        <button class="sidebar-item" data-tab="activities" onclick="switchTab('activities')"><i class="fas fa-star"></i> പ്രവർത്തനങ്ങൾ</button>
       </div>
     </aside>
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
@@ -236,14 +212,14 @@ function toast(msg, type='info'){
   clearTimeout(window._toastT);
   window._toastT = setTimeout(()=>t.classList.remove('show'), 3000);
 }
-function confirmDel(msg){ return confirm(msg||'Delete this item?'); }
+function confirmDel(msg){ return confirm(msg||'ഇത് ഒഴിവാക്കണോ?'); }
 
 async function SK_ADMIN_login(){
   const u = $('admUser').value.trim();
   const p = $('admPass').value;
   const err = $('loginError');
   err.style.display = 'none';
-  if(!u || !p){ err.textContent = 'Fill both fields'; err.style.display = 'block'; return; }
+  if(!u || !p){ err.textContent = 'രണ്ട് ഫീൽഡുകളും പൂരിപ്പിക്കുക'; err.style.display = 'block'; return; }
 
   if (u === CFG.ADMIN_USERNAME && p === CFG.ADMIN_PASSWORD){
     ADMIN_SESSION = {username: u, role: 'admin', ts: Date.now()};
@@ -251,7 +227,7 @@ async function SK_ADMIN_login(){
     showApp();
     return;
   }
-  err.textContent = '❌ Invalid credentials';
+  err.textContent = '❌ തെറ്റായ യൂസർനെയിം അല്ലെങ്കിൽ പാസ്‌വേഡ്';
   err.style.display = 'block';
 }
 
@@ -317,7 +293,7 @@ async function deleteRow(table, id){
   try {
     const { error } = await supabaseClient.from(table).delete().eq('id', id);
     if (error) throw error;
-    toast('Deleted', 'success');
+    toast('ഒഴിവാക്കി', 'success');
     loadTab(CURRENT_TAB);
   } catch(e){ toast('❌ '+e.message, 'error'); }
 }
@@ -328,7 +304,7 @@ async function upsertRow(table, row, id){
     if (id) r = await supabaseClient.from(table).update(row).eq('id', id);
     else r = await supabaseClient.from(table).insert(row);
     if (r.error) throw r.error;
-    toast(id ? 'Updated' : 'Added', 'success');
+    toast(id ? 'അപ്ഡേറ്റ് ചെയ്തു' : 'ചേർത്തു', 'success');
     closeModal();
     loadTab(CURRENT_TAB);
     return true;
@@ -339,12 +315,12 @@ async function upsertRow(table, row, id){
 }
 
 let MODAL_FORM_DATA = {};
-function openModal(title, fields, existing, onSave){
+function openModal(title, fields, existing, tableName){
   const modal = document.createElement('div');
   modal.className = 'modal open';
   modal.id = 'crudModal';
   const d = existing || {};
-  MODAL_FORM_DATA = {fields, existing: d, onSave, table: onSave.table, id: d.id};
+  MODAL_FORM_DATA = {fields, existing: d, table: tableName, id: d.id};
 
   const htmlFields = fields.map(f => renderField(f, d[f.name])).join('');
 
@@ -357,8 +333,8 @@ function openModal(title, fields, existing, onSave){
       <form id="crudForm" onsubmit="event.preventDefault();saveCrud()">
         ${htmlFields}
         <div class="modal-actions">
-          <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">റദ്ദാക്കുക</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> സേവ്</button>
         </div>
       </form>
     </div>
@@ -373,12 +349,13 @@ function closeModal(){
 function renderField(f, val){
   if (f.type === 'textarea'){
     return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
-      <textarea name="${f.name}" id="f_${f.name}" ${f.required?'required':''} placeholder="${esc(f.placeholder||'')}">${esc(val||'')}</textarea></div>`;
+      <textarea name="${f.name}" id="f_${f.name}" ${f.required?'required':''} placeholder="${esc(f.placeholder||'')}">${esc(val||'')}</textarea>
+      ${f.hint ? `<div class="form-hint">${esc(f.hint)}</div>` : ''}</div>`;
   }
   if (f.type === 'select'){
     return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
       <select name="${f.name}" id="f_${f.name}" ${f.required?'required':''}>
-        <option value="">— Select —</option>
+        <option value="">— തിരഞ്ഞെടുക്കുക —</option>
         ${(f.options||[]).map(o=>`<option value="${esc(o.value)}" ${val==o.value?'selected':''}>${esc(o.label)}</option>`).join('')}
       </select></div>`;
   }
@@ -392,12 +369,13 @@ function renderField(f, val){
     </div>`;
   }
   return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
-    <input type="${f.type||'text'}" name="${f.name}" id="f_${f.name}" value="${esc(val||'')}" ${f.required?'required':''} placeholder="${esc(f.placeholder||'')}"></div>`;
+    <input type="${f.type||'text'}" name="${f.name}" id="f_${f.name}" value="${esc(val||'')}" ${f.required?'required':''} placeholder="${esc(f.placeholder||'')}">
+    ${f.hint ? `<div class="form-hint">${esc(f.hint)}</div>` : ''}</div>`;
 }
 async function SK_handleUpload(input, fieldName){
   const file = input.files[0];
   if (!file) return;
-  toast('Uploading...', 'info');
+  toast('അപ്‌ലോഡ് ചെയ്യുന്നു...', 'info');
   try {
     const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
     const fn = `sksbv_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
@@ -408,13 +386,13 @@ async function SK_handleUpload(input, fieldName){
     $(`f_${fieldName}_url`).value = url;
     const wrap = $(`f_${fieldName}_wrap`);
     wrap.innerHTML = `<img src="${url}">`;
-    toast('Uploaded ✅', 'success');
+    toast('അപ്‌ലോഡ് ചെയ്തു ✅', 'success');
   } catch(e){
     toast('❌ '+e.message, 'error');
   }
 }
 async function saveCrud(){
-  const { fields, existing, table, id } = MODAL_FORM_DATA;
+  const { fields, table, id } = MODAL_FORM_DATA;
   const row = {};
   fields.forEach(f => {
     if (f.type === 'file') row[f.name] = $(`f_${f.name}_url`).value || null;
@@ -427,42 +405,64 @@ async function saveCrud(){
 async function renderDashboard(el){
   try {
     const stats = await Promise.all([
-      supabaseClient.from('sksbv_members').select('id', {count:'exact', head:true}),
       supabaseClient.from('sksbv_programs').select('id', {count:'exact', head:true}),
+      supabaseClient.from('sksbv_program_registrations').select('id', {count:'exact', head:true}),
       supabaseClient.from('sksbv_program_registrations').select('id', {count:'exact', head:true}).eq('status','pending'),
-      supabaseClient.from('sksbv_photo_submissions').select('id', {count:'exact', head:true}).eq('status','pending'),
-      supabaseClient.from('sksbv_suggestions').select('id', {count:'exact', head:true}).eq('status','pending')
+      supabaseClient.from('sksbv_program_registrations').select('id', {count:'exact', head:true}).eq('status','approved'),
+      supabaseClient.from('sksbv_members').select('id', {count:'exact', head:true}),
+      supabaseClient.from('sksbv_leaders').select('id', {count:'exact', head:true}),
     ]);
-    const [mem, prog, reg, phsub, sug] = stats.map(s => s.count || 0);
+    const [prog, reg, pend, appr, mem, lead] = stats.map(s => s.count || 0);
 
     el.innerHTML = `
       <div class="content-header">
         <div>
-          <h2>👋 Welcome, Admin</h2>
+          <h2>📚 സാഹിത്യ സമാജം</h2>
           <p>${new Date().toLocaleDateString('en-IN', {weekday:'long', day:'2-digit', month:'long', year:'numeric'})}</p>
+        </div>
+        <div class="content-actions">
+          <button class="btn btn-primary" onclick="switchTab('programs')"><i class="fas fa-feather"></i> പ്രോഗ്രാമുകൾ</button>
+          <button class="btn btn-success" onclick="switchTab('registrations')"><i class="fas fa-clipboard-check"></i> രജിസ്ട്രേഷനുകൾ</button>
         </div>
       </div>
 
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon"><i class="fas fa-users"></i></div>
-          <div class="stat-num">${mem}</div>
-          <div class="stat-label">Members</div>
+          <div class="stat-icon"><i class="fas fa-feather"></i></div>
+          <div class="stat-num">${prog}</div>
+          <div class="stat-label">പ്രോഗ്രാമുകൾ</div>
         </div>
         <div class="stat-card green">
-          <div class="stat-icon" style="background:#ecfdf5;color:#059669;"><i class="fas fa-feather"></i></div>
-          <div class="stat-num">${prog}</div>
-          <div class="stat-label">Literary Programs</div>
+          <div class="stat-icon" style="background:#ecfdf5;color:#059669;"><i class="fas fa-clipboard-check"></i></div>
+          <div class="stat-num">${reg}</div>
+          <div class="stat-label">ആകെ രജിസ്ട്രേഷനുകൾ</div>
         </div>
         <div class="stat-card orange">
-          <div class="stat-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-clipboard-check"></i></div>
-          <div class="stat-num">${reg}</div>
-          <div class="stat-label">Pending Registrations</div>
+          <div class="stat-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-hourglass-half"></i></div>
+          <div class="stat-num">${pend}</div>
+          <div class="stat-label">⏳ പെൻഡിംഗ്</div>
         </div>
         <div class="stat-card pink">
-          <div class="stat-icon" style="background:#fce7f3;color:#be185d;"><i class="fas fa-inbox"></i></div>
-          <div class="stat-num">${phsub + sug}</div>
-          <div class="stat-label">Pending Reviews</div>
+          <div class="stat-icon" style="background:#fce7f3;color:#be185d;"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-num">${appr}</div>
+          <div class="stat-label">✅ അംഗീകരിച്ചത്</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div style="width:42px;height:42px;border-radius:12px;background:#e0e7ff;color:#6366f1;display:flex;align-items:center;justify-content:center;font-size:1.1rem;"><i class="fas fa-users"></i></div>
+            <div><div style="font-weight:900;font-size:1rem;">${mem}</div><div style="font-size:.72rem;color:var(--dim);font-weight:700;">അംഗങ്ങൾ</div></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;" onclick="switchTab('members')">അംഗങ്ങൾ കാണുക →</button>
+        </div>
+        <div style="background:#fff;border-radius:16px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+            <div style="width:42px;height:42px;border-radius:12px;background:#fef3c7;color:#b45309;display:flex;align-items:center;justify-content:center;font-size:1.1rem;"><i class="fas fa-crown"></i></div>
+            <div><div style="font-weight:900;font-size:1rem;">${lead}</div><div style="font-size:.72rem;color:var(--dim);font-weight:700;">ഭാരവാഹികൾ</div></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;" onclick="switchTab('leaders')">ഭാരവാഹികൾ →</button>
         </div>
       </div>
     `;
@@ -476,30 +476,30 @@ async function renderMembers(el){
   const data = await loadTable('sksbv_members', 'name');
   const MEMBER_FIELDS = [
     {name:'member_id', label:'Student UID *', required:true, placeholder:'e.g., NSM001'},
-    {name:'name', label:'Full Name', required:true},
-    {name:'class', label:'Class'},
+    {name:'name', label:'പൂർണ്ണ നാമം *', required:true},
+    {name:'class', label:'ക്ലാസ്'},
     {name:'roll_number', label:'Roll No'},
-    {name:'phone', label:'Phone'},
+    {name:'phone', label:'ഫോൺ'},
     {name:'role', label:'Role', type:'select', options:[
       {value:'member', label:'Member'},{value:'leader', label:'Leader'},{value:'admin', label:'Admin'}
     ]},
     {name:'position', label:'Position'},
-    {name:'photo', label:'Photo', type:'file'}
+    {name:'photo', label:'ഫോട്ടോ', type:'file'}
   ];
 
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>👥 Members</h2><p>${data.length} members</p></div>
+      <div><h2>👥 അംഗങ്ങൾ</h2><p>${data.length} അംഗങ്ങൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("Add Member", ${JSON.stringify(MEMBER_FIELDS)}, null, "sksbv_members")'>
-          <i class="fas fa-plus"></i> Add Member
+        <button class="btn btn-primary" onclick='openModal("അംഗത്തെ ചേർക്കുക", ${JSON.stringify(MEMBER_FIELDS)}, null, "sksbv_members")'>
+          <i class="fas fa-plus"></i> അംഗം ചേർക്കുക
         </button>
       </div>
     </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>No members yet</p></div>' : `
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>അംഗങ്ങളെ ചേർത്തിട്ടില്ല</p></div>' : `
       <div class="data-table"><table>
         <thead><tr>
-          <th>Photo</th><th>UID</th><th>Name</th><th>Class</th><th>Role</th><th>Status</th><th>Actions</th>
+          <th>ഫോട്ടോ</th><th>UID</th><th>പേര്</th><th>ക്ലാസ്</th><th>Role</th><th>Status</th><th>Actions</th>
         </tr></thead>
         <tbody>
           ${data.map(m => `
@@ -511,7 +511,7 @@ async function renderMembers(el){
               <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
               <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
               <td>
-                <button class="btn btn-primary btn-sm" onclick='openModal("Edit Member", ${JSON.stringify(MEMBER_FIELDS)}, ${JSON.stringify(m)}, "sksbv_members")'>✏️</button>
+                <button class="btn btn-primary btn-sm" onclick='openModal("അംഗം എഡിറ്റ്", ${JSON.stringify(MEMBER_FIELDS)}, ${JSON.stringify(m)}, "sksbv_members")'>✏️</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_members', ${m.id})">🗑️</button>
               </td>
             </tr>
@@ -522,31 +522,31 @@ async function renderMembers(el){
   `;
 }
 
-/* ═══ LEADERS (ഭാരവാഹികൾ) ═══ */
+/* ═══ LEADERS ═══ */
 async function renderLeaders(el){
   const data = await loadTable('sksbv_leaders', 'position_order');
   const FIELDS = [
-    {name:'name', label:'Name', required:true},
-    {name:'role_ml', label:'Role (Malayalam)', required:true},
-    {name:'role_en', label:'Role (English)'},
-    {name:'bio', label:'Bio', type:'textarea'},
-    {name:'phone', label:'Phone'},
-    {name:'position_order', label:'Order', type:'number', placeholder:'1'},
-    {name:'photo', label:'Photo', type:'file'}
+    {name:'name', label:'പേര് *', required:true},
+    {name:'role_ml', label:'റോൾ (മലയാളം) *', required:true},
+    {name:'role_en', label:'റോൾ (English)'},
+    {name:'bio', label:'ബയോ', type:'textarea'},
+    {name:'phone', label:'ഫോൺ'},
+    {name:'position_order', label:'ഓർഡർ', type:'number', placeholder:'1'},
+    {name:'photo', label:'ഫോട്ടോ', type:'file'}
   ];
 
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>👑 Leaders</h2><p>${data.length} leaders</p></div>
+      <div><h2>👑 ഭാരവാഹികൾ</h2><p>${data.length} ഭാരവാഹികൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("Add Leader", ${JSON.stringify(FIELDS)}, null, "sksbv_leaders")'>
-          <i class="fas fa-plus"></i> Add Leader
+        <button class="btn btn-primary" onclick='openModal("ഭാരവാഹിയെ ചേർക്കുക", ${JSON.stringify(FIELDS)}, null, "sksbv_leaders")'>
+          <i class="fas fa-plus"></i> ചേർക്കുക
         </button>
       </div>
     </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-crown"></i><p>No leaders yet</p></div>' : `
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-crown"></i><p>ഭാരവാഹികളെ ചേർത്തിട്ടില്ല</p></div>' : `
       <div class="data-table"><table>
-        <thead><tr><th>Photo</th><th>Order</th><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+        <thead><tr><th>ഫോട്ടോ</th><th>ഓർഡർ</th><th>പേര്</th><th>റോൾ</th><th>Actions</th></tr></thead>
         <tbody>
           ${data.map(l => `
             <tr>
@@ -555,7 +555,7 @@ async function renderLeaders(el){
               <td>${esc(l.name)}</td>
               <td>${esc(l.role_ml || l.role_en)}</td>
               <td>
-                <button class="btn btn-primary btn-sm" onclick='openModal("Edit Leader", ${JSON.stringify(FIELDS)}, ${JSON.stringify(l)}, "sksbv_leaders")'>✏️</button>
+                <button class="btn btn-primary btn-sm" onclick='openModal("ഭാരവാഹി എഡിറ്റ്", ${JSON.stringify(FIELDS)}, ${JSON.stringify(l)}, "sksbv_leaders")'>✏️</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_leaders', ${l.id})">🗑️</button>
               </td>
             </tr>
@@ -566,87 +566,116 @@ async function renderLeaders(el){
   `;
 }
 
-/* ═══ GENERIC SIMPLE RENDERER ═══ */
-function makeSimpleRenderer(title, icon, table, orderCol, fields, cols){
-  return async function(el){
-    const data = await loadTable(table, orderCol);
-    el.innerHTML = `
-      <div class="content-header">
-        <div><h2>${icon} ${title}</h2><p>${data.length} items</p></div>
-        <div class="content-actions">
-          <button class="btn btn-primary" onclick='openModal("Add ${title}", ${JSON.stringify(fields)}, null, "${table}")'>
-            <i class="fas fa-plus"></i> Add
-          </button>
-        </div>
+/* ═══ ACTIVITIES ═══ */
+async function renderActivities(el){
+  const data = await loadTable('sksbv_activities', 'id');
+  const FIELDS = [
+    {name:'title_ml', label:'പേര് *', required:true},
+    {name:'description', label:'വിവരണം', type:'textarea'},
+    {name:'icon', label:'ഐക്കൺ (emoji)', placeholder:'📚'},
+    {name:'category', label:'Category'}
+  ];
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>⭐ പ്രവർത്തനങ്ങൾ</h2><p>${data.length} പ്രവർത്തനങ്ങൾ</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick='openModal("പ്രവർത്തനം ചേർക്കുക", ${JSON.stringify(FIELDS)}, null, "sksbv_activities")'>
+          <i class="fas fa-plus"></i> ചേർക്കുക
+        </button>
       </div>
-      ${data.length === 0 ? `<div class="empty-state"><i class="fas fa-inbox"></i><p>No ${title} yet</p></div>` : `
-        <div class="data-table"><table>
-          <thead><tr>${cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Actions</th></tr></thead>
-          <tbody>
-            ${data.map(item => `
-              <tr>
-                ${cols.map(c => `<td>${c.render ? c.render(item) : esc(item[c.name]||'—')}</td>`).join('')}
-                <td>
-                  <button class="btn btn-primary btn-sm" onclick='openModal("Edit ${title}", ${JSON.stringify(fields)}, ${JSON.stringify(item)}, "${table}")'>✏️</button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteRow('${table}', ${item.id})">🗑️</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table></div>
-      `}
-    `;
-  };
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-star"></i><p>പ്രവർത്തനങ്ങൾ ചേർത്തിട്ടില്ല</p></div>' : `
+      <div class="data-table"><table>
+        <thead><tr><th>ഐക്കൺ</th><th>പേര്</th><th>Category</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${data.map(a => `
+            <tr>
+              <td style="font-size:1.4rem;">${esc(a.icon||'⭐')}</td>
+              <td>${esc(a.title_ml || a.title || '')}</td>
+              <td>${esc(a.category||'—')}</td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick='openModal("പ്രവർത്തനം എഡിറ്റ്", ${JSON.stringify(FIELDS)}, ${JSON.stringify(a)}, "sksbv_activities")'>✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_activities', ${a.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table></div>
+    `}
+  `;
 }
 
-/* ═══ LITERARY PROGRAMS ═══ */
+/* ═══ REGISTRATION STATUS HELPER ═══ */
+function getRegistrationStatus(p){
+  const now = new Date();
+  const start = p.registration_start ? new Date(p.registration_start) : null;
+  const end   = p.registration_end   ? new Date(p.registration_end)   : null;
+  if (!start && !end) return {label:'തീയതി നൽകിയിട്ടില്ല', badge:'info'};
+  if (start && now < start) return {label:'🔒 ഇനിയും തുറന്നിട്ടില്ല', badge:'warning'};
+  if (end && now > end)     return {label:'🔒 രജിസ്ട്രേഷൻ അടച്ചു',   badge:'danger'};
+  return {label:'🟢 രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു', badge:'success'};
+}
+
+/* ═══ PROGRAMS ═══ */
 async function renderPrograms(el){
   const data = await loadTable('sksbv_programs', 'program_date', false);
   const FIELDS = [
-    {name:'title', label:'Program Title', required:true, placeholder:'e.g., Annual Literary Fest 2025'},
-    {name:'theme', label:'പ്രമേയം (Theme)', placeholder:'e.g., നബി ﷺ — കാരുണ്യത്തിന്റെ മാതൃക'},
-    {name:'description', label:'Description', type:'textarea'},
-    {name:'program_date', label:'Program Date', type:'date', required:true},
-    {name:'venue', label:'Venue', placeholder:'Noorussalam Madrasa'},
+    {name:'title', label:'പ്രോഗ്രാം പേര് *', required:true, placeholder:'ഉദാ: ഉമ്മ — സാഹിത്യ സമാജം'},
+    {name:'theme', label:'പ്രമേയം', placeholder:'ഉദാ: ഉമ്മ'},
+    {name:'description', label:'വിവരണം / അറിയിപ്പ്', type:'textarea', hint:'Line break-ുകൾ നിലനിർത്തും. പൂർണ്ണ അറിയിപ്പ് paste ചെയ്യാം.'},
+    {name:'program_date', label:'പ്രോഗ്രാം തീയതി *', type:'date', required:true},
+    {name:'registration_start', label:'രജിസ്ട്രേഷൻ ആരംഭ തീയതി', type:'date', hint:'ഈ തീയതി മുതൽ രജിസ്ട്രേഷൻ തുറക്കും'},
+    {name:'registration_end',   label:'രജിസ്ട്രേഷൻ അവസാന തീയതി', type:'date', hint:'ഈ തീയതിക്ക് ശേഷം രജിസ്ട്രേഷൻ അടയ്ക്കും'},
+    {name:'venue', label:'വേദി', placeholder:'നൂറുസ്സലാം മദ്റസ'},
     {name:'status', label:'Status', type:'select', options:[
-      {value:'upcoming', label:'⏳ Upcoming'},
-      {value:'active', label:'🟢 Active'},
-      {value:'completed', label:'✅ Completed'}
+      {value:'upcoming', label:'⏳ വരാനിരിക്കുന്നത്'},
+      {value:'active', label:'🟢 നടക്കുന്നു'},
+      {value:'completed', label:'✅ പൂർത്തിയായി'}
     ]}
   ];
 
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>📚 Literary Programs</h2><p>${data.length} programs</p></div>
+      <div><h2>📚 സാഹിത്യ പ്രോഗ്രാമുകൾ</h2><p>${data.length} പ്രോഗ്രാമുകൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("Add Program", ${JSON.stringify(FIELDS)}, null, "sksbv_programs")'>
-          <i class="fas fa-plus"></i> New Program
+        <button class="btn btn-primary" onclick='openModal("പ്രോഗ്രാം ചേർക്കുക", ${JSON.stringify(FIELDS)}, null, "sksbv_programs")'>
+          <i class="fas fa-plus"></i> പുതിയ പ്രോഗ്രാം
         </button>
       </div>
     </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-feather"></i><p>No programs yet</p></div>' : `
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-feather"></i><p>പ്രോഗ്രാമുകൾ ചേർത്തിട്ടില്ല</p></div>' : `
       <div style="display:flex;flex-direction:column;gap:14px;">
-        ${data.map(p => `
+        ${data.map(p => {
+          const rs = getRegistrationStatus(p);
+          return `
           <div style="background:#fff;border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);border-left:4px solid #8b5cf6;">
             <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
               <div>
                 <h3 style="margin:0 0 4px;font-size:1.05rem;font-weight:900;">${esc(p.title)}</h3>
-                ${p.theme ? `<div style="font-size:.78rem;color:#7c3aed;font-weight:800;">📖 ${esc(p.theme)}</div>` : ''}
+                ${p.theme ? `<div style="font-size:.78rem;color:#7c3aed;font-weight:800;">📖 പ്രമേയം: ${esc(p.theme)}</div>` : ''}
               </div>
-              <span class="badge ${p.status==='active'?'success':'warning'}">${p.status}</span>
+              <span class="badge ${p.status==='active'?'success':p.status==='completed'?'info':'warning'}">${p.status||'upcoming'}</span>
             </div>
-            <div style="display:flex;gap:14px;font-size:.74rem;color:var(--dim);font-weight:700;margin-bottom:10px;">
-              <span>📅 ${fmtDate(p.program_date)}</span>
+
+            <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--dim);font-weight:700;margin-bottom:8px;">
+              <span>📅 പ്രോഗ്രാം: ${fmtDate(p.program_date)}</span>
               ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
             </div>
-            ${p.description ? `<p style="font-size:.82rem;color:#475569;margin:0 0 10px;line-height:1.5;">${esc(p.description)}</p>` : ''}
-            <div style="display:flex;gap:6px;">
-              <button class="btn btn-primary btn-sm" onclick='openModal("Edit Program", ${JSON.stringify(FIELDS)}, ${JSON.stringify(p)}, "sksbv_programs")'>✏️ Edit</button>
-              <button class="btn btn-success btn-sm" onclick="viewRegistrations(${p.id})">📋 View Registrations</button>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:.74rem;font-weight:700;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border-radius:10px;align-items:center;">
+              <span style="color:#1e40af;"><i class="fas fa-calendar-check"></i> രജിസ്ട്രേഷൻ: ${fmtDate(p.registration_start)} → ${fmtDate(p.registration_end)}</span>
+              <span class="badge ${rs.badge}">${rs.label}</span>
+            </div>
+
+            ${p.description ? `<div style="font-size:.82rem;color:#475569;margin:0 0 10px;line-height:1.65;white-space:pre-wrap;background:#fefefe;border:1px dashed rgba(100,116,139,.15);padding:12px;border-radius:10px;">${esc(p.description)}</div>` : ''}
+
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn btn-primary btn-sm" onclick='openModal("പ്രോഗ്രാം എഡിറ്റ്", ${JSON.stringify(FIELDS)}, ${JSON.stringify(p)}, "sksbv_programs")'>✏️ എഡിറ്റ്</button>
+              <button class="btn btn-success btn-sm" onclick="viewRegistrations(${p.id})">📋 രജിസ്ട്രേഷനുകൾ</button>
               <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_programs', ${p.id})">🗑️</button>
             </div>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
     `}
   `;
@@ -664,12 +693,16 @@ function viewRegistrations(programId){
 async function renderRegistrations(el){
   const [regRes, progRes] = await Promise.all([
     supabaseClient.from('sksbv_program_registrations').select('*').order('created_at', {ascending:false}),
-    supabaseClient.from('sksbv_programs').select('id,title')
+    supabaseClient.from('sksbv_programs').select('id,title,registration_start,registration_end')
   ]);
   const regs = regRes.data || [];
   const programs = progRes.data || [];
   const progMap = {};
-  programs.forEach(p => progMap[p.id] = p.title);
+  const progDateMap = {};
+  programs.forEach(p => {
+    progMap[p.id] = p.title;
+    progDateMap[p.id] = {start: p.registration_start, end: p.registration_end};
+  });
 
   const pending = regs.filter(r => r.status === 'pending').length;
   const approved = regs.filter(r => r.status === 'approved').length;
@@ -680,30 +713,30 @@ async function renderRegistrations(el){
 
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>📋 Registrations</h2><p>${regs.length} total</p></div>
+      <div><h2>📋 രജിസ്ട്രേഷനുകൾ</h2><p>${regs.length} ആകെ</p></div>
     </div>
 
     <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;">
-      <div class="stat-card orange"><div class="stat-num">${pending}</div><div class="stat-label">⏳ Pending</div></div>
-      <div class="stat-card green"><div class="stat-num">${approved}</div><div class="stat-label">✅ Approved</div></div>
-      <div class="stat-card pink"><div class="stat-num">${rejected}</div><div class="stat-label">❌ Rejected</div></div>
+      <div class="stat-card orange"><div class="stat-num">${pending}</div><div class="stat-label">⏳ പെൻഡിംഗ്</div></div>
+      <div class="stat-card green"><div class="stat-num">${approved}</div><div class="stat-label">✅ അംഗീകരിച്ചത്</div></div>
+      <div class="stat-card pink"><div class="stat-num">${rejected}</div><div class="stat-label">❌ നിരസിച്ചത്</div></div>
     </div>
 
     <div style="background:#fff;padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;">
       <select id="regFilterProgram" onchange="filterRegistrations()" style="flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;">
-        <option value="all">All Programs</option>
+        <option value="all">എല്ലാ പ്രോഗ്രാമുകളും</option>
         ${programs.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join('')}
       </select>
       <select id="regFilterStatus" onchange="filterRegistrations()" style="padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;">
-        <option value="all">All Status</option>
-        <option value="pending">⏳ Pending</option>
-        <option value="approved">✅ Approved</option>
-        <option value="rejected">❌ Rejected</option>
+        <option value="all">എല്ലാ Status</option>
+        <option value="pending">⏳ പെൻഡിംഗ്</option>
+        <option value="approved">✅ അംഗീകരിച്ചത്</option>
+        <option value="rejected">❌ നിരസിച്ചത്</option>
       </select>
     </div>
 
     <div id="regListWrap">
-      ${regs.length === 0 ? '<div class="empty-state"><i class="fas fa-clipboard"></i><p>No registrations yet</p></div>' : renderRegList(regs, progMap, typeIcons, typeLabels)}
+      ${regs.length === 0 ? '<div class="empty-state"><i class="fas fa-clipboard"></i><p>രജിസ്ട്രേഷനുകൾ ഇല്ല</p></div>' : renderRegList(regs, progMap, typeIcons, typeLabels, progDateMap)}
     </div>
   `;
 
@@ -711,32 +744,38 @@ async function renderRegistrations(el){
   window._progMapCache = progMap;
   window._typeIconsCache = typeIcons;
   window._typeLabelsCache = typeLabels;
+  window._progDateCache = progDateMap;
 }
 
-function renderRegList(regs, progMap, typeIcons, typeLabels){
-  if (!regs || regs.length === 0) return '<div class="empty-state"><i class="fas fa-inbox"></i><p>No registrations</p></div>';
+function renderRegList(regs, progMap, typeIcons, typeLabels, progDateMap){
+  if (!regs || regs.length === 0) return '<div class="empty-state"><i class="fas fa-inbox"></i><p>രജിസ്ട്രേഷനുകൾ ഇല്ല</p></div>';
   return `<div style="display:flex;flex-direction:column;gap:10px;">
     ${regs.map(r => {
       const sc = r.status==='approved'?'success':r.status==='rejected'?'danger':'warning';
       const si = r.status==='approved'?'✅':r.status==='rejected'?'❌':'⏳';
+      const pd = progDateMap && progDateMap[r.program_id];
+      const regDates = pd && (pd.start || pd.end)
+        ? `<div style="font-size:.68rem;color:#7c3aed;font-weight:700;margin-top:3px;">📝 രജിസ്ട്രേഷൻ: ${fmtDate(pd.start)} → ${fmtDate(pd.end)}</div>`
+        : '';
       return `<div style="background:#fff;border-radius:14px;padding:14px;border:1px solid var(--border);border-left:4px solid ${r.status==='approved'?'#059669':r.status==='rejected'?'#dc2626':'#f59e0b'};">
         <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
           <div style="flex:1;min-width:180px;">
             <div style="font-weight:900;font-size:.92rem;margin-bottom:3px;">${typeIcons[r.item_type]||'📝'} ${esc(r.item_title)}</div>
             <div style="font-size:.72rem;color:var(--dim);font-weight:700;">
-              👤 ${esc(r.member_name||'—')} • Class ${esc(r.member_class||'—')} • 🏷️ ${typeLabels[r.item_type]||r.item_type}
+              👤 ${esc(r.member_name||'—')} • ക്ലാസ് ${esc(r.member_class||'—')} • 🏷️ ${typeLabels[r.item_type]||r.item_type}
             </div>
             <div style="font-size:.72rem;color:#0891b2;font-weight:700;margin-top:4px;">📚 ${esc(progMap[r.program_id]||'—')}</div>
+            ${regDates}
           </div>
           <span class="badge ${sc}">${si} ${r.status}</span>
         </div>
-        ${r.item_description ? `<p style="font-size:.8rem;color:#475569;margin:0 0 10px;line-height:1.5;padding:10px;background:#f8fafc;border-radius:8px;">${esc(r.item_description)}</p>` : ''}
-        ${r.admin_note ? `<div style="font-size:.74rem;color:#7c3aed;font-weight:700;margin-bottom:8px;"><i class="fas fa-comment"></i> Your note: ${esc(r.admin_note)}</div>` : ''}
+        ${r.item_description ? `<p style="font-size:.8rem;color:#475569;margin:0 0 10px;line-height:1.5;padding:10px;background:#f8fafc;border-radius:8px;white-space:pre-wrap;">${esc(r.item_description)}</p>` : ''}
+        ${r.admin_note ? `<div style="font-size:.74rem;color:#7c3aed;font-weight:700;margin-bottom:8px;"><i class="fas fa-comment"></i> കുറിപ്പ്: ${esc(r.admin_note)}</div>` : ''}
         <div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:8px;border-top:1px solid rgba(100,116,139,.08);">
           <small style="color:var(--dim);font-size:.68rem;align-self:center;flex:1;">⏱️ ${r.duration_minutes||'—'} min • ${fmtDate(r.created_at)}</small>
           ${r.status === 'pending' ? `
-            <button class="btn btn-success btn-sm" onclick="approveRegistration(${r.id})">✅ Approve</button>
-            <button class="btn btn-danger btn-sm" onclick="rejectRegistration(${r.id})">❌ Reject</button>
+            <button class="btn btn-success btn-sm" onclick="approveRegistration(${r.id})">✅ അംഗീകരിക്കുക</button>
+            <button class="btn btn-danger btn-sm" onclick="rejectRegistration(${r.id})">❌ നിരസിക്കുക</button>
           ` : `<button class="btn btn-ghost btn-sm" onclick="deleteRow('sksbv_program_registrations',${r.id})">🗑️</button>`}
         </div>
       </div>`;
@@ -751,7 +790,7 @@ function filterRegistrations(){
   if (progFilter !== 'all') filtered = filtered.filter(r => String(r.program_id) === String(progFilter));
   if (statusFilter !== 'all') filtered = filtered.filter(r => r.status === statusFilter);
   const wrap = document.getElementById('regListWrap');
-  if (wrap) wrap.innerHTML = renderRegList(filtered, window._progMapCache, window._typeIconsCache, window._typeLabelsCache);
+  if (wrap) wrap.innerHTML = renderRegList(filtered, window._progMapCache, window._typeIconsCache, window._typeLabelsCache, window._progDateCache);
 }
 
 async function approveRegistration(id){
@@ -767,13 +806,13 @@ async function approveRegistration(id){
         target_member: reg.member_id
       });
     } catch(e){}
-    toast('✅ Approved & notified', 'success');
+    toast('✅ അംഗീകരിച്ചു & അറിയിപ്പ് അയച്ചു', 'success');
     loadTab('registrations');
   } catch(e){ toast('❌ '+e.message, 'error'); }
 }
 
 async function rejectRegistration(id){
-  const note = prompt('Rejection reason (optional — will be shown to student):');
+  const note = prompt('നിരസിക്കാനുള്ള കാരണം (optional):');
   try {
     const { data: reg } = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id',id).single();
     await supabaseClient.from('sksbv_program_registrations').update({
@@ -787,146 +826,8 @@ async function rejectRegistration(id){
         target_member: reg.member_id
       });
     } catch(e){}
-    toast('Rejected & notified', 'success');
+    toast('നിരസിച്ചു & അറിയിപ്പ് അയച്ചു', 'success');
     loadTab('registrations');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-
-/* ═══ PHOTO SUBMISSIONS ═══ */
-async function renderPhotoSubs(el){
-  const data = await loadTable('sksbv_photo_submissions', 'created_at', false);
-  el.innerHTML = `
-    <div class="content-header">
-      <div><h2>📸 Photo Submissions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
-    </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-camera"></i><p>No submissions</p></div>' : `
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
-        ${data.map(s => `
-          <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);">
-            <img src="${esc(s.image_url)}" style="width:100%;aspect-ratio:4/3;object-fit:cover;">
-            <div style="padding:14px;">
-              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-                <span class="badge ${s.status==='pending'?'warning':s.status==='approved'?'success':'danger'}">${s.status}</span>
-                <small style="color:var(--dim);font-size:.68rem;">${fmtDate(s.created_at)}</small>
-              </div>
-              <div style="font-weight:800;font-size:.9rem;margin-bottom:4px;">${esc(s.title||'—')}</div>
-              <div style="font-size:.74rem;color:var(--dim);">By ${esc(s.member_name||s.member_id||'—')}</div>
-              ${s.status === 'pending' ? `
-                <div style="display:flex;gap:6px;margin-top:12px;">
-                  <button class="btn btn-success btn-sm" style="flex:1;justify-content:center;" onclick="approvePhotoSub(${s.id})">✅ Approve</button>
-                  <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;" onclick="rejectPhotoSub(${s.id})">❌ Reject</button>
-                </div>
-              ` : ''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `}
-  `;
-}
-async function approvePhotoSub(id){
-  try {
-    const { data: sub } = await supabaseClient.from('sksbv_photo_submissions').select('*').eq('id',id).single();
-    if (!sub) return;
-    await supabaseClient.from('sksbv_photo_submissions').update({status:'approved', approved_at:new Date().toISOString()}).eq('id',id);
-    await supabaseClient.from('sksbv_gallery').insert({
-      title: sub.title, image_url: sub.image_url, category: sub.category, event_date: sub.event_date
-    });
-    toast('✅ Approved & added to gallery', 'success');
-    loadTab('subphotos');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-async function rejectPhotoSub(id){
-  const note = prompt('Reason for rejection (optional):');
-  try {
-    await supabaseClient.from('sksbv_photo_submissions').update({status:'rejected', admin_note:note||null}).eq('id',id);
-    toast('Rejected', 'success');
-    loadTab('subphotos');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-
-/* ═══ SUGGESTIONS ═══ */
-async function renderSuggestions(el){
-  const data = await loadTable('sksbv_suggestions', 'created_at', false);
-  el.innerHTML = `
-    <div class="content-header">
-      <div><h2>💡 Suggestions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
-    </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-lightbulb"></i><p>No suggestions</p></div>' : `
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        ${data.map(s => `
-          <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);border-left:4px solid ${s.status==='pending'?'#f59e0b':'#059669'};box-shadow:var(--shadow);">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
-              <strong style="font-size:.92rem;">${esc(s.title)}</strong>
-              <span class="badge ${s.status==='pending'?'warning':'success'}">${s.status}</span>
-            </div>
-            <div style="font-size:.72rem;color:var(--dim);margin-bottom:8px;">From: ${esc(s.member_name||s.member_id)} • ${fmtDate(s.created_at)}</div>
-            <div style="font-size:.86rem;color:#475569;line-height:1.6;white-space:pre-wrap;">${esc(s.suggestion)}</div>
-            ${s.admin_reply ? `<div style="margin-top:10px;padding:10px;background:#ecfdf5;border-radius:8px;font-size:.8rem;"><strong>Your reply:</strong> ${esc(s.admin_reply)}</div>` : ''}
-            <div style="display:flex;gap:6px;margin-top:12px;">
-              ${s.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="replySuggestion(${s.id})">💬 Reply & Review</button>` : ''}
-              <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_suggestions', ${s.id})">🗑️ Delete</button>
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `}
-  `;
-}
-async function replySuggestion(id){
-  const reply = prompt('Reply to this suggestion:');
-  if (!reply) return;
-  try {
-    await supabaseClient.from('sksbv_suggestions').update({
-      status: 'reviewed', admin_reply: reply, replied_at: new Date().toISOString()
-    }).eq('id', id);
-    toast('✅ Replied', 'success');
-    loadTab('suggestions');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-
-/* ═══ TESTIMONIAL SUBMISSIONS ═══ */
-async function renderTestiSubs(el){
-  const data = await loadTable('sksbv_member_testimonials', 'created_at', false);
-  el.innerHTML = `
-    <div class="content-header">
-      <div><h2>💬 Testimonial Submissions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
-    </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-quote-left"></i><p>No submissions</p></div>' : `
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        ${data.map(t => `
-          <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);">
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-              <strong>${esc(t.member_name||t.member_id)}</strong>
-              <span class="badge ${t.status==='pending'?'warning':t.status==='approved'?'success':'danger'}">${t.status}</span>
-            </div>
-            <div style="font-size:.86rem;color:#475569;line-height:1.6;margin-bottom:12px;">"${esc(t.message)}"</div>
-            ${t.status === 'pending' ? `
-              <div style="display:flex;gap:6px;">
-                <button class="btn btn-success btn-sm" style="flex:1;justify-content:center;" onclick="approveTesti(${t.id})">✅ Approve</button>
-                <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;" onclick="rejectTesti(${t.id})">❌ Reject</button>
-              </div>
-            ` : ''}
-          </div>
-        `).join('')}
-      </div>
-    `}
-  `;
-}
-async function approveTesti(id){
-  try {
-    const { data: t } = await supabaseClient.from('sksbv_member_testimonials').select('*').eq('id',id).single();
-    await supabaseClient.from('sksbv_member_testimonials').update({status:'approved'}).eq('id',id);
-    await supabaseClient.from('sksbv_testimonials').insert({name:t.member_name||'Member', role:'SKSBV Member', message:t.message, is_active:true});
-    toast('✅ Approved & published', 'success');
-    loadTab('subtest');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-async function rejectTesti(id){
-  try {
-    await supabaseClient.from('sksbv_member_testimonials').update({status:'rejected'}).eq('id',id);
-    toast('Rejected', 'success');
-    loadTab('subtest');
   } catch(e){ toast('❌ '+e.message, 'error'); }
 }
 
@@ -937,138 +838,7 @@ const TAB_HANDLERS = {
   registrations: renderRegistrations,
   members: renderMembers,
   leaders: renderLeaders,
-  committee: makeSimpleRenderer('Committee', '👔', 'sksbv_committee', 'position_order',
-    [
-      {name:'name', label:'Name', required:true},
-      {name:'role_ml', label:'Role', required:true},
-      {name:'department', label:'Department'},
-      {name:'phone', label:'Phone'},
-      {name:'position_order', label:'Order', type:'number'},
-      {name:'photo', label:'Photo', type:'file'}
-    ],
-    [{name:'name', label:'Name'}, {name:'role_ml', label:'Role'}, {name:'department', label:'Dept'}]
-  ),
-  classreps: makeSimpleRenderer('Class Representatives', '🎓', 'sksbv_class_reps', 'class',
-    [
-      {name:'class', label:'Class', required:true},
-      {name:'name', label:'Name', required:true},
-      {name:'phone', label:'Phone'},
-      {name:'photo', label:'Photo', type:'file'}
-    ],
-    [{name:'class', label:'Class'}, {name:'name', label:'Name'}, {name:'phone', label:'Phone'}]
-  ),
-  pastleaders: makeSimpleRenderer('Past Leaders', '📜', 'sksbv_past_leaders', 'year_from',
-    [
-      {name:'name', label:'Name', required:true},
-      {name:'role_ml', label:'Role'},
-      {name:'year_from', label:'From Year', type:'number'},
-      {name:'year_to', label:'To Year', type:'number'},
-      {name:'bio', label:'Bio', type:'textarea'},
-      {name:'current_occupation', label:'Current Occupation'},
-      {name:'photo', label:'Photo', type:'file'}
-    ],
-    [{name:'name', label:'Name'}, {name:'role_ml', label:'Role'},
-     {name:'year_from', label:'From'}, {name:'year_to', label:'To'}]
-  ),
-  activities: makeSimpleRenderer('Activities', '⭐', 'sksbv_activities', 'id',
-    [
-      {name:'title_ml', label:'Title', required:true},
-      {name:'description', label:'Description', type:'textarea'},
-      {name:'icon', label:'Icon (emoji)', placeholder:'📚'},
-      {name:'category', label:'Category'}
-    ],
-    [{name:'icon', label:'Icon'}, {name:'title_ml', label:'Title'}, {name:'category', label:'Category'}]
-  ),
-  events: makeSimpleRenderer('Events', '📅', 'sksbv_events', 'event_date', false,
-    [
-      {name:'title', label:'Title', required:true},
-      {name:'event_date', label:'Date', type:'date', required:true},
-      {name:'description', label:'Description', type:'textarea'},
-      {name:'location', label:'Location'},
-      {name:'image_url', label:'Image', type:'file'}
-    ],
-    [{name:'event_date', label:'Date', render: e => fmtDate(e.event_date)},
-     {name:'title', label:'Title'}, {name:'location', label:'Location'}]
-  ),
-  gallery: makeSimpleRenderer('Gallery', '📸', 'sksbv_gallery', 'uploaded_at', false,
-    [
-      {name:'title', label:'Title'},
-      {name:'image_url', label:'Photo', type:'file', required:true},
-      {name:'category', label:'Category'},
-      {name:'event_date', label:'Event Date', type:'date'}
-    ],
-    [{name:'image_url', label:'Photo', render: e => `<img src="${esc(e.image_url)}" style="width:60px;height:60px;">`},
-     {name:'title', label:'Title'}, {name:'category', label:'Category'}]
-  ),
-  videos: makeSimpleRenderer('Videos', '📹', 'sksbv_videos', 'id',
-    [
-      {name:'title', label:'Title', required:true},
-      {name:'video_url', label:'YouTube URL', required:true},
-      {name:'description', label:'Description', type:'textarea'},
-      {name:'category', label:'Category'}
-    ],
-    [{name:'title', label:'Title'}, {name:'category', label:'Category'}]
-  ),
-  reports: makeSimpleRenderer('Reports', '📄', 'sksbv_reports', 'year', false,
-    [
-      {name:'title', label:'Title', required:true},
-      {name:'description', label:'Description', type:'textarea'},
-      {name:'file_url', label:'PDF File', type:'file', accept:'application/pdf,.pdf'},
-      {name:'report_type', label:'Type', type:'select', options:[
-        {value:'annual', label:'Annual'}, {value:'monthly', label:'Monthly'}, {value:'special', label:'Special'}
-      ]},
-      {name:'year', label:'Year', type:'number'}
-    ],
-    [{name:'title', label:'Title'}, {name:'year', label:'Year'},
-     {name:'file_url', label:'File', render: e => e.file_url ? `<a href="${esc(e.file_url)}" target="_blank" class="badge info">📄 View</a>` : '—'}]
-  ),
-  achievements: makeSimpleRenderer('Achievements', '🏆', 'sksbv_achievements', 'year', false,
-    [
-      {name:'title', label:'Title', required:true},
-      {name:'description', label:'Description', type:'textarea'},
-      {name:'icon', label:'Icon', placeholder:'🥇'},
-      {name:'year', label:'Year', type:'number'},
-      {name:'level', label:'Level'}
-    ],
-    [{name:'icon', label:'Icon'}, {name:'title', label:'Title'}, {name:'year', label:'Year'}]
-  ),
-  faq: makeSimpleRenderer('FAQ', '❓', 'sksbv_faq', 'position_order',
-    [
-      {name:'question', label:'Question', required:true, type:'textarea'},
-      {name:'answer', label:'Answer', required:true, type:'textarea'},
-      {name:'position_order', label:'Order', type:'number'}
-    ],
-    [{name:'question', label:'Question'}, {name:'position_order', label:'Order'}]
-  ),
-  announcements: makeSimpleRenderer('Announcements', '📢', 'sksbv_announcements', 'created_at', false,
-    [
-      {name:'title', label:'Title', required:true},
-      {name:'message', label:'Message', required:true, type:'textarea'},
-      {name:'type', label:'Type', type:'select', options:[
-        {value:'general', label:'General'}, {value:'important', label:'Important'}, {value:'urgent', label:'Urgent'}
-      ]},
-      {name:'is_pinned', label:'Pin?', type:'select', options:[
-        {value:'false', label:'No'}, {value:'true', label:'Yes'}
-      ]},
-      {name:'is_members_only', label:'Members Only?', type:'select', options:[
-        {value:'false', label:'Public'}, {value:'true', label:'Members Only'}
-      ]}
-    ],
-    [{name:'title', label:'Title'}, {name:'type', label:'Type'},
-     {name:'is_pinned', label:'Pinned', render: e => e.is_pinned ? '📌' : '—'}]
-  ),
-  testimonials: makeSimpleRenderer('Testimonials', '💬', 'sksbv_testimonials', 'id',
-    [
-      {name:'name', label:'Name', required:true},
-      {name:'role', label:'Role/Title'},
-      {name:'message', label:'Message', required:true, type:'textarea'},
-      {name:'photo', label:'Photo', type:'file'}
-    ],
-    [{name:'name', label:'Name'}, {name:'role', label:'Role'}, {name:'message', label:'Message'}]
-  ),
-  subphotos: renderPhotoSubs,
-  suggestions: renderSuggestions,
-  subtest: renderTestiSubs
+  activities: renderActivities
 };
 
 document.addEventListener('keydown', e => {
