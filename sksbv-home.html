@@ -170,17 +170,24 @@ h1 em {
 
 /* ═══ STUDENT PROFILE CARD ═══ */
 .student-card {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   margin-top: 30px;
-  padding: 14px 24px 14px 14px;
+  padding: 14px 20px 14px 14px;
   background: rgba(20, 5, 35, 0.6);
   border: 1px solid rgba(255,255,255,.25);
   border-radius: 24px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 15px 35px -10px rgba(0,0,0,.6);
+  max-width: 420px;
+}
+.student-info-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 .student-avatar {
   width: 60px;
@@ -216,6 +223,28 @@ h1 em {
   color: #ffdd83;
   letter-spacing: 1px;
   width: fit-content;
+}
+
+/* മാറ്റുക ബട്ടൺ */
+.change-uid-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: .72rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: .2s;
+  flex-shrink: 0;
+}
+.change-uid-btn:hover {
+  background: rgba(255,255,255,0.2);
+  color: #ffdd83;
 }
 
 /* ═══ LOGIN FORM (UID Input) ═══ */
@@ -448,6 +477,8 @@ h1 em {
   .brand-text { display: none; }
   .student-avatar { width: 50px; height: 50px; font-size: 1.3rem; }
   .student-name { font-size: 1rem; }
+  .student-card { flex-direction: column; align-items: flex-start; }
+  .change-uid-btn { align-self: flex-end; margin-top: -10px; }
 }
 </style>
 </head>
@@ -474,14 +505,20 @@ h1 em {
 
       <!-- 1️⃣ ലോഗിൻ ചെയ്ത കുട്ടിയുടെ വിവരങ്ങൾ (Session ഉണ്ടെങ്കിൽ) -->
       <div class="student-card" id="studentCard" style="display: none;">
-        <div class="student-avatar" id="studentAvatar">…</div>
-        <div class="student-info">
-          <div class="student-name" id="studentName">Loading…</div>
-          <div class="student-meta" id="studentClass">Class —</div>
-          <div class="student-uid" id="studentUid">
-            <i class="fas fa-id-card"></i> —
+        <div class="student-info-wrap">
+          <div class="student-avatar" id="studentAvatar">…</div>
+          <div class="student-info">
+            <div class="student-name" id="studentName">Loading…</div>
+            <div class="student-meta" id="studentClass">Class —</div>
+            <div class="student-uid" id="studentUid">
+              <i class="fas fa-id-card"></i> —
+            </div>
           </div>
         </div>
+        <!-- UID മാറ്റാനുള്ള ബട്ടൺ -->
+        <button class="change-uid-btn" onclick="changeUID()" title="Change UID">
+          <i class="fas fa-sync-alt"></i> മാറ്റുക
+        </button>
       </div>
 
       <!-- 2️⃣ UID നൽകാനുള്ള ഫോം (Session ഇല്ലെങ്കിൽ) -->
@@ -514,7 +551,7 @@ h1 em {
     </div>
   </section>
 
-  <p class="footer-copy">SKSBV · SAHITHYA SAMAJAM · NOORUSSALAM UNIT</p>
+  <p class="footer-copy">SKSBV · SAHITHYA SAMJAM · NOORUSSALAM UNIT</p>
 </main>
 
 <script>
@@ -528,16 +565,13 @@ try {
   if (window.supabase) supabaseClient = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 } catch(e) { console.warn('Supabase init failed:', e); }
 
-// Helper to get session
 function getSession() {
   try { return JSON.parse(localStorage.getItem('noor_session')); }
   catch (e) { return null; }
 }
 
-// Global variable for session
 let session = getSession();
 
-// UI Elements
 const studentCard = document.getElementById('studentCard');
 const loginBox = document.getElementById('loginBox');
 const ctaGroup = document.getElementById('ctaGroup');
@@ -558,7 +592,7 @@ function showStudentInfo(data) {
     av.textContent = (data.name || 'S').charAt(0).toUpperCase();
   }
 
-  studentCard.style.display = 'inline-flex';
+  studentCard.style.display = 'flex';
   loginBox.style.display = 'none';
   ctaGroup.style.display = 'block';
 }
@@ -568,15 +602,33 @@ function showLoginForm() {
   studentCard.style.display = 'none';
   ctaGroup.style.display = 'none';
   loginBox.style.display = 'block';
+  if (uidInput) uidInput.focus();
 }
 
 // ═══ INITIAL CHECK ═══
 if (session && session.studentId) {
-  // Already logged in (came from login.html)
   showStudentInfo(session);
 } else {
-  // No session (came from sksbv.html) - Show UID input
   showLoginForm();
+}
+
+// ═══ FUNCTION: Change UID ═══
+function changeUID() {
+  if (confirm('നിലവിലുള്ള UID മാറ്റി പുതിയത് നൽകണോ?')) {
+    // Clear session
+    localStorage.removeItem('noor_session');
+    session = null;
+    
+    // Reset form
+    if (uidInput) uidInput.value = '';
+    if (loginError) loginError.style.display = 'none';
+    
+    // Show login form
+    showLoginForm();
+    
+    // Haptic feedback
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  }
 }
 
 // ═══ FUNCTION: Login with UID ═══
@@ -596,18 +648,17 @@ async function loginWithUID() {
     return;
   }
 
-  // Loading state
   loginBtn.disabled = true;
   loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
   try {
     let student = null;
     
-    // Check students table first
+    // Check students table
     const r1 = await supabaseClient.from('students').select('*').eq('studentid', uid).maybeSingle();
     if (r1.data) student = r1.data;
 
-    // If not found, check sksbv_members table
+    // Check sksbv_members table
     if (!student) {
       const r2 = await supabaseClient.from('sksbv_members').select('*').eq('member_id', uid).maybeSingle();
       if (r2.data) {
@@ -624,7 +675,7 @@ async function loginWithUID() {
       throw new Error('Student ID കണ്ടെത്തിയില്ല');
     }
 
-    // Build Session
+    // Build & Save Session
     const newSession = {
       studentId: student.studentid,
       name: student.name || 'Student',
@@ -633,11 +684,10 @@ async function loginWithUID() {
       loggedInAt: new Date().toISOString()
     };
 
-    // Save to localStorage
     localStorage.setItem('noor_session', JSON.stringify(newSession));
     session = newSession;
 
-    // Show info & success
+    // Show info
     showStudentInfo(session);
     
     if (navigator.vibrate) try { navigator.vibrate(20); } catch(e) {}
@@ -653,7 +703,6 @@ async function loginWithUID() {
 // ═══ FUNCTION: Enter Portal ═══
 function enterPortal() {
   if (!session || !session.studentId) {
-    // Session lost, show login form again
     showLoginForm();
     return;
   }
