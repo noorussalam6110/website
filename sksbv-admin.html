@@ -19,7 +19,6 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Anek Malayalam',sans-serif;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);min-height:100vh}
 
-/* LOGIN */
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:linear-gradient(135deg,#667eea,#764ba2)}
 .login-card{background:#fff;border-radius:24px;padding:32px 28px;max-width:420px;width:100%;box-shadow:0 40px 80px -20px rgba(0,0,0,.4)}
 .login-icon{width:80px;height:80px;margin:0 auto 20px;border-radius:20px;background:linear-gradient(140deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;box-shadow:0 15px 35px -10px rgba(102,126,234,.6)}
@@ -33,7 +32,6 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
 .login-back{text-align:center;margin-top:16px}
 .login-back a{color:var(--dim);font-size:.78rem;text-decoration:none;font-weight:700}
 
-/* APP */
 #appScreen{display:none;min-height:100vh}
 .app-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px -8px rgba(0,0,0,.3)}
 .app-header-left{display:flex;align-items:center;gap:12px}
@@ -201,8 +199,12 @@ const supabaseClient = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON
 let CURRENT_TAB = 'dashboard';
 let ADMIN_SESSION = null;
 
+/* ✅ NEW: Data caches — inline JSON.stringify പ്രശ്നം ഒഴിവാക്കാൻ */
+const DATA_CACHE = {};
+const FIELDS_CACHE = {};
+
 function $(id){ return document.getElementById(id); }
-function esc(s){ return s==null?'':String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+function esc(s){ return s==null?'':String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function fmtDate(d){ if(!d)return'—'; try{const dt=new Date(d); if(isNaN(dt))return d; return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){return d;} }
 function toast(msg, type='info'){
   const t = $('toast'); if(!t) return;
@@ -312,6 +314,34 @@ async function upsertRow(table, row, id){
     toast('❌ '+e.message, 'error');
     return false;
   }
+}
+
+/* ✅ NEW: Safe edit/add handlers */
+function addItem(table){
+  const fields = FIELDS_CACHE[table];
+  if (!fields){ toast('Fields not loaded', 'error'); return; }
+  const titles = {
+    sksbv_members: 'അംഗത്തെ ചേർക്കുക',
+    sksbv_leaders: 'ഭാരവാഹിയെ ചേർക്കുക',
+    sksbv_activities: 'പ്രവർത്തനം ചേർക്കുക',
+    sksbv_programs: 'പ്രോഗ്രാം ചേർക്കുക'
+  };
+  openModal(titles[table] || 'ചേർക്കുക', fields, null, table);
+}
+
+function editItem(table, id){
+  const rows = DATA_CACHE[table] || [];
+  const row = rows.find(r => String(r.id) === String(id));
+  const fields = FIELDS_CACHE[table];
+  if (!row){ toast('റെക്കോർഡ് കണ്ടെത്തിയില്ല', 'error'); return; }
+  if (!fields){ toast('Fields not loaded', 'error'); return; }
+  const titles = {
+    sksbv_members: 'അംഗം എഡിറ്റ്',
+    sksbv_leaders: 'ഭാരവാഹി എഡിറ്റ്',
+    sksbv_activities: 'പ്രവർത്തനം എഡിറ്റ്',
+    sksbv_programs: 'പ്രോഗ്രാം എഡിറ്റ്'
+  };
+  openModal(titles[table] || 'എഡിറ്റ്', fields, row, table);
 }
 
 let MODAL_FORM_DATA = {};
@@ -486,12 +516,14 @@ async function renderMembers(el){
     {name:'position', label:'Position'},
     {name:'photo', label:'ഫോട്ടോ', type:'file'}
   ];
+  DATA_CACHE['sksbv_members'] = data;
+  FIELDS_CACHE['sksbv_members'] = MEMBER_FIELDS;
 
   el.innerHTML = `
     <div class="content-header">
       <div><h2>👥 അംഗങ്ങൾ</h2><p>${data.length} അംഗങ്ങൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("അംഗത്തെ ചേർക്കുക", ${JSON.stringify(MEMBER_FIELDS)}, null, "sksbv_members")'>
+        <button class="btn btn-primary" onclick="addItem('sksbv_members')">
           <i class="fas fa-plus"></i> അംഗം ചേർക്കുക
         </button>
       </div>
@@ -511,7 +543,7 @@ async function renderMembers(el){
               <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
               <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
               <td>
-                <button class="btn btn-primary btn-sm" onclick='openModal("അംഗം എഡിറ്റ്", ${JSON.stringify(MEMBER_FIELDS)}, ${JSON.stringify(m)}, "sksbv_members")'>✏️</button>
+                <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_members', ${m.id})">✏️</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_members', ${m.id})">🗑️</button>
               </td>
             </tr>
@@ -534,12 +566,14 @@ async function renderLeaders(el){
     {name:'position_order', label:'ഓർഡർ', type:'number', placeholder:'1'},
     {name:'photo', label:'ഫോട്ടോ', type:'file'}
   ];
+  DATA_CACHE['sksbv_leaders'] = data;
+  FIELDS_CACHE['sksbv_leaders'] = FIELDS;
 
   el.innerHTML = `
     <div class="content-header">
       <div><h2>👑 ഭാരവാഹികൾ</h2><p>${data.length} ഭാരവാഹികൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("ഭാരവാഹിയെ ചേർക്കുക", ${JSON.stringify(FIELDS)}, null, "sksbv_leaders")'>
+        <button class="btn btn-primary" onclick="addItem('sksbv_leaders')">
           <i class="fas fa-plus"></i> ചേർക്കുക
         </button>
       </div>
@@ -555,7 +589,7 @@ async function renderLeaders(el){
               <td>${esc(l.name)}</td>
               <td>${esc(l.role_ml || l.role_en)}</td>
               <td>
-                <button class="btn btn-primary btn-sm" onclick='openModal("ഭാരവാഹി എഡിറ്റ്", ${JSON.stringify(FIELDS)}, ${JSON.stringify(l)}, "sksbv_leaders")'>✏️</button>
+                <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_leaders', ${l.id})">✏️</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_leaders', ${l.id})">🗑️</button>
               </td>
             </tr>
@@ -575,11 +609,14 @@ async function renderActivities(el){
     {name:'icon', label:'ഐക്കൺ (emoji)', placeholder:'📚'},
     {name:'category', label:'Category'}
   ];
+  DATA_CACHE['sksbv_activities'] = data;
+  FIELDS_CACHE['sksbv_activities'] = FIELDS;
+
   el.innerHTML = `
     <div class="content-header">
       <div><h2>⭐ പ്രവർത്തനങ്ങൾ</h2><p>${data.length} പ്രവർത്തനങ്ങൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("പ്രവർത്തനം ചേർക്കുക", ${JSON.stringify(FIELDS)}, null, "sksbv_activities")'>
+        <button class="btn btn-primary" onclick="addItem('sksbv_activities')">
           <i class="fas fa-plus"></i> ചേർക്കുക
         </button>
       </div>
@@ -594,7 +631,7 @@ async function renderActivities(el){
               <td>${esc(a.title_ml || a.title || '')}</td>
               <td>${esc(a.category||'—')}</td>
               <td>
-                <button class="btn btn-primary btn-sm" onclick='openModal("പ്രവർത്തനം എഡിറ്റ്", ${JSON.stringify(FIELDS)}, ${JSON.stringify(a)}, "sksbv_activities")'>✏️</button>
+                <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_activities', ${a.id})">✏️</button>
                 <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_activities', ${a.id})">🗑️</button>
               </td>
             </tr>
@@ -633,12 +670,14 @@ async function renderPrograms(el){
       {value:'completed', label:'✅ പൂർത്തിയായി'}
     ]}
   ];
+  DATA_CACHE['sksbv_programs'] = data;
+  FIELDS_CACHE['sksbv_programs'] = FIELDS;
 
   el.innerHTML = `
     <div class="content-header">
       <div><h2>📚 സാഹിത്യ പ്രോഗ്രാമുകൾ</h2><p>${data.length} പ്രോഗ്രാമുകൾ</p></div>
       <div class="content-actions">
-        <button class="btn btn-primary" onclick='openModal("പ്രോഗ്രാം ചേർക്കുക", ${JSON.stringify(FIELDS)}, null, "sksbv_programs")'>
+        <button class="btn btn-primary" onclick="addItem('sksbv_programs')">
           <i class="fas fa-plus"></i> പുതിയ പ്രോഗ്രാം
         </button>
       </div>
@@ -670,7 +709,7 @@ async function renderPrograms(el){
             ${p.description ? `<div style="font-size:.82rem;color:#475569;margin:0 0 10px;line-height:1.65;white-space:pre-wrap;background:#fefefe;border:1px dashed rgba(100,116,139,.15);padding:12px;border-radius:10px;">${esc(p.description)}</div>` : ''}
 
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
-              <button class="btn btn-primary btn-sm" onclick='openModal("പ്രോഗ്രാം എഡിറ്റ്", ${JSON.stringify(FIELDS)}, ${JSON.stringify(p)}, "sksbv_programs")'>✏️ എഡിറ്റ്</button>
+              <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_programs', ${p.id})">✏️ എഡിറ്റ്</button>
               <button class="btn btn-success btn-sm" onclick="viewRegistrations(${p.id})">📋 രജിസ്ട്രേഷനുകൾ</button>
               <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_programs', ${p.id})">🗑️</button>
             </div>
