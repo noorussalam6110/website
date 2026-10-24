@@ -46,7 +46,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .program-item{background:#f8fafc;border:1.5px solid rgba(139,92,246,.2);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid var(--primary);}
 .program-title{font-weight:900;color:var(--text);font-size:.92rem;margin-bottom:4px;}
 .program-theme{font-size:.74rem;color:var(--primary-dark);font-weight:800;margin-bottom:6px;}
-.program-meta{font-size:.7rem;color:var(--dim);display:flex;gap:10px;flex-wrap:wrap;font-weight:700;margin-bottom:12px;}
+.program-meta{font-size:.7rem;color:var(--dim);display:flex;gap:10px;flex-wrap:wrap;font-weight:700;}
 
 .action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .action-tile{background:#fff;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;border:1px solid var(--border);transition:all .2s;}
@@ -195,7 +195,7 @@ async function boot(){
   try {
     const [pRes, rRes] = await Promise.all([
       supabaseClient.from('sksbv_programs').select('*').eq('is_active', true).in('status', ['upcoming', 'active']).order('program_date', {ascending:true}),
-      supabaseClient.from('sksbv_program_registrations').select('*').eq('student_id', CURRENT_MEMBER.member_id)
+      supabaseClient.from('sksbv_program_registrations').select('*').eq('member_id', CURRENT_MEMBER.member_id)
     ]);
     LITERARY_PROGRAMS = pRes.data || [];
     MY_REGISTRATIONS = rRes.data || [];
@@ -284,7 +284,7 @@ function renderLiterary(el){
       let btnColor = 'var(--primary)';
       
       if (reg) {
-        regStatus = `<div style="background:#dcfce7;color:#065f46;padding:8px 12px;border-radius:10px;font-size:.8rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്തു: ${esc(reg.item_title)} (${reg.item_type})</div>`;
+        regStatus = `<div style="background:#dcfce7;color:#065f46;padding:8px 12px;border-radius:10px;font-size:.8rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്തു: ${esc(reg.item_title)}</div>`;
         btnAction = `disabled`;
         btnColor = '#cbd5e1';
       }
@@ -366,9 +366,9 @@ async function submitRegistration(e) {
   try {
     const { error } = await supabaseClient.from('sksbv_program_registrations').insert({
       program_id: programId,
-      student_id: CURRENT_MEMBER.member_id,
-      student_name: CURRENT_MEMBER.name,
-      student_class: CURRENT_MEMBER.class,
+      member_id: CURRENT_MEMBER.member_id,
+      member_name: CURRENT_MEMBER.name,
+      member_class: CURRENT_MEMBER.class,
       item_type: itemType,
       item_title: itemTitle,
       item_description: itemDesc || null,
@@ -381,7 +381,7 @@ async function submitRegistration(e) {
     closeModal();
     
     // Refresh data and re-render
-    const rRes = await supabaseClient.from('sksbv_program_registrations').select('*').eq('student_id', CURRENT_MEMBER.member_id);
+    const rRes = await supabaseClient.from('sksbv_program_registrations').select('*').eq('member_id', CURRENT_MEMBER.member_id);
     MY_REGISTRATIONS = rRes.data || [];
     switchTab('literary');
 
