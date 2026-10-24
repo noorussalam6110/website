@@ -43,10 +43,78 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .card-header h3 i{color:var(--primary);}
 .badge{background:rgba(139,92,246,.1);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:.68rem;font-weight:900;border:none;cursor:pointer;}
 
-.program-item{background:#f8fafc;border:1.5px solid rgba(139,92,246,.2);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid var(--primary);}
-.program-title{font-weight:900;color:var(--text);font-size:.92rem;margin-bottom:4px;}
-.program-theme{font-size:.74rem;color:var(--primary-dark);font-weight:800;margin-bottom:6px;}
-.program-meta{font-size:.7rem;color:var(--dim);display:flex;gap:10px;flex-wrap:wrap;font-weight:700;}
+/* ═══ PROGRAM CARD (NEW) ═══ */
+.program-card{background:#fff;border-radius:20px;padding:20px;border:1px solid var(--border);box-shadow:0 4px 15px -10px rgba(0,0,0,.1);margin-bottom:16px;border-top:4px solid var(--primary);}
+.program-card.is-open{border-top-color:#10b981;}
+.program-card.is-closed{border-top-color:#94a3b8;opacity:.92;}
+.program-card.is-upcoming{border-top-color:#f59e0b;}
+
+.prog-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.prog-head h3{font-size:1.15rem;font-weight:900;margin:0 0 4px;color:var(--text);line-height:1.25;}
+.prog-theme{display:inline-block;background:rgba(139,92,246,.1);color:#6d28d9;padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:800;}
+
+.prog-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--dim);font-weight:700;margin-bottom:12px;}
+.prog-meta span{display:inline-flex;align-items:center;gap:5px;}
+.prog-meta i{color:var(--primary);}
+
+.reg-window{padding:10px 14px;border-radius:12px;font-size:.78rem;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.reg-window.open{background:rgba(16,185,129,.1);color:#059669;border:1px solid rgba(16,185,129,.25);}
+.reg-window.closed{background:rgba(148,163,184,.12);color:#64748b;border:1px solid rgba(148,163,184,.3);}
+.reg-window.upcoming{background:rgba(245,158,11,.1);color:#b45309;border:1px solid rgba(245,158,11,.3);}
+
+.prog-desc{font-size:.85rem;color:#475569;line-height:1.65;margin:0 0 14px;padding:12px;background:#f8fafc;border-radius:10px;white-space:pre-wrap;word-break:break-word;}
+
+/* ═══ CATEGORY CHIPS ═══ */
+.cat-section-label{font-size:.78rem;font-weight:900;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 10px;display:flex;align-items:center;gap:6px;}
+.cat-section-label i{color:var(--primary);}
+
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.cat-chip{background:#fff;border:2px solid rgba(139,92,246,.25);border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;font-family:inherit;font-weight:800;font-size:.82rem;color:var(--text);transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative;}
+.cat-chip:hover:not(.disabled):not(.registered){border-color:var(--primary);background:rgba(139,92,246,.04);transform:translateY(-2px);box-shadow:0 8px 20px -10px rgba(139,92,246,.5);}
+.cat-chip:active:not(.disabled):not(.registered){transform:scale(.97);}
+.cat-chip .cat-ico{font-size:1.6rem;line-height:1;}
+.cat-chip .cat-label{font-size:.82rem;}
+.cat-chip .cat-hint{font-size:.6rem;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.cat-chip.disabled{background:#f8fafc;border-color:#e2e8f0;color:#94a3b8;cursor:not-allowed;opacity:.7;}
+.cat-chip.registered{cursor:default;border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.05);}
+.cat-chip.registered .cat-status{position:absolute;top:6px;right:8px;font-size:.6rem;font-weight:900;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;}
+.cat-chip.registered.pending .cat-status{background:rgba(245,158,11,.2);color:#b45309;}
+.cat-chip.registered.approved .cat-status{background:rgba(16,185,129,.2);color:#059669;}
+.cat-chip.registered.rejected .cat-status{background:rgba(220,38,38,.15);color:#dc2626;}
+.cat-chip.registered.rejected{border-color:rgba(220,38,38,.3);background:rgba(220,38,38,.03);}
+
+.cancel-reg{background:none;border:none;color:#dc2626;font-family:inherit;font-size:.68rem;font-weight:800;cursor:pointer;padding:4px 8px;border-radius:8px;margin-top:4px;text-decoration:underline;}
+.cancel-reg:active{opacity:.6;}
+
+.my-regs-summary{background:#f0fdf4;border:1px solid rgba(16,185,129,.25);border-radius:12px;padding:12px 14px;margin-top:14px;font-size:.78rem;font-weight:700;color:#047857;}
+.my-regs-summary i{margin-right:6px;}
+
+/* ═══ QUICK MODAL ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.85);backdrop-filter:blur(10px);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-card{background:#fff;border-radius:24px;padding:24px;max-width:440px;width:100%;margin:auto;box-shadow:0 40px 80px -20px rgba(0,0,0,.5);animation:slideUp .3s cubic-bezier(.34,1.4,.64,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-header h3{margin:0;font-size:1.1rem;font-weight:900;color:#0f172a;}
+.close-btn{background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;color:#475569;}
+.reg-cat-preview{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#f3e8ff,#fce7f3);padding:16px;border-radius:14px;margin-bottom:16px;}
+.reg-cat-preview .cat-ico{font-size:2rem;}
+.reg-cat-preview .cat-name{font-weight:900;font-size:1rem;color:#6d28d9;}
+.reg-cat-preview .cat-sub{font-size:.72rem;color:var(--dim);font-weight:700;margin-top:2px;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:.8rem;font-weight:800;color:#475569;margin-bottom:6px;}
+.form-label .opt{font-size:.68rem;color:#94a3b8;font-weight:700;}
+.form-input{width:100%;padding:12px 16px;border:1.5px solid rgba(100,116,139,.25);border-radius:12px;font-family:inherit;font-size:16px;outline:none;transition:.2s;background:#fff;}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(139,92,246,.15);}
+.btn-submit{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(100deg,#8b5cf6,#ec4899);color:#fff;font-family:inherit;font-weight:900;font-size:.95rem;cursor:pointer;margin-top:4px;box-shadow:0 10px 25px -10px rgba(139,92,246,.7);display:inline-flex;align-items:center;justify-content:center;gap:8px;}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;}
+.btn-cancel-modal{width:100%;padding:12px;border-radius:12px;border:none;background:#f1f5f9;color:#475569;font-family:inherit;font-weight:800;font-size:.85rem;cursor:pointer;margin-top:8px;}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f172a;color:#fff;padding:13px 24px;border-radius:14px;font-weight:800;font-size:.85rem;z-index:3000;box-shadow:0 20px 50px -12px rgba(0,0,0,.5);transition:transform .35s cubic-bezier(.34,1.56,.64,1);display:flex;align-items:center;gap:10px;max-width:90vw;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.success{background:linear-gradient(135deg,#059669,#10b981);}
+.toast.error{background:linear-gradient(135deg,#dc2626,#ef4444);}
 
 .action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 .action-tile{background:#fff;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;border:1px solid var(--border);transition:all .2s;}
@@ -54,7 +122,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .action-ico{width:48px;height:48px;border-radius:14px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;}
 .action-tile h6{font-size:.68rem;font-weight:800;color:var(--dim);margin:0;line-height:1.2;}
 
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.9);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));z-index:1000;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));z-index:1000;}
 .bn-item{background:transparent;border:none;color:var(--dim);font-family:inherit;font-weight:800;font-size:.65rem;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s;flex:1;}
 .bn-item i{font-size:1.25rem;}
 .bn-item.active{color:var(--primary);}
@@ -68,21 +136,10 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 .empty{text-align:center;padding:30px 20px;color:var(--dim);font-size:.85rem;}
 .empty i{font-size:2.5rem;opacity:.3;margin-bottom:10px;display:block;}
 
-/* ═══ MODAL (Registration) ═══ */
-.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.85);backdrop-filter:blur(10px);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
-.modal-overlay.open{display:flex;}
-.modal-card{background:#fff;border-radius:24px;padding:24px;max-width:480px;width:100%;margin:auto;box-shadow:0 40px 80px -20px rgba(0,0,0,.5);animation:slideUp .3s cubic-bezier(.34,1.4,.64,1);}
-@keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
-.modal-header h3{margin:0;font-size:1.15rem;font-weight:900;color:#0f172a;}
-.close-btn{background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;color:#475569;}
-.form-group{margin-bottom:16px;}
-.form-label{display:block;font-size:.8rem;font-weight:800;color:#475569;margin-bottom:6px;}
-.form-input{width:100%;padding:12px 16px;border:1.5px solid rgba(100,116,139,.25);border-radius:12px;font-family:inherit;font-size:16px;outline:none;transition:.2s;}
-.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(139,92,246,.15);}
-textarea.form-input{min-height:80px;resize:vertical;}
-.btn-submit{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(100deg,#8b5cf6,#ec4899);color:#fff;font-family:inherit;font-weight:900;font-size:.95rem;cursor:pointer;margin-top:10px;box-shadow:0 10px 25px -10px rgba(139,92,246,.7);}
-.btn-submit:disabled{opacity:.5;cursor:not-allowed;}
+.program-item{background:#f8fafc;border:1.5px solid rgba(139,92,246,.2);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid var(--primary);}
+.program-title{font-weight:900;color:var(--text);font-size:.92rem;margin-bottom:4px;}
+.program-theme{font-size:.74rem;color:var(--primary-dark);font-weight:800;margin-bottom:6px;}
+.program-meta{font-size:.7rem;color:var(--dim);display:flex;gap:10px;flex-wrap:wrap;font-weight:700;}
 </style>
 </head>
 <body>
@@ -107,57 +164,48 @@ textarea.form-input{min-height:80px;resize:vertical;}
   <main class="main-content" id="mainContent"></main>
 
   <nav class="bottom-nav">
-    <button class="bn-item active" onclick="switchTab('home')"><i class="fas fa-home"></i>Home</button>
-    <button class="bn-item" onclick="switchTab('literary')"><i class="fas fa-feather" style="color:#8b5cf6;"></i>Literary</button>
-    <button class="bn-item" onclick="switchTab('events')"><i class="fas fa-calendar"></i>Events</button>
-    <button class="bn-item" onclick="switchTab('profile')"><i class="fas fa-user"></i>Profile</button>
+    <button class="bn-item active" data-tab="home" onclick="switchTab('home')"><i class="fas fa-home"></i>Home</button>
+    <button class="bn-item" data-tab="literary" onclick="switchTab('literary')"><i class="fas fa-feather" style="color:#8b5cf6;"></i>Literary</button>
+    <button class="bn-item" data-tab="events" onclick="switchTab('events')"><i class="fas fa-calendar"></i>Events</button>
+    <button class="bn-item" data-tab="profile" onclick="switchTab('profile')"><i class="fas fa-user"></i>Profile</button>
   </nav>
 </div>
 
-<!-- REGISTRATION MODAL -->
-<div class="modal-overlay" id="regModal" onclick="if(event.target===this)closeModal()">
+<!-- ═══ QUICK REGISTRATION MODAL ═══ -->
+<div class="modal-overlay" id="regModal" onclick="if(event.target===this)closeRegModal()">
   <div class="modal-card">
     <div class="modal-header">
       <h3><i class="fas fa-feather" style="color:#8b5cf6;"></i> രജിസ്ട്രേഷൻ</h3>
-      <button class="close-btn" onclick="closeModal()">✕</button>
+      <button class="close-btn" onclick="closeRegModal()">✕</button>
     </div>
-    <form id="regForm" onsubmit="submitRegistration(event)">
-      <div class="form-group">
-        <label class="form-label">പരിപാടി</label>
-        <input type="text" id="regProgramTitle" class="form-input" readonly style="background:#f1f5f9;font-weight:800;color:#8b5cf6;">
-        <input type="hidden" id="regProgramId">
+
+    <div class="reg-cat-preview">
+      <div class="cat-ico" id="regCatIcon">🎵</div>
+      <div>
+        <div class="cat-name" id="regCatName">—</div>
+        <div class="cat-sub" id="regProgName">—</div>
       </div>
-      
-      <div class="form-group">
-        <label class="form-label">ഇനം തിരഞ്ഞെടുക്കുക *</label>
-        <select id="regItemType" class="form-input" required>
-          <option value="">-- തിരഞ്ഞെടുക്കുക --</option>
-          <option value="song">🎵 ഗാനം (Song)</option>
-          <option value="speech">🎤 പ്രസംഗം (Speech)</option>
-          <option value="poem">📝 കവിത (Poem)</option>
-          <option value="story">📖 കഥ (Story)</option>
-          <option value="essay">✍️ ലേഖനം (Essay)</option>
-          <option value="quran">📖 ഖുർആൻ പാരായണം</option>
-          <option value="other">🌟 മറ്റുള്ളവ</option>
-        </select>
-      </div>
+    </div>
+
+    <form id="regForm" onsubmit="submitQuickReg(event)">
+      <input type="hidden" id="regProgramId">
+      <input type="hidden" id="regCategoryKey">
+      <input type="hidden" id="regCategoryLabel">
 
       <div class="form-group">
-        <label class="form-label">ഇനത്തിന്റെ പേര് *</label>
-        <input type="text" id="regItemTitle" class="form-input" placeholder="ഉദാ: എന്റെ ഗ്രാമം" required maxlength="100">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">ചെറിയ വിവരണം (Optional)</label>
-        <textarea id="regItemDesc" class="form-input" placeholder="കൂടുതൽ വിവരങ്ങൾ..." maxlength="300"></textarea>
+        <label class="form-label">ഇനത്തിന്റെ പേര് <span class="opt">(ഓപ്ഷണൽ)</span></label>
+        <input type="text" id="regItemTitle" class="form-input" placeholder="ഉദാ: എന്റെ ഗ്രാമം" maxlength="120" autocomplete="off">
       </div>
 
       <button type="submit" class="btn-submit" id="regSubmitBtn">
-        <i class="fas fa-paper-plane"></i> സമർപ്പിക്കുക
+        <i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക
       </button>
+      <button type="button" class="btn-cancel-modal" onclick="closeRegModal()">റദ്ദാക്കുക</button>
     </form>
   </div>
 </div>
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
 
 <script>
 const CFG = window.SKSBV_CONFIG || {
@@ -169,20 +217,63 @@ let CURRENT_MEMBER = null;
 let LITERARY_PROGRAMS = [];
 let MY_REGISTRATIONS = [];
 
-function esc(s){ return s==null?'':String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+/* Category definitions */
+const CATEGORIES = [
+  {key:'song',   label:'ഗാനം',    icon:'🎵'},
+  {key:'speech', label:'പ്രസംഗം',  icon:'🎤'},
+  {key:'poem',   label:'കവിത',    icon:'📝'},
+  {key:'story',  label:'കഥ',      icon:'📖'},
+  {key:'essay',  label:'ലേഖനം',   icon:'✍️'},
+  {key:'quran',  label:'ഖുർആൻ',   icon:'🕌'},
+  {key:'other',  label:'മറ്റുള്ളവ', icon:'🌟'}
+];
+
+function esc(s){ return s==null?'':String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function fmtDate(d){ if(!d) return '—'; try{ const dt=new Date(d); if(isNaN(dt)) return d; return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return d; } }
 
 function getSession(){
   try { return JSON.parse(localStorage.getItem('noor_session')); } catch(e){ return null; }
 }
 
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+/* Registration window check */
+function getRegWindow(program){
+  const now = new Date(); now.setHours(0,0,0,0);
+  const start = program.registration_start ? new Date(program.registration_start) : null;
+  const end   = program.registration_end   ? new Date(program.registration_end)   : null;
+
+  if (!start && !end){
+    return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു' };
+  }
+  if (start && now < start){
+    return { status:'upcoming', open:false, cls:'upcoming', label:'<i class="fas fa-clock"></i> രജിസ്ട്രേഷൻ തുറക്കുന്നത്: ' + fmtDate(start) };
+  }
+  if (end && now > end){
+    return { status:'closed', open:false, cls:'closed', label:'<i class="fas fa-lock"></i> രജിസ്ട്രേഷൻ അടച്ചു (' + fmtDate(end) + ')' };
+  }
+  const endMsg = end ? ' • അവസാന തീയതി: ' + fmtDate(end) : '';
+  return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു' + endMsg };
+}
+
+/* ═══ BOOT ═══ */
 async function boot(){
   const student = getSession();
-  if (!student || !student.studentId) {
+  if (!student || !student.studentId){
     window.location.href = 'index.html'; return;
   }
 
   CURRENT_MEMBER = {
-    member_id: student.studentId, name: student.name, class: student.class, photo: student.photo
+    member_id: student.studentId,
+    name: student.name,
+    class: student.class,
+    photo: student.photo
   };
 
   document.getElementById('hdName').textContent = CURRENT_MEMBER.name || 'Student';
@@ -191,29 +282,43 @@ async function boot(){
   if (CURRENT_MEMBER.photo) av.innerHTML = `<img src="${esc(CURRENT_MEMBER.photo)}">`;
   else av.textContent = (CURRENT_MEMBER.name || 'S').charAt(0).toUpperCase();
 
-  // Fetch Programs & My Registrations
-  try {
-    const [pRes, rRes] = await Promise.all([
-      supabaseClient.from('sksbv_programs').select('*').eq('is_active', true).in('status', ['upcoming', 'active']).order('program_date', {ascending:true}),
-      supabaseClient.from('sksbv_program_registrations').select('*').eq('member_id', CURRENT_MEMBER.member_id)
-    ]);
-    LITERARY_PROGRAMS = pRes.data || [];
-    MY_REGISTRATIONS = rRes.data || [];
-  } catch(e) { console.error(e); }
+  await loadLiteraryData();
 
   document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('appScreen').style.display = 'block';
-  
   switchTab('home');
 }
 
-function switchTab(tab){
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
-  const idx = {home:0, literary:1, events:2, profile:3}[tab];
-  if(document.querySelectorAll('.bn-item')[idx]) document.querySelectorAll('.bn-item')[idx].classList.add('active');
+async function loadLiteraryData(){
+  try {
+    const [pRes, rRes] = await Promise.all([
+      supabaseClient.from('sksbv_programs').select('*')
+        .in('status', ['upcoming','active'])
+        .order('program_date', {ascending:true}),
+      supabaseClient.from('sksbv_program_registrations').select('*')
+        .eq('member_id', CURRENT_MEMBER.member_id)
+        .order('created_at', {ascending:false})
+    ]);
+    LITERARY_PROGRAMS = pRes.data || [];
+    MY_REGISTRATIONS = rRes.data || [];
+  } catch(e){
+    console.error('loadLiteraryData:', e);
+    LITERARY_PROGRAMS = [];
+    MY_REGISTRATIONS = [];
+  }
+}
+
+/* ═══ TAB SWITCH ═══ */
+async function switchTab(tab){
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
 
   const el = document.getElementById('mainContent');
   el.innerHTML = '<div style="text-align:center;padding:40px;"><div class="loader" style="margin:0 auto; width:32px; height:32px; border-color:rgba(139,92,246,.2); border-top-color:#8b5cf6;"></div></div>';
+
+  /* refresh data on literary/home tab */
+  if (tab === 'literary' || tab === 'home'){
+    await loadLiteraryData();
+  }
 
   if (tab === 'home') renderHome(el);
   else if (tab === 'literary') renderLiterary(el);
@@ -221,31 +326,55 @@ function switchTab(tab){
   else if (tab === 'profile') renderProfile(el);
 }
 
+/* ═══ HOME ═══ */
 function renderHome(el){
   let progHtml = '';
-  if (LITERARY_PROGRAMS.length === 0) {
+  const upcoming = LITERARY_PROGRAMS.filter(p => getRegWindow(p).open);
+  const showPrograms = upcoming.length > 0 ? upcoming : LITERARY_PROGRAMS;
+
+  if (showPrograms.length === 0){
     progHtml = '<div class="empty"><i class="fas fa-feather"></i>പുതിയ പ്രോഗ്രാമുകൾ ഉടൻ വരുന്നു</div>';
   } else {
-    LITERARY_PROGRAMS.slice(0, 2).forEach(p => {
+    showPrograms.slice(0, 2).forEach(p => {
+      const rw = getRegWindow(p);
       progHtml += `
         <div class="program-item">
           <div class="program-title">📚 ${esc(p.title)}</div>
           ${p.theme ? `<div class="program-theme">📖 ${esc(p.theme)}</div>` : ''}
-          <div class="program-meta" style="margin-bottom:0;">
-            <span>📅 ${p.program_date ? new Date(p.program_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '—'}</span>
+          <div class="program-meta">
+            <span>📅 ${fmtDate(p.program_date)}</span>
             ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
+          </div>
+          <div style="margin-top:8px;padding:6px 10px;border-radius:8px;font-size:.72rem;font-weight:800;${rw.open ? 'background:rgba(16,185,129,.1);color:#059669;' : 'background:#f1f5f9;color:#64748b;'}">
+            ${rw.label}
           </div>
         </div>
       `;
     });
   }
 
+  const totalRegs = MY_REGISTRATIONS.filter(r => r.status === 'approved').length;
+
   el.innerHTML = `
     <div class="literary-hero">
       <h2>അക്ഷരങ്ങൾ <br>ചിറകടിക്കുന്നിടം.</h2>
       <p>സാഹിത്യ സമാജം — രചനയും വായനയും ഒരുമിച്ച് വളരാം</p>
-      <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> പ്രോഗ്രാമുകൾ കാണുക</button>
+      <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> രജിസ്റ്റർ ചെയ്യുക</button>
     </div>
+
+    <div class="card" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:rgba(16,185,129,.3);">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(140deg,#059669,#34d399);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.4rem;flex-shrink:0;">
+          <i class="fas fa-trophy"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:.72rem;font-weight:900;color:#047857;text-transform:uppercase;letter-spacing:.5px;">എന്റെ രജിസ്ട്രേഷനുകൾ</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#065f46;line-height:1.2;">${MY_REGISTRATIONS.length} <span style="font-size:.78rem;font-weight:700;color:#059669;">(${totalRegs} approved)</span></div>
+        </div>
+        <button class="badge" style="background:#059669;color:#fff;" onclick="switchTab('literary')">കാണുക →</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-header">
         <h3><i class="fas fa-feather"></i> സാഹിത്യ സമാജം</h3>
@@ -253,68 +382,227 @@ function renderHome(el){
       </div>
       ${progHtml}
     </div>
+
     <div class="card">
       <div class="card-header"><h3><i class="fas fa-bolt"></i> Quick Actions</h3></div>
       <div class="action-grid">
-        <div class="action-tile" onclick="switchTab('literary')"><div class="action-ico c-purple"><i class="fas fa-pen-fancy"></i></div><h6>സാഹിത്യം</h6></div>
-        <div class="action-tile" onclick="alert('ഉടൻ വരുന്നു')"><div class="action-ico c-pink"><i class="fas fa-images"></i></div><h6>ഗാലറി</h6></div>
-        <div class="action-tile" onclick="alert('ഉടൻ വരുന്നു')"><div class="action-ico c-blue"><i class="fas fa-question-circle"></i></div><h6>ക്വിസ്</h6></div>
+        <div class="action-tile" onclick="switchTab('literary')"><div class="action-ico c-purple"><i class="fas fa-pen-fancy"></i></div><h6>രജിസ്റ്റർ</h6></div>
+        <div class="action-tile" onclick="showToast('ഉടൻ വരുന്നു','info')"><div class="action-ico c-pink"><i class="fas fa-images"></i></div><h6>ഗാലറി</h6></div>
+        <div class="action-tile" onclick="showToast('ഉടൻ വരുന്നു','info')"><div class="action-ico c-blue"><i class="fas fa-question-circle"></i></div><h6>ക്വിസ്</h6></div>
         <div class="action-tile" onclick="switchTab('profile')"><div class="action-ico c-green"><i class="fas fa-user"></i></div><h6>പ്രൊഫൈൽ</h6></div>
       </div>
     </div>
   `;
 }
 
+/* ═══ LITERARY — the SIMPLE registration page ═══ */
 function renderLiterary(el){
+  if (!LITERARY_PROGRAMS.length){
+    el.innerHTML = `
+      <div class="card" style="background:linear-gradient(135deg,#4c1d95,#8b5cf6);color:#fff;border:none;margin-bottom:20px;">
+        <h2 style="font-size:1.3rem;font-weight:900;margin-bottom:6px;"><i class="fas fa-feather"></i> സാഹിത്യ സമാജം</h2>
+        <p style="font-size:.85rem;opacity:.9;">പ്രോഗ്രാമുകളിൽ പങ്കെടുത്ത് കഴിവ് തെളിയിക്കൂ</p>
+      </div>
+      <div class="card"><div class="empty"><i class="fas fa-feather"></i>ഇപ്പോൾ പ്രോഗ്രാമുകൾ ഇല്ല</div></div>
+    `;
+    return;
+  }
+
+  /* group my regs by program */
+  const regsByProgram = {};
+  MY_REGISTRATIONS.forEach(r => {
+    const pid = String(r.program_id);
+    if (!regsByProgram[pid]) regsByProgram[pid] = [];
+    regsByProgram[pid].push(r);
+  });
+
   let html = `
     <div class="card" style="background:linear-gradient(135deg,#4c1d95,#8b5cf6);color:#fff;border:none;margin-bottom:20px;">
       <h2 style="font-size:1.3rem;font-weight:900;margin-bottom:6px;"><i class="fas fa-feather"></i> സാഹിത്യ സമാജം</h2>
-      <p style="font-size:.85rem;opacity:.9;">പ്രോഗ്രാമുകളിൽ പങ്കെടുത്ത് നിങ്ങളുടെ കഴിവ് തെളിയിക്കൂ</p>
+      <p style="font-size:.85rem;opacity:.9;">ഇഷ്ടമുള്ള ഇനത്തിൽ ടാപ്പ് ചെയ്ത് രജിസ്റ്റർ ചെയ്യൂ ✨</p>
     </div>
   `;
 
-  if (LITERARY_PROGRAMS.length === 0) {
-    html += `<div class="card"><div class="empty"><i class="fas fa-feather"></i>ഇപ്പോൾ പ്രോഗ്രാമുകൾ ഇല്ല</div></div>`;
-  } else {
-    LITERARY_PROGRAMS.forEach(p => {
-      // Check if registered
-      const reg = MY_REGISTRATIONS.find(r => r.program_id === p.id);
-      let regStatus = '';
-      let btnAction = `onclick="openRegModal(${p.id}, '${esc(p.title).replace(/'/g, "\\'")}')"`;
-      let btnColor = 'var(--primary)';
-      
-      if (reg) {
-        regStatus = `<div style="background:#dcfce7;color:#065f46;padding:8px 12px;border-radius:10px;font-size:.8rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്തു: ${esc(reg.item_title)}</div>`;
-        btnAction = `disabled`;
-        btnColor = '#cbd5e1';
+  LITERARY_PROGRAMS.forEach(p => {
+    const rw = getRegWindow(p);
+    const pid = String(p.id);
+    const myRegs = regsByProgram[pid] || [];
+
+    /* find my regs by category key */
+    const regByCat = {};
+    myRegs.forEach(r => { regByCat[r.item_type] = r; });
+
+    /* program card class */
+    const cardCls = rw.open ? 'is-open' : (rw.status === 'upcoming' ? 'is-upcoming' : 'is-closed');
+
+    /* category chips */
+    const chipsHtml = CATEGORIES.map(cat => {
+      const myReg = regByCat[cat.key];
+
+      if (myReg){
+        const status = myReg.status || 'pending';
+        const statusLabel = status === 'approved' ? '✅' : status === 'rejected' ? '❌' : '⏳';
+        return `
+          <div class="cat-chip registered ${status}">
+            <span class="cat-status">${statusLabel} ${status}</span>
+            <span class="cat-ico">${cat.icon}</span>
+            <span class="cat-label">${esc(cat.label)}</span>
+            ${status === 'pending' ? `<button class="cancel-reg" onclick="cancelMyReg(${myReg.id},'${esc(cat.label)}')">റദ്ദാക്കുക</button>` : ''}
+            ${status === 'approved' ? `<span class="cat-hint" style="color:#059669;">അംഗീകരിച്ചു</span>` : ''}
+            ${status === 'rejected' ? `<span class="cat-hint" style="color:#dc2626;">നിരസിച്ചു</span>` : ''}
+          </div>
+        `;
       }
 
-      html += `
-        <div class="card">
-          <div class="program-title">📚 ${esc(p.title)}</div>
-          ${p.theme ? `<div class="program-theme">📖 ${esc(p.theme)}</div>` : ''}
-          <p style="font-size:.82rem;color:var(--dim);margin-bottom:12px;line-height:1.5;">${esc(p.description || '')}</p>
-          <div class="program-meta" style="margin-bottom:14px;">
-            <span>📅 ${p.program_date ? new Date(p.program_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—'}</span>
-            ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
+      if (!rw.open){
+        return `
+          <div class="cat-chip disabled">
+            <span class="cat-ico">${cat.icon}</span>
+            <span class="cat-label">${esc(cat.label)}</span>
+            <span class="cat-hint">അടച്ചു</span>
           </div>
-          ${regStatus}
-          <button class="lit-btn" style="width:100%;justify-content:center;background:${btnColor};color:${reg ? '#64748b' : '#fff'};" ${btnAction}>
-            ${reg ? 'രജിസ്റ്റർ ചെയ്തു' : 'രജിസ്റ്റർ ചെയ്യുക <i class="fas fa-arrow-right"></i>'}
-          </button>
-        </div>
+        `;
+      }
+
+      return `
+        <button class="cat-chip" onclick="openQuickReg(${p.id}, '${cat.key}', '${esc(cat.label)}', '${esc(cat.icon)}', '${esc(p.title).replace(/'/g,'\\\'')}')">
+          <span class="cat-ico">${cat.icon}</span>
+          <span class="cat-label">${esc(cat.label)}</span>
+          <span class="cat-hint">ടാപ്പ് ചെയ്യൂ</span>
+        </button>
       `;
-    });
-  }
+    }).join('');
+
+    const summaryHtml = myRegs.length > 0 ? `
+      <div class="my-regs-summary">
+        <i class="fas fa-check-circle"></i> നിങ്ങൾ ${myRegs.length} ഇനത്തിൽ രജിസ്റ്റർ ചെയ്തു
+      </div>
+    ` : '';
+
+    html += `
+      <div class="program-card ${cardCls}">
+        <div class="prog-head">
+          <div style="flex:1;min-width:0;">
+            <h3>📚 ${esc(p.title)}</h3>
+            ${p.theme ? `<span class="prog-theme">📖 ${esc(p.theme)}</span>` : ''}
+          </div>
+        </div>
+
+        <div class="prog-meta">
+          <span><i class="fas fa-calendar-day"></i> ${fmtDate(p.program_date)}</span>
+          ${p.venue ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(p.venue)}</span>` : ''}
+        </div>
+
+        <div class="reg-window ${rw.cls}">
+          ${rw.label}
+        </div>
+
+        ${p.description ? `<div class="prog-desc">${esc(p.description)}</div>` : ''}
+
+        <div class="cat-section-label">
+          <i class="fas fa-hand-pointer"></i> ഇനം തിരഞ്ഞെടുക്കുക
+        </div>
+        <div class="cat-grid">
+          ${chipsHtml}
+        </div>
+
+        ${summaryHtml}
+      </div>
+    `;
+  });
+
   el.innerHTML = html;
 }
 
+/* ═══ QUICK REGISTRATION MODAL LOGIC ═══ */
+function openQuickReg(programId, categoryKey, categoryLabel, categoryIcon, programTitle){
+  document.getElementById('regProgramId').value = programId;
+  document.getElementById('regCategoryKey').value = categoryKey;
+  document.getElementById('regCategoryLabel').value = categoryLabel;
+  document.getElementById('regCatIcon').textContent = categoryIcon;
+  document.getElementById('regCatName').textContent = categoryLabel;
+  document.getElementById('regProgName').textContent = programTitle;
+  document.getElementById('regItemTitle').value = '';
+  document.getElementById('regModal').classList.add('open');
+  setTimeout(()=>document.getElementById('regItemTitle').focus(), 200);
+}
+
+function closeRegModal(){
+  document.getElementById('regModal').classList.remove('open');
+}
+
+async function submitQuickReg(e){
+  e.preventDefault();
+
+  const programId = document.getElementById('regProgramId').value;
+  const categoryKey = document.getElementById('regCategoryKey').value;
+  const categoryLabel = document.getElementById('regCategoryLabel').value;
+  const customTitle = document.getElementById('regItemTitle').value.trim();
+
+  if (!programId || !categoryKey){
+    showToast('വിവരങ്ങൾ കണ്ടെത്തിയില്ല', 'error'); return;
+  }
+
+  const btn = document.getElementById('regSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> സമർപ്പിക്കുന്നു...';
+
+  try {
+    const { error } = await supabaseClient.from('sksbv_program_registrations').insert({
+      program_id: parseInt(programId),
+      member_id: CURRENT_MEMBER.member_id,
+      member_name: CURRENT_MEMBER.name,
+      member_class: CURRENT_MEMBER.class,
+      item_type: categoryKey,
+      item_title: customTitle || categoryLabel,
+      item_description: null,
+      status: 'pending'
+    });
+
+    if (error) throw error;
+
+    closeRegModal();
+    showToast('✅ ' + categoryLabel + ' രജിസ്റ്റർ ചെയ്തു!');
+    await loadLiteraryData();
+    switchTab('literary');
+
+  } catch(err){
+    showToast('❌ ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക';
+  }
+}
+
+async function cancelMyReg(regId, label){
+  if (!confirm(label + ' രജിസ്ട്രേഷൻ റദ്ദാക്കണോ?')) return;
+  try {
+    const { error } = await supabaseClient
+      .from('sksbv_program_registrations')
+      .delete()
+      .eq('id', regId)
+      .eq('status', 'pending');
+    if (error) throw error;
+    showToast('റദ്ദാക്കി');
+    await loadLiteraryData();
+    switchTab('literary');
+  } catch(e){
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+/* ═══ EVENTS ═══ */
 function renderEvents(el){
   el.innerHTML = `<div class="card"><div class="empty"><i class="fas fa-calendar-alt"></i><h3>ഇവന്റുകൾ</h3><p>ഉടൻ വരുന്നു</p></div></div>`;
 }
 
+/* ═══ PROFILE ═══ */
 function renderProfile(el){
   const p = CURRENT_MEMBER;
+  const totalRegs = MY_REGISTRATIONS.length;
+  const approvedCount = MY_REGISTRATIONS.filter(r => r.status === 'approved').length;
+  const pendingCount = MY_REGISTRATIONS.filter(r => r.status === 'pending').length;
+
   el.innerHTML = `
     <div class="card" style="text-align:center;">
       <div class="app-avatar" style="width:100px;height:100px;margin:0 auto 16px;font-size:2rem;">
@@ -326,6 +614,25 @@ function renderProfile(el){
         ID: ${esc(p.member_id)}
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-chart-simple"></i> എന്റെ രജിസ്ട്രേഷനുകൾ</h3></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div style="text-align:center;padding:14px 8px;background:#f8fafc;border-radius:12px;">
+          <div style="font-size:1.6rem;font-weight:900;color:var(--primary);">${totalRegs}</div>
+          <div style="font-size:.68rem;color:var(--dim);font-weight:800;text-transform:uppercase;">ആകെ</div>
+        </div>
+        <div style="text-align:center;padding:14px 8px;background:#ecfdf5;border-radius:12px;">
+          <div style="font-size:1.6rem;font-weight:900;color:#059669;">${approvedCount}</div>
+          <div style="font-size:.68rem;color:#047857;font-weight:800;text-transform:uppercase;">✅ Approved</div>
+        </div>
+        <div style="text-align:center;padding:14px 8px;background:#fef3c7;border-radius:12px;">
+          <div style="font-size:1.6rem;font-weight:900;color:#b45309;">${pendingCount}</div>
+          <div style="font-size:.68rem;color:#92400e;font-weight:800;text-transform:uppercase;">⏳ Pending</div>
+        </div>
+      </div>
+    </div>
+
     <div class="card">
       <button class="lit-btn" style="width:100%;background:#f1f5f9;color:#475569;justify-content:center;box-shadow:none;" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i> Logout
@@ -334,69 +641,15 @@ function renderProfile(el){
   `;
 }
 
-// ═══ REGISTRATION LOGIC ═══
-function openRegModal(programId, title) {
-  document.getElementById('regProgramId').value = programId;
-  document.getElementById('regProgramTitle').value = title;
-  document.getElementById('regForm').reset();
-  document.getElementById('regProgramId').value = programId; // Reset clears this, so set again
-  document.getElementById('regProgramTitle').value = title;
-  document.getElementById('regModal').classList.add('open');
-}
-
-function closeModal() {
-  document.getElementById('regModal').classList.remove('open');
-}
-
-async function submitRegistration(e) {
-  e.preventDefault();
-  const programId = document.getElementById('regProgramId').value;
-  const itemType = document.getElementById('regItemType').value;
-  const itemTitle = document.getElementById('regItemTitle').value.trim();
-  const itemDesc = document.getElementById('regItemDesc').value.trim();
-
-  if (!itemType || !itemTitle) {
-    alert('എല്ലാ വിവരങ്ങളും നൽകുക'); return;
-  }
-
-  const btn = document.getElementById('regSubmitBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> സമർപ്പിക്കുന്നു...';
-
-  try {
-    const { error } = await supabaseClient.from('sksbv_program_registrations').insert({
-      program_id: programId,
-      member_id: CURRENT_MEMBER.member_id,
-      member_name: CURRENT_MEMBER.name,
-      member_class: CURRENT_MEMBER.class,
-      item_type: itemType,
-      item_title: itemTitle,
-      item_description: itemDesc || null,
-      status: 'pending'
-    });
-
-    if (error) throw error;
-
-    alert('✅ വിജയകരമായി രജിസ്റ്റർ ചെയ്തു!');
-    closeModal();
-    
-    // Refresh data and re-render
-    const rRes = await supabaseClient.from('sksbv_program_registrations').select('*').eq('member_id', CURRENT_MEMBER.member_id);
-    MY_REGISTRATIONS = rRes.data || [];
-    switchTab('literary');
-
-  } catch(err) {
-    alert('❌ ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-paper-plane"></i> സമർപ്പിക്കുക';
-  }
-}
-
 function logout(){
   localStorage.removeItem('noor_session');
   window.location.href = 'index.html';
 }
+
+/* close modal on escape */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeRegModal();
+});
 
 boot();
 </script>
