@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="sksbv-config.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,8 +39,6 @@ body {
   background: #140523 url('https://i.postimg.cc/zfSFL15X/sahithya-bg-jpg.png') center right / cover no-repeat;
   overflow: hidden;
 }
-
-/* ടെക്സ്റ്റ് വ്യക്തമായി കാണാൻ ഇടതുവശത്ത് ഡാർക്ക് ഓവർലേ */
 .hero::before {
   position: absolute;
   z-index: -1;
@@ -104,6 +103,7 @@ body {
   cursor: pointer;
   box-shadow: 0 10px 25px -10px rgba(255,255,255,0.3);
   transition: transform .2s, background .2s;
+  text-decoration: none;
 }
 .btn-top:hover { transform: translateY(-2px); background: #ffdd83; }
 
@@ -218,8 +218,85 @@ h1 em {
   width: fit-content;
 }
 
+/* ═══ LOGIN FORM (UID Input) ═══ */
+.login-box {
+  margin-top: 30px;
+  background: rgba(20, 5, 35, 0.7);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 24px;
+  padding: 24px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  max-width: 380px;
+  box-shadow: 0 15px 35px -10px rgba(0,0,0,.6);
+}
+.login-box label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 800;
+  color: #ffdd83;
+  margin-bottom: 8px;
+  letter-spacing: .5px;
+}
+.login-input-wrap {
+  display: flex;
+  background: rgba(255,255,255,.1);
+  border: 1.5px solid rgba(255,255,255,.3);
+  border-radius: 14px;
+  padding: 4px 4px 4px 16px;
+  transition: .2s;
+}
+.login-input-wrap:focus-within {
+  border-color: #ffc864;
+  background: rgba(255,255,255,.15);
+  box-shadow: 0 0 0 4px rgba(248,183,51,.15);
+}
+.login-input-wrap input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  min-width: 0;
+}
+.login-input-wrap input::placeholder {
+  color: rgba(255,255,255,.4);
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+.login-btn {
+  background: linear-gradient(100deg, #ffc864, #f66d50);
+  border: none;
+  border-radius: 10px;
+  color: #3d1a61;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: .2s;
+}
+.login-btn:hover { transform: scale(1.05); }
+.login-btn:disabled { opacity: .5; cursor: not-allowed; }
+.login-error {
+  color: #fca5a5;
+  font-size: .75rem;
+  font-weight: 700;
+  margin-top: 8px;
+  display: none;
+}
+
 /* ═══ ENTER BUTTON ═══ */
-.cta-group { margin-top: 32px; }
+.cta-group { margin-top: 20px; }
 .btn-enter {
   display: inline-flex;
   align-items: center;
@@ -347,10 +424,13 @@ h1 em {
     margin: 24px auto 0;
     text-align: left;
   }
+  .login-box {
+    margin: 24px auto 0;
+    text-align: left;
+  }
   .cta-group { margin-top: 24px; }
   .btn-enter { padding: 16px 28px; font-size: .95rem; }
   
-  /* മൊബൈലിൽ PNG ചിത്രവും ആനിമേഷനും കാണിക്കുന്നു */
   .performance { 
     display: flex; 
     margin-top: 20px;
@@ -381,9 +461,9 @@ h1 em {
         <span>Sahithya Samajam</span>
       </div>
     </a>
-    <button class="btn-top" onclick="enterPortal()">
-      Student Portal <i class="fas fa-arrow-right"></i>
-    </button>
+    <a href="sksbv.html" class="btn-top">
+      Home <i class="fas fa-home"></i>
+    </a>
   </header>
 
   <section class="hero-content">
@@ -392,7 +472,7 @@ h1 em {
       <h1>Where voices <em>become memories.</em></h1>
       <p class="subtitle">Celebrating the joy of recitation, song, storytelling, and creative expression on one beautiful stage.</p>
 
-      <!-- ലോഗിൻ ചെയ്ത കുട്ടിയുടെ വിവരങ്ങൾ -->
+      <!-- 1️⃣ ലോഗിൻ ചെയ്ത കുട്ടിയുടെ വിവരങ്ങൾ (Session ഉണ്ടെങ്കിൽ) -->
       <div class="student-card" id="studentCard" style="display: none;">
         <div class="student-avatar" id="studentAvatar">…</div>
         <div class="student-info">
@@ -404,7 +484,20 @@ h1 em {
         </div>
       </div>
 
-      <div class="cta-group">
+      <!-- 2️⃣ UID നൽകാനുള്ള ഫോം (Session ഇല്ലെങ്കിൽ) -->
+      <div class="login-box" id="loginBox" style="display: none;">
+        <label><i class="fas fa-id-card"></i> നിങ്ങളുടെ UID നൽകുക</label>
+        <div class="login-input-wrap">
+          <input type="text" id="uidInput" placeholder="ഉദാ: NSM001" maxlength="15" autocomplete="off" onkeydown="if(event.key==='Enter') loginWithUID()">
+          <button class="login-btn" id="loginBtn" onclick="loginWithUID()">
+            <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+        <div class="login-error" id="loginError"></div>
+      </div>
+
+      <!-- 3️⃣ പോർട്ടലിലേക്ക് പോകാനുള്ള ബട്ടൺ -->
+      <div class="cta-group" id="ctaGroup" style="display: none;">
         <button class="btn-enter" onclick="enterPortal()">
           Enter SKSBV Portal <i class="fas fa-arrow-right"></i>
         </button>
@@ -417,8 +510,7 @@ h1 em {
       <span class="float-el el-2">📖</span>
       <span class="float-el el-3">✨</span>
       
-      <!-- ചിത്രത്തിന്റെ പേര് sksbv-students.png എന്നാണെന്ന് ഉറപ്പാക്കുക -->
-      <img class="student-art" src="./sksbv-students.png" alt="SKSBV Students">
+      <img class="student-art" src="./sksbv-students.png" alt="SKSBV Students" onerror="this.style.display='none';">
     </div>
   </section>
 
@@ -426,34 +518,146 @@ h1 em {
 </main>
 
 <script>
-// സെഷൻ പരിശോധന (UID വീണ്ടും ചോദിക്കാതിരിക്കാൻ)
+// Supabase Config
+const CFG = window.SKSBV_CONFIG || {
+  SUPABASE_URL: 'https://dmjjtmimrozzqknduqas.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_e7EXyQvriYYgw9KDlu-5dA_Jcjdw9bg'
+};
+let supabaseClient = null;
+try {
+  if (window.supabase) supabaseClient = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+} catch(e) { console.warn('Supabase init failed:', e); }
+
+// Helper to get session
 function getSession() {
   try { return JSON.parse(localStorage.getItem('noor_session')); }
   catch (e) { return null; }
 }
 
-const session = getSession();
+// Global variable for session
+let session = getSession();
 
-if (session && session.studentId) {
-  document.getElementById('studentCard').style.display = 'inline-flex';
-  document.getElementById('studentName').textContent = session.name || 'Student';
-  document.getElementById('studentClass').textContent = session.class ? 'Class ' + session.class : 'SKSBV Member';
-  document.getElementById('studentUid').innerHTML = '<i class="fas fa-id-card"></i> ' + (session.studentId || '—');
+// UI Elements
+const studentCard = document.getElementById('studentCard');
+const loginBox = document.getElementById('loginBox');
+const ctaGroup = document.getElementById('ctaGroup');
+const loginError = document.getElementById('loginError');
+const loginBtn = document.getElementById('loginBtn');
+const uidInput = document.getElementById('uidInput');
+
+// ═══ FUNCTION: Show Student Info ═══
+function showStudentInfo(data) {
+  document.getElementById('studentName').textContent = data.name || 'Student';
+  document.getElementById('studentClass').textContent = data.class ? 'Class ' + data.class : 'SKSBV Member';
+  document.getElementById('studentUid').innerHTML = '<i class="fas fa-id-card"></i> ' + (data.studentId || data.member_id || '—');
 
   const av = document.getElementById('studentAvatar');
-  if (session.photo) {
-    av.innerHTML = `<img src="${session.photo}" alt="">`;
+  if (data.photo) {
+    av.innerHTML = `<img src="${data.photo}" alt="">`;
   } else {
-    av.textContent = (session.name || 'S').charAt(0).toUpperCase();
+    av.textContent = (data.name || 'S').charAt(0).toUpperCase();
+  }
+
+  studentCard.style.display = 'inline-flex';
+  loginBox.style.display = 'none';
+  ctaGroup.style.display = 'block';
+}
+
+// ═══ FUNCTION: Show Login Form ═══
+function showLoginForm() {
+  studentCard.style.display = 'none';
+  ctaGroup.style.display = 'none';
+  loginBox.style.display = 'block';
+}
+
+// ═══ INITIAL CHECK ═══
+if (session && session.studentId) {
+  // Already logged in (came from login.html)
+  showStudentInfo(session);
+} else {
+  // No session (came from sksbv.html) - Show UID input
+  showLoginForm();
+}
+
+// ═══ FUNCTION: Login with UID ═══
+async function loginWithUID() {
+  const uid = uidInput.value.trim().toUpperCase();
+  loginError.style.display = 'none';
+
+  if (!uid) {
+    loginError.textContent = 'ദയവായി UID നൽകുക';
+    loginError.style.display = 'block';
+    return;
+  }
+
+  if (!supabaseClient) {
+    loginError.textContent = 'Connection error. Try again.';
+    loginError.style.display = 'block';
+    return;
+  }
+
+  // Loading state
+  loginBtn.disabled = true;
+  loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+  try {
+    let student = null;
+    
+    // Check students table first
+    const r1 = await supabaseClient.from('students').select('*').eq('studentid', uid).maybeSingle();
+    if (r1.data) student = r1.data;
+
+    // If not found, check sksbv_members table
+    if (!student) {
+      const r2 = await supabaseClient.from('sksbv_members').select('*').eq('member_id', uid).maybeSingle();
+      if (r2.data) {
+        student = {
+          studentid: r2.data.member_id,
+          name: r2.data.name,
+          class: r2.data.class,
+          photo: r2.data.photo
+        };
+      }
+    }
+
+    if (!student) {
+      throw new Error('Student ID കണ്ടെത്തിയില്ല');
+    }
+
+    // Build Session
+    const newSession = {
+      studentId: student.studentid,
+      name: student.name || 'Student',
+      class: student.class || '',
+      photo: student.photo || '',
+      loggedInAt: new Date().toISOString()
+    };
+
+    // Save to localStorage
+    localStorage.setItem('noor_session', JSON.stringify(newSession));
+    session = newSession;
+
+    // Show info & success
+    showStudentInfo(session);
+    
+    if (navigator.vibrate) try { navigator.vibrate(20); } catch(e) {}
+
+  } catch (err) {
+    loginError.textContent = '❌ ' + (err.message || 'Login failed');
+    loginError.style.display = 'block';
+    loginBtn.disabled = false;
+    loginBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
   }
 }
 
+// ═══ FUNCTION: Enter Portal ═══
 function enterPortal() {
   if (!session || !session.studentId) {
-    window.location.href = 'login.html'; // സെഷൻ ഇല്ലെങ്കിൽ ലോഗിനിലേക്ക്
-  } else {
-    window.location.href = 'sksbv-member.html'; // സെഷൻ ഉണ്ടെങ്കിൽ നേരെ അകത്തേക്ക് (UID ചോദിക്കില്ല)
+    // Session lost, show login form again
+    showLoginForm();
+    return;
   }
+  window.location.href = 'sksbv-member.html';
 }
 </script>
 </body>
