@@ -44475,204 +44475,151 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
 </script>
 
 <!-- ═══════════════════════════════════════════════════════ -->
-<!-- 🔒 v151.0 — SKSBV HERO POSITION LOCK                  -->
-<!-- Beats v36 reorder — card stays right after header      -->
+<!-- 🔒 v152.0 — SKSBV HERO STABLE (No Jumping)            -->
 <!-- ═══════════════════════════════════════════════════════ -->
-<script id="sksbv-hero-position-lock-v151">
+<style id="sksbv-hero-v152-css">
+  #sksbvHeroReg.student-welcome-banner:not([style*="display: none"]):not([style*="display:none"]) {
+    display: flex !important;
+    visibility: visible !important;
+    height: auto !important;
+    overflow: hidden !important;
+    margin: 0 0 18px 0 !important;
+    padding: 18px 20px !important;
+    background: linear-gradient(135deg, #0891b2 0%, #0ea5e9 30%, #3b82f6 65%, #6366f1 100%) !important;
+    background-size: 220% 220% !important;
+    border-radius: 22px !important;
+    min-height: 90px !important;
+    align-items: center !important;
+    gap: 14px !important;
+    animation: sksbvHeroFlow 8s ease infinite !important;
+  }
+</style>
+
+<script id="sksbv-hero-v152-js">
 (function(){
   'use strict';
-  console.log('🔒 SKSBV Hero Position Lock v151 loading...');
+  if (window._sksbvV152) return;
+  window._sksbvV152 = true;
+  console.log('🔒 SKSBV Hero v152 — STABLE');
 
-  /* ═══════════════════════════════════════════════════ */
-  /* 🎯 CORE: Put card RIGHT AFTER dashboard header   */
-  /* ═══════════════════════════════════════════════════ */
-  function enforcePosition() {
+  var CLASS = 'student-welcome-banner';
+
+  var ORDER = [
+    '#sksbvHeroReg',
+    '#leaderboardSection',
+    '#palathulliSection',
+    '#dailyHub',
+    '#xpWidget',
+    '#streakWidget',
+    '#missionsWidget',
+    '#statsGridSection',
+    '#madrasaRankCard',
+    '#chartsSection',
+    '#quickActionsTitle',
+    '#quickActionsGrid',
+    '#feedEventsRow',
+    '#monthlyProgressSection'
+  ];
+
+  function findHeader() {
+    return document.querySelector('#dashboardSection .container > .dashboard-header-glow');
+  }
+
+  function sort() {
+    var container = document.querySelector('#dashboardSection > .container');
+    var header = findHeader();
+    if (!container || !header) return;
+    var prev = header;
+    ORDER.forEach(function(sel) {
+      var el = container.querySelector(':scope > ' + sel);
+      if (!el) return;
+      if (prev.nextElementSibling === el) { prev = el; return; }
+      container.insertBefore(el, prev.nextElementSibling);
+      prev = el;
+    });
+  }
+
+  function addClass() {
     var card = document.getElementById('sksbvHeroReg');
-    if (!card) return;   // not yet injected
-
-    var container = document.querySelector('#dashboardSection > .container');
-    if (!container) return;
-
-    var header = container.querySelector('.dashboard-header-glow');
-    if (!header) return;
-
-    // Only move if not already in correct position
-    if (header.nextElementSibling !== card) {
-      header.insertAdjacentElement('afterend', card);
-      console.log('🎯 Hero card repositioned to top');
+    if (!card) return false;
+    if (!card.classList.contains(CLASS)) {
+      card.classList.add(CLASS);
+      console.log('✅ Class added — v36 will SKIP reorder');
     }
-  }
-
-  /* ═══════════════════════════════════════════════════ */
-  /* 1️⃣ MUTATION OBSERVER — INSTANT reaction            */
-  /* ═══════════════════════════════════════════════════ */
-  function watchContainer() {
-    var container = document.querySelector('#dashboardSection > .container');
-    if (!container) {
-      // Retry if not ready
-      setTimeout(watchContainer, 800);
-      return;
-    }
-    if (container._v151watch) return;
-    container._v151watch = true;
-
-    new MutationObserver(function(mutations) {
-      // Any child added/removed → enforce
-      var needsFix = false;
-      for (var i = 0; i < mutations.length; i++) {
-        var m = mutations[i];
-        if (m.type === 'childList' && (m.addedNodes.length || m.removedNodes.length)) {
-          needsFix = true;
-          break;
-        }
-      }
-      if (needsFix) {
-        // Immediate — no setTimeout to beat v36
-        enforcePosition();
-      }
-    }).observe(container, {
-      childList: true,
-      subtree: false
-    });
-
-    console.log('✅ Container observer attached');
-  }
-
-  /* ═══════════════════════════════════════════════════ */
-  /* 2️⃣ INTERVAL — Backup enforcement                    */
-  /*    400ms — faster than v36's 8s reorder             */
-  /* ═══════════════════════════════════════════════════ */
-  setInterval(enforcePosition, 400);
-
-  /* ═══════════════════════════════════════════════════ */
-  /* 3️⃣ WATCH DASHBOARD VISIBILITY                       */
-  /* ═══════════════════════════════════════════════════ */
-  function watchDashboard() {
-    var dash = document.getElementById('dashboardSection');
-    if (!dash) {
-      setTimeout(watchDashboard, 1000);
-      return;
-    }
-    if (dash._v151watch) return;
-    dash._v151watch = true;
-
-    new MutationObserver(function() {
-      if (dash.style.display === 'block') {
-        setTimeout(enforcePosition, 50);
-        setTimeout(enforcePosition, 300);
-        setTimeout(enforcePosition, 800);
-      }
-    }).observe(dash, {
-      attributes: true,
-      attributeFilter: ['style']
-    });
-  }
-
-  /* ═══════════════════════════════════════════════════ */
-  /* 4️⃣ HOOK completeLogin — re-enforce after login      */
-  /* ═══════════════════════════════════════════════════ */
-  function hookLogin() {
-    var _ol = window.completeLogin;
-    if (typeof _ol !== 'function' || _ol._v151) return false;
-
-    window.completeLogin = async function(student) {
-      var r = await _ol.apply(this, arguments);
-      setTimeout(enforcePosition, 500);
-      setTimeout(enforcePosition, 1200);
-      setTimeout(enforcePosition, 2500);
-      setTimeout(enforcePosition, 4500);
-      return r;
-    };
-    window.completeLogin._v151 = true;
-    console.log('✅ completeLogin hooked');
     return true;
   }
 
-  /* ═══════════════════════════════════════════════════ */
-  /* 5️⃣ HOOK v36's reorder — WINNING RACE                */
-  /*    Override setTimeout to intercept reorder         */
-  /* ═══════════════════════════════════════════════════ */
-  // Not needed — our MutationObserver reacts instantly
-
-  /* ═══════════════════════════════════════════════════ */
-  /* 6️⃣ ALSO — React when hero card is injected          */
-  /* ═══════════════════════════════════════════════════ */
-  function watchForCard() {
-    if (document.getElementById('sksbvHeroReg')) {
-      enforcePosition();
-      return;
+  function enforceTop() {
+    var card = document.getElementById('sksbvHeroReg');
+    var header = findHeader();
+    if (!card || !header) return;
+    if (header.nextElementSibling !== card) {
+      header.insertAdjacentElement('afterend', card);
     }
-    // Watch body for card injection
-    if (document.body && !document.body._v151cardWatch) {
-      document.body._v151cardWatch = true;
-      new MutationObserver(function(muts) {
-        for (var i = 0; i < muts.length; i++) {
-          var m = muts[i];
-          for (var j = 0; j < m.addedNodes.length; j++) {
-            if (m.addedNodes[j].id === 'sksbvHeroReg') {
-              setTimeout(enforcePosition, 30);
-              return;
-            }
+  }
+
+  function stabilize() {
+    sort();
+    addClass();
+    enforceTop();
+  }
+
+  [1500, 2500, 3500, 4500, 6000, 8000, 11000, 15000, 20000, 30000].forEach(function(t) {
+    setTimeout(stabilize, t);
+  });
+
+  var _poll = 0;
+  function poll() {
+    _poll++;
+    stabilize();
+    var d = 100;
+    if (_poll > 50) d = 300;
+    if (_poll > 150) d = 1000;
+    setTimeout(poll, d);
+  }
+  poll();
+
+  if (document.body) {
+    new MutationObserver(function(muts) {
+      for (var i = 0; i < muts.length; i++) {
+        for (var j = 0; j < muts[i].addedNodes.length; j++) {
+          if (muts[i].addedNodes[j].id === 'sksbvHeroReg') {
+            setTimeout(addClass, 30);
+            setTimeout(sort, 100);
+            return;
           }
         }
-      }).observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-    }
+      }
+    }).observe(document.body, {childList: true, subtree: true});
   }
 
-  /* ═══════════════════════════════════════════════════ */
-  /* 🚀 BOOT                                              */
-  /* ═══════════════════════════════════════════════════ */
-  function boot() {
-    enforcePosition();
-    watchContainer();
-    watchDashboard();
-    watchForCard();
-
-    if (!hookLogin()) {
-      setTimeout(hookLogin, 1200);
-      setTimeout(hookLogin, 3000);
-    }
+  var _ol = window.completeLogin;
+  if (typeof _ol === 'function' && !_ol._v152) {
+    window.completeLogin = async function(s) {
+      var r = await _ol.apply(this, arguments);
+      setTimeout(stabilize, 2000);
+      setTimeout(stabilize, 4000);
+      setTimeout(stabilize, 7000);
+      return r;
+    };
+    window.completeLogin._v152 = true;
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(boot, 800);
-      setTimeout(boot, 2000);
-      setTimeout(boot, 4000);
-    });
-  } else {
-    setTimeout(boot, 800);
-    setTimeout(boot, 2000);
-    setTimeout(boot, 4000);
-  }
-
-  /* ═══════════════════════════════════════════════════ */
-  /* 🐛 DEBUG                                             */
-  /* ═══════════════════════════════════════════════════ */
-  window.SKSBV_HERO_POS_debug = function() {
-    console.log('=== HERO POSITION LOCK v151 ===');
+  window.SKSBV_V152_DEBUG = function() {
+    console.log('=== SKSBV Hero v152 ===');
     var card = document.getElementById('sksbvHeroReg');
-    if (!card) { console.log('❌ Card not injected yet'); return; }
-    var container = document.querySelector('#dashboardSection > .container');
-    var header = container ? container.querySelector('.dashboard-header-glow') : null;
+    var header = findHeader();
     console.log('Card exists:', !!card);
     console.log('Header exists:', !!header);
-    if (header) {
-      console.log('Card is right after header?', header.nextElementSibling === card);
-      console.log('Position among siblings:', Array.from(container.children).indexOf(card));
-      console.log('Header position:', Array.from(container.children).indexOf(header));
+    if (card && header) {
+      console.log('Has class:', card.classList.contains(CLASS));
+      console.log('Right after header:', header.nextElementSibling === card);
+      console.log('Computed display:', getComputedStyle(card).display);
     }
-    if (typeof showToast === 'function') showToast('🔒 Position lock active', 'info');
   };
 
-  window.SKSBV_HERO_POS_fix = enforcePosition;
-
-  console.log('✅ Position Lock v151 active');
-  console.log('   💡 SKSBV_HERO_POS_debug() — check');
-  console.log('   💡 SKSBV_HERO_POS_fix() — manual enforce');
+  console.log('✅ v152 active — card will NOT jump');
+  console.log('   💡 SKSBV_V152_DEBUG() — check');
 })();
 </script>
 </body>
