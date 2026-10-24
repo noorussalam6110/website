@@ -182,6 +182,31 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
       <div class="sidebar-section">People</div>
       <div class="sidebar-nav">
         <button class="sidebar-item" data-tab="members" onclick="switchTab('members')"><i class="fas fa-users"></i> Members</button>
+        <button class="sidebar-item" data-tab="leaders" onclick="switchTab('leaders')"><i class="fas fa-crown"></i> Leaders</button>
+        <button class="sidebar-item" data-tab="committee" onclick="switchTab('committee')"><i class="fas fa-user-tie"></i> Committee</button>
+        <button class="sidebar-item" data-tab="classreps" onclick="switchTab('classreps')"><i class="fas fa-user-graduate"></i> Class Reps</button>
+        <button class="sidebar-item" data-tab="pastleaders" onclick="switchTab('pastleaders')"><i class="fas fa-history"></i> Past Leaders</button>
+      </div>
+      <div class="sidebar-section">Content</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="activities" onclick="switchTab('activities')"><i class="fas fa-star"></i> Activities</button>
+        <button class="sidebar-item" data-tab="events" onclick="switchTab('events')"><i class="fas fa-calendar"></i> Events</button>
+        <button class="sidebar-item" data-tab="gallery" onclick="switchTab('gallery')"><i class="fas fa-images"></i> Gallery</button>
+        <button class="sidebar-item" data-tab="videos" onclick="switchTab('videos')"><i class="fas fa-video"></i> Videos</button>
+        <button class="sidebar-item" data-tab="reports" onclick="switchTab('reports')"><i class="fas fa-file-pdf"></i> Reports</button>
+        <button class="sidebar-item" data-tab="achievements" onclick="switchTab('achievements')"><i class="fas fa-trophy"></i> Achievements</button>
+        <button class="sidebar-item" data-tab="faq" onclick="switchTab('faq')"><i class="fas fa-question-circle"></i> FAQ</button>
+      </div>
+      <div class="sidebar-section">Communication</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="announcements" onclick="switchTab('announcements')"><i class="fas fa-bullhorn"></i> Announcements</button>
+        <button class="sidebar-item" data-tab="testimonials" onclick="switchTab('testimonials')"><i class="fas fa-comment"></i> Testimonials</button>
+      </div>
+      <div class="sidebar-section">Submissions</div>
+      <div class="sidebar-nav">
+        <button class="sidebar-item" data-tab="subphotos" onclick="switchTab('subphotos')"><i class="fas fa-camera"></i> Photo Submissions</button>
+        <button class="sidebar-item" data-tab="suggestions" onclick="switchTab('suggestions')"><i class="fas fa-lightbulb"></i> Suggestions</button>
+        <button class="sidebar-item" data-tab="subtest" onclick="switchTab('subtest')"><i class="fas fa-quote-left"></i> Testi Submissions</button>
       </div>
     </aside>
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
@@ -398,15 +423,17 @@ async function saveCrud(){
   await upsertRow(table, row, id);
 }
 
+/* ═══ DASHBOARD ═══ */
 async function renderDashboard(el){
   try {
     const stats = await Promise.all([
       supabaseClient.from('sksbv_members').select('id', {count:'exact', head:true}),
       supabaseClient.from('sksbv_programs').select('id', {count:'exact', head:true}),
       supabaseClient.from('sksbv_program_registrations').select('id', {count:'exact', head:true}).eq('status','pending'),
-      supabaseClient.from('sksbv_photo_submissions').select('id', {count:'exact', head:true}).eq('status','pending')
+      supabaseClient.from('sksbv_photo_submissions').select('id', {count:'exact', head:true}).eq('status','pending'),
+      supabaseClient.from('sksbv_suggestions').select('id', {count:'exact', head:true}).eq('status','pending')
     ]);
-    const [mem, prog, reg, phsub] = stats.map(s => s.count || 0);
+    const [mem, prog, reg, phsub, sug] = stats.map(s => s.count || 0);
 
     el.innerHTML = `
       <div class="content-header">
@@ -434,8 +461,8 @@ async function renderDashboard(el){
         </div>
         <div class="stat-card pink">
           <div class="stat-icon" style="background:#fce7f3;color:#be185d;"><i class="fas fa-inbox"></i></div>
-          <div class="stat-num">${phsub}</div>
-          <div class="stat-label">Pending Photos</div>
+          <div class="stat-num">${phsub + sug}</div>
+          <div class="stat-label">Pending Reviews</div>
         </div>
       </div>
     `;
@@ -444,6 +471,135 @@ async function renderDashboard(el){
   }
 }
 
+/* ═══ MEMBERS ═══ */
+async function renderMembers(el){
+  const data = await loadTable('sksbv_members', 'name');
+  const MEMBER_FIELDS = [
+    {name:'member_id', label:'Student UID *', required:true, placeholder:'e.g., NSM001'},
+    {name:'name', label:'Full Name', required:true},
+    {name:'class', label:'Class'},
+    {name:'roll_number', label:'Roll No'},
+    {name:'phone', label:'Phone'},
+    {name:'role', label:'Role', type:'select', options:[
+      {value:'member', label:'Member'},{value:'leader', label:'Leader'},{value:'admin', label:'Admin'}
+    ]},
+    {name:'position', label:'Position'},
+    {name:'photo', label:'Photo', type:'file'}
+  ];
+
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>👥 Members</h2><p>${data.length} members</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick='openModal("Add Member", ${JSON.stringify(MEMBER_FIELDS)}, null, "sksbv_members")'>
+          <i class="fas fa-plus"></i> Add Member
+        </button>
+      </div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>No members yet</p></div>' : `
+      <div class="data-table"><table>
+        <thead><tr>
+          <th>Photo</th><th>UID</th><th>Name</th><th>Class</th><th>Role</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${data.map(m => `
+            <tr>
+              <td>${m.photo ? `<img src="${esc(m.photo)}">` : `<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(140deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${esc((m.name||'M').charAt(0))}</div>`}</td>
+              <td><strong style="color:#0891b2;font-family:monospace;">${esc(m.member_id)}</strong></td>
+              <td>${esc(m.name)}</td>
+              <td>${esc(m.class||'—')}</td>
+              <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
+              <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick='openModal("Edit Member", ${JSON.stringify(MEMBER_FIELDS)}, ${JSON.stringify(m)}, "sksbv_members")'>✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_members', ${m.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table></div>
+    `}
+  `;
+}
+
+/* ═══ LEADERS (ഭാരവാഹികൾ) ═══ */
+async function renderLeaders(el){
+  const data = await loadTable('sksbv_leaders', 'position_order');
+  const FIELDS = [
+    {name:'name', label:'Name', required:true},
+    {name:'role_ml', label:'Role (Malayalam)', required:true},
+    {name:'role_en', label:'Role (English)'},
+    {name:'bio', label:'Bio', type:'textarea'},
+    {name:'phone', label:'Phone'},
+    {name:'position_order', label:'Order', type:'number', placeholder:'1'},
+    {name:'photo', label:'Photo', type:'file'}
+  ];
+
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>👑 Leaders</h2><p>${data.length} leaders</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick='openModal("Add Leader", ${JSON.stringify(FIELDS)}, null, "sksbv_leaders")'>
+          <i class="fas fa-plus"></i> Add Leader
+        </button>
+      </div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-crown"></i><p>No leaders yet</p></div>' : `
+      <div class="data-table"><table>
+        <thead><tr><th>Photo</th><th>Order</th><th>Name</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>
+          ${data.map(l => `
+            <tr>
+              <td>${l.photo ? `<img src="${esc(l.photo)}">` : '—'}</td>
+              <td>${l.position_order||0}</td>
+              <td>${esc(l.name)}</td>
+              <td>${esc(l.role_ml || l.role_en)}</td>
+              <td>
+                <button class="btn btn-primary btn-sm" onclick='openModal("Edit Leader", ${JSON.stringify(FIELDS)}, ${JSON.stringify(l)}, "sksbv_leaders")'>✏️</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_leaders', ${l.id})">🗑️</button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table></div>
+    `}
+  `;
+}
+
+/* ═══ GENERIC SIMPLE RENDERER ═══ */
+function makeSimpleRenderer(title, icon, table, orderCol, fields, cols){
+  return async function(el){
+    const data = await loadTable(table, orderCol);
+    el.innerHTML = `
+      <div class="content-header">
+        <div><h2>${icon} ${title}</h2><p>${data.length} items</p></div>
+        <div class="content-actions">
+          <button class="btn btn-primary" onclick='openModal("Add ${title}", ${JSON.stringify(fields)}, null, "${table}")'>
+            <i class="fas fa-plus"></i> Add
+          </button>
+        </div>
+      </div>
+      ${data.length === 0 ? `<div class="empty-state"><i class="fas fa-inbox"></i><p>No ${title} yet</p></div>` : `
+        <div class="data-table"><table>
+          <thead><tr>${cols.map(c=>`<th>${c.label}</th>`).join('')}<th>Actions</th></tr></thead>
+          <tbody>
+            ${data.map(item => `
+              <tr>
+                ${cols.map(c => `<td>${c.render ? c.render(item) : esc(item[c.name]||'—')}</td>`).join('')}
+                <td>
+                  <button class="btn btn-primary btn-sm" onclick='openModal("Edit ${title}", ${JSON.stringify(fields)}, ${JSON.stringify(item)}, "${table}")'>✏️</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteRow('${table}', ${item.id})">🗑️</button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table></div>
+      `}
+    `;
+  };
+}
+
+/* ═══ LITERARY PROGRAMS ═══ */
 async function renderPrograms(el){
   const data = await loadTable('sksbv_programs', 'program_date', false);
   const FIELDS = [
@@ -480,9 +636,10 @@ async function renderPrograms(el){
               <span class="badge ${p.status==='active'?'success':'warning'}">${p.status}</span>
             </div>
             <div style="display:flex;gap:14px;font-size:.74rem;color:var(--dim);font-weight:700;margin-bottom:10px;">
-              <span>📅 ${new Date(p.program_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</span>
+              <span>📅 ${fmtDate(p.program_date)}</span>
               ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
             </div>
+            ${p.description ? `<p style="font-size:.82rem;color:#475569;margin:0 0 10px;line-height:1.5;">${esc(p.description)}</p>` : ''}
             <div style="display:flex;gap:6px;">
               <button class="btn btn-primary btn-sm" onclick='openModal("Edit Program", ${JSON.stringify(FIELDS)}, ${JSON.stringify(p)}, "sksbv_programs")'>✏️ Edit</button>
               <button class="btn btn-success btn-sm" onclick="viewRegistrations(${p.id})">📋 View Registrations</button>
@@ -503,6 +660,7 @@ function viewRegistrations(programId){
   }, 400);
 }
 
+/* ═══ REGISTRATIONS ═══ */
 async function renderRegistrations(el){
   const [regRes, progRes] = await Promise.all([
     supabaseClient.from('sksbv_program_registrations').select('*').order('created_at', {ascending:false}),
@@ -601,8 +759,6 @@ async function approveRegistration(id){
     const { data: reg } = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id',id).single();
     const { data: prog } = await supabaseClient.from('sksbv_programs').select('title,program_date').eq('id',reg.program_id).single();
     await supabaseClient.from('sksbv_program_registrations').update({status:'approved', reviewed_at:new Date().toISOString()}).eq('id', id);
-    
-    // Notify member
     try {
       await supabaseClient.from('sksbv_notifications').insert({
         title: '✅ Literary Registration Approved',
@@ -611,7 +767,6 @@ async function approveRegistration(id){
         target_member: reg.member_id
       });
     } catch(e){}
-    
     toast('✅ Approved & notified', 'success');
     loadTab('registrations');
   } catch(e){ toast('❌ '+e.message, 'error'); }
@@ -624,7 +779,6 @@ async function rejectRegistration(id){
     await supabaseClient.from('sksbv_program_registrations').update({
       status:'rejected', admin_note: note||null, reviewed_at: new Date().toISOString()
     }).eq('id', id);
-    
     try {
       await supabaseClient.from('sksbv_notifications').insert({
         title: '❌ Registration Not Approved',
@@ -633,42 +787,288 @@ async function rejectRegistration(id){
         target_member: reg.member_id
       });
     } catch(e){}
-    
     toast('Rejected & notified', 'success');
     loadTab('registrations');
   } catch(e){ toast('❌ '+e.message, 'error'); }
 }
 
-async function renderMembers(el){
-  const data = await loadTable('sksbv_members', 'name');
+/* ═══ PHOTO SUBMISSIONS ═══ */
+async function renderPhotoSubs(el){
+  const data = await loadTable('sksbv_photo_submissions', 'created_at', false);
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>👥 Members</h2><p>${data.length} members</p></div>
+      <div><h2>📸 Photo Submissions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
     </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>No members</p></div>' : `
-      <div class="data-table"><table>
-        <thead><tr><th>Photo</th><th>UID</th><th>Name</th><th>Class</th><th>Role</th></tr></thead>
-        <tbody>
-          ${data.map(m => `
-            <tr>
-              <td>${m.photo ? `<img src="${esc(m.photo)}">` : `<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(140deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${esc((m.name||'M').charAt(0))}</div>`}</td>
-              <td><strong style="color:#0891b2;font-family:monospace;">${esc(m.member_id)}</strong></td>
-              <td>${esc(m.name)}</td>
-              <td>${esc(m.class||'—')}</td>
-              <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table></div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-camera"></i><p>No submissions</p></div>' : `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">
+        ${data.map(s => `
+          <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow);">
+            <img src="${esc(s.image_url)}" style="width:100%;aspect-ratio:4/3;object-fit:cover;">
+            <div style="padding:14px;">
+              <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                <span class="badge ${s.status==='pending'?'warning':s.status==='approved'?'success':'danger'}">${s.status}</span>
+                <small style="color:var(--dim);font-size:.68rem;">${fmtDate(s.created_at)}</small>
+              </div>
+              <div style="font-weight:800;font-size:.9rem;margin-bottom:4px;">${esc(s.title||'—')}</div>
+              <div style="font-size:.74rem;color:var(--dim);">By ${esc(s.member_name||s.member_id||'—')}</div>
+              ${s.status === 'pending' ? `
+                <div style="display:flex;gap:6px;margin-top:12px;">
+                  <button class="btn btn-success btn-sm" style="flex:1;justify-content:center;" onclick="approvePhotoSub(${s.id})">✅ Approve</button>
+                  <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;" onclick="rejectPhotoSub(${s.id})">❌ Reject</button>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `).join('')}
+      </div>
     `}
   `;
 }
+async function approvePhotoSub(id){
+  try {
+    const { data: sub } = await supabaseClient.from('sksbv_photo_submissions').select('*').eq('id',id).single();
+    if (!sub) return;
+    await supabaseClient.from('sksbv_photo_submissions').update({status:'approved', approved_at:new Date().toISOString()}).eq('id',id);
+    await supabaseClient.from('sksbv_gallery').insert({
+      title: sub.title, image_url: sub.image_url, category: sub.category, event_date: sub.event_date
+    });
+    toast('✅ Approved & added to gallery', 'success');
+    loadTab('subphotos');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+async function rejectPhotoSub(id){
+  const note = prompt('Reason for rejection (optional):');
+  try {
+    await supabaseClient.from('sksbv_photo_submissions').update({status:'rejected', admin_note:note||null}).eq('id',id);
+    toast('Rejected', 'success');
+    loadTab('subphotos');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
 
+/* ═══ SUGGESTIONS ═══ */
+async function renderSuggestions(el){
+  const data = await loadTable('sksbv_suggestions', 'created_at', false);
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>💡 Suggestions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-lightbulb"></i><p>No suggestions</p></div>' : `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${data.map(s => `
+          <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);border-left:4px solid ${s.status==='pending'?'#f59e0b':'#059669'};box-shadow:var(--shadow);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+              <strong style="font-size:.92rem;">${esc(s.title)}</strong>
+              <span class="badge ${s.status==='pending'?'warning':'success'}">${s.status}</span>
+            </div>
+            <div style="font-size:.72rem;color:var(--dim);margin-bottom:8px;">From: ${esc(s.member_name||s.member_id)} • ${fmtDate(s.created_at)}</div>
+            <div style="font-size:.86rem;color:#475569;line-height:1.6;white-space:pre-wrap;">${esc(s.suggestion)}</div>
+            ${s.admin_reply ? `<div style="margin-top:10px;padding:10px;background:#ecfdf5;border-radius:8px;font-size:.8rem;"><strong>Your reply:</strong> ${esc(s.admin_reply)}</div>` : ''}
+            <div style="display:flex;gap:6px;margin-top:12px;">
+              ${s.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="replySuggestion(${s.id})">💬 Reply & Review</button>` : ''}
+              <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_suggestions', ${s.id})">🗑️ Delete</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+async function replySuggestion(id){
+  const reply = prompt('Reply to this suggestion:');
+  if (!reply) return;
+  try {
+    await supabaseClient.from('sksbv_suggestions').update({
+      status: 'reviewed', admin_reply: reply, replied_at: new Date().toISOString()
+    }).eq('id', id);
+    toast('✅ Replied', 'success');
+    loadTab('suggestions');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+/* ═══ TESTIMONIAL SUBMISSIONS ═══ */
+async function renderTestiSubs(el){
+  const data = await loadTable('sksbv_member_testimonials', 'created_at', false);
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>💬 Testimonial Submissions</h2><p>${data.filter(s=>s.status==='pending').length} pending</p></div>
+    </div>
+    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-quote-left"></i><p>No submissions</p></div>' : `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${data.map(t => `
+          <div style="background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);box-shadow:var(--shadow);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <strong>${esc(t.member_name||t.member_id)}</strong>
+              <span class="badge ${t.status==='pending'?'warning':t.status==='approved'?'success':'danger'}">${t.status}</span>
+            </div>
+            <div style="font-size:.86rem;color:#475569;line-height:1.6;margin-bottom:12px;">"${esc(t.message)}"</div>
+            ${t.status === 'pending' ? `
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-success btn-sm" style="flex:1;justify-content:center;" onclick="approveTesti(${t.id})">✅ Approve</button>
+                <button class="btn btn-danger btn-sm" style="flex:1;justify-content:center;" onclick="rejectTesti(${t.id})">❌ Reject</button>
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+async function approveTesti(id){
+  try {
+    const { data: t } = await supabaseClient.from('sksbv_member_testimonials').select('*').eq('id',id).single();
+    await supabaseClient.from('sksbv_member_testimonials').update({status:'approved'}).eq('id',id);
+    await supabaseClient.from('sksbv_testimonials').insert({name:t.member_name||'Member', role:'SKSBV Member', message:t.message, is_active:true});
+    toast('✅ Approved & published', 'success');
+    loadTab('subtest');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+async function rejectTesti(id){
+  try {
+    await supabaseClient.from('sksbv_member_testimonials').update({status:'rejected'}).eq('id',id);
+    toast('Rejected', 'success');
+    loadTab('subtest');
+  } catch(e){ toast('❌ '+e.message, 'error'); }
+}
+
+/* ═══ TAB HANDLERS ═══ */
 const TAB_HANDLERS = {
   dashboard: renderDashboard,
   programs: renderPrograms,
   registrations: renderRegistrations,
-  members: renderMembers
+  members: renderMembers,
+  leaders: renderLeaders,
+  committee: makeSimpleRenderer('Committee', '👔', 'sksbv_committee', 'position_order',
+    [
+      {name:'name', label:'Name', required:true},
+      {name:'role_ml', label:'Role', required:true},
+      {name:'department', label:'Department'},
+      {name:'phone', label:'Phone'},
+      {name:'position_order', label:'Order', type:'number'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'name', label:'Name'}, {name:'role_ml', label:'Role'}, {name:'department', label:'Dept'}]
+  ),
+  classreps: makeSimpleRenderer('Class Representatives', '🎓', 'sksbv_class_reps', 'class',
+    [
+      {name:'class', label:'Class', required:true},
+      {name:'name', label:'Name', required:true},
+      {name:'phone', label:'Phone'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'class', label:'Class'}, {name:'name', label:'Name'}, {name:'phone', label:'Phone'}]
+  ),
+  pastleaders: makeSimpleRenderer('Past Leaders', '📜', 'sksbv_past_leaders', 'year_from',
+    [
+      {name:'name', label:'Name', required:true},
+      {name:'role_ml', label:'Role'},
+      {name:'year_from', label:'From Year', type:'number'},
+      {name:'year_to', label:'To Year', type:'number'},
+      {name:'bio', label:'Bio', type:'textarea'},
+      {name:'current_occupation', label:'Current Occupation'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'name', label:'Name'}, {name:'role_ml', label:'Role'},
+     {name:'year_from', label:'From'}, {name:'year_to', label:'To'}]
+  ),
+  activities: makeSimpleRenderer('Activities', '⭐', 'sksbv_activities', 'id',
+    [
+      {name:'title_ml', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'icon', label:'Icon (emoji)', placeholder:'📚'},
+      {name:'category', label:'Category'}
+    ],
+    [{name:'icon', label:'Icon'}, {name:'title_ml', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  events: makeSimpleRenderer('Events', '📅', 'sksbv_events', 'event_date', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'event_date', label:'Date', type:'date', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'location', label:'Location'},
+      {name:'image_url', label:'Image', type:'file'}
+    ],
+    [{name:'event_date', label:'Date', render: e => fmtDate(e.event_date)},
+     {name:'title', label:'Title'}, {name:'location', label:'Location'}]
+  ),
+  gallery: makeSimpleRenderer('Gallery', '📸', 'sksbv_gallery', 'uploaded_at', false,
+    [
+      {name:'title', label:'Title'},
+      {name:'image_url', label:'Photo', type:'file', required:true},
+      {name:'category', label:'Category'},
+      {name:'event_date', label:'Event Date', type:'date'}
+    ],
+    [{name:'image_url', label:'Photo', render: e => `<img src="${esc(e.image_url)}" style="width:60px;height:60px;">`},
+     {name:'title', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  videos: makeSimpleRenderer('Videos', '📹', 'sksbv_videos', 'id',
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'video_url', label:'YouTube URL', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'category', label:'Category'}
+    ],
+    [{name:'title', label:'Title'}, {name:'category', label:'Category'}]
+  ),
+  reports: makeSimpleRenderer('Reports', '📄', 'sksbv_reports', 'year', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'file_url', label:'PDF File', type:'file', accept:'application/pdf,.pdf'},
+      {name:'report_type', label:'Type', type:'select', options:[
+        {value:'annual', label:'Annual'}, {value:'monthly', label:'Monthly'}, {value:'special', label:'Special'}
+      ]},
+      {name:'year', label:'Year', type:'number'}
+    ],
+    [{name:'title', label:'Title'}, {name:'year', label:'Year'},
+     {name:'file_url', label:'File', render: e => e.file_url ? `<a href="${esc(e.file_url)}" target="_blank" class="badge info">📄 View</a>` : '—'}]
+  ),
+  achievements: makeSimpleRenderer('Achievements', '🏆', 'sksbv_achievements', 'year', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'description', label:'Description', type:'textarea'},
+      {name:'icon', label:'Icon', placeholder:'🥇'},
+      {name:'year', label:'Year', type:'number'},
+      {name:'level', label:'Level'}
+    ],
+    [{name:'icon', label:'Icon'}, {name:'title', label:'Title'}, {name:'year', label:'Year'}]
+  ),
+  faq: makeSimpleRenderer('FAQ', '❓', 'sksbv_faq', 'position_order',
+    [
+      {name:'question', label:'Question', required:true, type:'textarea'},
+      {name:'answer', label:'Answer', required:true, type:'textarea'},
+      {name:'position_order', label:'Order', type:'number'}
+    ],
+    [{name:'question', label:'Question'}, {name:'position_order', label:'Order'}]
+  ),
+  announcements: makeSimpleRenderer('Announcements', '📢', 'sksbv_announcements', 'created_at', false,
+    [
+      {name:'title', label:'Title', required:true},
+      {name:'message', label:'Message', required:true, type:'textarea'},
+      {name:'type', label:'Type', type:'select', options:[
+        {value:'general', label:'General'}, {value:'important', label:'Important'}, {value:'urgent', label:'Urgent'}
+      ]},
+      {name:'is_pinned', label:'Pin?', type:'select', options:[
+        {value:'false', label:'No'}, {value:'true', label:'Yes'}
+      ]},
+      {name:'is_members_only', label:'Members Only?', type:'select', options:[
+        {value:'false', label:'Public'}, {value:'true', label:'Members Only'}
+      ]}
+    ],
+    [{name:'title', label:'Title'}, {name:'type', label:'Type'},
+     {name:'is_pinned', label:'Pinned', render: e => e.is_pinned ? '📌' : '—'}]
+  ),
+  testimonials: makeSimpleRenderer('Testimonials', '💬', 'sksbv_testimonials', 'id',
+    [
+      {name:'name', label:'Name', required:true},
+      {name:'role', label:'Role/Title'},
+      {name:'message', label:'Message', required:true, type:'textarea'},
+      {name:'photo', label:'Photo', type:'file'}
+    ],
+    [{name:'name', label:'Name'}, {name:'role', label:'Role'}, {name:'message', label:'Message'}]
+  ),
+  subphotos: renderPhotoSubs,
+  suggestions: renderSuggestions,
+  subtest: renderTestiSubs
 };
 
 document.addEventListener('keydown', e => {
