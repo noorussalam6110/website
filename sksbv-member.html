@@ -10,913 +10,395 @@
 <script src="sksbv-config.js"></script>
 <style>
 :root{
-  --primary:#6366f1; --primary-dark:#4f46e5; --accent:#8b5cf6;
-  --success:#059669; --danger:#dc2626; --warning:#f59e0b;
-  --bg:#f8fafc; --card:#fff; --text:#0f172a; --dim:#64748b;
+  --primary:#8b5cf6; --primary-dark:#6d28d9; --accent:#ec4899;
+  --bg:#f8fafc; --card:#ffffff; --text:#0f172a; --dim:#64748b;
   --border:rgba(100,116,139,.15);
 }
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Anek Malayalam',sans-serif;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--text);min-height:100vh}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-/* ═══ LOADING ═══ */
-#loadingScreen{
-  min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;
-  background:linear-gradient(135deg,#667eea,#764ba2);padding:24px;text-align:center;color:#fff;
-}
-#loadingScreen .loader{
-  width:56px;height:56px;border-radius:50%;
-  border:4px solid rgba(255,255,255,.25);
-  border-top-color:#fff;
-  animation:spin .8s linear infinite;
-}
+#loadingScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:linear-gradient(135deg,#8b5cf6,#ec4899);padding:24px;text-align:center;color:#fff;}
+.loader{width:56px;height:56px;border-radius:50%;border:4px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg)}}
-#loadingScreen h2{font-size:1.15rem;font-weight:900;margin:0}
-#loadingScreen p{font-size:.85rem;opacity:.85;margin:0}
 
-/* ═══ NO SESSION ═══ */
-#noSessionScreen{
-  min-height:100vh;display:none;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#667eea,#764ba2);padding:24px;text-align:center;color:#fff;
-}
-#noSessionScreen .box{
-  background:#fff;border-radius:24px;padding:36px 28px;max-width:420px;width:100%;
-  color:var(--text);box-shadow:0 40px 80px -20px rgba(0,0,0,.4);
-}
-#noSessionScreen .icon{
-  width:80px;height:80px;margin:0 auto 20px;border-radius:50%;
-  background:linear-gradient(140deg,#0891b2,#22d3ee);
-  display:flex;align-items:center;justify-content:center;font-size:2rem;color:#fff;
-}
-#noSessionScreen h1{font-size:1.3rem;font-weight:900;margin:0 0 8px}
-#noSessionScreen p{color:var(--dim);font-size:.85rem;margin:0 0 24px;line-height:1.5}
-#noSessionScreen a{
-  display:inline-flex;align-items:center;gap:8px;justify-content:center;
-  background:linear-gradient(100deg,#0891b2,#22d3ee);color:#fff;
-  padding:13px 24px;border-radius:14px;font-weight:900;font-size:.9rem;
-  text-decoration:none;box-shadow:0 12px 30px -10px rgba(8,145,178,.6);
-}
+.app-header{background:linear-gradient(135deg,#4c1d95,#8b5cf6);color:#fff;padding:16px 20px;padding-top:calc(16px + env(safe-area-inset-top,0px));display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px -8px rgba(76,29,149,.4);border-bottom-left-radius:24px;border-bottom-right-radius:24px;}
+.app-header-left{display:flex;align-items:center;gap:12px;}
+.app-avatar{width:48px;height:48px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.2rem;border:2px solid rgba(255,255,255,.5);}
+.app-avatar img{width:100%;height:100%;object-fit:cover;}
+.app-header h1{font-size:1.05rem;font-weight:900;margin:0;line-height:1.2;}
+.app-header small{font-size:.7rem;opacity:.9;display:block;margin-top:2px;}
+.header-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:44px;height:44px;border-radius:14px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
 
-/* ═══ APP ═══ */
-#appScreen{display:none;min-height:100vh;padding-bottom:80px}
-.app-header{background:linear-gradient(135deg,#0891b2,#22d3ee);color:#fff;padding:16px 20px;
-  padding-top:calc(16px + env(safe-area-inset-top,0px));
-  display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;
-  box-shadow:0 4px 20px -8px rgba(0,0,0,.3)}
-.app-header-left{display:flex;align-items:center;gap:12px;min-width:0}
-.app-avatar{width:44px;height:44px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.22);
-  display:flex;align-items:center;justify-content:center;font-weight:900;font-size:1.1rem;flex-shrink:0}
-.app-avatar img{width:100%;height:100%;object-fit:cover}
-.app-header-info{min-width:0}
-.app-header h1{font-size:.94rem;font-weight:900;margin:0;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.app-header small{font-size:.68rem;opacity:.85;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.header-btns{display:flex;gap:6px;flex-shrink:0}
-.header-btn{background:rgba(255,255,255,.22);border:none;color:#fff;
-  width:40px;height:40px;border-radius:10px;font-size:.95rem;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;transition:.2s}
-.header-btn:hover{background:rgba(255,255,255,.35)}
-.header-btn:active{transform:scale(.94)}
+.main-content{padding:16px;max-width:900px;margin:0 auto;padding-bottom:100px;}
 
-.main-content{padding:16px;max-width:900px;margin:0 auto}
-.hero-banner{background:linear-gradient(135deg,#0891b2,#22d3ee);border-radius:20px;padding:20px;
-  color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
-.hero-banner h2{margin:0 0 6px;font-size:1.15rem;font-weight:900}
-.hero-banner p{margin:0;font-size:.82rem;opacity:.9}
+.literary-hero{position:relative;border-radius:24px;overflow:hidden;background:linear-gradient(135deg,#2e1065,#6d28d9);padding:24px 20px;color:#fff;margin-bottom:20px;box-shadow:0 15px 30px -10px rgba(109,40,217,.5);}
+.literary-hero h2{position:relative;font-size:1.5rem;font-weight:900;margin:0 0 8px;line-height:1.2;z-index:2;}
+.literary-hero p{position:relative;font-size:.85rem;color:rgba(255,255,255,.85);margin:0 0 16px;z-index:2;}
+.lit-btn{position:relative;background:#fff;color:#4c1d95;border:none;padding:12px 24px;border-radius:30px;font-weight:900;font-size:.85rem;cursor:pointer;display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 20px -5px rgba(0,0,0,.3);z-index:2;transition:transform .2s;}
+.lit-btn:active{transform:scale(.95);}
 
-.card{background:#fff;border-radius:16px;padding:16px;border:1px solid var(--border);
-  box-shadow:0 6px 20px -12px rgba(15,23,42,.15);margin-bottom:12px}
-.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.card-header h3{margin:0;font-size:.95rem;font-weight:900;display:flex;align-items:center;gap:8px}
-.card-header h3 i{color:var(--primary)}
-.card-header .badge{background:rgba(8,145,178,.15);color:#0891b2;padding:3px 10px;
-  border-radius:20px;font-size:.68rem;font-weight:900;border:none;cursor:pointer;font-family:inherit}
+.card{background:var(--card);border-radius:20px;padding:20px;border:1px solid var(--border);box-shadow:0 4px 15px -10px rgba(0,0,0,.1);margin-bottom:16px;}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.card-header h3{font-size:1rem;font-weight:900;margin:0;display:flex;align-items:center;gap:8px;color:var(--text);}
+.card-header h3 i{color:var(--primary);}
+.badge{background:rgba(139,92,246,.1);color:var(--primary);padding:4px 12px;border-radius:20px;font-size:.68rem;font-weight:900;border:none;cursor:pointer;}
 
-.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;
-  font-family:inherit;font-size:16px;background:#f8fafc;outline:none;margin-bottom:10px}
-.form-input:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,.12)}
-textarea.form-input{min-height:80px;resize:vertical}
+.program-item{background:#f8fafc;border:1.5px solid rgba(139,92,246,.2);border-radius:14px;padding:14px;margin-bottom:10px;border-left:4px solid var(--primary);}
+.program-title{font-weight:900;color:var(--text);font-size:.92rem;margin-bottom:4px;}
+.program-theme{font-size:.74rem;color:var(--primary-dark);font-weight:800;margin-bottom:6px;}
+.program-meta{font-size:.7rem;color:var(--dim);display:flex;gap:10px;flex-wrap:wrap;font-weight:700;margin-bottom:12px;}
 
-.btn{padding:10px 16px;border-radius:10px;border:none;font-family:inherit;font-weight:800;
-  font-size:.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.2s}
-.btn-primary{background:linear-gradient(100deg,#0891b2,#22d3ee);color:#fff;box-shadow:0 8px 20px -8px rgba(8,145,178,.6)}
-.btn-success{background:linear-gradient(100deg,#059669,#34d399);color:#fff}
-.btn-warning{background:linear-gradient(100deg,#f59e0b,#fbbf24);color:#03132e}
-.btn-ghost{background:#f1f5f9;color:var(--dim);border:1.5px solid var(--border)}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-block{width:100%;justify-content:center}
+.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.action-tile{background:#fff;border-radius:16px;padding:14px 8px;text-align:center;cursor:pointer;border:1px solid var(--border);transition:all .2s;}
+.action-tile:active{transform:scale(.95);}
+.action-ico{width:48px;height:48px;border-radius:14px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:#fff;}
+.action-tile h6{font-size:.68rem;font-weight:800;color:var(--dim);margin:0;line-height:1.2;}
 
-.empty{text-align:center;padding:40px 20px;color:var(--dim);font-size:.84rem}
-.empty i{font-size:2.5rem;opacity:.3;display:block;margin-bottom:10px;color:var(--primary)}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.9);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:10px 0;padding-bottom:max(10px,env(safe-area-inset-bottom,10px));z-index:1000;}
+.bn-item{background:transparent;border:none;color:var(--dim);font-family:inherit;font-weight:800;font-size:.65rem;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s;flex:1;}
+.bn-item i{font-size:1.25rem;}
+.bn-item.active{color:var(--primary);}
+.bn-item.active i{color:var(--primary);}
 
-.notif-item{background:#fff;border-radius:12px;padding:14px;border:1px solid var(--border);
-  margin-bottom:10px;border-left:4px solid var(--primary);transition:.2s}
-.notif-item.unread{background:linear-gradient(135deg,#eff6ff,#f0f9ff);border-left-color:#0891b2}
-.notif-item .title{font-weight:900;font-size:.9rem;margin-bottom:4px;color:var(--text)}
-.notif-item .msg{font-size:.82rem;color:var(--dim);line-height:1.5}
-.notif-item .time{font-size:.68rem;color:#94a3b8;margin-top:6px;font-weight:700}
+.c-purple{background:linear-gradient(135deg,#a855f7,#8b5cf6);}
+.c-pink{background:linear-gradient(135deg,#ec4899,#f472b6);}
+.c-blue{background:linear-gradient(135deg,#3b82f6,#60a5fa);}
+.c-green{background:linear-gradient(135deg,#10b981,#34d399);}
 
-.event-card{background:#fff;border-radius:14px;padding:14px;border:1px solid var(--border);
-  margin-bottom:10px;display:flex;gap:14px;align-items:center}
-.event-date{width:56px;height:56px;border-radius:12px;background:linear-gradient(140deg,#0891b2,#22d3ee);
-  color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
-.event-date .day{font-size:1.3rem;font-weight:900;line-height:1}
-.event-date .month{font-size:.58rem;font-weight:800;text-transform:uppercase;margin-top:2px}
-.event-info{flex:1;min-width:0}
-.event-info h4{margin:0 0 3px;font-size:.9rem;font-weight:900}
-.event-info p{margin:0;font-size:.74rem;color:var(--dim)}
-.rsvp-btns{display:flex;gap:6px;margin-top:8px}
-.rsvp-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:#fff;
-  font-family:inherit;font-weight:800;font-size:.68rem;cursor:pointer;transition:.2s}
-.rsvp-btn.going.active{background:#059669;color:#fff;border-color:#059669}
-.rsvp-btn.maybe.active{background:#f59e0b;color:#fff;border-color:#f59e0b}
-.rsvp-btn.notgoing.active{background:#dc2626;color:#fff;border-color:#dc2626}
+.empty{text-align:center;padding:30px 20px;color:var(--dim);font-size:.85rem;}
+.empty i{font-size:2.5rem;opacity:.3;margin-bottom:10px;display:block;}
 
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);
-  display:flex;justify-content:space-around;padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom,8px));
-  z-index:50;box-shadow:0 -6px 24px -8px rgba(0,0,0,.1)}
-.bn-item{background:transparent;border:none;color:var(--dim);font-family:inherit;font-weight:700;
-  font-size:.6rem;padding:6px 4px;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;gap:3px;transition:.2s;flex:1;min-width:0}
-.bn-item i{font-size:1.1rem}
-.bn-item.active{color:var(--primary)}
-.bn-item.active i{color:var(--primary)}
-
-.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(120px);
-  background:linear-gradient(135deg,#0891b2,#22d3ee);color:#fff;padding:12px 20px;
-  border-radius:50px;font-weight:800;font-size:.82rem;z-index:2000;
-  box-shadow:0 20px 50px -12px rgba(8,145,178,.8);
-  transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:90vw;text-align:center}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.success{background:linear-gradient(135deg,#059669,#34d399)}
-.toast.error{background:linear-gradient(135deg,#dc2626,#ef4444)}
-
-.file-upload{width:100%;aspect-ratio:16/10;border:2.5px dashed rgba(8,145,178,.4);
-  border-radius:14px;background:#f8fafc;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;overflow:hidden;position:relative;margin-bottom:10px}
-.file-upload img{width:100%;height:100%;object-fit:cover}
-.file-upload-placeholder{text-align:center;padding:20px;color:var(--dim);font-weight:700;font-size:.8rem}
-.file-upload-placeholder i{font-size:2rem;color:var(--primary);display:block;margin-bottom:6px}
-
-/* ═══ LITERARY ═══ */
-.lit-program-card{border-left:4px solid #f59e0b}
-.lit-program-card.active{border-left-color:#059669}
-.lit-theme-box{background:linear-gradient(135deg,#f3e8ff,#ede9fe);padding:10px 12px;border-radius:10px;
-  margin-bottom:10px;border-left:3px solid #8b5cf6}
-.lit-theme-label{font-size:.62rem;color:#7c3aed;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-.lit-theme-text{font-size:.84rem;color:#0f172a;font-weight:800}
-.lit-my-reg{background:#f0fdf4;border:1.5px solid rgba(5,150,105,.3);border-radius:10px;padding:10px 12px;margin-bottom:10px}
-.lit-my-reg-label{font-size:.68rem;color:#065f46;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+/* ═══ MODAL (Registration) ═══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.85);backdrop-filter:blur(10px);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal-card{background:#fff;border-radius:24px;padding:24px;max-width:480px;width:100%;margin:auto;box-shadow:0 40px 80px -20px rgba(0,0,0,.5);animation:slideUp .3s cubic-bezier(.34,1.4,.64,1);}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-header h3{margin:0;font-size:1.15rem;font-weight:900;color:#0f172a;}
+.close-btn{background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;color:#475569;}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:.8rem;font-weight:800;color:#475569;margin-bottom:6px;}
+.form-input{width:100%;padding:12px 16px;border:1.5px solid rgba(100,116,139,.25);border-radius:12px;font-family:inherit;font-size:16px;outline:none;transition:.2s;}
+.form-input:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(139,92,246,.15);}
+textarea.form-input{min-height:80px;resize:vertical;}
+.btn-submit{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(100deg,#8b5cf6,#ec4899);color:#fff;font-family:inherit;font-weight:900;font-size:.95rem;cursor:pointer;margin-top:10px;box-shadow:0 10px 25px -10px rgba(139,92,246,.7);}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed;}
 </style>
 </head>
 <body>
 
-<!-- ═══ LOADING ═══ -->
 <div id="loadingScreen">
   <div class="loader"></div>
-  <h2>Loading SKSBV Portal...</h2>
-  <p>Syncing your account</p>
+  <h2>Loading SKSBV...</h2>
 </div>
 
-<!-- ═══ NO SESSION ═══ -->
-<div id="noSessionScreen">
-  <div class="box">
-    <div class="icon"><i class="fas fa-lock"></i></div>
-    <h1>Login Required</h1>
-    <p>SKSBV Member Portal ഉപയോഗിക്കാൻ ആദ്യം പ്രധാന പോർട്ടലിൽ login ചെയ്യുക.</p>
-    <a href="index.html">
-      <i class="fas fa-sign-in-alt"></i> Go to Portal Login
-    </a>
-  </div>
-</div>
-
-<!-- ═══ APP ═══ -->
-<div id="appScreen">
+<div id="appScreen" style="display:none;">
   <header class="app-header">
     <div class="app-header-left">
       <div class="app-avatar" id="hdAvatar">S</div>
-      <div class="app-header-info">
-        <h1 id="hdName">Member</h1>
-        <small id="hdMeta">SKSBV</small>
+      <div>
+        <h1 id="hdName">Loading...</h1>
+        <small id="hdMeta">SKSBV Member</small>
       </div>
     </div>
-    <div class="header-btns">
-      <button class="header-btn" onclick="goBackToPortal()" title="Back to Portal">
-        <i class="fas fa-home"></i>
-      </button>
-    </div>
+    <button class="header-btn" onclick="window.location.href='sksbv-home.html'"><i class="fas fa-home"></i></button>
   </header>
 
   <main class="main-content" id="mainContent"></main>
 
-  <nav class="bottom-nav" id="bottomNav">
-    <button class="bn-item active" data-tab="home" onclick="memSwitchTab('home')">
-      <i class="fas fa-home"></i> Home
-    </button>
-    <button class="bn-item" data-tab="events" onclick="memSwitchTab('events')">
-      <i class="fas fa-calendar"></i> Events
-    </button>
-    <button class="bn-item" data-tab="literary" onclick="memSwitchTab('literary')">
-      <i class="fas fa-feather"></i> Literary
-    </button>
-    <button class="bn-item" data-tab="submit" onclick="memSwitchTab('submit')">
-      <i class="fas fa-plus-circle"></i> Submit
-    </button>
-    <button class="bn-item" data-tab="notifs" onclick="memSwitchTab('notifs')">
-      <i class="fas fa-bell"></i> Notifs
-    </button>
-    <button class="bn-item" data-tab="profile" onclick="memSwitchTab('profile')">
-      <i class="fas fa-user"></i> Profile
-    </button>
+  <nav class="bottom-nav">
+    <button class="bn-item active" onclick="switchTab('home')"><i class="fas fa-home"></i>Home</button>
+    <button class="bn-item" onclick="switchTab('literary')"><i class="fas fa-feather" style="color:#8b5cf6;"></i>Literary</button>
+    <button class="bn-item" onclick="switchTab('events')"><i class="fas fa-calendar"></i>Events</button>
+    <button class="bn-item" onclick="switchTab('profile')"><i class="fas fa-user"></i>Profile</button>
   </nav>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- REGISTRATION MODAL -->
+<div class="modal-overlay" id="regModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><i class="fas fa-feather" style="color:#8b5cf6;"></i> രജിസ്ട്രേഷൻ</h3>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <form id="regForm" onsubmit="submitRegistration(event)">
+      <div class="form-group">
+        <label class="form-label">പരിപാടി</label>
+        <input type="text" id="regProgramTitle" class="form-input" readonly style="background:#f1f5f9;font-weight:800;color:#8b5cf6;">
+        <input type="hidden" id="regProgramId">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">ഇനം തിരഞ്ഞെടുക്കുക *</label>
+        <select id="regItemType" class="form-input" required>
+          <option value="">-- തിരഞ്ഞെടുക്കുക --</option>
+          <option value="song">🎵 ഗാനം (Song)</option>
+          <option value="speech">🎤 പ്രസംഗം (Speech)</option>
+          <option value="poem">📝 കവിത (Poem)</option>
+          <option value="story">📖 കഥ (Story)</option>
+          <option value="essay">✍️ ലേഖനം (Essay)</option>
+          <option value="quran">📖 ഖുർആൻ പാരായണം</option>
+          <option value="other">🌟 മറ്റുള്ളവ</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ഇനത്തിന്റെ പേര് *</label>
+        <input type="text" id="regItemTitle" class="form-input" placeholder="ഉദാ: എന്റെ ഗ്രാമം" required maxlength="100">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ചെറിയ വിവരണം (Optional)</label>
+        <textarea id="regItemDesc" class="form-input" placeholder="കൂടുതൽ വിവരങ്ങൾ..." maxlength="300"></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit" id="regSubmitBtn">
+        <i class="fas fa-paper-plane"></i> സമർപ്പിക്കുക
+      </button>
+    </form>
+  </div>
+</div>
 
 <script>
-/* ═══════════════════════════════════════════════════════ */
-/* 🔧 SETUP                                                 */
-/* ═══════════════════════════════════════════════════════ */
-const CFG = window.SKSBV_CONFIG || {};
+const CFG = window.SKSBV_CONFIG || {
+  SUPABASE_URL: 'https://dmjjtmimrozzqknduqas.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_e7EXyQvriYYgw9KDlu-5dA_Jcjdw9bg'
+};
 const supabaseClient = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
 let CURRENT_MEMBER = null;
-let CURRENT_STUDENT = null;
-let CURRENT_TAB = 'home';
+let LITERARY_PROGRAMS = [];
+let MY_REGISTRATIONS = [];
 
-function $(id){ return document.getElementById(id); }
 function esc(s){ return s==null?'':String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
-function fmtDate(d){ if(!d)return'—'; try{const dt=new Date(d); if(isNaN(dt))return d; return dt.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){return d;} }
-function timeAgo(iso){ try{ const d=new Date(iso); const diff=Math.floor((Date.now()-d.getTime())/1000); if(diff<60)return'just now'; if(diff<3600)return Math.floor(diff/60)+'m ago'; if(diff<86400)return Math.floor(diff/3600)+'h ago'; return Math.floor(diff/86400)+'d ago'; }catch(e){return'';} }
-function toast(msg, type='info'){
-  const t = $('toast'); if(!t) return;
-  t.className = 'toast ' + type + ' show';
-  const icons = {success:'✅', error:'❌', info:'ℹ️'};
-  t.innerHTML = `<span>${icons[type]||'ℹ️'}</span> ${esc(msg)}`;
-  clearTimeout(window._toastT);
-  window._toastT = setTimeout(()=>t.classList.remove('show'), 3000);
-}
-function goBackToPortal(){
-  window.location.href = 'index.html';
+
+function getSession(){
+  try { return JSON.parse(localStorage.getItem('noor_session')); } catch(e){ return null; }
 }
 
-/* ═══════════════════════════════════════════════════════ */
-/* 🔐 BOOT — Auto-detect student session                    */
-/* ═══════════════════════════════════════════════════════ */
-function getStudentSession(){
+async function boot(){
+  const student = getSession();
+  if (!student || !student.studentId) {
+    window.location.href = 'index.html'; return;
+  }
+
+  CURRENT_MEMBER = {
+    member_id: student.studentId, name: student.name, class: student.class, photo: student.photo
+  };
+
+  document.getElementById('hdName').textContent = CURRENT_MEMBER.name || 'Student';
+  document.getElementById('hdMeta').textContent = 'Class ' + (CURRENT_MEMBER.class || '—');
+  const av = document.getElementById('hdAvatar');
+  if (CURRENT_MEMBER.photo) av.innerHTML = `<img src="${esc(CURRENT_MEMBER.photo)}">`;
+  else av.textContent = (CURRENT_MEMBER.name || 'S').charAt(0).toUpperCase();
+
+  // Fetch Programs & My Registrations
   try {
-    const s = localStorage.getItem('noor_session');
-    if (!s) return null;
-    const parsed = JSON.parse(s);
-    if (!parsed || !parsed.studentId) return null;
-    return parsed;
-  } catch(e){ return null; }
+    const [pRes, rRes] = await Promise.all([
+      supabaseClient.from('sksbv_programs').select('*').eq('is_active', true).in('status', ['upcoming', 'active']).order('program_date', {ascending:true}),
+      supabaseClient.from('sksbv_program_registrations').select('*').eq('student_id', CURRENT_MEMBER.member_id)
+    ]);
+    LITERARY_PROGRAMS = pRes.data || [];
+    MY_REGISTRATIONS = rRes.data || [];
+  } catch(e) { console.error(e); }
+
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  
+  switchTab('home');
 }
 
-async function getOrCreateMemberRecord(student){
-  // 1. Try existing SKSBV member
-  let existing = null;
-  try {
-    const r = await supabaseClient.from('sksbv_members')
-      .select('*')
-      .eq('member_id', student.studentId)
-      .maybeSingle();
-    existing = r.data;
-  } catch(e){ console.warn('Fetch member:', e); }
+function switchTab(tab){
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  const idx = {home:0, literary:1, events:2, profile:3}[tab];
+  if(document.querySelectorAll('.bn-item')[idx]) document.querySelectorAll('.bn-item')[idx].classList.add('active');
 
-  // 2. Sync data from student record
-  if (existing){
-    const updates = {};
-    if (student.name && existing.name !== student.name) updates.name = student.name;
-    if (student.class && existing.class !== String(student.class)) updates.class = String(student.class);
-    if (student.photo && existing.photo !== student.photo) updates.photo = student.photo;
-    if (student.phone && existing.phone !== student.phone) updates.phone = student.phone;
-    if (student.fatherName && existing.parent_name !== student.fatherName) updates.parent_name = student.fatherName;
-    if (student.dob && existing.dob !== student.dob) updates.dob = student.dob;
-    if (student.bloodGroup && existing.blood_group !== student.bloodGroup) updates.blood_group = student.bloodGroup;
+  const el = document.getElementById('mainContent');
+  el.innerHTML = '<div style="text-align:center;padding:40px;"><div class="loader" style="margin:0 auto; width:32px; height:32px; border-color:rgba(139,92,246,.2); border-top-color:#8b5cf6;"></div></div>';
 
-    if (Object.keys(updates).length > 0){
-      updates.updated_at = new Date().toISOString();
-      try {
-        await supabaseClient.from('sksbv_members').update(updates).eq('member_id', student.studentId);
-        Object.assign(existing, updates);
-        console.log('✅ Synced member data');
-      } catch(e){ console.warn('Sync failed:', e); }
-    }
-    return existing;
-  }
-
-  // 3. Auto-create new member
-  try {
-    const ins = await supabaseClient.from('sksbv_members').insert({
-      member_id: student.studentId,
-      name: student.name || 'Student',
-      class: String(student.class || ''),
-      photo: student.photo || null,
-      phone: student.phone || null,
-      parent_name: student.fatherName || null,
-      dob: student.dob || null,
-      blood_group: student.bloodGroup || null,
-      role: 'member',
-      pin: 'auto',
-      is_active: true,
-      is_approved: true
-    }).select().single();
-    console.log('✅ Auto-created SKSBV member:', ins.data.member_id);
-    return ins.data;
-  } catch(e){
-    console.error('Create member failed:', e);
-    return null;
-  }
+  if (tab === 'home') renderHome(el);
+  else if (tab === 'literary') renderLiterary(el);
+  else if (tab === 'events') renderEvents(el);
+  else if (tab === 'profile') renderProfile(el);
 }
 
-async function bootMemberPortal(){
-  CURRENT_STUDENT = getStudentSession();
-
-  if (!CURRENT_STUDENT){
-    $('loadingScreen').style.display = 'none';
-    $('noSessionScreen').style.display = 'flex';
-    return;
-  }
-
-  try {
-    CURRENT_MEMBER = await getOrCreateMemberRecord(CURRENT_STUDENT);
-  } catch(e){
-    console.error('Boot error:', e);
-  }
-
-  if (!CURRENT_MEMBER){
-    $('loadingScreen').innerHTML = `
-      <div class="loader"></div>
-      <h2>Connection Error</h2>
-      <p>SKSBV member record could not be created. Please try again.</p>
-      <a href="index.html" style="margin-top:20px;display:inline-block;background:#fff;color:#0891b2;padding:12px 24px;border-radius:12px;font-weight:900;text-decoration:none;">← Back to Portal</a>
-    `;
-    return;
-  }
-
-  $('loadingScreen').style.display = 'none';
-  $('appScreen').style.display = 'block';
-  showApp();
-}
-
-function showApp(){
-  $('hdName').textContent = CURRENT_MEMBER.name || 'Member';
-  $('hdMeta').textContent = (CURRENT_MEMBER.position || 'SKSBV Member') + ' • Class ' + (CURRENT_MEMBER.class || '—');
-  const av = $('hdAvatar');
-  if (CURRENT_MEMBER.photo){
-    av.innerHTML = `<img src="${esc(CURRENT_MEMBER.photo)}">`;
+function renderHome(el){
+  let progHtml = '';
+  if (LITERARY_PROGRAMS.length === 0) {
+    progHtml = '<div class="empty"><i class="fas fa-feather"></i>പുതിയ പ്രോഗ്രാമുകൾ ഉടൻ വരുന്നു</div>';
   } else {
-    av.textContent = (CURRENT_MEMBER.name||'M').charAt(0).toUpperCase();
-  }
-  loadTab('home');
-}
-
-if (document.readyState === 'loading'){
-  document.addEventListener('DOMContentLoaded', bootMemberPortal);
-} else {
-  bootMemberPortal();
-}
-
-/* ═══════════════════════════════════════════════════════ */
-/* 🎛️ TAB SWITCH                                           */
-/* ═══════════════════════════════════════════════════════ */
-function memSwitchTab(tab){
-  CURRENT_TAB = tab;
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
-  loadTab(tab);
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-function loadTab(tab){
-  const el = $('mainContent');
-  el.innerHTML = '<div style="text-align:center;padding:40px;"><div style="width:32px;height:32px;border:3px solid rgba(8,145,178,.2);border-top-color:#0891b2;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;"></div></div>';
-  const h = TAB_HANDLERS[tab];
-  if (h) h(el);
-  else el.innerHTML = '<div class="empty">Not available</div>';
-}
-const _style = document.createElement('style');
-_style.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
-document.head.appendChild(_style);
-
-/* ═══════════════════════════════════════════════════════ */
-/* 🏠 HOME                                                  */
-/* ═══════════════════════════════════════════════════════ */
-async function renderHome(el){
-  const [annRes, notifRes, evRes, progRes] = await Promise.all([
-    supabaseClient.from('sksbv_announcements').select('*').eq('is_members_only', true).order('created_at',{ascending:false}).limit(5),
-    supabaseClient.from('sksbv_notifications').select('*').or(`target_type.eq.all,and(target_type.eq.member,target_member.eq.${CURRENT_MEMBER.member_id})`).order('created_at',{ascending:false}).limit(5),
-    supabaseClient.from('sksbv_events').select('*').gte('event_date', new Date().toISOString().split('T')[0]).order('event_date').limit(3),
-    supabaseClient.from('sksbv_programs').select('*').eq('is_active', true).in('status',['upcoming','active']).order('program_date',{ascending:true}).limit(2)
-  ]);
-  const ann = annRes.data || [];
-  const notifs = notifRes.data || [];
-  const events = evRes.data || [];
-  const programs = progRes.data || [];
-
-  el.innerHTML = `
-    <div class="hero-banner">
-      <h2>👋 അസ്സലാമു അലൈക്കും ${esc(CURRENT_MEMBER.name)}</h2>
-      <p>${esc(CURRENT_MEMBER.position || 'SKSBV Member')} • Class ${esc(CURRENT_MEMBER.class||'—')}</p>
-    </div>
-
-    ${programs.length > 0 ? `
-      <div class="card" style="border-left:4px solid #8b5cf6;">
-        <div class="card-header">
-          <h3><i class="fas fa-feather" style="color:#8b5cf6;"></i> സാഹിത്യ സമാജം</h3>
-          <button class="badge" onclick="memSwitchTab('literary')">See all →</button>
-        </div>
-        ${programs.map(p => `
-          <div style="padding:10px;background:#f5f3ff;border-radius:10px;margin-bottom:8px;border-left:3px solid #8b5cf6;">
-            <div style="font-weight:900;font-size:.86rem;margin-bottom:4px;">📚 ${esc(p.title)}</div>
-            ${p.theme ? `<div style="font-size:.72rem;color:#7c3aed;font-weight:800;">📖 ${esc(p.theme)}</div>` : ''}
-            <div style="font-size:.7rem;color:#64748b;margin-top:4px;">📅 ${fmtDate(p.program_date)}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    ${events.length > 0 ? `
-      <div class="card">
-        <div class="card-header">
-          <h3><i class="fas fa-calendar"></i> Upcoming Events</h3>
-          <button class="badge" onclick="memSwitchTab('events')">See all →</button>
-        </div>
-        ${events.map(e => {
-          const d = new Date(e.event_date);
-          return `
-            <div class="event-card">
-              <div class="event-date">
-                <div class="day">${d.getDate()}</div>
-                <div class="month">${d.toLocaleDateString('en-IN',{month:'short'}).toUpperCase()}</div>
-              </div>
-              <div class="event-info">
-                <h4>${esc(e.title)}</h4>
-                <p>${esc(e.location||'—')}${e.description ? ' • ' + esc(e.description) : ''}</p>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    ` : ''}
-
-    ${ann.length > 0 ? `
-      <div class="card">
-        <div class="card-header"><h3><i class="fas fa-bullhorn"></i> Members Announcements</h3></div>
-        ${ann.map(a => `
-          <div class="notif-item ${a.is_pinned?'unread':''}">
-            <div class="title">${a.is_pinned?'📌 ':''}${esc(a.title)}</div>
-            <div class="msg">${esc(a.message||'')}</div>
-            <div class="time">${timeAgo(a.created_at)}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    ${notifs.length > 0 ? `
-      <div class="card">
-        <div class="card-header"><h3><i class="fas fa-bell"></i> Your Notifications</h3></div>
-        ${notifs.map(n => `
-          <div class="notif-item">
-            <div class="title">${esc(n.title)}</div>
-            <div class="msg">${esc(n.message||'')}</div>
-            <div class="time">${timeAgo(n.created_at)}</div>
-          </div>
-        `).join('')}
-      </div>
-    ` : ''}
-
-    <div class="card">
-      <h3 style="margin:0 0 12px;font-size:.95rem;"><i class="fas fa-bolt" style="color:var(--warning);"></i> Quick Actions</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button class="btn btn-primary btn-block" onclick="memSwitchTab('submit')"><i class="fas fa-camera"></i> Submit Photo</button>
-        <button class="btn btn-ghost btn-block" onclick="memSwitchTab('literary')"><i class="fas fa-feather"></i> Literary</button>
-      </div>
-    </div>
-  `;
-}
-
-/* ═══════════════════════════════════════════════════════ */
-/* 📅 EVENTS                                                */
-/* ═══════════════════════════════════════════════════════ */
-async function renderEvents(el){
-  const [evRes, rsvpRes] = await Promise.all([
-    supabaseClient.from('sksbv_events').select('*').order('event_date',{ascending:false}),
-    supabaseClient.from('sksbv_event_rsvp').select('*').eq('member_id', CURRENT_MEMBER.member_id)
-  ]);
-  const events = evRes.data || [];
-  const rsvps = {};
-  (rsvpRes.data||[]).forEach(r => rsvps[r.event_id] = r.status);
-
-  el.innerHTML = `
-    <div class="hero-banner" style="padding:16px;"><h2 style="font-size:1rem;">📅 Events</h2><p style="font-size:.78rem;">RSVP ചെയ്ത് attendance confirm ചെയ്യൂ</p></div>
-    ${events.length === 0 ? '<div class="card"><div class="empty"><i class="fas fa-calendar"></i><div>No events</div></div></div>' : events.map(e => {
-      const d = new Date(e.event_date);
-      const rsvp = rsvps[e.id];
-      return `
-        <div class="card">
-          <div class="event-card" style="margin:0;">
-            <div class="event-date">
-              <div class="day">${d.getDate()}</div>
-              <div class="month">${d.toLocaleDateString('en-IN',{month:'short'}).toUpperCase()}</div>
-            </div>
-            <div class="event-info">
-              <h4>${esc(e.title)}</h4>
-              <p>${esc(e.location||'—')}</p>
-            </div>
-          </div>
-          ${e.description ? `<p style="font-size:.8rem;color:var(--dim);margin-top:10px;">${esc(e.description)}</p>` : ''}
-          <div class="rsvp-btns">
-            <button class="rsvp-btn going ${rsvp==='going'?'active':''}" onclick="SK_rsvp(${e.id},'going')">✅ Going</button>
-            <button class="rsvp-btn maybe ${rsvp==='maybe'?'active':''}" onclick="SK_rsvp(${e.id},'maybe')">🤔 Maybe</button>
-            <button class="rsvp-btn notgoing ${rsvp==='not_going'?'active':''}" onclick="SK_rsvp(${e.id},'not_going')">❌ Not Going</button>
+    LITERARY_PROGRAMS.slice(0, 2).forEach(p => {
+      progHtml += `
+        <div class="program-item">
+          <div class="program-title">📚 ${esc(p.title)}</div>
+          ${p.theme ? `<div class="program-theme">📖 ${esc(p.theme)}</div>` : ''}
+          <div class="program-meta" style="margin-bottom:0;">
+            <span>📅 ${p.program_date ? new Date(p.program_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '—'}</span>
+            ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
           </div>
         </div>
       `;
-    }).join('')}
-  `;
-}
-async function SK_rsvp(eventId, status){
-  try {
-    const r = await supabaseClient.from('sksbv_event_rsvp').upsert({
-      event_id: eventId, member_id: CURRENT_MEMBER.member_id, status: status
-    }, {onConflict:'event_id,member_id'});
-    if (r.error) throw r.error;
-    toast('✅ RSVP saved', 'success');
-    loadTab('events');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-
-/* ═══════════════════════════════════════════════════════ */
-/* 📚 LITERARY (സാഹിത്യ സമാജം)                              */
-/* ═══════════════════════════════════════════════════════ */
-const LIT_TYPES = [
-  {value:'song', label:'🎵 ഗാനം'},
-  {value:'speech', label:'🎤 പ്രസംഗം'},
-  {value:'poem', label:'📝 കവിത'},
-  {value:'story', label:'📖 കഥ'},
-  {value:'essay', label:'✍️ ലേഖനം'},
-  {value:'quran', label:'📖 ഖുർആൻ പാരായണം'},
-  {value:'other', label:'🌟 മറ്റുള്ളവ'}
-];
-
-async function renderLiterary(el){
-  const [progRes, regRes] = await Promise.all([
-    supabaseClient.from('sksbv_programs')
-      .select('*')
-      .eq('is_active', true)
-      .in('status', ['upcoming','active'])
-      .order('program_date', {ascending:true}),
-    supabaseClient.from('sksbv_program_registrations')
-      .select('*')
-      .eq('member_id', CURRENT_MEMBER.member_id)
-  ]);
-  const programs = progRes.data || [];
-  const myRegs = regRes.data || [];
-  const regByProg = {};
-  myRegs.forEach(r => {
-    if (!regByProg[r.program_id]) regByProg[r.program_id] = [];
-    regByProg[r.program_id].push(r);
-  });
-
-  const counts = {};
-  try {
-    const cRes = await supabaseClient.from('sksbv_program_registrations')
-      .select('program_id').eq('status','approved');
-    (cRes.data||[]).forEach(c => counts[c.program_id] = (counts[c.program_id]||0)+1);
-  } catch(e){}
+    });
+  }
 
   el.innerHTML = `
-    <div class="hero-banner" style="padding:16px;">
-      <h2 style="font-size:1rem;">📚 സാഹിത്യ സമാജം</h2>
-      <p style="font-size:.78rem;">ഗാനം, പ്രസംഗം, കവിത തുടങ്ങിയ മത്സരങ്ങളിൽ പങ്കെടുക്കൂ</p>
+    <div class="literary-hero">
+      <h2>അക്ഷരങ്ങൾ <br>ചിറകടിക്കുന്നിടം.</h2>
+      <p>സാഹിത്യ സമാജം — രചനയും വായനയും ഒരുമിച്ച് വളരാം</p>
+      <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> പ്രോഗ്രാമുകൾ കാണുക</button>
     </div>
-    ${programs.length === 0 ?
-      '<div class="card"><div class="empty"><i class="fas fa-feather"></i><div>ഇപ്പോൾ പ്രോഗ്രാമുകൾ ഇല്ല</div></div></div>'
-      : programs.map(p => renderProgramCard(p, regByProg[p.id]||[], counts[p.id]||0)).join('')}
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fas fa-feather"></i> സാഹിത്യ സമാജം</h3>
+        <button class="badge" onclick="switchTab('literary')">See all →</button>
+      </div>
+      ${progHtml}
+    </div>
+    <div class="card">
+      <div class="card-header"><h3><i class="fas fa-bolt"></i> Quick Actions</h3></div>
+      <div class="action-grid">
+        <div class="action-tile" onclick="switchTab('literary')"><div class="action-ico c-purple"><i class="fas fa-pen-fancy"></i></div><h6>സാഹിത്യം</h6></div>
+        <div class="action-tile" onclick="alert('ഉടൻ വരുന്നു')"><div class="action-ico c-pink"><i class="fas fa-images"></i></div><h6>ഗാലറി</h6></div>
+        <div class="action-tile" onclick="alert('ഉടൻ വരുന്നു')"><div class="action-ico c-blue"><i class="fas fa-question-circle"></i></div><h6>ക്വിസ്</h6></div>
+        <div class="action-tile" onclick="switchTab('profile')"><div class="action-ico c-green"><i class="fas fa-user"></i></div><h6>പ്രൊഫൈൽ</h6></div>
+      </div>
+    </div>
   `;
 }
 
-function renderProgramCard(p, myRegs, approvedCount){
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const pDate = p.program_date ? new Date(p.program_date) : null;
-  const deadline = p.registration_deadline ? new Date(p.registration_deadline) : pDate;
-  const canRegister = deadline && deadline >= today;
-  const isFull = p.max_participants && approvedCount >= p.max_participants;
-  const hasRegistered = myRegs.length > 0;
-  const allowed = (p.allowed_types||'song,speech,poem,story,essay,quran,other').split(',');
+function renderLiterary(el){
+  let html = `
+    <div class="card" style="background:linear-gradient(135deg,#4c1d95,#8b5cf6);color:#fff;border:none;margin-bottom:20px;">
+      <h2 style="font-size:1.3rem;font-weight:900;margin-bottom:6px;"><i class="fas fa-feather"></i> സാഹിത്യ സമാജം</h2>
+      <p style="font-size:.85rem;opacity:.9;">പ്രോഗ്രാമുകളിൽ പങ്കെടുത്ത് നിങ്ങളുടെ കഴിവ് തെളിയിക്കൂ</p>
+    </div>
+  `;
 
-  return `
-    <div class="card lit-program-card ${p.status==='active'?'active':''}">
-      <div style="display:flex;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
-        <h3 style="margin:0;font-size:.98rem;font-weight:900;flex:1;">📚 ${esc(p.title)}</h3>
-        <span class="badge ${p.status==='active'?'success':'warning'}" style="font-size:.6rem;padding:3px 10px;border-radius:20px;background:${p.status==='active'?'rgba(5,150,105,.15)':'rgba(245,158,11,.15)'};color:${p.status==='active'?'#059669':'#b45309'};font-weight:900;">${p.status==='active'?'🟢 Active':'⏳ Upcoming'}</span>
-      </div>
+  if (LITERARY_PROGRAMS.length === 0) {
+    html += `<div class="card"><div class="empty"><i class="fas fa-feather"></i>ഇപ്പോൾ പ്രോഗ്രാമുകൾ ഇല്ല</div></div>`;
+  } else {
+    LITERARY_PROGRAMS.forEach(p => {
+      // Check if registered
+      const reg = MY_REGISTRATIONS.find(r => r.program_id === p.id);
+      let regStatus = '';
+      let btnAction = `onclick="openRegModal(${p.id}, '${esc(p.title).replace(/'/g, "\\'")}')"`;
+      let btnColor = 'var(--primary)';
+      
+      if (reg) {
+        regStatus = `<div style="background:#dcfce7;color:#065f46;padding:8px 12px;border-radius:10px;font-size:.8rem;font-weight:800;margin-bottom:12px;"><i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്തു: ${esc(reg.item_title)} (${reg.item_type})</div>`;
+        btnAction = `disabled`;
+        btnColor = '#cbd5e1';
+      }
 
-      ${p.theme ? `<div class="lit-theme-box"><div class="lit-theme-label">📖 പ്രമേയം</div><div class="lit-theme-text">${esc(p.theme)}</div></div>` : ''}
-      ${p.description ? `<p style="font-size:.8rem;color:#475569;margin:0 0 10px;line-height:1.5;">${esc(p.description)}</p>` : ''}
-
-      <div style="display:flex;flex-direction:column;gap:5px;font-size:.74rem;color:var(--dim);font-weight:700;margin-bottom:12px;">
-        ${pDate ? `<span>📅 ${pDate.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'})}${p.program_time?' • '+esc(p.program_time):''}</span>` : ''}
-        ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
-        ${p.registration_deadline ? `<span style="${canRegister?'color:#0891b2;':'color:#dc2626;'}">⏰ ${canRegister?'Register before':'Closed on'} ${fmtDate(p.registration_deadline)}</span>` : ''}
-        <span>👥 ${approvedCount}/${p.max_participants||'∞'} registered</span>
-      </div>
-
-      ${hasRegistered ? `
-        <div class="lit-my-reg">
-          <div class="lit-my-reg-label">✅ Your Registrations</div>
-          ${myRegs.map(r => {
-            const st = r.status==='approved'?'success':r.status==='rejected'?'danger':'warning';
-            const stIcon = r.status==='approved'?'✅':r.status==='rejected'?'❌':'⏳';
-            const label = LIT_TYPES.find(t=>t.value===r.item_type)?.label || r.item_type;
-            return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-top:1px solid rgba(5,150,105,.15);">
-              <div style="flex:1;min-width:0;">
-                <div style="font-size:.8rem;font-weight:800;color:#0f172a;">${label} — ${esc(r.item_title)}</div>
-                ${r.admin_note ? `<div style="font-size:.66rem;color:#7c3aed;margin-top:2px;">📝 ${esc(r.admin_note)}</div>` : ''}
-              </div>
-              <span style="padding:3px 10px;border-radius:20px;font-size:.58rem;font-weight:900;background:${st==='success'?'rgba(5,150,105,.15)':st==='danger'?'rgba(220,38,38,.15)':'rgba(245,158,11,.15)'};color:${st==='success'?'#059669':st==='danger'?'#dc2626':'#b45309'};">${stIcon} ${r.status}</span>
-            </div>`;
-          }).join('')}
+      html += `
+        <div class="card">
+          <div class="program-title">📚 ${esc(p.title)}</div>
+          ${p.theme ? `<div class="program-theme">📖 ${esc(p.theme)}</div>` : ''}
+          <p style="font-size:.82rem;color:var(--dim);margin-bottom:12px;line-height:1.5;">${esc(p.description || '')}</p>
+          <div class="program-meta" style="margin-bottom:14px;">
+            <span>📅 ${p.program_date ? new Date(p.program_date).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'}) : '—'}</span>
+            ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
+          </div>
+          ${regStatus}
+          <button class="lit-btn" style="width:100%;justify-content:center;background:${btnColor};color:${reg ? '#64748b' : '#fff'};" ${btnAction}>
+            ${reg ? 'രജിസ്റ്റർ ചെയ്തു' : 'രജിസ്റ്റർ ചെയ്യുക <i class="fas fa-arrow-right"></i>'}
+          </button>
         </div>
-      ` : ''}
+      `;
+    });
+  }
+  el.innerHTML = html;
+}
 
-      ${canRegister && !isFull ? `
-        <button class="btn btn-primary btn-block" onclick="openRegistrationModal(${p.id}, '${esc(p.title).replace(/'/g,"\\'")}', '${esc(p.theme||'').replace(/'/g,"\\'")}', '${allowed.join(',')}')">
-          <i class="fas fa-plus-circle"></i> ${hasRegistered ? 'Register Another Item' : 'Register Now'}
-        </button>
-      ` : isFull ? `
-        <div style="padding:11px;text-align:center;background:#fef2f2;color:#dc2626;border-radius:10px;font-size:.8rem;font-weight:900;">🚫 Full</div>
-      ` : `
-        <div style="padding:11px;text-align:center;background:#f1f5f9;color:#64748b;border-radius:10px;font-size:.8rem;font-weight:900;">⏰ Registration Closed</div>
-      `}
+function renderEvents(el){
+  el.innerHTML = `<div class="card"><div class="empty"><i class="fas fa-calendar-alt"></i><h3>ഇവന്റുകൾ</h3><p>ഉടൻ വരുന്നു</p></div></div>`;
+}
+
+function renderProfile(el){
+  const p = CURRENT_MEMBER;
+  el.innerHTML = `
+    <div class="card" style="text-align:center;">
+      <div class="app-avatar" style="width:100px;height:100px;margin:0 auto 16px;font-size:2rem;">
+        ${p.photo ? `<img src="${esc(p.photo)}">` : (p.name||'S').charAt(0).toUpperCase()}
+      </div>
+      <h2 style="font-size:1.2rem;font-weight:900;margin-bottom:4px;">${esc(p.name)}</h2>
+      <p style="color:var(--dim);font-size:.85rem;">Class ${esc(p.class)}</p>
+      <div style="margin-top:12px;background:#f1f5f9;padding:8px 16px;border-radius:20px;display:inline-block;font-family:monospace;font-weight:900;color:var(--primary);">
+        ID: ${esc(p.member_id)}
+      </div>
+    </div>
+    <div class="card">
+      <button class="lit-btn" style="width:100%;background:#f1f5f9;color:#475569;justify-content:center;box-shadow:none;" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
     </div>
   `;
 }
 
-function openRegistrationModal(programId, programTitle, theme, allowedTypes){
-  const allowed = allowedTypes.split(',');
-  const filteredTypes = LIT_TYPES.filter(t => allowed.indexOf(t.value) > -1);
-
-  const modal = document.createElement('div');
-  modal.id = 'litRegModal';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.92);backdrop-filter:blur(16px);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:16px;padding-top:max(16px,env(safe-area-inset-top,16px));overflow-y:auto;';
-  modal.innerHTML = `
-    <div style="background:#fff;border-radius:22px;padding:24px;max-width:480px;width:100%;margin:auto 0;box-shadow:0 40px 90px -30px rgba(0,0,0,.5);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h3 style="margin:0;font-size:1.05rem;font-weight:900;">📚 Register</h3>
-        <button onclick="document.getElementById('litRegModal').remove()" style="background:#f1f5f9;border:none;width:36px;height:36px;border-radius:50%;font-size:1rem;cursor:pointer;">✕</button>
-      </div>
-      <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);padding:12px 14px;border-radius:12px;margin-bottom:16px;">
-        <div style="font-size:.72rem;color:#1e40af;font-weight:900;text-transform:uppercase;margin-bottom:4px;">📚 Program</div>
-        <div style="font-size:.92rem;font-weight:900;color:#0f172a;">${esc(programTitle)}</div>
-        ${theme ? `<div style="font-size:.74rem;color:#7c3aed;font-weight:800;margin-top:4px;">📖 ${esc(theme)}</div>` : ''}
-      </div>
-      <label style="display:block;font-size:.78rem;font-weight:800;color:#475569;margin-bottom:6px;">🎭 Item Type *</label>
-      <select id="litItemType" style="width:100%;padding:11px 14px;border:1.5px solid rgba(100,116,139,.25);border-radius:10px;font-family:inherit;font-size:16px;background:#f8fafc;outline:none;margin-bottom:12px;">
-        <option value="">— Select type —</option>
-        ${filteredTypes.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
-      </select>
-      <label style="display:block;font-size:.78rem;font-weight:800;color:#475569;margin-bottom:6px;">📝 Title *</label>
-      <input type="text" id="litItemTitle" placeholder="e.g., എന്റെ ഗ്രാമം" maxlength="150" style="width:100%;padding:11px 14px;border:1.5px solid rgba(100,116,139,.25);border-radius:10px;font-family:inherit;font-size:16px;background:#f8fafc;outline:none;margin-bottom:12px;">
-      <label style="display:block;font-size:.78rem;font-weight:800;color:#475569;margin-bottom:6px;">⏱️ Duration (minutes)</label>
-      <input type="number" id="litDuration" placeholder="5" min="1" max="30" value="5" style="width:100%;padding:11px 14px;border:1.5px solid rgba(100,116,139,.25);border-radius:10px;font-family:inherit;font-size:16px;background:#f8fafc;outline:none;margin-bottom:12px;">
-      <label style="display:block;font-size:.78rem;font-weight:800;color:#475569;margin-bottom:6px;">💬 Description (optional)</label>
-      <textarea id="litItemDesc" placeholder="Extra details..." maxlength="300" style="width:100%;padding:11px 14px;border:1.5px solid rgba(100,116,139,.25);border-radius:10px;font-family:inherit;font-size:16px;background:#f8fafc;outline:none;min-height:70px;resize:vertical;margin-bottom:16px;"></textarea>
-      <div style="display:flex;gap:8px;">
-        <button onclick="document.getElementById('litRegModal').remove()" class="btn btn-ghost" style="flex:.6;justify-content:center;">Cancel</button>
-        <button onclick="submitLiteraryRegistration(${programId})" id="litSubmitBtn" class="btn btn-primary" style="flex:1.4;justify-content:center;"><i class="fas fa-paper-plane"></i> Submit</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if(e.target===modal) modal.remove(); });
+// ═══ REGISTRATION LOGIC ═══
+function openRegModal(programId, title) {
+  document.getElementById('regProgramId').value = programId;
+  document.getElementById('regProgramTitle').value = title;
+  document.getElementById('regForm').reset();
+  document.getElementById('regProgramId').value = programId; // Reset clears this, so set again
+  document.getElementById('regProgramTitle').value = title;
+  document.getElementById('regModal').classList.add('open');
 }
 
-async function submitLiteraryRegistration(programId){
-  const type = document.getElementById('litItemType').value;
-  const title = document.getElementById('litItemTitle').value.trim();
-  const dur = parseInt(document.getElementById('litDuration').value) || 0;
-  const desc = document.getElementById('litItemDesc').value.trim();
+function closeModal() {
+  document.getElementById('regModal').classList.remove('open');
+}
 
-  if (!type){ toast('Select item type', 'error'); return; }
-  if (!title || title.length < 3){ toast('Enter title (min 3 chars)', 'error'); return; }
+async function submitRegistration(e) {
+  e.preventDefault();
+  const programId = document.getElementById('regProgramId').value;
+  const itemType = document.getElementById('regItemType').value;
+  const itemTitle = document.getElementById('regItemTitle').value.trim();
+  const itemDesc = document.getElementById('regItemDesc').value.trim();
 
-  const btn = document.getElementById('litSubmitBtn');
+  if (!itemType || !itemTitle) {
+    alert('എല്ലാ വിവരങ്ങളും നൽകുക'); return;
+  }
+
+  const btn = document.getElementById('regSubmitBtn');
   btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> സമർപ്പിക്കുന്നു...';
 
   try {
-    const r = await supabaseClient.from('sksbv_program_registrations').insert({
+    const { error } = await supabaseClient.from('sksbv_program_registrations').insert({
       program_id: programId,
-      member_id: CURRENT_MEMBER.member_id,
-      member_name: CURRENT_MEMBER.name,
-      member_class: CURRENT_MEMBER.class,
-      item_type: type,
-      item_title: title,
-      item_description: desc || null,
-      duration_minutes: dur || null,
+      student_id: CURRENT_MEMBER.member_id,
+      student_name: CURRENT_MEMBER.name,
+      student_class: CURRENT_MEMBER.class,
+      item_type: itemType,
+      item_title: itemTitle,
+      item_description: itemDesc || null,
       status: 'pending'
     });
-    if (r.error) {
-      if (r.error.code === '23505') throw new Error('Already registered for this item type');
-      throw r.error;
-    }
-    try {
-      const { data: prog } = await supabaseClient.from('sksbv_programs').select('title').eq('id',programId).single();
-      await supabaseClient.from('sksbv_notifications').insert({
-        title: '📚 New Literary Registration',
-        message: `${CURRENT_MEMBER.name} — ${LIT_TYPES.find(t=>t.value===type)?.label}: ${title} for "${prog?.title}"`,
-        target_type: 'admin'
-      });
-    } catch(e){}
-    toast('✅ Registered! Admin will review', 'success');
-    document.getElementById('litRegModal').remove();
-    loadTab('literary');
-  } catch(e){
-    toast('❌ ' + e.message, 'error');
+
+    if (error) throw error;
+
+    alert('✅ വിജയകരമായി രജിസ്റ്റർ ചെയ്തു!');
+    closeModal();
+    
+    // Refresh data and re-render
+    const rRes = await supabaseClient.from('sksbv_program_registrations').select('*').eq('student_id', CURRENT_MEMBER.member_id);
+    MY_REGISTRATIONS = rRes.data || [];
+    switchTab('literary');
+
+  } catch(err) {
+    alert('❌ ' + err.message);
+  } finally {
     btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit';
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> സമർപ്പിക്കുക';
   }
 }
 
-/* ═══════════════════════════════════════════════════════ */
-/* 📤 SUBMIT                                                */
-/* ═══════════════════════════════════════════════════════ */
-async function renderSubmit(el){
-  el.innerHTML = `
-    <div class="hero-banner" style="padding:16px;"><h2 style="font-size:1rem;">📤 Submit</h2><p style="font-size:.78rem;">Admin approve ചെയ്താൽ publish ആകും</p></div>
-
-    <div class="card">
-      <div class="card-header"><h3><i class="fas fa-camera"></i> Photo Submission</h3></div>
-      <div class="file-upload" id="photoUpload" onclick="document.getElementById('photoFile').click()">
-        <div class="file-upload-placeholder"><i class="fas fa-cloud-upload-alt"></i>Tap to upload photo</div>
-      </div>
-      <input type="file" id="photoFile" accept="image/*" style="display:none" onchange="SK_uploadPhoto(this)">
-      <input type="hidden" id="photoUrl">
-      <input type="text" class="form-input" id="photoTitle" placeholder="Title">
-      <input type="text" class="form-input" id="photoCategory" placeholder="Category (e.g., Event, Sports)">
-      <input type="date" class="form-input" id="photoDate">
-      <button class="btn btn-primary btn-block" onclick="SK_submitPhoto()"><i class="fas fa-paper-plane"></i> Submit for Approval</button>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h3><i class="fas fa-lightbulb"></i> Suggestion Box</h3></div>
-      <input type="text" class="form-input" id="sugTitle" placeholder="Title">
-      <textarea class="form-input" id="sugBody" placeholder="Your suggestion..."></textarea>
-      <button class="btn btn-warning btn-block" onclick="SK_submitSuggestion()"><i class="fas fa-paper-plane"></i> Send to Admin</button>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h3><i class="fas fa-quote-left"></i> Testimonial</h3></div>
-      <textarea class="form-input" id="testiBody" placeholder="Share your experience..."></textarea>
-      <button class="btn btn-success btn-block" onclick="SK_submitTestimonial()"><i class="fas fa-paper-plane"></i> Submit Testimonial</button>
-    </div>
-  `;
-}
-async function SK_uploadPhoto(input){
-  const f = input.files[0]; if (!f) return;
-  toast('Uploading...', 'info');
-  try {
-    const ext = (f.name.split('.').pop()||'jpg').toLowerCase();
-    const fn = `sub_${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
-    const { error } = await supabaseClient.storage.from(CFG.STORAGE_BUCKET).upload(fn, f);
-    if (error) throw error;
-    const { data } = supabaseClient.storage.from(CFG.STORAGE_BUCKET).getPublicUrl(fn);
-    $('photoUrl').value = data.publicUrl;
-    $('photoUpload').innerHTML = `<img src="${data.publicUrl}">`;
-    toast('✅ Uploaded', 'success');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-async function SK_submitPhoto(){
-  const url = $('photoUrl').value;
-  const title = $('photoTitle').value.trim();
-  if (!url){ toast('Upload a photo first', 'error'); return; }
-  try {
-    await supabaseClient.from('sksbv_photo_submissions').insert({
-      member_id: CURRENT_MEMBER.member_id,
-      member_name: CURRENT_MEMBER.name,
-      title: title || 'Untitled',
-      image_url: url,
-      category: $('photoCategory').value.trim() || null,
-      event_date: $('photoDate').value || null,
-      status: 'pending'
-    });
-    toast('✅ Submitted! Admin will review', 'success');
-    $('photoUrl').value = ''; $('photoTitle').value = ''; $('photoCategory').value = ''; $('photoDate').value = '';
-    $('photoUpload').innerHTML = '<div class="file-upload-placeholder"><i class="fas fa-cloud-upload-alt"></i>Tap to upload photo</div>';
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-async function SK_submitSuggestion(){
-  const t = $('sugTitle').value.trim();
-  const s = $('sugBody').value.trim();
-  if (!t || !s){ toast('Fill both fields', 'error'); return; }
-  try {
-    await supabaseClient.from('sksbv_suggestions').insert({
-      member_id: CURRENT_MEMBER.member_id, member_name: CURRENT_MEMBER.name,
-      title: t, suggestion: s, status: 'pending'
-    });
-    toast('✅ Sent to admin', 'success');
-    $('sugTitle').value = ''; $('sugBody').value = '';
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-async function SK_submitTestimonial(){
-  const t = $('testiBody').value.trim();
-  if (!t){ toast('Write something', 'error'); return; }
-  try {
-    await supabaseClient.from('sksbv_member_testimonials').insert({
-      member_id: CURRENT_MEMBER.member_id, member_name: CURRENT_MEMBER.name,
-      message: t, status: 'pending'
-    });
-    toast('✅ Submitted for approval', 'success');
-    $('testiBody').value = '';
-  } catch(e){ toast('❌ '+e.message, 'error'); }
+function logout(){
+  localStorage.removeItem('noor_session');
+  window.location.href = 'index.html';
 }
 
-/* ═══════════════════════════════════════════════════════ */
-/* 🔔 NOTIFICATIONS                                         */
-/* ═══════════════════════════════════════════════════════ */
-async function renderNotifs(el){
-  const r = await supabaseClient.from('sksbv_notifications').select('*').or(`target_type.eq.all,and(target_type.eq.member,target_member.eq.${CURRENT_MEMBER.member_id})`).order('created_at',{ascending:false});
-  const list = r.data || [];
-  el.innerHTML = `
-    <div class="hero-banner" style="padding:16px;"><h2 style="font-size:1rem;">🔔 Notifications</h2></div>
-    ${list.length === 0 ? '<div class="card"><div class="empty"><i class="fas fa-bell"></i><div>No notifications</div></div></div>' :
-      list.map(n => `
-        <div class="notif-item">
-          <div class="title">${esc(n.title)}</div>
-          <div class="msg">${esc(n.message||'')}</div>
-          <div class="time">${timeAgo(n.created_at)}</div>
-        </div>
-      `).join('')}
-  `;
-}
-
-/* ═══════════════════════════════════════════════════════ */
-/* 👤 PROFILE                                               */
-/* ═══════════════════════════════════════════════════════ */
-async function renderProfile(el){
-  const m = CURRENT_MEMBER;
-  el.innerHTML = `
-    <div class="hero-banner" style="padding:16px;"><h2 style="font-size:1rem;">👤 My Profile</h2></div>
-
-    <div class="card" style="text-align:center;">
-      <div style="width:100px;height:100px;border-radius:50%;overflow:hidden;margin:0 auto 12px;background:linear-gradient(140deg,#0891b2,#22d3ee);display:flex;align-items:center;justify-content:center;color:#fff;font-size:2rem;font-weight:900;">
-        ${m.photo ? `<img src="${esc(m.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((m.name||'M').charAt(0))}
-      </div>
-      <h2 style="margin:0 0 4px;font-size:1.15rem;">${esc(m.name)}</h2>
-<p style="color:var(--dim);font-size:.82rem;margin:0;">${esc(m.position||'SKSBV Member')}</p>
-<div style="margin-top:8px;padding:6px 14px;background:#f0f9ff;border:1.5px solid rgba(8,145,178,.3);border-radius:20px;display:inline-flex;align-items:center;gap:6px;font-family:monospace;font-size:.82rem;color:#0891b2;font-weight:900;letter-spacing:.5px;">
-  <i class="fas fa-id-card"></i> ${esc(m.member_id)}
-</div>
-<div style="margin-top:12px;padding:8px 14px;background:#ecfeff;border-radius:20px;display:inline-flex;align-items:center;gap:6px;font-size:.72rem;color:#0891b2;font-weight:800;">
-        <i class="fas fa-link"></i> Linked to Portal Account
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h3><i class="fas fa-user-edit"></i> Edit Profile</h3></div>
-      <p style="font-size:.72rem;color:var(--dim);margin:0 0 12px;line-height:1.5;">
-        <i class="fas fa-info-circle" style="color:#0891b2;"></i> പേരും ക്ലാസും main portal-ൽ edit ചെയ്താൽ ഇവിടെയും auto-sync ആകും.
-      </p>
-      <input type="text" class="form-input" id="pPhone" value="${esc(m.phone||'')}" placeholder="Phone">
-      <input type="email" class="form-input" id="pEmail" value="${esc(m.email||'')}" placeholder="Email">
-      <button class="btn btn-primary btn-block" onclick="SK_saveProfile()"><i class="fas fa-save"></i> Save</button>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><h3><i class="fas fa-sign-out-alt"></i> Account</h3></div>
-      <p style="font-size:.78rem;color:var(--dim);margin:0 0 12px;line-height:1.5;">
-        SKSBV-ൽ നിന്ന് പുറത്തുപോകാൻ, main portal-ൽ നിന്ന് logout ചെയ്യുക. വീണ്ടും login ചെയ്താൽ auto-connect ആകും.
-      </p>
-      <button class="btn btn-ghost btn-block" onclick="goBackToPortal()"><i class="fas fa-home"></i> Back to Portal</button>
-    </div>
-  `;
-}
-async function SK_saveProfile(){
-  try {
-    const upd = {
-      phone: $('pPhone').value.trim() || null,
-      email: $('pEmail').value.trim() || null,
-      updated_at: new Date().toISOString()
-    };
-    const r = await supabaseClient.from('sksbv_members').update(upd).eq('member_id', CURRENT_MEMBER.member_id);
-    if (r.error) throw r.error;
-    Object.assign(CURRENT_MEMBER, upd);
-    toast('✅ Profile updated', 'success');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
-}
-
-/* ═══════════════════════════════════════════════════════ */
-/* 🗺️ TAB HANDLERS                                          */
-/* ═══════════════════════════════════════════════════════ */
-const TAB_HANDLERS = {
-  home: renderHome,
-  events: renderEvents,
-  literary: renderLiterary,
-  submit: renderSubmit,
-  notifs: renderNotifs,
-  profile: renderProfile
-};
+boot();
 </script>
 </body>
 </html>
