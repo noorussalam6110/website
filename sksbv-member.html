@@ -216,6 +216,7 @@ const supabaseClient = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON
 let CURRENT_MEMBER = null;
 let LITERARY_PROGRAMS = [];
 let MY_REGISTRATIONS = [];
+let MY_NOTIFICATIONS = [];
 
 /* Category definitions */
 const CATEGORIES = [
@@ -245,17 +246,19 @@ function showToast(msg, type='success'){
 
 /* Registration window check */
 function getRegWindow(program){
-  const now = new Date(); now.setHours(0,0,0,0);
-  const start = program.registration_start ? new Date(program.registration_start) : null;
-  const end   = program.registration_end   ? new Date(program.registration_end)   : null;
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const start = program.registration_start
+    ? new Date(String(program.registration_start).slice(0,10) + 'T00:00:00') : null;
+  const end   = program.registration_end
+    ? new Date(String(program.registration_end).slice(0,10)   + 'T23:59:59') : null;
 
   if (!start && !end){
     return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു' };
   }
-  if (start && now < start){
+  if (start && todayStart < start){
     return { status:'upcoming', open:false, cls:'upcoming', label:'<i class="fas fa-clock"></i> രജിസ്ട്രേഷൻ തുറക്കുന്നത്: ' + fmtDate(start) };
   }
-  if (end && now > end){
+  if (end && new Date() > end){
     return { status:'closed', open:false, cls:'closed', label:'<i class="fas fa-lock"></i> രജിസ്ട്രേഷൻ അടച്ചു (' + fmtDate(end) + ')' };
   }
   const endMsg = end ? ' • അവസാന തീയതി: ' + fmtDate(end) : '';
@@ -291,20 +294,26 @@ async function boot(){
 
 async function loadLiteraryData(){
   try {
-    const [pRes, rRes] = await Promise.all([
+    const [pRes, rRes, nRes] = await Promise.all([
       supabaseClient.from('sksbv_programs').select('*')
         .in('status', ['upcoming','active'])
         .order('program_date', {ascending:true}),
       supabaseClient.from('sksbv_program_registrations').select('*')
         .eq('member_id', CURRENT_MEMBER.member_id)
+        .order('created_at', {ascending:false}),
+      supabaseClient.from('sksbv_notifications').select('*')
+        .eq('target_member', CURRENT_MEMBER.member_id)
         .order('created_at', {ascending:false})
+        .limit(15)
     ]);
     LITERARY_PROGRAMS = pRes.data || [];
     MY_REGISTRATIONS = rRes.data || [];
+    MY_NOTIFICATIONS = nRes.data || [];
   } catch(e){
     console.error('loadLiteraryData:', e);
     LITERARY_PROGRAMS = [];
     MY_REGISTRATIONS = [];
+    MY_NOTIFICATIONS = [];
   }
 }
 
@@ -353,6 +362,38 @@ function renderHome(el){
     });
   }
 
+  const notifHtml = MY_NOTIFICATIONS.length > 0 ? `
+  <div class="card" style="border-left:4px solid #8b5cf6;">
+    <div class="card-header">
+      <h3><i class="fas fa-bell"></i> അറിയിപ്പുകൾ</h3>
+      <span class="badge">${MY_NOTIFICATIONS.length}</span>
+    </div>
+    ${MY_NOTIFICATIONS.slice(0, 5).map(n => `
+      <div style="padding:10px 12px;border-left:3px solid #8b5cf6;background:#f8fafc;border-radius:8px;margin-bottom:8px;">
+        <div style="font-weight:900;font-size:.84rem;color:#0f172a;">${esc(n.title || '')}</div>
+        <div style="font-size:.76rem;color:#475569;margin-top:3px;line-height:1.55;">${esc(n.message || '')}</div>
+        <div style="font-size:.66rem;color:#94a3b8;margin-top:4px;font-weight:700;">${fmtDate(n.created_at)}</div>
+      </div>
+    `).join('')}
+  </div>
+` : '';
+
+const totalRegs = MY_REGISTRATIONS.filter(r => r.status === 'approved').length;
+
+// THEN find this template line:
+    <div class="literary-hero">
+      <h2>അക്ഷരങ്ങൾ <br>ചിറകടിക്കുന്നിടം.</h2>
+      <p>സാഹിത്യ സമാജം — രചനയും വായനയും ഒരുമിച്ച് വളരാം</p>
+      <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> രജിസ്റ്റർ ചെയ്യുക</button>
+    </div>
+
+// REPLACE WITH (add ${notifHtml} right after the hero div):
+    <div class="literary-hero">
+      <h2>അക്ഷരങ്ങൾ <br>ചിറകടിക്കുന്നിടം.</h2>
+      <p>സാഹിത്യ സമാജം — രചനയും വായനയും ഒരുമിച്ച് വളരാം</p>
+      <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> രജിസ്റ്റർ ചെയ്യുക</button>
+    </div>
+    ${notifHtml
   const totalRegs = MY_REGISTRATIONS.filter(r => r.status === 'approved').length;
 
   el.innerHTML = `
