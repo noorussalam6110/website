@@ -476,20 +476,46 @@ if (f.type === 'file'){
     }
     let parsedVal = {};
     try { parsedVal = (typeof val === 'string') ? JSON.parse(val) : (val || {}); } catch(e){}
-    
+
     return `<div class="form-row">
       <label>${esc(f.label)}</label>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        ${teams.map(t => `
-          <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;padding:10px 12px;border-radius:10px;border:1.5px solid ${t.color}55;">
-            <div style="width:38px;height:38px;border-radius:10px;background:${t.color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;flex-shrink:0;">${esc(t.team_key)}</div>
-            <div style="flex:1;min-width:0;">
-              <div style="font-weight:800;font-size:.85rem;color:#0f172a;">${esc(t.team_name)}</div>
-              <div style="font-size:.68rem;color:#64748b;font-weight:700;">Team ${esc(t.team_key)}</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${teams.map(t => {
+          let td = parsedVal[t.team_key];
+          let dateVal = '', regStartVal = '', regEndVal = '';
+          // Backward compatibility: old = string, new = object
+          if (typeof td === 'string') {
+            dateVal = td;
+          } else if (td && typeof td === 'object') {
+            dateVal = td.date || td.program_date || '';
+            regStartVal = td.reg_start || '';
+            regEndVal = td.reg_end || '';
+          }
+          return `
+          <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1.5px solid ${t.color}66;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid ${t.color}33;">
+              <div style="width:40px;height:40px;border-radius:12px;background:${t.color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.8rem;flex-shrink:0;">${esc(t.team_key)}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:900;font-size:.9rem;color:${t.color};">${esc(t.team_name)}</div>
+                <div style="font-size:.66rem;color:#64748b;font-weight:700;">Team ${esc(t.team_key)} — 3 dates</div>
+              </div>
             </div>
-            <input type="date" class="team-date-input" data-team="${esc(t.team_key)}" value="${esc(parsedVal[t.team_key] || '')}" style="padding:8px 10px;border:1.5px solid rgba(100,116,139,.25);border-radius:8px;font-family:inherit;font-size:14px;color:#0f172a;background:#fff;">
-          </div>
-        `).join('')}
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;">
+              <div>
+                <label style="font-size:.62rem;color:#475569;font-weight:900;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">📅 Program Date</label>
+                <input type="date" class="team-date-input" data-team="${esc(t.team_key)}" data-field="date" value="${esc(dateVal)}" style="width:100%;padding:8px 10px;border:1.5px solid rgba(100,116,139,.25);border-radius:8px;font-family:inherit;font-size:14px;color:#0f172a;background:#fff;">
+              </div>
+              <div>
+                <label style="font-size:.62rem;color:#059669;font-weight:900;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">🟢 Reg Start</label>
+                <input type="date" class="team-date-input" data-team="${esc(t.team_key)}" data-field="reg_start" value="${esc(regStartVal)}" style="width:100%;padding:8px 10px;border:1.5px solid rgba(5,150,105,.4);border-radius:8px;font-family:inherit;font-size:14px;color:#0f172a;background:#fff;">
+              </div>
+              <div>
+                <label style="font-size:.62rem;color:#dc2626;font-weight:900;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">🔴 Reg End</label>
+                <input type="date" class="team-date-input" data-team="${esc(t.team_key)}" data-field="reg_end" value="${esc(regEndVal)}" style="width:100%;padding:8px 10px;border:1.5px solid rgba(220,38,38,.4);border-radius:8px;font-family:inherit;font-size:14px;color:#0f172a;background:#fff;">
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
       </div>
       ${f.hint ? `<div class="form-hint">${esc(f.hint)}</div>` : ''}
     </div>`;
@@ -530,14 +556,20 @@ async function saveCrud(){
       const v = (el.value || '').trim();
       row[f.name] = v === '' ? null : Number(v);
     } else if (f.type === 'team_dates') {
-      // Gather all team date inputs
-      const teamDates = {};
+      const teamData = {};
       document.querySelectorAll('.team-date-input').forEach(inp => {
         const tk = inp.dataset.team;
+        const field = inp.dataset.field || 'date';
         const v = inp.value;
-        if (tk && v) teamDates[tk] = v;
+        if (!tk) return;
+        if (!teamData[tk]) teamData[tk] = {};
+        if (v) teamData[tk][field] = v;
       });
-      row[f.name] = Object.keys(teamDates).length > 0 ? teamDates : null;
+      // Clean up empty teams
+      Object.keys(teamData).forEach(tk => {
+        if (Object.keys(teamData[tk]).length === 0) delete teamData[tk];
+      });
+      row[f.name] = Object.keys(teamData).length > 0 ? teamData : null;
     } else {
       row[f.name] = (el.value || '').trim() || null;
     }
@@ -953,19 +985,33 @@ async function renderPrograms(el){
 
             ${hasTeamDates ? `
               <div style="margin:10px 0;padding:12px;background:linear-gradient(135deg,#f0f9ff,#eff6ff);border-radius:12px;border:1.5px solid rgba(59,130,246,.25);">
-                <div style="font-size:.7rem;font-weight:900;color:#0891b2;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🎨 Team-wise Dates</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                  ${teamsList.map(t => teamDates[t.team_key] ? `
-                    <span style="display:inline-flex;align-items:center;gap:6px;background:${t.color}22;color:${t.color};border:1.5px solid ${t.color}66;padding:6px 12px;border-radius:20px;font-size:.74rem;font-weight:900;">
-                      <span style="background:${t.color};color:#fff;padding:1px 8px;border-radius:10px;font-size:.62rem;">${esc(t.team_key)}</span>
-                      ${esc(t.team_name)}: ${fmtDate(teamDates[t.team_key])}
-                    </span>
-                  ` : '').filter(Boolean).join('')}
+                <div style="font-size:.7rem;font-weight:900;color:#0891b2;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">🎨 Team-wise Dates & Registration</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  ${teamsList.map(t => {
+                    const td = teamDates[t.team_key];
+                    if (!td) return '';
+                    const progDate = (typeof td === 'object') ? (td.date || td.program_date) : td;
+                    const regStart = (typeof td === 'object') ? td.reg_start : null;
+                    const regEnd = (typeof td === 'object') ? td.reg_end : null;
+                    return `
+                      <div style="background:#fff;border:1.5px solid ${t.color}55;border-radius:10px;padding:10px 12px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                          <span style="background:${t.color};color:#fff;padding:2px 10px;border-radius:10px;font-size:.62rem;font-weight:900;">${esc(t.team_key)}</span>
+                          <span style="font-weight:900;color:${t.color};font-size:.82rem;">${esc(t.team_name)}</span>
+                        </div>
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:.72rem;font-weight:800;">
+                          <span style="color:#475569;">📅 <b>${progDate ? fmtDate(progDate) : '—'}</b></span>
+                          <span style="color:#059669;">🟢 <b>${regStart ? fmtDate(regStart) : '—'}</b></span>
+                          <span style="color:#dc2626;">🔴 <b>${regEnd ? fmtDate(regEnd) : '—'}</b></span>
+                        </div>
+                      </div>
+                    `;
+                  }).filter(Boolean).join('')}
                 </div>
               </div>
             ` : `
               <div style="margin:10px 0;padding:10px;background:#fef3c7;border-radius:10px;border:1px solid rgba(180,83,9,.25);font-size:.74rem;color:#92400e;font-weight:700;">
-                ⚠️ Team dates set ചെയ്തിട്ടില്ല — എല്ലാ teams-നും default date: ${fmtDate(p.program_date)}
+                ⚠️ Team dates set ചെയ്തിട്ടില്ല — എല്ലാ teams-നും default: ${fmtDate(p.program_date)}
               </div>
             `}
 
