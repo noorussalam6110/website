@@ -164,13 +164,13 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
       <input type="hidden" id="regCategoryKey">
       <input type="hidden" id="regCategoryLabel">
       <div class="form-group">
-        <label class="form-label">ഇനത്തിന്റെ പേര് <span class="opt">(ഓപ്ഷണൽ)</span></label>
-        <input type="text" id="regItemTitle" class="form-input" placeholder="ഉദാ: എന്റെ ഗ്രാമം" maxlength="120" autocomplete="off">
+        <label class="form-label">ഇനത്തിന്റെ പേര് <span class="opt">(നിർബന്ധമില്ല)</span></label>
+        <input type="text" id="regItemTitle" class="form-input" placeholder="ഉദാ: എന്റെ ഉമ്മ" maxlength="120" autocomplete="off">
       </div>
       <button type="submit" class="btn-submit" id="regSubmitBtn">
         <i class="fas fa-check-circle"></i> രജിസ്റ്റർ ചെയ്യുക
       </button>
-      <button type="button" class="btn-cancel-modal" onclick="closeRegModal()">റദ്ദാക്കുക</button>
+      <button type="button" class="btn-cancel-modal" onclick="closeRegModal()">Cancel</button>
     </form>
   </div>
 </div>
@@ -236,16 +236,16 @@ function getRegWindow(program, teamKey){
     ? new Date(String(regEnd).slice(0,10) + 'T23:59:59') : null;
 
   if (!start && !end){
-    return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു' };
+    return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ ആരംഭിച്ചിരിക്കുന്നു' };
   }
   if (start && todayStart < start){
-    return { status:'upcoming', open:false, cls:'upcoming', label:'<i class="fas fa-clock"></i> രജിസ്ട്രേഷൻ തുറക്കുന്നത്: ' + fmtDate(start) };
+    return { status:'upcoming', open:false, cls:'upcoming', label:'<i class="fas fa-clock"></i> രജിസ്ട്രേഷൻ ആരംഭിക്കുന്നത്: ' + fmtDate(start) };
   }
   if (end && new Date() > end){
-    return { status:'closed', open:false, cls:'closed', label:'<i class="fas fa-lock"></i> രജിസ്ട്രേഷൻ അടച്ചു (' + fmtDate(end) + ')' };
+    return { status:'closed', open:false, cls:'closed', label:'<i class="fas fa-lock"></i> രജിസ്ട്രേഷൻ ക്ലോസ് ചെയ്തു (' + fmtDate(end) + ')' };
   }
   const endMsg = end ? ' • അവസാന തീയതി: ' + fmtDate(end) : '';
-  return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു' + endMsg };
+  return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ ആരംഭിച്ചിരിക്കുന്നു' + endMsg };
 }
 
 let MY_TEAM = null;
@@ -604,7 +604,7 @@ function renderHome(el){
   el.innerHTML = `
         <div class="literary-hero">
       <h2>അക്ഷരങ്ങൾ <br>ചിറകടിക്കുന്നിടം.</h2>
-      <p>സാഹിത്യ സമാജം — രചനയും വായനയും ഒരുമിച്ച് വളരാം</p>
+      <p>സാഹിത്യ സമാജം — എഴുത്തും വായനയും പാട്ടും പറച്ചിലും</p>
       <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> രജിസ്റ്റർ ചെയ്യുക</button>
     </div>
 
@@ -700,7 +700,7 @@ function renderLiterary(el){
             <div style="font-size:.66rem;color:${MY_TEAM.color};font-weight:900;text-transform:uppercase;letter-spacing:1px;">Your Team</div>
             <div style="font-size:1rem;font-weight:900;color:${MY_TEAM.color};margin-top:2px;">${esc(MY_TEAM.name)}</div>
             <div style="font-size:.72rem;color:var(--dim);font-weight:700;margin-top:2px;">
-              Each program-ൽ നിങ്ങളുടെ team-ന്റെ തീയതി മാത്രം കാണിക്കും
+              നിങ്ങൾക്ക് നിങ്ങളുടെ team-ന്റെ തീയതി മാത്രം കാണിക്കും
             </div>
           </div>
         </div>
@@ -736,9 +736,9 @@ function renderLiterary(el){
             <span class="cat-status">${statusLabel} ${status}</span>
             <span class="cat-ico">${cat.icon}</span>
             <span class="cat-label">${esc(cat.label)}</span>
-            ${status === 'pending' ? `<button class="cancel-reg" onclick="cancelMyReg(${myReg.id},'${esc(cat.label)}')">റദ്ദാക്കുക</button>` : ''}
-            ${status === 'approved' ? `<span class="cat-hint" style="color:#059669;">അംഗീകരിച്ചു</span>` : ''}
-            ${status === 'rejected' ? `<span class="cat-hint" style="color:#dc2626;">നിരസിച്ചു</span>` : ''}
+            ${status === 'pending' ? `<button class="cancel-reg" onclick="cancelMyReg(${myReg.id},'${esc(cat.label)}')">Cancel</button>` : ''}
+            ${status === 'approved' ? `<span class="cat-hint" style="color:#059669;">Approved</span>` : ''}
+            ${status === 'rejected' ? `<span class="cat-hint" style="color:#dc2626;">Rejected</span>` : ''}
           </div>
         `;
       }
@@ -747,7 +747,7 @@ function renderLiterary(el){
           <div class="cat-chip disabled">
             <span class="cat-ico">${cat.icon}</span>
             <span class="cat-label">${esc(cat.label)}</span>
-            <span class="cat-hint">അടച്ചു</span>
+            <span class="cat-hint">Closed</span>
           </div>
         `;
       }
@@ -901,7 +901,7 @@ async function submitQuickReg(e){
 }
 
 async function cancelMyReg(regId, label){
-  if (!confirm(label + ' രജിസ്ട്രേഷൻ റദ്ദാക്കണോ?')) return;
+  if (!confirm(label + ' രജിസ്ട്രേഷൻ ക്യാൻസൽ ചെയ്യണോ?')) return;
   try {
     const { error } = await supabaseClient
       .from('sksbv_program_registrations')
@@ -909,7 +909,7 @@ async function cancelMyReg(regId, label){
       .eq('id', regId)
       .eq('status', 'pending');
     if (error) throw error;
-    showToast('റദ്ദാക്കി');
+    showToast('Cancelled');
     await loadLiteraryData();
     switchTab('literary');
   } catch(e){
