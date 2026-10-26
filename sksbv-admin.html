@@ -966,14 +966,18 @@ const TAB_HANDLERS = {
 async function renderTeams(el){
   const teams = await loadTable('sksbv_teams', 'team_key');
   const members = await loadTable('sksbv_members', 'name');
-  
+
+  // Build member lookup by member_id
+  const memberMap = {};
+  members.forEach(m => { memberMap[m.member_id] = m; });
+
   const teamMap = {};
   const teamStats = {};
   teams.forEach(t => {
     teamMap[t.team_key] = t;
     teamStats[t.team_key] = { count: 0, members: [] };
   });
-  
+
   const unassigned = [];
   members.forEach(m => {
     if (m.team && teamStats[m.team]) {
@@ -993,12 +997,15 @@ async function renderTeams(el){
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:20px;">
       ${teams.map(t => {
         const st = teamStats[t.team_key];
         const pct = members.length > 0 ? Math.round((st.count / members.length) * 100) : 0;
+        const leader = t.leader_id ? memberMap[t.leader_id] : null;
+        const assistant = t.assistant_id ? memberMap[t.assistant_id] : null;
         return `
           <div style="background:linear-gradient(140deg,${t.color}22,${t.color}08);border:2px solid ${t.color};border-radius:16px;padding:18px;position:relative;">
+            <!-- Header -->
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
               <div style="flex:1;min-width:0;">
                 <div style="font-size:.68rem;color:var(--dim);font-weight:900;text-transform:uppercase;letter-spacing:1px;">Team ${esc(t.team_key)}</div>
@@ -1007,12 +1014,47 @@ async function renderTeams(el){
               </div>
               <button class="btn btn-ghost btn-sm" onclick="editTeamName('${t.team_key}')" style="padding:6px 10px;">✏️</button>
             </div>
-            <div style="margin-top:14px;padding-top:12px;border-top:1px solid ${t.color}33;">
+
+            <!-- Leadership Section -->
+            <div style="margin-top:14px;padding:12px;background:rgba(255,255,255,.7);border-radius:12px;border:1px solid ${t.color}33;">
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <!-- Leader -->
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(140deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;">👑</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:.62rem;color:#b45309;font-weight:900;text-transform:uppercase;letter-spacing:.5px;">Leader</div>
+                    <div style="font-size:.82rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      ${leader ? esc(leader.name) : '<span style="color:#dc2626;font-weight:700;">— Not assigned —</span>'}
+                    </div>
+                  </div>
+                  <button class="btn btn-sm ${leader ? 'btn-ghost' : 'btn-warning'}" onclick="assignTeamRole('${t.team_key}','leader')" style="padding:5px 10px;font-size:.66rem;">
+                    ${leader ? '↻' : '➕'} ${leader ? 'Change' : 'Assign'}
+                  </button>
+                </div>
+
+                <!-- Assistant -->
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(140deg,#22d3ee,#0891b2);display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;">⭐</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:.62rem;color:#0891b2;font-weight:900;text-transform:uppercase;letter-spacing:.5px;">Assistant</div>
+                    <div style="font-size:.82rem;font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      ${assistant ? esc(assistant.name) : '<span style="color:#94a3b8;font-weight:700;">— Not assigned —</span>'}
+                    </div>
+                  </div>
+                  <button class="btn btn-sm ${assistant ? 'btn-ghost' : 'btn-warning'}" onclick="assignTeamRole('${t.team_key}','assistant')" style="padding:5px 10px;font-size:.66rem;">
+                    ${assistant ? '↻' : '➕'} ${assistant ? 'Change' : 'Assign'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid ${t.color}33;">
               <div style="display:flex;align-items:baseline;gap:6px;">
                 <span style="font-size:2rem;font-weight:900;color:${t.color};line-height:1;">${st.count}</span>
                 <span style="font-size:.72rem;color:var(--dim);font-weight:700;">members</span>
+                <span style="margin-left:auto;font-size:.68rem;color:var(--dim);font-weight:700;">${pct}%</span>
               </div>
-              <div style="font-size:.68rem;color:var(--dim);font-weight:700;margin-top:2px;">${pct}% of total</div>
               ${st.count > 0 ? `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="viewTeamMembers('${t.team_key}')">👥 അംഗങ്ങളെ കാണുക</button>` : ''}
             </div>
           </div>
@@ -1040,12 +1082,134 @@ async function renderTeams(el){
       <div style="font-weight:900;color:#0f172a;font-size:.9rem;margin-bottom:8px;">💡 എങ്ങനെ ഉപയോഗിക്കാം</div>
       <ul style="font-size:.78rem;color:#475569;line-height:1.7;padding-left:20px;margin:0;">
         <li><b>Auto Split</b> — എല്ലാ അംഗങ്ങളെയും ബാലൻസ്ഡ് ആയി 2 ടീമുകളിലേക്ക് വിഭജിക്കും</li>
+        <li><b>👑 Assign Leader</b> — ടീമിലെ ഒരംഗത്തെ leader ആക്കാം</li>
+        <li><b>⭐ Assign Assistant</b> — assistant leader നിശ്ചയിക്കാം</li>
         <li><b>✏️</b> — ടീം പേരും നിറവും മാറ്റാം</li>
-        <li><b>👥 അംഗങ്ങളെ കാണുക</b> — team-ൽ ഉള്ളവരെ കാണാം</li>
-        <li><b>Manual assign</b> — അംഗങ്ങൾ tab-ൽ ഓരോ അംഗത്തെയും edit ചെയ്ത് team select ചെയ്യാം</li>
+        <li><b>Members</b> — team members-നു leader/assistant/members എല്ലാം കാണാം</li>
       </ul>
     </div>
   `;
+}
+
+/* ═══ 👑 ASSIGN LEADER/ASSISTANT ═══ */
+async function assignTeamRole(teamKey, roleType){
+  // roleType: 'leader' | 'assistant'
+  try {
+    const tr = await supabaseClient.from('sksbv_teams').select('*').eq('team_key', teamKey).single();
+    if (tr.error || !tr.data){ toast('❌ Team not found', 'error'); return; }
+    const team = tr.data;
+
+    const mr = await supabaseClient.from('sksbv_members').select('*').eq('team', teamKey).order('name');
+    const members = mr.data || [];
+    if (members.length === 0){ toast('❌ Team-ൽ അംഗങ്ങളില്ല', 'error'); return; }
+
+    const currentId = roleType === 'leader' ? team.leader_id : team.assistant_id;
+    const otherId = roleType === 'leader' ? team.assistant_id : team.leader_id;
+    const roleLabel = roleType === 'leader' ? '👑 ലീഡർ' : '⭐ അസിസ്റ്റന്റ് ലീഡർ';
+    const roleColor = roleType === 'leader' ? '#f59e0b' : '#0891b2';
+
+    const modal = document.createElement('div');
+    modal.className = 'modal open';
+    modal.id = 'assignRoleModal';
+    modal.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 style="color:${roleColor};">${roleLabel} — ${esc(team.team_name)}</h3>
+          <button class="modal-close" onclick="document.getElementById('assignRoleModal').remove()">✕</button>
+        </div>
+
+        <div style="background:${roleColor}15;border:1.5px solid ${roleColor}44;border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:.78rem;color:#475569;font-weight:700;line-height:1.5;">
+          <i class="fas fa-info-circle" style="color:${roleColor};"></i>
+          ${roleType === 'leader'
+            ? 'ടീമിലെ ഒരാളെ ലീഡർ ആയി തിരഞ്ഞെടുക്കുക. Leader-നു 👑 badge കാണിക്കും.'
+            : 'ടീമിലെ ഒരാളെ അസിസ്റ്റന്റ് ലീഡർ ആയി തിരഞ്ഞെടുക്കുക. Assistant-നു ⭐ badge കാണിക്കും.'}
+          ${otherId ? `<br><small style="color:#dc2626;">⚠️ ഒരാൾ ഒരേസമയം leader-ഉം assistant-ഉം ആകാൻ പറ്റില്ല.</small>` : ''}
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto;margin-bottom:16px;">
+          ${members.map(m => {
+            const isCurrent = m.member_id === currentId;
+            const isOther = m.member_id === otherId;
+            return `
+              <label style="display:flex;align-items:center;gap:12px;padding:12px 14px;
+                           background:${isCurrent ? roleColor + '15' : '#f8fafc'};
+                           border:2px solid ${isCurrent ? roleColor : 'rgba(100,116,139,.15)'};
+                           border-radius:12px;cursor:${isOther ? 'not-allowed' : 'pointer'};
+                           opacity:${isOther ? '0.5' : '1'};">
+                <input type="radio" name="teamRolePick" value="${esc(m.member_id)}"
+                       ${isCurrent ? 'checked' : ''} ${isOther ? 'disabled' : ''}
+                       style="width:20px;height:20px;accent-color:${roleColor};flex-shrink:0;cursor:${isOther ? 'not-allowed' : 'pointer'};">
+                <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,${roleColor},${roleColor}cc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;">
+                  ${m.photo ? `<img src="${esc(m.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((m.name||'M').charAt(0))}
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:900;color:#0f172a;font-size:.9rem;">
+                    ${esc(m.name)}
+                    ${isOther ? `<span style="font-size:.6rem;color:#dc2626;margin-left:6px;">(Already ${roleType === 'leader' ? 'Assistant' : 'Leader'})</span>` : ''}
+                  </div>
+                  <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
+                </div>
+                ${isCurrent ? `<span style="background:${roleColor};color:#fff;padding:3px 10px;border-radius:20px;font-size:.6rem;font-weight:900;">CURRENT</span>` : ''}
+              </label>
+            `;
+          }).join('')}
+        </div>
+
+        <div class="modal-actions">
+          ${currentId ? `<button type="button" class="btn btn-danger btn-sm" onclick="clearTeamRole('${teamKey}','${roleType}')" style="flex:.5;justify-content:center;"><i class="fas fa-times"></i> Clear</button>` : ''}
+          <button type="button" class="btn btn-ghost" style="flex:.5;justify-content:center;" onclick="document.getElementById('assignRoleModal').remove()">Cancel</button>
+          <button type="button" class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveTeamRole('${teamKey}','${roleType}')">
+            <i class="fas fa-save"></i> Save
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  } catch(e){ toast('❌ ' + e.message, 'error'); }
+}
+
+async function saveTeamRole(teamKey, roleType){
+  const picked = document.querySelector('input[name="teamRolePick"]:checked');
+  if (!picked){ toast('⚠️ ഒരാളെ തിരഞ്ഞെടുക്കുക', 'error'); return; }
+
+  const memberId = picked.value;
+  const col = roleType === 'leader' ? 'leader_id' : 'assistant_id';
+
+  try {
+    const update = {};
+    update[col] = memberId;
+    update.updated_at = new Date().toISOString();
+
+    const r = await supabaseClient.from('sksbv_teams').update(update).eq('team_key', teamKey);
+    if (r.error) throw r.error;
+
+    // Get member name for toast
+    const mr = await supabaseClient.from('sksbv_members').select('name').eq('member_id', memberId).single();
+    const name = mr.data ? mr.data.name : memberId;
+
+    toast('✅ ' + (roleType === 'leader' ? '👑 Leader' : '⭐ Assistant') + ' → ' + name, 'success');
+    document.getElementById('assignRoleModal').remove();
+    loadTab('teams');
+  } catch(e){ toast('❌ ' + e.message, 'error'); }
+}
+
+async function clearTeamRole(teamKey, roleType){
+  if (!confirm('ഈ ' + (roleType === 'leader' ? 'ലീഡർ' : 'അസിസ്റ്റന്റ്') + '-നെ remove ചെയ്യണോ?')) return;
+
+  const col = roleType === 'leader' ? 'leader_id' : 'assistant_id';
+  try {
+    const update = {};
+    update[col] = null;
+    update.updated_at = new Date().toISOString();
+
+    const r = await supabaseClient.from('sksbv_teams').update(update).eq('team_key', teamKey);
+    if (r.error) throw r.error;
+
+    toast('✅ Removed', 'success');
+    document.getElementById('assignRoleModal').remove();
+    loadTab('teams');
+  } catch(e){ toast('❌ ' + e.message, 'error'); }
 }
 
 async function editTeamName(teamKey){
@@ -1141,10 +1305,13 @@ async function viewTeamMembers(teamKey){
   const tr = await supabaseClient.from('sksbv_teams').select('*').eq('team_key', teamKey).single();
   if (tr.error){ toast('❌ Team not found', 'error'); return; }
   const t = tr.data;
-  
+
   const mr = await supabaseClient.from('sksbv_members').select('*').eq('team', teamKey).order('name');
   const members = mr.data || [];
-  
+
+  const leaderId = t.leader_id || null;
+  const assistantId = t.assistant_id || null;
+
   const modal = document.createElement('div');
   modal.className = 'modal open';
   modal.id = 'teamMembersModal';
@@ -1156,18 +1323,29 @@ async function viewTeamMembers(teamKey){
       </div>
       ${members.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>അംഗങ്ങളില്ല</p></div>' : `
         <div style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;">
-          ${members.map(m => `
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#f8fafc;border-radius:12px;border:1px solid var(--border);">
-              <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,${t.color},${t.color}cc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;">
-                ${m.photo ? `<img src="${esc(m.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((m.name||'M').charAt(0))}
+          ${members.map(m => {
+            const isLeader = m.member_id === leaderId;
+            const isAssistant = m.member_id === assistantId;
+            const badge = isLeader
+              ? '<span style="background:linear-gradient(140deg,#fbbf24,#f59e0b);color:#03132e;padding:2px 8px;border-radius:20px;font-size:.58rem;font-weight:900;margin-left:6px;">👑 LEADER</span>'
+              : isAssistant
+              ? '<span style="background:linear-gradient(140deg,#22d3ee,#0891b2);color:#fff;padding:2px 8px;border-radius:20px;font-size:.58rem;font-weight:900;margin-left:6px;">⭐ ASSISTANT</span>'
+              : '';
+            const borderColor = isLeader ? '#f59e0b' : isAssistant ? '#0891b2' : 'var(--border)';
+            const bgColor = isLeader ? 'linear-gradient(140deg,#fef3c7,#fde68a)' : isAssistant ? 'linear-gradient(140deg,#ecfeff,#cffafe)' : '#f8fafc';
+            return `
+              <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:${bgColor};border-radius:12px;border:1.5px solid ${borderColor};">
+                <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,${t.color},${t.color}cc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;">
+                  ${m.photo ? `<img src="${esc(m.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((m.name||'M').charAt(0))}
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:900;color:#0f172a;font-size:.88rem;">${esc(m.name)}${badge}</div>
+                  <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
+                </div>
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('teamMembersModal').remove(); editItem('sksbv_members', ${m.id})">✏️</button>
               </div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-weight:900;color:#0f172a;font-size:.88rem;">${esc(m.name)}</div>
-                <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('teamMembersModal').remove(); editItem('sksbv_members', ${m.id})">✏️</button>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `}
       <div class="modal-actions" style="margin-top:16px;">
