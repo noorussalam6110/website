@@ -235,6 +235,7 @@ function getRegWindow(program){
 }
 
 let MY_TEAM = null;
+let MY_TEAM_MEMBERS = [];
 
 async function loadMyTeam(){
   try {
@@ -246,6 +247,7 @@ async function loadMyTeam(){
     
     if (!mr.data || !mr.data.team) {
       MY_TEAM = null;
+      MY_TEAM_MEMBERS = [];
       return;
     }
     
@@ -255,16 +257,164 @@ async function loadMyTeam(){
       .eq('team_key', mr.data.team)
       .maybeSingle();
     
+    const team = tr.data || {};
     MY_TEAM = {
       key: mr.data.team,
-      name: (tr.data && tr.data.team_name) || mr.data.team,
-      color: (tr.data && tr.data.color) || '#8b5cf6',
-      description: (tr.data && tr.data.description) || ''
+      name: team.team_name || mr.data.team,
+      color: team.color || '#8b5cf6',
+      description: team.description || '',
+      leader_id: team.leader_id || null,
+      assistant_id: team.assistant_id || null
     };
+
+    // Load all team members
+    const mr2 = await supabaseClient
+      .from('sksbv_members')
+      .select('member_id, name, class, photo, role')
+      .eq('team', mr.data.team)
+      .order('name');
+    MY_TEAM_MEMBERS = mr2.data || [];
+
+    // Enrich: add role flags
+    MY_TEAM_MEMBERS.forEach(m => {
+      m._isLeader = m.member_id === MY_TEAM.leader_id;
+      m._isAssistant = m.member_id === MY_TEAM.assistant_id;
+      m._isMe = m.member_id === CURRENT_MEMBER.member_id;
+    });
+
+    // Sort: leader → assistant → me → others
+    MY_TEAM_MEMBERS.sort((a, b) => {
+      const ra = a._isLeader ? 0 : a._isAssistant ? 1 : a._isMe ? 2 : 3;
+      const rb = b._isLeader ? 0 : b._isAssistant ? 1 : b._isMe ? 2 : 3;
+      if (ra !== rb) return ra - rb;
+      return (a.name || '').localeCompare(b.name || '');
+    });
   } catch(e){
     console.warn('loadMyTeam:', e);
     MY_TEAM = null;
+    MY_TEAM_MEMBERS = [];
   }
+}
+
+/* ═══ 👥 OPEN TEAM DETAILS MODAL ═══ */
+function openMyTeamDetails(){
+  if (!MY_TEAM){
+    showToast('⚠️ നിങ്ങൾക്ക് ടീം assign ചെയ്തിട്ടില്ല', 'info');
+    return;
+  }
+
+  const leader = MY_TEAM_MEMBERS.find(m => m._isLeader);
+  const assistant = MY_TEAM_MEMBERS.find(m => m._isAssistant);
+  const others = MY_TEAM_MEMBERS.filter(m => !m._isLeader && !m._isAssistant);
+
+  const old = document.getElementById('myTeamModal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'myTeamModal';
+  modal.className = 'modal-overlay open';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.9);backdrop-filter:blur(14px);z-index:2000;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;';
+
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width:520px;">
+      <div class="modal-header">
+        <h3 style="color:${MY_TEAM.color};">🎨 ${esc(MY_TEAM.name)}</h3>
+        <button class="close-btn" onclick="document.getElementById('myTeamModal').remove()">✕</button>
+      </div>
+
+      <!-- Team Banner -->
+      <div style="background:linear-gradient(135deg,${MY_TEAM.color}22,${MY_TEAM.color}08);border:2px solid ${MY_TEAM.color};border-radius:16px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:56px;height:56px;border-radius:16px;background:${MY_TEAM.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem;flex-shrink:0;">🎨</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:.66rem;color:${MY_TEAM.color};font-weight:900;text-transform:uppercase;letter-spacing:1px;">Your Team</div>
+            <div style="font-size:1.2rem;font-weight:900;color:${MY_TEAM.color};margin-top:2px;">${esc(MY_TEAM.name)}</div>
+            ${MY_TEAM.description ? `<div style="font-size:.72rem;color:var(--dim);margin-top:3px;font-weight:700;">${esc(MY_TEAM.description)}</div>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid ${MY_TEAM.color}33;">
+          <span style="font-size:.72rem;color:var(--dim);font-weight:700;">👥 Total Members:</span>
+          <span style="font-size:1.1rem;font-weight:900;color:${MY_TEAM.color};">${MY_TEAM_MEMBERS.length}</span>
+        </div>
+      </div>
+
+      <!-- Leader Card -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:.72rem;color:#b45309;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span>👑</span> Team Leader
+        </div>
+        ${leader ? `
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:14px;">
+            <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,#fbbf24,#f59e0b);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.1rem;flex-shrink:0;box-shadow:0 4px 12px -4px rgba(245,158,11,.6);">
+              ${leader.photo ? `<img src="${esc(leader.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((leader.name||'L').charAt(0))}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:900;color:#0f172a;font-size:1rem;">${esc(leader.name)}</div>
+              <div style="font-size:.74rem;color:#92400e;font-weight:800;margin-top:2px;">${esc(leader.member_id)} • Class ${esc(leader.class||'—')}</div>
+            </div>
+            <div style="font-size:1.5rem;">👑</div>
+          </div>
+        ` : `
+          <div style="padding:14px;background:#f8fafc;border:1.5px dashed rgba(100,116,139,.3);border-radius:14px;text-align:center;color:#94a3b8;font-size:.8rem;font-weight:700;">
+            ലീഡർ assign ചെയ്തിട്ടില്ല
+          </div>
+        `}
+      </div>
+
+      <!-- Assistant Card -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.72rem;color:#0891b2;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+          <span>⭐</span> Assistant Leader
+        </div>
+        ${assistant ? `
+          <div style="display:flex;align-items:center;gap:12px;padding:14px;background:linear-gradient(135deg,#ecfeff,#cffafe);border:2px solid #0891b2;border-radius:14px;">
+            <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,#22d3ee,#0891b2);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.1rem;flex-shrink:0;box-shadow:0 4px 12px -4px rgba(8,145,178,.6);">
+              ${assistant.photo ? `<img src="${esc(assistant.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((assistant.name||'A').charAt(0))}
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:900;color:#0f172a;font-size:1rem;">${esc(assistant.name)}</div>
+              <div style="font-size:.74rem;color:#0891b2;font-weight:800;margin-top:2px;">${esc(assistant.member_id)} • Class ${esc(assistant.class||'—')}</div>
+            </div>
+            <div style="font-size:1.5rem;">⭐</div>
+          </div>
+        ` : `
+          <div style="padding:14px;background:#f8fafc;border:1.5px dashed rgba(100,116,139,.3);border-radius:14px;text-align:center;color:#94a3b8;font-size:.8rem;font-weight:700;">
+            അസിസ്റ്റന്റ് ലീഡർ assign ചെയ്തിട്ടില്ല
+          </div>
+        `}
+      </div>
+
+      <!-- All Members -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:.72rem;color:#475569;font-weight:900;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+          <span>👥 All Members</span>
+          <span style="background:#f1f5f9;padding:2px 10px;border-radius:20px;color:#475569;font-size:.66rem;">${others.length}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;">
+          ${others.length === 0 ? '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:.8rem;">മറ്റ് അംഗങ്ങൾ ഇല്ല</div>' : others.map(m => `
+            <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${m._isMe ? '#f0f9ff' : '#f8fafc'};border-radius:12px;border:1.5px solid ${m._isMe ? '#0891b2' : 'rgba(100,116,139,.12)'};">
+              <div style="width:38px;height:38px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,${MY_TEAM.color},${MY_TEAM.color}cc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.85rem;flex-shrink:0;">
+                ${m.photo ? `<img src="${esc(m.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((m.name||'M').charAt(0))}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:800;color:#0f172a;font-size:.86rem;">
+                  ${esc(m.name)}
+                  ${m._isMe ? '<span style="background:#0891b2;color:#fff;padding:1px 8px;border-radius:20px;font-size:.55rem;font-weight:900;margin-left:6px;">YOU</span>' : ''}
+                </div>
+                <div style="font-size:.68rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <button type="button" class="btn-submit" onclick="document.getElementById('myTeamModal').remove()" style="width:100%;margin-top:4px;">
+        <i class="fas fa-check"></i> Close
+      </button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
 }
 
 async function boot(){
@@ -403,8 +553,11 @@ function renderHome(el){
       <button class="lit-btn" onclick="switchTab('literary')"><i class="fas fa-feather"></i> രജിസ്റ്റർ ചെയ്യുക</button>
     </div>
 
-    ${MY_TEAM ? `
-      <div class="card" style="background:linear-gradient(135deg,${MY_TEAM.color}22,${MY_TEAM.color}08);border:2px solid ${MY_TEAM.color};">
+    ${MY_TEAM ? (() => {
+      const leader = MY_TEAM_MEMBERS.find(m => m._isLeader);
+      const assistant = MY_TEAM_MEMBERS.find(m => m._isAssistant);
+      return `
+      <div class="card" onclick="openMyTeamDetails()" style="background:linear-gradient(135deg,${MY_TEAM.color}22,${MY_TEAM.color}08);border:2px solid ${MY_TEAM.color};cursor:pointer;transition:transform .2s;" onmousedown="this.style.transform='scale(.98)'" onmouseup="this.style.transform=''" ontouchstart="this.style.transform='scale(.98)'" ontouchend="this.style.transform=''">
         <div style="display:flex;align-items:center;gap:14px;">
           <div style="width:60px;height:60px;border-radius:16px;background:${MY_TEAM.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8rem;flex-shrink:0;box-shadow:0 8px 20px -8px ${MY_TEAM.color};">
             🎨
@@ -412,11 +565,17 @@ function renderHome(el){
           <div style="flex:1;min-width:0;">
             <div style="font-size:.68rem;color:${MY_TEAM.color};text-transform:uppercase;letter-spacing:1px;font-weight:900;">എന്റെ ടീം</div>
             <div style="font-size:1.15rem;font-weight:900;color:${MY_TEAM.color};margin-top:3px;">${esc(MY_TEAM.name)}</div>
-            ${MY_TEAM.description ? `<div style="font-size:.72rem;color:var(--dim);margin-top:2px;font-weight:700;">${esc(MY_TEAM.description)}</div>` : ''}
+            <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;font-size:.68rem;color:var(--dim);font-weight:700;">
+              ${leader ? `<span>👑 ${esc(leader.name)}</span>` : ''}
+              ${assistant ? `<span>⭐ ${esc(assistant.name)}</span>` : ''}
+              <span>👥 ${MY_TEAM_MEMBERS.length} members</span>
+            </div>
           </div>
+          <div style="color:${MY_TEAM.color};font-size:1.2rem;flex-shrink:0;">→</div>
         </div>
       </div>
-    ` : ''}
+      `;
+    })() : ''}
 
     ${notifHtml}
 
@@ -636,23 +795,31 @@ function renderProfile(el){
       </div>
     </div>
 
-    ${MY_TEAM ? `
+    ${MY_TEAM ? (() => {
+      const leader = MY_TEAM_MEMBERS.find(m => m._isLeader);
+      const assistant = MY_TEAM_MEMBERS.find(m => m._isAssistant);
+      return `
       <div class="card" style="background:linear-gradient(135deg,${MY_TEAM.color}22,${MY_TEAM.color}08);border:2px solid ${MY_TEAM.color};">
         <div class="card-header" style="margin-bottom:12px;">
           <h3 style="color:${MY_TEAM.color};"><i class="fas fa-users-rectangle"></i> എന്റെ ടീം</h3>
+          <button class="badge" style="background:${MY_TEAM.color};color:#fff;" onclick="openMyTeamDetails()">കാണുക →</button>
         </div>
-        <div style="display:flex;align-items:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:14px;cursor:pointer;" onclick="openMyTeamDetails()">
           <div style="width:56px;height:56px;border-radius:14px;background:${MY_TEAM.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;flex-shrink:0;">
             🎨
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:1.1rem;font-weight:900;color:${MY_TEAM.color};">${esc(MY_TEAM.name)}</div>
-            <div style="font-size:.72rem;color:var(--dim);margin-top:2px;font-weight:700;">ടീം കീ: ${esc(MY_TEAM.key)}</div>
-            ${MY_TEAM.description ? `<div style="font-size:.74rem;color:#475569;margin-top:6px;line-height:1.5;">${esc(MY_TEAM.description)}</div>` : ''}
+            <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:.72rem;font-weight:700;color:#475569;">
+              ${leader ? `<div>👑 Leader: <b>${esc(leader.name)}</b></div>` : ''}
+              ${assistant ? `<div>⭐ Assistant: <b>${esc(assistant.name)}</b></div>` : ''}
+              <div>👥 ${MY_TEAM_MEMBERS.length} members</div>
+            </div>
           </div>
         </div>
       </div>
-    ` : `
+    `;
+    })() : `
       <div class="card" style="background:#fef3c7;border:1.5px solid rgba(180,83,9,.3);">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:1.6rem;">⚠️</div>
