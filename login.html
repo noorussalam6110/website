@@ -44309,5 +44309,355 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
   setTimeout(function(){ injectCard(); }, 2500);
 })();
 </script>
+<script id="sksbv-xp-badge">
+(function(){
+  'use strict';
+  // Track total SKSBV XP earned (from sksbv_xp_log if exists)
+  async function loadSKSBVXP(){
+    if (!currentUser || !supabaseClient) return;
+    try {
+      var r = await supabaseClient.from('sksbv_xp_log')
+        .select('xp_amount')
+        .eq('member_id', currentUser.studentId);
+      var total = (r.data || []).reduce(function(s,x){ return s + (x.xp_amount||0); }, 0);
+      if (total > 0){
+        var xpWidget = document.getElementById('xpWidget');
+        if (!xpWidget || xpWidget.querySelector('.sksbv-xp-badge')) return;
+        var badge = document.createElement('div');
+        badge.className = 'sksbv-xp-badge';
+        badge.style.cssText = 'margin-top:8px;padding:8px 12px;border-radius:10px;' +
+                              'background:rgba(255,255,255,.22);' +
+                              'color:#fff;font-size:.72rem;font-weight:900;' +
+                              'display:flex;align-items:center;gap:6px;' +
+                              'border:1px solid rgba(255,255,255,.25);';
+        badge.innerHTML = '🎨 SKSBV: <b style="color:#fcd34d;">+' + total + ' XP</b>';
+        xpWidget.appendChild(badge);
+      }
+    } catch(e){}
+  }
+  setTimeout(loadSKSBVXP, 3500);
+  var _ol = window.completeLogin;
+  if (typeof _ol === 'function' && !_ol._sksbvBadge){
+    window.completeLogin = async function(s){
+      var r = await _ol.apply(this, arguments);
+      setTimeout(loadSKSBVXP, 3000);
+      return r;
+    };
+    window.completeLogin._sksbvBadge = true;
+  }
+})();
+</script>
+<!-- ═══ COMPLAINT PRIVACY FIX ═══ -->
+<script id="complaint-privacy-fix">
+(function(){
+  'use strict';
+  console.log('🔒 Complaint Privacy Fix loading...');
+
+  // ─── 1. Override complaint submission to use 'teacher' type ───
+  var _origSubmit = window.CMP_STUDENT_submit;
+  if (typeof _origSubmit === 'function' && !_origSubmit._privacyFixed){
+    window.CMP_STUDENT_submit = async function(){
+      if (!currentUser) return;
+
+      var ST = window.CMP_STUDENT_STATE;
+      if (!ST) return _origSubmit.apply(this, arguments);
+
+      if (!ST.type){ cmpToast('തരം തിരഞ്ഞെടുക്കുക', 'error'); return; }
+      if (!ST.target){ cmpToast('ആർക്ക് അയക്കണം എന്ന് തിരഞ്ഞെടുക്കുക', 'error'); return; }
+
+      var subject = (document.getElementById('cmpSubject').value || '').trim();
+      var message = (document.getElementById('cmpMessage').value || '').trim();
+      var isAnon = document.getElementById('cmpAnon').checked;
+
+      if (!subject || subject.length < 3){ cmpToast('വിഷയം എഴുതുക', 'error'); return; }
+      if (!message || message.length < 10){ cmpToast('വിവരണം എഴുതുക', 'error'); return; }
+
+      var btn = document.getElementById('cmpSubmitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> അയക്കുന്നു...';
+
+      var targetId = null, targetName = '';
+      if (ST.target === 'class_teacher' && ST.classTeacher){
+        targetId = ST.classTeacher.teacher_id;
+        targetName = ST.classTeacher.name;
+      } else if (ST.target === 'head_teacher' && ST.headTeacher){
+        targetId = ST.headTeacher.teacher_id;
+        targetName = ST.headTeacher.name;
+      } else if (ST.target === 'admin'){
+        targetId = 'ADMIN';
+        targetName = 'Super Admin';
+      }
+
+      try {
+        var r = await supabaseClient.from('complaints').insert({
+          studentid: currentUser.studentId,
+          student_name: isAnon ? '🕵️ Anonymous' : currentUser.name,
+          student_class: String(currentUser.class || ''),
+          type: ST.type,
+          target_type: ST.target,
+          target_id: targetId,
+          target_name: targetName,
+          subject: subject,
+          message: message,
+          is_anonymous: isAnon,
+          priority: 'normal',
+          status: 'pending'
+        }).select().single();
+
+        if (r.error) throw r.error;
+
+        // ─── NOTIFICATIONS — Privacy-safe ───
+        try {
+          var notifs = [];
+
+          // 1. Admin notification (ALWAYS - only admin sees)
+          notifs.push({
+            title: '📮 പുതിയ ' + (ST.type === 'suggestion' ? 'നിർദ്ദേശം' : 'പരാതി'),
+            message: (isAnon ? '🕵️ Anonymous' : currentUser.name) +
+                     ' — ' + subject + '\n' +
+                     '🎯 To: ' + targetName + ' • Class ' + currentUser.class,
+            type: 'important',
+            target_type: 'admin',         // admin only
+            target_class: null,
+            target_student: null,
+            link_url: null
+          });
+
+          // 2. Teacher notification — use 'teacher' type (NOT 'student')
+          if (ST.target !== 'admin' && targetId && targetId !== 'ADMIN'){
+            notifs.push({
+              title: '📮 Private — ' +
+                     (ST.type === 'suggestion' ? 'Suggestion' : 'Complaint'),
+              message: (isAnon ? '🕵️ Anonymous' : currentUser.name) +
+                       ' (Class ' + currentUser.class + ')\n' + subject,
+              type: 'important',
+              target_type: 'teacher',     // ⭐ CHANGED from 'student'
+              target_class: null,
+              target_student: null,
+              target_teacher: targetId,   // new field (or reuse target_student)
+              link_url: null
+            });
+          }
+
+          // ─── Only insert if there ARE notifications ───
+          if (notifs.length > 0){
+            await supabaseClient.from('notifications').insert(notifs);
+          }
+        } catch(ne){
+          console.warn('Complaint notification:', ne);
+        }
+
+        cmpToast('✅ വിജയകരമായി അയച്ചു!', 'success');
+        if (typeof confetti !== 'undefined'){
+          confetti({ particleCount: 80, spread: 70, origin: { y: .7 },
+                     colors: ['#6366f1','#8b5cf6','#a855f7','#34d399'] });
+        }
+        if (navigator.vibrate) try { navigator.vibrate([30,40,30]); } catch(e){}
+
+        setTimeout(function(){
+          if (typeof CMP_STUDENT_switchTab === 'function') CMP_STUDENT_switchTab('history');
+        }, 1200);
+      } catch(e){
+        cmpToast('❌ ' + (e.message || 'Error'), 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> അയക്കുക';
+      }
+    };
+    window.CMP_STUDENT_submit._privacyFixed = true;
+    console.log('✅ Complaint submit privacy-fixed');
+  }
+
+  // ─── 2. Filter student notification fetches ───
+  var _origNotifFetch = window.openNotificationsModal;
+  if (typeof _origNotifFetch === 'function' && !_origNotifFetch._privacyFixed){
+    window.openNotificationsModal = async function(){
+      if (typeof isAdminMode !== 'undefined' && isAdminMode){
+        return _origNotifFetch.apply(this, arguments);
+      }
+
+      // Non-admin: use strict filter
+      document.getElementById('notificationsModal').style.display = 'flex';
+      lastReadNotifTime = Date.now();
+      try { localStorage.setItem('lastReadNotifTime', lastReadNotifTime.toString()); } catch(e){}
+      var b = document.getElementById('notifBadge');
+      if (b) b.style.display = 'none';
+
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller){
+          navigator.serviceWorker.controller.postMessage({type:'CLEAR_BADGE'});
+        }
+        if ('clearAppBadge' in navigator) navigator.clearAppBadge();
+      } catch(e){}
+
+      var list = document.getElementById('notificationsList');
+      list.innerHTML = '<div class="text-center py-3" style="color:#64748b;">Loading...</div>';
+
+      if (!currentUser){ list.innerHTML = '<div class="text-center py-3">Please login</div>'; return; }
+
+      try {
+        var cls = (currentUser.class && currentUser.class !== 'N/A') ? String(currentUser.class) : '__none__';
+        var sid = currentUser.studentId;
+        var r = await supabaseClient.from('notifications')
+          .select('*')
+          .or('target_type.eq.all,target_student.eq.' + sid + ',and(target_type.eq.class,target_class.eq.' + cls + ')')
+          .order('created_at', { ascending: false }).limit(30);
+
+        var data = (r.data || []).filter(function(n){
+          // ⭐ PRIVACY FILTER
+          if (!n) return false;
+          // Block teacher/admin-type
+          if (n.target_type === 'teacher' || n.target_type === 'admin') return false;
+          // Block complaint notifications
+          if (n.title && (n.title.indexOf('📮') === 0 ||
+                          n.title.indexOf('Private') > -1)) return false;
+          // Block anything targeting a teacher
+          if (n.target_teacher) return false;
+          // Only allow: all / own id / own class
+          var tt = n.target_type || (n.target_class === 'all' ? 'all' : 'class');
+          if (tt === 'all') return true;
+          if (tt === 'student' && n.target_student === sid) return true;
+          if (tt === 'class' && String(n.target_class) === cls) return true;
+          return false;
+        });
+
+        if (!data.length){
+          list.innerHTML = '<div class="text-center py-4" style="color:#64748b;">🔕 No notifications</div>';
+          return;
+        }
+
+        list.innerHTML = data.map(function(n){
+          var c = n.type === 'urgent' ? 'urgent' : n.type === 'important' ? 'important' : '';
+          var i = n.type === 'urgent' ? 'fa-exclamation-triangle' :
+                  n.type === 'important' ? 'fa-exclamation-circle' : 'fa-info-circle';
+          var tt = n.target_type || 'all';
+          var badge = tt === 'student' ?
+            '<span style="background:rgba(180,83,9,.15);color:#b45309;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">👤 Personal</span>' :
+            tt === 'class' ?
+            '<span style="background:rgba(59,130,246,.15);color:#2563eb;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">📚 Class</span>' :
+            '<span style="background:rgba(8,145,178,.15);color:#0891b2;padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:800;margin-left:6px;">🌟 All</span>';
+          var linkHtml = '';
+          if (n.link_url){
+            linkHtml = '<a href="' + escapeHtml(n.link_url) + '" target="_blank" rel="noopener" ' +
+                       'style="display:inline-flex;align-items:center;gap:6px;margin-top:8px;' +
+                              'font-size:.78rem;color:#0891b2;text-decoration:none;' +
+                              'padding:6px 12px;background:rgba(8,145,178,.1);' +
+                              'border:1px solid rgba(8,145,178,.3);border-radius:20px;' +
+                              'font-weight:700;"><i class="fas fa-external-link-alt"></i> Open Link</a>';
+          }
+          return '<div class="notif-item ' + c + '">' +
+            '<div class="d-flex justify-content-between mb-2 flex-wrap gap-2">' +
+              '<strong style="color:#0f172a;font-size:.88rem;">' +
+                '<i class="fas ' + i + ' me-2"></i>' + escapeHtml(n.title) + badge +
+              '</strong>' +
+              '<small style="color:#64748b;font-size:.7rem;">' + formatDate(n.created_at) + '</small>' +
+            '</div>' +
+            '<p style="color:#475569;margin-bottom:0;font-size:.82rem;">' + escapeHtml(n.message) + '</p>' +
+            linkHtml +
+          '</div>';
+        }).join('');
+      } catch(e){
+        list.innerHTML = '<div class="text-center py-3">Error</div>';
+      }
+    };
+    window.openNotificationsModal._privacyFixed = true;
+    console.log('✅ Notification modal privacy-fixed');
+  }
+
+  // ─── 3. Badge counting also filtered ───
+  var _origLoadNotif = window.loadStudentNotifications;
+  if (typeof _origLoadNotif === 'function' && !_origLoadNotif._privacyFixed){
+    window.loadStudentNotifications = async function(){
+      if (!currentUser || !supabaseClient) return;
+      try {
+        var cls = (currentUser.class && currentUser.class !== 'N/A') ?
+                  String(currentUser.class) : '__none__';
+        var sid = currentUser.studentId;
+        var r = await supabaseClient.from('notifications')
+          .select('id,created_at,target_type,target_student,target_class,title')
+          .or('target_type.eq.all,target_student.eq.' + sid +
+              ',and(target_type.eq.class,target_class.eq.' + cls + ')')
+          .order('created_at', { ascending: false }).limit(30);
+
+        var data = (r.data || []).filter(function(n){
+          if (!n) return false;
+          if (n.target_type === 'teacher' || n.target_type === 'admin') return false;
+          if (n.title && (n.title.indexOf('📮') === 0 ||
+                          n.title.indexOf('Private') > -1)) return false;
+          return true;
+        });
+
+        var unread = data.filter(function(n){
+          return new Date(n.created_at).getTime() > lastReadNotifTime;
+        }).length;
+
+        var b = document.getElementById('notifBadge');
+        if (b){
+          if (unread > 0){
+            b.textContent = unread > 9 ? '9+' : unread;
+            b.style.display = 'flex';
+          } else {
+            b.style.display = 'none';
+          }
+        }
+      } catch(e){}
+    };
+    window.loadStudentNotifications._privacyFixed = true;
+  }
+
+  // ─── 4. Realtime subscription filter ───
+  var _origSub = window.subscribeNotifications;
+  if (typeof _origSub === 'function' && !_origSub._privacyFixed){
+    window.subscribeNotifications = function(){
+      if (notifChannel){
+        try { supabaseClient.removeChannel(notifChannel); } catch(e){}
+        notifChannel = null;
+      }
+      if (!currentUser || isAdminMode || !supabaseClient) return;
+
+      var cls = (currentUser.class && currentUser.class !== 'N/A') ?
+                String(currentUser.class) : '__none__';
+      var sid = currentUser.studentId;
+
+      try {
+        notifChannel = supabaseClient.channel('notif_' + sid)
+          .on('postgres_changes',
+              { event: 'INSERT', schema: 'public', table: 'notifications' },
+              function(payload){
+            var n = payload.new;
+            if (!n) return;
+
+            // ⭐ BLOCK private complaints
+            if (n.target_type === 'teacher' || n.target_type === 'admin') return;
+            if (n.title && (n.title.indexOf('📮') === 0 ||
+                            n.title.indexOf('Private') > -1)) return;
+
+            var tt = n.target_type || (n.target_class === 'all' ? 'all' : 'class');
+            var applies = (tt === 'all') ||
+                          (tt === 'student' && n.target_student === sid) ||
+                          (tt === 'class' && String(n.target_class) === cls);
+            if (!applies) return;
+
+            loadStudentNotifications();
+            showToast('🔔 പുതിയ അറിയിപ്പ്!', 'info');
+            showBrowserNotification('🔔 ' + n.title, n.message);
+          }).subscribe();
+      } catch(e){}
+    };
+    window.subscribeNotifications._privacyFixed = true;
+  }
+
+  // Re-subscribe with new filter on next dashboard open
+  setTimeout(function(){
+    if (currentUser && !isAdminMode && typeof subscribeNotifications === 'function'){
+      try { subscribeNotifications(); } catch(e){}
+    }
+  }, 4000);
+
+  console.log('✅ Complaint Privacy Fix ready');
+  console.log('   🔒 Complaints use target_type: "teacher"');
+  console.log('   🔒 Students never see teacher/admin notifications');
+  console.log('   🔒 Blocked at fetch + realtime + badge count');
+})();
+</script>
 </body>
 </html>
