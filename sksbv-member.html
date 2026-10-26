@@ -214,12 +214,26 @@ function showToast(msg, type='success'){
 }
 
 /* ✅ FIXED: consistent date logic with admin panel */
-function getRegWindow(program){
+/* ✅ TEAM-AWARE: uses team-specific reg dates if available */
+function getRegWindow(program, teamKey){
+  // Default to program-level dates
+  let regStart = program.registration_start;
+  let regEnd = program.registration_end;
+
+  // Override with team-specific dates if available
+  if (teamKey && program._teamDates && program._teamDates[teamKey]){
+    const td = program._teamDates[teamKey];
+    if (td && typeof td === 'object'){
+      if (td.reg_start) regStart = td.reg_start;
+      if (td.reg_end) regEnd = td.reg_end;
+    }
+  }
+
   const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-  const start = program.registration_start
-    ? new Date(String(program.registration_start).slice(0,10) + 'T00:00:00') : null;
-  const end   = program.registration_end
-    ? new Date(String(program.registration_end).slice(0,10)   + 'T23:59:59') : null;
+  const start = regStart
+    ? new Date(String(regStart).slice(0,10) + 'T00:00:00') : null;
+  const end   = regEnd
+    ? new Date(String(regEnd).slice(0,10) + 'T23:59:59') : null;
 
   if (!start && !end){
     return { status:'open', open:true, cls:'open', label:'<i class="fas fa-circle-check"></i> രജിസ്ട്രേഷൻ തുറന്നിരിക്കുന്നു' };
@@ -478,17 +492,35 @@ async function loadLiteraryData(){
         .limit(15)
     ]);
 
-    // ⭐ Parse team_dates for each program
+    // ⭐ Parse team_dates for each program (3 dates per team)
     const programs = pRes.data || [];
     programs.forEach(p => {
+      let raw = {};
       try {
-        p._teamDates = (typeof p.team_dates === 'string')
+        raw = (typeof p.team_dates === 'string')
           ? JSON.parse(p.team_dates || '{}')
           : (p.team_dates || {});
-      } catch(e){ p._teamDates = {}; }
+      } catch(e){ raw = {}; }
+
+      // Normalize to object form (backward compat with string dates)
+      const norm = {};
+      Object.keys(raw).forEach(tk => {
+        const td = raw[tk];
+        if (typeof td === 'string') {
+          norm[tk] = { date: td, reg_start: null, reg_end: null };
+        } else if (td && typeof td === 'object') {
+          norm[tk] = {
+            date: td.date || td.program_date || null,
+            reg_start: td.reg_start || null,
+            reg_end: td.reg_end || null
+          };
+        }
+      });
+      p._teamDates = norm;
+
       // Compute member's display date
-      if (MY_TEAM && p._teamDates[MY_TEAM.key]){
-        p._myDate = p._teamDates[MY_TEAM.key];
+      if (MY_TEAM && norm[MY_TEAM.key] && norm[MY_TEAM.key].date){
+        p._myDate = norm[MY_TEAM.key].date;
         p._hasMyDate = true;
       } else {
         p._myDate = p.program_date;
@@ -529,7 +561,7 @@ function renderHome(el){
     progHtml = '<div class="empty"><i class="fas fa-feather"></i>പുതിയ പ്രോഗ്രാമുകൾ ഉടൻ വരുന്നു</div>';
   } else {
     showPrograms.slice(0, 2).forEach(p => {
-      const rw = getRegWindow(p);
+      const rw = getRegWindow(p, MY_TEAM ? MY_TEAM.key : null);
       const displayDate = p._myDate || p.program_date;
       const teamBadge = p._hasMyDate && MY_TEAM
         ? `<span style="display:inline-flex;align-items:center;gap:4px;background:${MY_TEAM.color}22;color:${MY_TEAM.color};padding:2px 8px;border-radius:20px;font-size:.62rem;font-weight:900;margin-left:6px;">🎨 ${esc(MY_TEAM.name)}</span>`
@@ -687,7 +719,7 @@ function renderLiterary(el){
   `;
 
   LITERARY_PROGRAMS.forEach(p => {
-    const rw = getRegWindow(p);
+    const rw = getRegWindow(p, MY_TEAM ? MY_TEAM.key : null);
     const pid = String(p.id);
     const myRegs = regsByProgram[pid] || [];
     const regByCat = {};
@@ -763,6 +795,22 @@ function renderLiterary(el){
           <span><i class="fas fa-calendar-day"></i> ${fmtDate(p._myDate || p.program_date)}</span>
           ${p.venue ? `<span><i class="fas fa-map-marker-alt"></i> ${esc(p.venue)}</span>` : ''}
         </div>
+        ${MY_TEAM && p._teamDates[MY_TEAM.key] ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:12px;">
+            <div style="background:${MY_TEAM.color}15;border:1.5px solid ${MY_TEAM.color}55;border-radius:10px;padding:10px 12px;">
+              <div style="font-size:.6rem;color:${MY_TEAM.color};font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">📅 Program Date</div>
+              <div style="font-weight:900;color:#0f172a;font-size:.86rem;">${fmtDate(p._myDate)}</div>
+            </div>
+            <div style="background:#ecfdf5;border:1.5px solid rgba(5,150,105,.35);border-radius:10px;padding:10px 12px;">
+              <div style="font-size:.6rem;color:#059669;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">🟢 Reg Start</div>
+              <div style="font-weight:900;color:#0f172a;font-size:.86rem;">${p._teamDates[MY_TEAM.key].reg_start ? fmtDate(p._teamDates[MY_TEAM.key].reg_start) : '—'}</div>
+            </div>
+            <div style="background:#fef2f2;border:1.5px solid rgba(220,38,38,.35);border-radius:10px;padding:10px 12px;">
+              <div style="font-size:.6rem;color:#dc2626;font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">🔴 Reg End</div>
+              <div style="font-weight:900;color:#0f172a;font-size:.86rem;">${p._teamDates[MY_TEAM.key].reg_end ? fmtDate(p._teamDates[MY_TEAM.key].reg_end) : '—'}</div>
+            </div>
+          </div>
+        ` : ''}
         <div class="reg-window ${rw.cls}">${rw.label}</div>
         ${p.description ? `<div class="prog-desc">${esc(p.description)}</div>` : ''}
         <div class="cat-section-label"><i class="fas fa-hand-pointer"></i> ഇനം തിരഞ്ഞെടുക്കുക</div>
@@ -796,13 +844,12 @@ async function submitQuickReg(e){
   const customTitle = document.getElementById('regItemTitle').value.trim();
   if (!programId || !categoryKey){ showToast('വിവരങ്ങൾ കണ്ടെത്തിയില്ല', 'error'); return; }
   
-  // Find program to get team date
+  // Find program to get team date + validate reg window
   const prog = LITERARY_PROGRAMS.find(x => String(x.id) === String(programId));
   let teamKey = null;
   let teamDate = null;
-  
+
   if (prog && prog._teamDates && Object.keys(prog._teamDates).length > 0){
-    // Program has team-specific dates
     if (!MY_TEAM){
       showToast('⚠️ Team assign ചെയ്തിട്ടില്ല — admin-നോട് ബന്ധപ്പെടുക', 'error');
       return;
@@ -812,7 +859,15 @@ async function submitQuickReg(e){
       return;
     }
     teamKey = MY_TEAM.key;
-    teamDate = prog._teamDates[MY_TEAM.key];
+    const td = prog._teamDates[MY_TEAM.key];
+    teamDate = (typeof td === 'object') ? td.date : td;
+  }
+
+  // ⭐ Validate team-specific reg window
+  const rw = getRegWindow(prog, teamKey);
+  if (!rw.open){
+    showToast('⚠️ ' + rw.label.replace(/<[^>]*>/g, ''), 'error');
+    return;
   }
   
   const btn = document.getElementById('regSubmitBtn');
