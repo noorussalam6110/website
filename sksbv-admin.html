@@ -156,6 +156,7 @@ body{background:var(--bg);color:var(--text);min-height:100vh}
         <button class="sidebar-item active" data-tab="dashboard" onclick="switchTab('dashboard')"><i class="fas fa-chart-pie"></i> ഡാഷ്ബോർഡ്</button>
         <button class="sidebar-item" data-tab="programs" onclick="switchTab('programs')"><i class="fas fa-feather"></i> പ്രോഗ്രാമുകൾ</button>
         <button class="sidebar-item" data-tab="registrations" onclick="switchTab('registrations')"><i class="fas fa-clipboard-check"></i> രജിസ്ട്രേഷനുകൾ</button>
+        <button class="sidebar-item" data-tab="teams" onclick="switchTab('teams')"><i class="fas fa-users-rectangle"></i> ടീമുകൾ</button>
       </div>
       <div class="sidebar-section">അംഗങ്ങൾ</div>
       <div class="sidebar-nav">
@@ -518,13 +519,29 @@ async function renderDashboard(el){
 
 /* ═══ MEMBERS ═══ */
 async function renderMembers(el){
+  // Load teams first
+  let teamsList = [];
+  try {
+    const tr = await supabaseClient.from('sksbv_teams').select('*').order('team_key');
+    teamsList = tr.data || [];
+  } catch(e){ console.warn('Teams load error:', e); }
+
+  const teamMap = {};
+  teamsList.forEach(t => { teamMap[t.team_key] = t; });
+
+  const teamOptions = [{value:'', label:'— ഇല്ല —'}].concat(
+    teamsList.map(t => ({value:t.team_key, label:t.team_name}))
+  );
+
   const data = await loadTable('sksbv_members', 'name');
+
   const MEMBER_FIELDS = [
     {name:'member_id', label:'Student UID *', required:true, placeholder:'e.g., NSM001'},
     {name:'name', label:'പൂർണ്ണ നാമം *', required:true},
     {name:'class', label:'ക്ലാസ്'},
     {name:'roll_number', label:'Roll No'},
     {name:'phone', label:'ഫോൺ'},
+    {name:'team', label:'🎨 ടീം', type:'select', options: teamOptions},
     {name:'role', label:'Role', type:'select', options:[
       {value:'member', label:'Member'},{value:'leader', label:'Leader'},{value:'admin', label:'Admin'}
     ]},
@@ -535,33 +552,112 @@ async function renderMembers(el){
   DATA_CACHE['sksbv_members'] = data;
   FIELDS_CACHE['sksbv_members'] = MEMBER_FIELDS;
 
+  // Stats
+  const unassigned = data.filter(m => !m.team).length;
+  const teamCounts = {};
+  teamsList.forEach(t => teamCounts[t.team_key] = 0);
+  data.forEach(m => { if (m.team && teamCounts[m.team] !== undefined) teamCounts[m.team]++; });
+
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>👥 അംഗങ്ങൾ</h2><p>${data.length} അംഗങ്ങൾ</p></div>
+      <div><h2>👥 അംഗങ്ങൾ</h2><p>${data.length} അംഗങ്ങൾ${unassigned > 0 ? ` • <span style="color:#dc2626;">${unassigned} team-ല്ല</span>` : ''}</p></div>
       <div class="content-actions"><button class="btn btn-primary" onclick="addItem('sksbv_members')"><i class="fas fa-plus"></i> അംഗം ചേർക്കുക</button></div>
     </div>
-    ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>അംഗങ്ങളെ ചേർത്തിട്ടില്ല</p></div>' : `
-      <div class="data-table"><table>
-        <thead><tr><th>ഫോട്ടോ</th><th>UID</th><th>പേര്</th><th>ക്ലാസ്</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          ${data.map(m => `
-            <tr>
-              <td>${m.photo ? `<img src="${esc(m.photo)}">` : `<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(140deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${esc((m.name||'M').charAt(0))}</div>`}</td>
-              <td><strong style="color:#0891b2;font-family:monospace;">${esc(m.member_id)}</strong></td>
-              <td>${esc(m.name)}</td>
-              <td>${esc(m.class||'—')}</td>
-              <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
-              <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
-              <td>
-                <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_members', ${m.id})">✏️</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_members', ${m.id})">🗑️</button>
-              </td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table></div>
-    `}
+    ${teamsList.length > 0 ? `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;">
+        ${teamsList.map(t => `
+          <div style="background:linear-gradient(140deg,${t.color}22,${t.color}11);border:1.5px solid ${t.color}55;border-radius:12px;padding:12px;">
+            <div style="font-weight:900;color:${t.color};font-size:.84rem;">🎨 ${esc(t.team_name)}</div>
+            <div style="font-size:1.3rem;font-weight:900;color:#0f172a;margin-top:4px;">${teamCounts[t.team_key]}</div>
+            <div style="font-size:.66rem;color:var(--dim);font-weight:700;">members</div>
+          </div>
+        `).join('')}
+        ${unassigned > 0 ? `
+          <div style="background:linear-gradient(140deg,#fef2f2,#fee2e2);border:1.5px solid rgba(220,38,38,.3);border-radius:12px;padding:12px;">
+            <div style="font-weight:900;color:#dc2626;font-size:.84rem;">⚠️ Unassigned</div>
+            <div style="font-size:1.3rem;font-weight:900;color:#0f172a;margin-top:4px;">${unassigned}</div>
+            <div style="font-size:.66rem;color:var(--dim);font-weight:700;">members</div>
+          </div>
+        ` : ''}
+      </div>
+    ` : ''}
+    <div style="background:#fff;padding:14px;border-radius:12px;border:1px solid var(--border);margin-bottom:14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <input type="text" id="memberSearchInput" placeholder="🔍 പേര് / ID തിരയുക" 
+             oninput="filterMembersAdmin()"
+             style="flex:1;min-width:160px;padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;">
+      <select id="memberTeamFilter" onchange="filterMembersAdmin()"
+              style="padding:9px 12px;border-radius:10px;border:1.5px solid var(--border);font-family:inherit;font-size:14px;">
+        <option value="all">എല്ലാ ടീമുകളും</option>
+        ${teamsList.map(t => `<option value="${t.team_key}">${esc(t.team_name)}</option>`).join('')}
+        <option value="__none__">⚠️ Team-ല്ല</option>
+      </select>
+    </div>
+    <div id="membersTableWrap">
+      ${renderMembersTable(data, teamMap)}
+    </div>
   `;
+}
+
+function renderMembersTable(data, teamMap){
+  if (data.length === 0) return '<div class="empty-state"><i class="fas fa-users"></i><p>അംഗങ്ങളെ ചേർത്തിട്ടില്ല</p></div>';
+  return `
+    <div class="data-table"><table>
+      <thead><tr><th>ഫോട്ടോ</th><th>UID</th><th>പേര്</th><th>ക്ലാസ്</th><th>ടീം</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>
+        ${data.map(m => {
+          const team = m.team ? teamMap[m.team] : null;
+          const teamBadge = team 
+            ? `<span class="badge" style="background:${team.color};color:#fff;">${esc(team.team_name)}</span>`
+            : `<span class="badge" style="background:rgba(220,38,38,.15);color:#dc2626;">⚠️ ഇല്ല</span>`;
+          return `
+          <tr>
+            <td>${m.photo ? `<img src="${esc(m.photo)}">` : `<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(140deg,#6366f1,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;">${esc((m.name||'M').charAt(0))}</div>`}</td>
+            <td><strong style="color:#0891b2;font-family:monospace;">${esc(m.member_id)}</strong></td>
+            <td>${esc(m.name)}</td>
+            <td>${esc(m.class||'—')}</td>
+            <td>${teamBadge}</td>
+            <td><span class="badge ${m.role==='admin'?'danger':m.role==='leader'?'warning':'info'}">${esc(m.role||'member')}</span></td>
+            <td><span class="badge ${m.is_active?'success':'danger'}">${m.is_active?'Active':'Inactive'}</span></td>
+            <td>
+              <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_members', ${m.id})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_members', ${m.id})">🗑️</button>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>
+  `;
+}
+
+function filterMembersAdmin(){
+  const q = (document.getElementById('memberSearchInput')?.value || '').toLowerCase().trim();
+  const teamFilter = document.getElementById('memberTeamFilter')?.value || 'all';
+  const data = (DATA_CACHE['sksbv_members'] || []).filter(m => {
+    if (teamFilter === '__none__' && m.team) return false;
+    if (teamFilter !== 'all' && teamFilter !== '__none__' && m.team !== teamFilter) return false;
+    if (!q) return true;
+    return ((m.name||'') + ' ' + (m.member_id||'') + ' ' + (m.class||'')).toLowerCase().indexOf(q) > -1;
+  });
+  
+  // Get team map from cache
+  const wrap = document.getElementById('membersTableWrap');
+  if (!wrap) return;
+  
+  // Rebuild team map
+  const teamMap = {};
+  document.querySelectorAll('#memberTeamFilter option').forEach(opt => {
+    if (opt.value && opt.value !== '__none__' && opt.value !== 'all'){
+      teamMap[opt.value] = { team_key: opt.value, team_name: opt.textContent, color: '#8b5cf6' };
+    }
+  });
+  
+  // Better: refetch team colors from cache
+  Promise.resolve().then(async () => {
+    const tr = await supabaseClient.from('sksbv_teams').select('*');
+    const realMap = {};
+    (tr.data || []).forEach(t => realMap[t.team_key] = t);
+    wrap.innerHTML = renderMembersTable(data, realMap);
+  });
 }
 
 /* ═══ LEADERS ═══ */
@@ -860,10 +956,263 @@ const TAB_HANDLERS = {
   programs: renderPrograms,
   registrations: renderRegistrations,
   members: renderMembers,
+  teams: renderTeams,
   leaders: renderLeaders,
   activities: renderActivities,
   settings: renderSettings
 };
+
+/* ═══ 🎨 TEAMS ═══ */
+async function renderTeams(el){
+  const teams = await loadTable('sksbv_teams', 'team_key');
+  const members = await loadTable('sksbv_members', 'name');
+  
+  const teamMap = {};
+  const teamStats = {};
+  teams.forEach(t => {
+    teamMap[t.team_key] = t;
+    teamStats[t.team_key] = { count: 0, members: [] };
+  });
+  
+  const unassigned = [];
+  members.forEach(m => {
+    if (m.team && teamStats[m.team]) {
+      teamStats[m.team].count++;
+      teamStats[m.team].members.push(m);
+    } else {
+      unassigned.push(m);
+    }
+  });
+
+  el.innerHTML = `
+    <div class="content-header">
+      <div><h2>🎨 ടീമുകൾ</h2><p>അംഗങ്ങളെ 2 ഗ്രൂപ്പുകളായി തിരിക്കുക</p></div>
+      <div class="content-actions">
+        <button class="btn btn-primary" onclick="autoSplitTeams()"><i class="fas fa-shuffle"></i> ⚡ Auto Split</button>
+        <button class="btn btn-ghost" onclick="loadTab('teams')"><i class="fas fa-sync-alt"></i> Reload</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:20px;">
+      ${teams.map(t => {
+        const st = teamStats[t.team_key];
+        const pct = members.length > 0 ? Math.round((st.count / members.length) * 100) : 0;
+        return `
+          <div style="background:linear-gradient(140deg,${t.color}22,${t.color}08);border:2px solid ${t.color};border-radius:16px;padding:18px;position:relative;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.68rem;color:var(--dim);font-weight:900;text-transform:uppercase;letter-spacing:1px;">Team ${esc(t.team_key)}</div>
+                <div style="font-size:1.2rem;font-weight:900;color:${t.color};margin-top:4px;line-height:1.2;">🎨 ${esc(t.team_name)}</div>
+                ${t.description ? `<div style="font-size:.72rem;color:var(--dim);margin-top:4px;font-weight:700;">${esc(t.description)}</div>` : ''}
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="editTeamName('${t.team_key}')" style="padding:6px 10px;">✏️</button>
+            </div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid ${t.color}33;">
+              <div style="display:flex;align-items:baseline;gap:6px;">
+                <span style="font-size:2rem;font-weight:900;color:${t.color};line-height:1;">${st.count}</span>
+                <span style="font-size:.72rem;color:var(--dim);font-weight:700;">members</span>
+              </div>
+              <div style="font-size:.68rem;color:var(--dim);font-weight:700;margin-top:2px;">${pct}% of total</div>
+              ${st.count > 0 ? `<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="viewTeamMembers('${t.team_key}')">👥 അംഗങ്ങളെ കാണുക</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    ${unassigned.length > 0 ? `
+      <div style="background:linear-gradient(140deg,#fef2f2,#fee2e2);border:2px solid rgba(220,38,38,.3);border-radius:16px;padding:18px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:1.1rem;font-weight:900;color:#dc2626;">⚠️ Team ല്ലാത്തവർ</div>
+            <div style="font-size:.74rem;color:var(--dim);font-weight:700;margin-top:4px;">${unassigned.length} അംഗങ്ങൾ ഇനിയും team-ൽ ചേർത്തിട്ടില്ല</div>
+          </div>
+          <button class="btn btn-warning btn-sm" onclick="viewUnassignedMembers()">👥 കാണുക</button>
+        </div>
+      </div>
+    ` : `
+      <div style="background:#ecfdf5;border:1.5px solid rgba(5,150,105,.3);border-radius:14px;padding:16px;text-align:center;color:#059669;font-weight:800;font-size:.86rem;">
+        ✅ എല്ലാ അംഗങ്ങൾക്കും team assign ചെയ്തു
+      </div>
+    `}
+
+    <div style="background:#f8fafc;border-radius:14px;padding:16px;border:1px dashed rgba(100,116,139,.25);margin-top:20px;">
+      <div style="font-weight:900;color:#0f172a;font-size:.9rem;margin-bottom:8px;">💡 എങ്ങനെ ഉപയോഗിക്കാം</div>
+      <ul style="font-size:.78rem;color:#475569;line-height:1.7;padding-left:20px;margin:0;">
+        <li><b>Auto Split</b> — എല്ലാ അംഗങ്ങളെയും ബാലൻസ്ഡ് ആയി 2 ടീമുകളിലേക്ക് വിഭജിക്കും</li>
+        <li><b>✏️</b> — ടീം പേരും നിറവും മാറ്റാം</li>
+        <li><b>👥 അംഗങ്ങളെ കാണുക</b> — team-ൽ ഉള്ളവരെ കാണാം</li>
+        <li><b>Manual assign</b> — അംഗങ്ങൾ tab-ൽ ഓരോ അംഗത്തെയും edit ചെയ്ത് team select ചെയ്യാം</li>
+      </ul>
+    </div>
+  `;
+}
+
+async function editTeamName(teamKey){
+  const tr = await supabaseClient.from('sksbv_teams').select('*').eq('team_key', teamKey).single();
+  if (tr.error || !tr.data){ toast('❌ Team not found', 'error'); return; }
+  const t = tr.data;
+
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.id = 'teamEditModal';
+  modal.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🎨 Edit Team</h3>
+        <button class="modal-close" onclick="document.getElementById('teamEditModal').remove()">✕</button>
+      </div>
+      <form id="teamEditForm" onsubmit="event.preventDefault();saveTeamEdit('${teamKey}')">
+        <div class="form-row">
+          <label>ടീം പേര് *</label>
+          <input type="text" name="team_name" value="${esc(t.team_name)}" required maxlength="50">
+        </div>
+        <div class="form-row">
+          <label>നിറം</label>
+          <input type="color" name="color" value="${esc(t.color || '#8b5cf6')}" style="height:50px;cursor:pointer;">
+        </div>
+        <div class="form-row">
+          <label>വിവരണം (optional)</label>
+          <textarea name="description" rows="2">${esc(t.description || '')}</textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="document.getElementById('teamEditModal').remove()">Cancel</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function saveTeamEdit(teamKey){
+  const form = document.getElementById('teamEditForm');
+  if (!form) return;
+  const fd = new FormData(form);
+  const update = {
+    team_name: (fd.get('team_name') || '').trim(),
+    color: fd.get('color') || '#8b5cf6',
+    description: (fd.get('description') || '').trim() || null,
+    updated_at: new Date().toISOString()
+  };
+  if (!update.team_name){ toast('പേര് നൽകുക', 'error'); return; }
+  try {
+    const r = await supabaseClient.from('sksbv_teams').update(update).eq('team_key', teamKey);
+    if (r.error) throw r.error;
+    toast('✅ Team updated', 'success');
+    document.getElementById('teamEditModal').remove();
+    loadTab('teams');
+  } catch(e){ toast('❌ ' + e.message, 'error'); }
+}
+
+async function autoSplitTeams(){
+  if (!confirm('⚡ Auto Split?\n\nഎല്ലാ അംഗങ്ങളെയും ബാലൻസ്ഡ് ആയി 2 ടീമുകളിലേക്ക് വിഭജിക്കും.\n\n⚠️ നിലവിലുള്ള team assignments overwrite ചെയ്യും.')) return;
+  
+  try {
+    const teams = await loadTable('sksbv_teams', 'team_key');
+    if (teams.length !== 2){ toast('❌ കൃത്യം 2 ടീമുകൾ വേണം', 'error'); return; }
+    
+    const members = await loadTable('sksbv_members', 'name');
+    if (members.length === 0){ toast('❌ അംഗങ്ങളില്ല', 'error'); return; }
+    
+    // Sort members by name for consistent distribution
+    const sorted = members.slice().sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+    
+    // Alternate assignment
+    const t1 = teams[0].team_key;
+    const t2 = teams[1].team_key;
+    
+    toast('⏳ Splitting ' + sorted.length + ' members...', 'info');
+    
+    // Update in batches
+    for (let i = 0; i < sorted.length; i++){
+      const m = sorted[i];
+      const newTeam = i % 2 === 0 ? t1 : t2;
+      await supabaseClient.from('sksbv_members').update({ team: newTeam }).eq('id', m.id);
+    }
+    
+    toast('✅ ' + sorted.length + ' അംഗങ്ങളെ 2 ടീമുകളായി വിഭജിച്ചു', 'success');
+    setTimeout(() => loadTab('teams'), 500);
+  } catch(e){ toast('❌ ' + e.message, 'error'); }
+}
+
+async function viewTeamMembers(teamKey){
+  const tr = await supabaseClient.from('sksbv_teams').select('*').eq('team_key', teamKey).single();
+  if (tr.error){ toast('❌ Team not found', 'error'); return; }
+  const t = tr.data;
+  
+  const mr = await supabaseClient.from('sksbv_members').select('*').eq('team', teamKey).order('name');
+  const members = mr.data || [];
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.id = 'teamMembersModal';
+  modal.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:${t.color};">🎨 ${esc(t.team_name)} — ${members.length} members</h3>
+        <button class="modal-close" onclick="document.getElementById('teamMembersModal').remove()">✕</button>
+      </div>
+      ${members.length === 0 ? '<div class="empty-state"><i class="fas fa-users"></i><p>അംഗങ്ങളില്ല</p></div>' : `
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;">
+          ${members.map(m => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#f8fafc;border-radius:12px;border:1px solid var(--border);">
+              <div style="width:40px;height:40px;border-radius:50%;overflow:hidden;background:linear-gradient(140deg,${t.color},${t.color}cc);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.9rem;flex-shrink:0;">
+                ${m.photo ? `<img src="${esc(m.photo)}" style="width:100%;height:100%;object-fit:cover;">` : esc((m.name||'M').charAt(0))}
+              </div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:900;color:#0f172a;font-size:.88rem;">${esc(m.name)}</div>
+                <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('teamMembersModal').remove(); editItem('sksbv_members', ${m.id})">✏️</button>
+            </div>
+          `).join('')}
+        </div>
+      `}
+      <div class="modal-actions" style="margin-top:16px;">
+        <button type="button" class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="document.getElementById('teamMembersModal').remove()">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function viewUnassignedMembers(){
+  const mr = await supabaseClient.from('sksbv_members').select('*').is('team', null).order('name');
+  const members = mr.data || [];
+  
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.id = 'unassignedModal';
+  modal.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:#dc2626;">⚠️ Team ല്ലാത്തവർ — ${members.length}</h3>
+        <button class="modal-close" onclick="document.getElementById('unassignedModal').remove()">✕</button>
+      </div>
+      ${members.length === 0 ? '<div class="empty-state"><i class="fas fa-check-circle"></i><p>എല്ലാവർക്കും team ഉണ്ട് ✅</p></div>' : `
+        <div style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;">
+          ${members.map(m => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:#fef2f2;border-radius:12px;border:1px solid rgba(220,38,38,.2);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:900;color:#0f172a;font-size:.88rem;">${esc(m.name)}</div>
+                <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="document.getElementById('unassignedModal').remove(); editItem('sksbv_members', ${m.id})">➕ Assign</button>
+            </div>
+          `).join('')}
+        </div>
+      `}
+      <div class="modal-actions" style="margin-top:16px;">
+        <button type="button" class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="document.getElementById('unassignedModal').remove()">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
