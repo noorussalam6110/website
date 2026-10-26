@@ -869,5 +869,265 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 </script>
+<!-- ═══ SKSBV → Login XP Bridge ═══ -->
+<script id="sksbv-xp-bridge">
+(function(){
+  'use strict';
+  console.log('🎁 SKSBV XP Bridge loading...');
+
+  // ─── Level math (matches login.html v126) ───
+  function totalXPForLevel(n){ return (n * (n + 1) / 2) * 100; }
+  function levelFromTotal(t){
+    var lvl = 1;
+    while (totalXPForLevel(lvl + 1) <= t) lvl++;
+    return lvl;
+  }
+
+  // ─── Open XP modal ───
+  function openXPModal(reg){
+    var old = document.getElementById('sksbvXPModal');
+    if (old) old.remove();
+
+    var presets = [5, 10, 25, 50, 100, 200];
+    var presetsHTML = presets.map(function(v){
+      return '<button type="button" class="sksbv-xp-preset" data-v="' + v + '" ' +
+             'onclick="SKSBV_XP_pick(this,' + v + ')" ' +
+             'style="padding:12px 6px;border-radius:12px;border:2px solid #e2e8f0;' +
+             'background:#fff;font-family:inherit;font-weight:900;cursor:pointer;' +
+             'font-size:.9rem;color:#0f172a;min-height:48px;">+' + v + '</button>';
+    }).join('');
+
+    var modal = document.createElement('div');
+    modal.id = 'sksbvXPModal';
+    modal.style.cssText =
+      'position:fixed;inset:0;background:rgba(3,8,28,.9);backdrop-filter:blur(14px);' +
+      'z-index:100500;display:flex;align-items:flex-start;justify-content:center;' +
+      'padding:16px;padding-top:max(16px,env(safe-area-inset-top,16px));' +
+      'overflow-y:auto;';
+
+    modal.innerHTML =
+      '<div style="background:#fff;border-radius:22px;max-width:440px;width:100%;' +
+                  'padding:24px;margin:auto 0;box-shadow:0 30px 80px -20px rgba(0,0,0,.6);">' +
+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">' +
+          '<h3 style="margin:0;font-size:1.1rem;font-weight:900;color:#0f172a;">🎁 Give SKSBV XP</h3>' +
+          '<button onclick="document.getElementById(\'sksbvXPModal\').remove()" ' +
+                  'style="background:#f1f5f9;border:none;width:38px;height:38px;' +
+                         'border-radius:50%;cursor:pointer;font-size:1rem;">✕</button>' +
+        '</div>' +
+
+        // Student info
+        '<div style="background:#f0fdf4;padding:12px 14px;border-radius:12px;' +
+                    'margin-bottom:16px;border:1.5px solid rgba(5,150,105,.3);">' +
+          '<div style="font-weight:900;color:#0f172a;font-size:.94rem;">' +
+            escapeHtml(reg.member_name || '') + '</div>' +
+          '<div style="font-size:.72rem;color:#64748b;margin-top:3px;font-weight:700;">' +
+            '🆔 ' + escapeHtml(reg.member_id || '') + ' • Class ' + escapeHtml(reg.member_class || '') + '</div>' +
+          '<div style="font-size:.72rem;color:#0891b2;margin-top:2px;font-weight:700;">' +
+            '📝 ' + escapeHtml(reg.item_title || '') + ' — ' + escapeHtml(reg.item_type || '') + '</div>' +
+        '</div>' +
+
+        // Quick presets
+        '<div style="font-size:.74rem;font-weight:900;color:#475569;' +
+                    'text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">' +
+          '⚡ Quick Amount</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;' +
+                    'margin-bottom:16px;" id="sksbvXPPresets">' + presetsHTML + '</div>' +
+
+        // Custom
+        '<label style="display:block;font-size:.78rem;font-weight:800;' +
+                      'color:#475569;margin-bottom:6px;">✏️ Custom Amount</label>' +
+        '<input type="number" id="sksbvXPCustom" min="1" max="1000" value="25" ' +
+               'style="width:100%;padding:13px;border:1.5px solid #cbd5e1;' +
+                      'border-radius:10px;font-family:inherit;font-size:18px;' +
+                      'font-weight:900;text-align:center;color:#0f172a;' +
+                      'outline:none;margin-bottom:16px;">' +
+
+        // Reason
+        '<label style="display:block;font-size:.78rem;font-weight:800;' +
+                      'color:#475569;margin-bottom:6px;">📝 Reason (optional)</label>' +
+        '<input type="text" id="sksbvXPReason" maxlength="100" ' +
+               'placeholder="e.g., മികച്ച പങ്കാളിത്തം 🎉" ' +
+               'style="width:100%;padding:12px;border:1.5px solid #cbd5e1;' +
+                      'border-radius:10px;font-family:inherit;font-size:15px;' +
+                      'color:#0f172a;outline:none;margin-bottom:16px;">' +
+
+        // Buttons
+        '<div style="display:flex;gap:8px;">' +
+          '<button onclick="document.getElementById(\'sksbvXPModal\').remove()" ' +
+                  'style="flex:.6;padding:13px;border-radius:12px;' +
+                         'border:1.5px solid #cbd5e1;background:#f8fafc;' +
+                         'font-family:inherit;font-weight:800;cursor:pointer;' +
+                         'min-height:48px;">Cancel</button>' +
+          '<button onclick="SKSBV_XP_give(' + reg.id + ')" id="sksbvXPSubmitBtn" ' +
+                  'style="flex:1.4;padding:13px;border-radius:12px;border:none;' +
+                         'background:linear-gradient(100deg,#8b5cf6,#a78bfa);' +
+                         'color:#fff;font-family:inherit;font-weight:900;' +
+                         'cursor:pointer;min-height:48px;' +
+                         'box-shadow:0 8px 20px -8px rgba(139,92,246,.7);">' +
+            '✅ Give XP</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e){
+      if (e.target === modal) modal.remove();
+    });
+
+    window._sksbvXPCurrentReg = reg;
+  }
+
+  // ─── Preset picker ───
+  window.SKSBV_XP_pick = function(btn, val){
+    document.querySelectorAll('#sksbvXPPresets .sksbv-xp-preset').forEach(function(b){
+      b.style.background = '#fff';
+      b.style.borderColor = '#e2e8f0';
+      b.style.color = '#0f172a';
+    });
+    btn.style.background = '#8b5cf6';
+    btn.style.borderColor = '#7c3aed';
+    btn.style.color = '#fff';
+    document.getElementById('sksbvXPCustom').value = val;
+    if (navigator.vibrate) try { navigator.vibrate(10); } catch(e){}
+  };
+
+  // ─── Award XP ───
+  window.SKSBV_XP_give = async function(regId){
+    var reg = window._sksbvXPCurrentReg;
+    if (!reg) return;
+
+    var amount = parseInt(document.getElementById('sksbvXPCustom').value) || 0;
+    var reason = (document.getElementById('sksbvXPReason').value || '').trim();
+    var sid = reg.member_id;
+
+    if (amount <= 0){ alert('Amount required'); return; }
+    if (!sid){ alert('Student ID missing'); return; }
+
+    var btn = document.getElementById('sksbvXPSubmitBtn');
+    if (btn){ btn.disabled = true; btn.innerHTML = '⏳ Saving...'; }
+
+    try {
+      // Fetch current XP
+      var xr = await supabaseClient.from('student_xp')
+        .select('xp, level, total_earned')
+        .eq('studentid', sid).maybeSingle();
+
+      var old = xr.data || { xp: 0, level: 1, total_earned: 0 };
+      var newTotal = (old.total_earned || 0) + amount;
+      var newLevel = levelFromTotal(newTotal);
+      var levelStartXP = totalXPForLevel(newLevel);
+      var curXP = newTotal - levelStartXP;
+
+      // Update
+      var up = await supabaseClient.from('student_xp').upsert({
+        studentid: sid,
+        xp: curXP,
+        level: newLevel,
+        total_earned: newTotal,
+        last_earned_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'studentid' });
+
+      if (up.error) throw up.error;
+
+      // Notify student (shows in login.html notifications)
+      try {
+        await supabaseClient.from('notifications').insert({
+          title: '🎁 +' + amount + ' XP — SKSBV Program',
+          message: '"' + (reg.item_title || 'Program') + '" — ' +
+                   (reason || 'മികച്ച പങ്കാളിത്തത്തിന് 🎉') +
+                   ' (+' + amount + ' XP)',
+          type: 'important',
+          target_type: 'student',
+          target_student: sid,
+          link_url: null
+        });
+      } catch(ne) {}
+
+      // Optional: log to a tracking table
+      try {
+        await supabaseClient.from('sksbv_xp_log').insert({
+          member_id: sid,
+          program_id: reg.program_id,
+          registration_id: reg.id,
+          xp_amount: amount,
+          reason: reason || null,
+          awarded_at: new Date().toISOString()
+        });
+      } catch(e) {}
+
+      document.getElementById('sksbvXPModal').remove();
+      alert('✅ +' + amount + ' XP → ' + (reg.member_name || sid));
+
+      if (typeof confetti !== 'undefined') {
+        confetti({ particleCount: 100, spread: 80,
+                   origin: { y: .7 },
+                   colors: ['#8b5cf6','#a78bfa','#34d399','#fbbf24'] });
+      }
+    } catch(e){
+      alert('❌ ' + e.message);
+      if (btn){ btn.disabled = false; btn.innerHTML = '✅ Give XP'; }
+    }
+  };
+
+  // ─── Inject XP button into approved registrations ───
+  function injectXPButtons(){
+    var wrap = document.getElementById('regListWrap');
+    if (!wrap) return;
+
+    // Approved regs = have delete button but NOT approve button
+    wrap.querySelectorAll('[onclick*="deleteRow(\'sksbv_program_registrations\'"]').forEach(function(delBtn){
+      if (delBtn._xpInjected) return;
+
+      var match = delBtn.getAttribute('onclick').match(/deleteRow\('sksbv_program_registrations',(\d+)\)/);
+      if (!match) return;
+
+      var regId = parseInt(match[1]);
+      var regs = window._regsCache || [];
+      var reg = regs.find(function(r){ return r.id === regId; });
+      if (!reg || reg.status !== 'approved') return;
+
+      delBtn._xpInjected = true;
+
+      var xpBtn = document.createElement('button');
+      xpBtn.className = 'btn btn-sm';
+      xpBtn.style.cssText = 'background:linear-gradient(100deg,#8b5cf6,#a78bfa);' +
+                            'color:#fff;padding:6px 12px;border-radius:8px;' +
+                            'font-weight:800;border:none;cursor:pointer;' +
+                            'display:inline-flex;align-items:center;gap:4px;' +
+                            'min-height:32px;';
+      xpBtn.innerHTML = '🎁 XP';
+      xpBtn.onclick = function(e){
+        e.preventDefault(); e.stopPropagation();
+        openXPModal(reg);
+      };
+
+      delBtn.parentNode.insertBefore(xpBtn, delBtn);
+    });
+  }
+
+  // Hook: run on every render
+  var _origFilter = window.filterRegistrations;
+  if (typeof _origFilter === 'function'){
+    window.filterRegistrations = function(){
+      var r = _origFilter.apply(this, arguments);
+      setTimeout(injectXPButtons, 200);
+      return r;
+    };
+  }
+
+  // Periodic safety
+  setInterval(function(){
+    if (document.getElementById('regListWrap')) injectXPButtons();
+  }, 1500);
+
+  // Expose manual trigger
+  window.SKSBV_INJECT_XP = injectXPButtons;
+
+  console.log('✅ SKSBV XP Bridge ready');
+  console.log('   💡 Approved registrations-ൽ 🎁 XP button');
+  console.log('   💡 SKSBV_INJECT_XP() — manual');
+})();
+</script>
 </body>
 </html>
