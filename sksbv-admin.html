@@ -304,6 +304,106 @@ function editItem(table, id){
 }
 
 let MODAL_FORM_DATA = {};
+
+/* ═══ 👤 EDIT MEMBER FROM TEAM (Self-contained) ═══ */
+async function editMemberFromTeam(memberId){
+  if (!memberId){ toast('❌ ID ഇല്ല', 'error'); return; }
+
+  // Close any open team modal first
+  ['teamMembersModal', 'unassignedModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+  });
+
+  // 1. Fetch fresh member from DB
+  let member = null;
+  try {
+    const mr = await supabaseClient
+      .from('sksbv_members')
+      .select('*')
+      .eq('id', memberId)
+      .maybeSingle();
+    if (mr.error) throw mr.error;
+    member = mr.data;
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+    return;
+  }
+
+  if (!member){
+    toast('❌ അംഗത്തെ കാണുന്നില്ല (ID: ' + memberId + ')', 'error');
+    return;
+  }
+
+  // 2. Fetch teams for dropdown
+  let teamsList = [];
+  try {
+    const tr = await supabaseClient.from('sksbv_teams').select('*').order('team_key');
+    teamsList = tr.data || [];
+  } catch(e){ console.warn('Teams load:', e); }
+
+  const teamOptions = [{value:'', label:'— ഇല്ല —'}].concat(
+    teamsList.map(t => ({value:t.team_key, label:t.team_name}))
+  );
+
+  // 3. Build fields
+  const FIELDS = [
+    {name:'member_id', label:'Student UID *', required:true, placeholder:'e.g., NSM001'},
+    {name:'name', label:'പൂർണ്ണ നാമം *', required:true},
+    {name:'class', label:'ക്ലാസ്'},
+    {name:'roll_number', label:'Roll No'},
+    {name:'phone', label:'ഫോൺ'},
+    {name:'team', label:'🎨 ടീം', type:'select', options: teamOptions},
+    {name:'role', label:'Role', type:'select', options:[
+      {value:'member', label:'Member'},
+      {value:'leader', label:'Leader'},
+      {value:'admin', label:'Admin'}
+    ]},
+    {name:'position', label:'Position'},
+    {name:'is_active', label:'Status', type:'boolean'},
+    {name:'photo', label:'ഫോട്ടോ', type:'file'}
+  ];
+
+  // 4. Populate caches (so saveCrud + openModal work)
+  DATA_CACHE['sksbv_members'] = DATA_CACHE['sksbv_members'] || [];
+  const idx = DATA_CACHE['sksbv_members'].findIndex(x => String(x.id) === String(memberId));
+  if (idx > -1) DATA_CACHE['sksbv_members'][idx] = member;
+  else DATA_CACHE['sksbv_members'].push(member);
+  FIELDS_CACHE['sksbv_members'] = FIELDS;
+
+  // 5. Open edit modal
+  openModal('✏️ അംഗം എഡിറ്റ്', FIELDS, member, 'sksbv_members');
+}
+
+/* ═══ 🔄 PATCH editItem — fetch fresh if not in cache ═══ */
+const _origEditItem = editItem;
+editItem = async function(table, id){
+  const rows = DATA_CACHE[table] || [];
+  let row = rows.find(r => String(r.id) === String(id));
+
+  // If not in cache → fetch fresh from DB
+  if (!row){
+    try {
+      const r = await supabaseClient.from(table).select('*').eq('id', id).maybeSingle();
+      if (r.data) row = r.data;
+    } catch(e){}
+  }
+
+  const fields = FIELDS_CACHE[table];
+  if (!row){ toast('റെക്കോർഡ് കണ്ടെത്തിയില്ല', 'error'); return; }
+  if (!fields){
+    toast('⚠️ Fields not loaded — reload the tab', 'error');
+    return;
+  }
+
+  const titles = {
+    sksbv_members: 'അംഗം എഡിറ്റ്',
+    sksbv_leaders: 'ഭാരവാഹി എഡിറ്റ്',
+    sksbv_activities: 'പ്രവർത്തനം എഡിറ്റ്',
+    sksbv_programs: 'പ്രോഗ്രാം എഡിറ്റ്'
+  };
+  openModal(titles[table] || 'എഡിറ്റ്', fields, row, table);
+};
 function openModal(title, fields, existing, tableName){
   const modal = document.createElement('div');
   modal.className = 'modal open';
@@ -1342,7 +1442,7 @@ async function viewTeamMembers(teamKey){
                   <div style="font-weight:900;color:#0f172a;font-size:.88rem;">${esc(m.name)}${badge}</div>
                   <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
                 </div>
-                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('teamMembersModal').remove(); editItem('sksbv_members', ${m.id})">✏️</button>
+                <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); editMemberFromTeam(${m.id})" title="Edit member">✏️</button>
               </div>
             `;
           }).join('')}
@@ -1378,7 +1478,7 @@ async function viewUnassignedMembers(){
                 <div style="font-weight:900;color:#0f172a;font-size:.88rem;">${esc(m.name)}</div>
                 <div style="font-size:.7rem;color:var(--dim);font-weight:700;">${esc(m.member_id)} • Class ${esc(m.class||'—')}</div>
               </div>
-              <button class="btn btn-primary btn-sm" onclick="document.getElementById('unassignedModal').remove(); editItem('sksbv_members', ${m.id})">➕ Assign</button>
+              <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); editMemberFromTeam(${m.id})">➕ Assign</button>
             </div>
           `).join('')}
         </div>
