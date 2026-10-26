@@ -455,13 +455,43 @@ function renderField(f, val){
         <option value="false" ${!isActive?'selected':''}>❌ Inactive</option>
       </select></div>`;
   }
-  if (f.type === 'file'){
+if (f.type === 'file'){
     return `<div class="form-row"><label>${esc(f.label)}</label>
       <div class="file-upload" id="f_${f.name}_wrap" onclick="document.getElementById('f_${f.name}').click()">
         ${val ? `<img src="${esc(val)}">` : `<div class="file-upload-placeholder"><i class="fas fa-cloud-upload-alt"></i>${esc(f.placeholder||'Tap to upload')}</div>`}
       </div>
       <input type="file" id="f_${f.name}" accept="${f.accept||'image/*'}" style="display:none" onchange="SK_handleUpload(this,'${f.name}')">
       <input type="hidden" name="${f.name}" id="f_${f.name}_url" value="${esc(val||'')}">
+    </div>`;
+  }
+  if (f.type === 'team_dates'){
+    const teams = window.TEAMS_CACHE || [];
+    if (teams.length === 0){
+      return `<div class="form-row">
+        <label>${esc(f.label)}</label>
+        <div style="padding:12px;background:#fef3c7;border-radius:10px;border:1px solid rgba(180,83,9,.3);font-size:.8rem;color:#92400e;font-weight:700;">
+          ⚠️ Teams ഇല്ല — ആദ്യം <b>ടീമുകൾ</b> tab-ൽ teams create ചെയ്യുക
+        </div>
+      </div>`;
+    }
+    let parsedVal = {};
+    try { parsedVal = (typeof val === 'string') ? JSON.parse(val) : (val || {}); } catch(e){}
+    
+    return `<div class="form-row">
+      <label>${esc(f.label)}</label>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${teams.map(t => `
+          <div style="display:flex;align-items:center;gap:10px;background:#f8fafc;padding:10px 12px;border-radius:10px;border:1.5px solid ${t.color}55;">
+            <div style="width:38px;height:38px;border-radius:10px;background:${t.color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;flex-shrink:0;">${esc(t.team_key)}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:800;font-size:.85rem;color:#0f172a;">${esc(t.team_name)}</div>
+              <div style="font-size:.68rem;color:#64748b;font-weight:700;">Team ${esc(t.team_key)}</div>
+            </div>
+            <input type="date" class="team-date-input" data-team="${esc(t.team_key)}" value="${esc(parsedVal[t.team_key] || '')}" style="padding:8px 10px;border:1.5px solid rgba(100,116,139,.25);border-radius:8px;font-family:inherit;font-size:14px;color:#0f172a;background:#fff;">
+          </div>
+        `).join('')}
+      </div>
+      ${f.hint ? `<div class="form-hint">${esc(f.hint)}</div>` : ''}
     </div>`;
   }
   return `<div class="form-row"><label>${esc(f.label)}${f.required?' *':''}</label>
@@ -499,6 +529,15 @@ async function saveCrud(){
     } else if (f.type === 'number') {
       const v = (el.value || '').trim();
       row[f.name] = v === '' ? null : Number(v);
+    } else if (f.type === 'team_dates') {
+      // Gather all team date inputs
+      const teamDates = {};
+      document.querySelectorAll('.team-date-input').forEach(inp => {
+        const tk = inp.dataset.team;
+        const v = inp.value;
+        if (tk && v) teamDates[tk] = v;
+      });
+      row[f.name] = Object.keys(teamDates).length > 0 ? teamDates : null;
     } else {
       row[f.name] = (el.value || '').trim() || null;
     }
@@ -853,12 +892,21 @@ function getRegistrationStatus(p){
 
 /* ═══ PROGRAMS ═══ */
 async function renderPrograms(el){
+  // ⭐ Pre-fetch teams for team_dates field
+  let teamsList = [];
+  try {
+    const tr = await supabaseClient.from('sksbv_teams').select('*').order('team_key');
+    teamsList = tr.data || [];
+  } catch(e){ console.warn('Teams load:', e); }
+  window.TEAMS_CACHE = teamsList;
+
   const data = await loadTable('sksbv_programs', 'program_date', false);
   const FIELDS = [
     {name:'title', label:'പ്രോഗ്രാം പേര് *', required:true, placeholder:'ഉദാ: ഉമ്മ — സാഹിത്യ സമാജം'},
     {name:'theme', label:'പ്രമേയം', placeholder:'ഉദാ: ഉമ്മ'},
     {name:'description', label:'വിവരണം / അറിയിപ്പ്', type:'textarea', hint:'Line break-ുകൾ നിലനിർത്തും.'},
-    {name:'program_date', label:'പ്രോഗ്രാം തീയതി *', type:'date', required:true},
+    {name:'program_date', label:'പ്രോഗ്രാം തീയതി * (default)', type:'date', required:true},
+    {name:'team_dates', label:'🎨 ടീം-വൈസ് തീയതികൾ', type:'team_dates', hint:'ഓരോ ടീമിനും പ്രത്യേകം തീയതി നൽകാം. Empty ആണെങ്കിൽ default program date ഉപയോഗിക്കും.'},
     {name:'registration_start', label:'രജിസ്ട്രേഷൻ ആരംഭ തീയതി', type:'date', hint:'ഈ തീയതി മുതൽ തുറക്കും'},
     {name:'registration_end',   label:'രജിസ്ട്രേഷൻ അവസാന തീയതി', type:'date', hint:'ഈ തീയതിക്ക് ശേഷം അടയ്ക്കും'},
     {name:'venue', label:'വേദി', placeholder:'നൂറുസ്സലാം മദ്റസ'},
@@ -870,15 +918,24 @@ async function renderPrograms(el){
   ];
   DATA_CACHE['sksbv_programs'] = data;
   FIELDS_CACHE['sksbv_programs'] = FIELDS;
+
   el.innerHTML = `
     <div class="content-header">
-      <div><h2>📚 സാഹിത്യ പ്രോഗ്രാമുകൾ</h2><p>${data.length} പ്രോഗ്രാമുകൾ</p></div>
+      <div><h2>📚 സാഹിത്യ പ്രോഗ്രാമുകൾ</h2><p>${data.length} പ്രോഗ്രാമുകൾ${teamsList.length > 0 ? ` • ${teamsList.length} ടീമുകൾ` : ''}</p></div>
       <div class="content-actions"><button class="btn btn-primary" onclick="addItem('sksbv_programs')"><i class="fas fa-plus"></i> പുതിയ പ്രോഗ്രാം</button></div>
     </div>
     ${data.length === 0 ? '<div class="empty-state"><i class="fas fa-feather"></i><p>പ്രോഗ്രാമുകൾ ചേർത്തിട്ടില്ല</p></div>' : `
       <div style="display:flex;flex-direction:column;gap:14px;">
         ${data.map(p => {
           const rs = getRegistrationStatus(p);
+
+          // Parse team dates
+          let teamDates = {};
+          try {
+            teamDates = (typeof p.team_dates === 'string') ? JSON.parse(p.team_dates) : (p.team_dates || {});
+          } catch(e){}
+          const hasTeamDates = Object.keys(teamDates).length > 0;
+
           return `
           <div style="background:#fff;border-radius:16px;padding:18px;border:1px solid var(--border);box-shadow:var(--shadow);border-left:4px solid #8b5cf6;">
             <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
@@ -888,10 +945,30 @@ async function renderPrograms(el){
               </div>
               <span class="badge ${p.status==='active'?'success':p.status==='completed'?'info':'warning'}">${p.status||'upcoming'}</span>
             </div>
+
             <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--dim);font-weight:700;margin-bottom:8px;">
-              <span>📅 പ്രോഗ്രാം: ${fmtDate(p.program_date)}</span>
+              <span>📅 Default: ${fmtDate(p.program_date)}</span>
               ${p.venue ? `<span>📍 ${esc(p.venue)}</span>` : ''}
             </div>
+
+            ${hasTeamDates ? `
+              <div style="margin:10px 0;padding:12px;background:linear-gradient(135deg,#f0f9ff,#eff6ff);border-radius:12px;border:1.5px solid rgba(59,130,246,.25);">
+                <div style="font-size:.7rem;font-weight:900;color:#0891b2;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🎨 Team-wise Dates</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  ${teamsList.map(t => teamDates[t.team_key] ? `
+                    <span style="display:inline-flex;align-items:center;gap:6px;background:${t.color}22;color:${t.color};border:1.5px solid ${t.color}66;padding:6px 12px;border-radius:20px;font-size:.74rem;font-weight:900;">
+                      <span style="background:${t.color};color:#fff;padding:1px 8px;border-radius:10px;font-size:.62rem;">${esc(t.team_key)}</span>
+                      ${esc(t.team_name)}: ${fmtDate(teamDates[t.team_key])}
+                    </span>
+                  ` : '').filter(Boolean).join('')}
+                </div>
+              </div>
+            ` : `
+              <div style="margin:10px 0;padding:10px;background:#fef3c7;border-radius:10px;border:1px solid rgba(180,83,9,.25);font-size:.74rem;color:#92400e;font-weight:700;">
+                ⚠️ Team dates set ചെയ്തിട്ടില്ല — എല്ലാ teams-നും default date: ${fmtDate(p.program_date)}
+              </div>
+            `}
+
             <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:.74rem;font-weight:700;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border-radius:10px;align-items:center;">
               <span style="color:#1e40af;"><i class="fas fa-calendar-check"></i> രജിസ്ട്രേഷൻ: ${fmtDate(p.registration_start)} → ${fmtDate(p.registration_end)}</span>
               <span class="badge ${rs.badge}">${rs.label}</span>
