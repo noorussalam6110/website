@@ -271,11 +271,13 @@ async function loadMyTeam(){
       .eq('team_key', mr.data.team)
       .maybeSingle();
     
-    const team = tr.data || {};
+        const team = tr.data || {};
+    const rawColor = String(team.color || '').trim();
+    const safeColor = /^#[0-9a-fA-F]{3,8}$/.test(rawColor) ? rawColor : '#8b5cf6';
     MY_TEAM = {
       key: mr.data.team,
       name: team.team_name || mr.data.team,
-      color: team.color || '#8b5cf6',
+      color: safeColor,
       description: team.description || '',
       leader_id: team.leader_id || null,
       assistant_id: team.assistant_id || null
@@ -434,7 +436,12 @@ function openMyTeamDetails(){
 async function boot(){
   const student = getSession();
   if (!student || !student.studentId){
-    window.location.href = 'index.html'; return;
+    document.getElementById('loadingScreen').innerHTML =
+      '<div style="color:#fff;text-align:center;padding:24px;">' +
+        '<h2 style="margin-bottom:12px;">Session expired</h2>' +
+        '<a href="index.html" style="background:#fff;color:#8b5cf6;padding:10px 20px;border-radius:12px;font-weight:900;text-decoration:none;">Login again</a>' +
+      '</div>';
+    return;
   }
   CURRENT_MEMBER = {
     member_id: student.studentId,
@@ -442,38 +449,42 @@ async function boot(){
     class: student.class,
     photo: student.photo
   };
-  document.getElementById('hdName').textContent = CURRENT_MEMBER.name || 'Student';
-  
-  // Load team info
-  await loadMyTeam();
-  
-  // Header meta
-  let metaHTML = 'Class ' + (CURRENT_MEMBER.class || '—');
-  if (MY_TEAM){
-    metaHTML += ' • <span style="color:' + MY_TEAM.color + ';font-weight:900;">🎨 ' + esc(MY_TEAM.name) + '</span>';
-  }
-  document.getElementById('hdMeta').innerHTML = metaHTML;
-  
-  // Team badge below
-  const teamEl = document.getElementById('hdTeam');
-  if (teamEl){
+
+  try {
+    document.getElementById('hdName').textContent = CURRENT_MEMBER.name || 'Student';
+
+    await loadMyTeam();
+
+    let metaHTML = 'Class ' + (CURRENT_MEMBER.class || '—');
     if (MY_TEAM){
-      teamEl.style.display = 'block';
-      teamEl.innerHTML = '<span style="background:' + MY_TEAM.color + ';color:#fff;padding:2px 10px;border-radius:20px;font-weight:900;font-size:.6rem;letter-spacing:.5px;">' + esc(MY_TEAM.name) + '</span>';
-    } else {
-      teamEl.style.display = 'none';
+      metaHTML += ' • <span style="color:' + esc(MY_TEAM.color) + ';font-weight:900;">🎨 ' + esc(MY_TEAM.name) + '</span>';
     }
+    document.getElementById('hdMeta').innerHTML = metaHTML;
+
+    const teamEl = document.getElementById('hdTeam');
+    if (teamEl){
+      if (MY_TEAM){
+        teamEl.style.display = 'block';
+        teamEl.innerHTML = '<span style="background:' + esc(MY_TEAM.color) + ';color:#fff;padding:2px 10px;border-radius:20px;font-weight:900;font-size:.6rem;letter-spacing:.5px;">' + esc(MY_TEAM.name) + '</span>';
+      } else {
+        teamEl.style.display = 'none';
+      }
+    }
+
+    const av = document.getElementById('hdAvatar');
+    if (CURRENT_MEMBER.photo) av.innerHTML = '<img src="' + esc(CURRENT_MEMBER.photo) + '">';
+    else av.textContent = (CURRENT_MEMBER.name || 'S').charAt(0).toUpperCase();
+
+    await loadLiteraryData();
+  } catch(err){
+    console.error('boot error:', err);
+    showToast('⚠️ ' + (err.message || 'Data load issue'), 'error');
+  } finally {
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    try { switchTab('home'); }
+    catch(e){ console.error('initial tab:', e); }
   }
-  
-  const av = document.getElementById('hdAvatar');
-  if (CURRENT_MEMBER.photo) av.innerHTML = `<img src="${esc(CURRENT_MEMBER.photo)}">`;
-  else av.textContent = (CURRENT_MEMBER.name || 'S').charAt(0).toUpperCase();
-
-  await loadLiteraryData();
-
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'block';
-  switchTab('home');
 }
 
 /* ✅ FIXED: load notifications too */
@@ -543,18 +554,24 @@ async function switchTab(tab){
   document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
   const el = document.getElementById('mainContent');
   el.innerHTML = '<div style="text-align:center;padding:40px;"><div class="loader" style="margin:0 auto;width:32px;height:32px;border-color:rgba(139,92,246,.2);border-top-color:#8b5cf6;"></div></div>';
-  if (tab === 'literary' || tab === 'home'){
-    await loadLiteraryData();
+  try {
+    if (tab === 'literary' || tab === 'home'){
+      await loadLiteraryData();
+    }
+    if (tab === 'home') renderHome(el);
+    else if (tab === 'literary') renderLiterary(el);
+    else if (tab === 'events') renderEvents(el);
+    else if (tab === 'profile') renderProfile(el);
+  } catch(err){
+    console.error('render error:', tab, err);
+    el.innerHTML = '<div class="empty"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i><p>⚠️ Error: ' + esc(err.message || 'unknown') + '</p></div>';
   }
-  if (tab === 'home') renderHome(el);
-  else if (tab === 'literary') renderLiterary(el);
-  else if (tab === 'events') renderEvents(el);
-  else if (tab === 'profile') renderProfile(el);
 }
 
 function renderHome(el){
-  let progHtml = '';
-  const upcoming = LITERARY_PROGRAMS.filter(p => getRegWindow(p).open);
+    let progHtml = '';
+  const teamKey = MY_TEAM ? MY_TEAM.key : null;
+  const upcoming = LITERARY_PROGRAMS.filter(p => getRegWindow(p, teamKey).open);
   const showPrograms = upcoming.length > 0 ? upcoming : LITERARY_PROGRAMS;
 
   if (showPrograms.length === 0){
@@ -752,7 +769,12 @@ function renderLiterary(el){
         `;
       }
       return `
-        <button class="cat-chip" onclick="openQuickReg(${p.id}, '${cat.key}', '${esc(cat.label)}', '${esc(cat.icon)}', '${esc(p.title).replace(/'/g,'\\\'')}')">
+        <button class="cat-chip"
+          data-program-id="${p.id}"
+          data-category-key="${esc(cat.key)}"
+          data-category-label="${esc(cat.label)}"
+          data-category-icon="${esc(cat.icon)}"
+          onclick="openQuickRegFromChip(this)">
           <span class="cat-ico">${cat.icon}</span>
           <span class="cat-label">${esc(cat.label)}</span>
           <span class="cat-hint">ടാപ്പ് ചെയ്യൂ</span>
@@ -820,6 +842,15 @@ function renderLiterary(el){
     `;
   });
   el.innerHTML = html;
+}
+
+function openQuickRegFromChip(btn){
+  const pid = btn.dataset.programId;
+  const catKey = btn.dataset.categoryKey;
+  const catLabel = btn.dataset.categoryLabel;
+  const catIcon = btn.dataset.categoryIcon;
+  const prog = LITERARY_PROGRAMS.find(x => String(x.id) === String(pid));
+  openQuickReg(pid, catKey, catLabel, catIcon, prog ? prog.title : '');
 }
 
 function openQuickReg(programId, categoryKey, categoryLabel, categoryIcon, programTitle){
