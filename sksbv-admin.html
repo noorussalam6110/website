@@ -354,11 +354,11 @@ async function editMemberFromTeam(memberId){
     {name:'roll_number', label:'Roll No'},
     {name:'phone', label:'ഫോൺ'},
     {name:'team', label:'🎨 ടീം', type:'select', options: teamOptions},
-    {name:'role', label:'Role', type:'select', options:[
+    {name:'role', label:'Society Role', type:'select', options:[
       {value:'member', label:'Member'},
-      {value:'leader', label:'Leader'},
+      {value:'leader', label:'Leader (society-wide)'},
       {value:'admin', label:'Admin'}
-    ]},
+    ], hint:'Team leader/assistant Teams tab-ൽ set ചെയ്യുക'},
     {name:'position', label:'Position'},
     {name:'is_active', label:'Status', type:'boolean'},
     {name:'photo', label:'ഫോട്ടോ', type:'file'}
@@ -699,6 +699,7 @@ async function renderMembers(el){
 
   const teamMap = {};
   teamsList.forEach(t => { teamMap[t.team_key] = t; });
+  window._teamMapCache = teamMap;
 
   const teamOptions = [{value:'', label:'— ഇല്ല —'}].concat(
     teamsList.map(t => ({value:t.team_key, label:t.team_name}))
@@ -713,9 +714,9 @@ async function renderMembers(el){
     {name:'roll_number', label:'Roll No'},
     {name:'phone', label:'ഫോൺ'},
     {name:'team', label:'🎨 ടീം', type:'select', options: teamOptions},
-    {name:'role', label:'Role', type:'select', options:[
-      {value:'member', label:'Member'},{value:'leader', label:'Leader'},{value:'admin', label:'Admin'}
-    ]},
+    {name:'role', label:'Society Role', type:'select', options:[
+      {value:'member', label:'Member'},{value:'leader', label:'Leader (society-wide)'},{value:'admin', label:'Admin'}
+    ], hint:'⚠️ Team leader/assistant Teams tab-ൽ set ചെയ്യുക'},
     {name:'position', label:'Position'},
     {name:'is_active', label:'Status', type:'boolean'},
     {name:'photo', label:'ഫോട്ടോ', type:'file'}
@@ -800,7 +801,7 @@ function renderMembersTable(data, teamMap){
   `;
 }
 
-function filterMembersAdmin(){
+async function filterMembersAdmin(){
   const q = (document.getElementById('memberSearchInput')?.value || '').toLowerCase().trim();
   const teamFilter = document.getElementById('memberTeamFilter')?.value || 'all';
   const data = (DATA_CACHE['sksbv_members'] || []).filter(m => {
@@ -809,26 +810,19 @@ function filterMembersAdmin(){
     if (!q) return true;
     return ((m.name||'') + ' ' + (m.member_id||'') + ' ' + (m.class||'')).toLowerCase().indexOf(q) > -1;
   });
-  
-  // Get team map from cache
-  const wrap = document.getElementById('membersTableWrap');
-  if (!wrap) return;
-  
-  // Rebuild team map
-  const teamMap = {};
-  document.querySelectorAll('#memberTeamFilter option').forEach(opt => {
-    if (opt.value && opt.value !== '__none__' && opt.value !== 'all'){
-      teamMap[opt.value] = { team_key: opt.value, team_name: opt.textContent, color: '#8b5cf6' };
+
+  if (!window._teamMapCache){
+    try {
+      const tr = await supabaseClient.from('sksbv_teams').select('*');
+      window._teamMapCache = {};
+      (tr.data || []).forEach(t => window._teamMapCache[t.team_key] = t);
+    } catch(e){
+      window._teamMapCache = {};
     }
-  });
-  
-  // Better: refetch team colors from cache
-  Promise.resolve().then(async () => {
-    const tr = await supabaseClient.from('sksbv_teams').select('*');
-    const realMap = {};
-    (tr.data || []).forEach(t => realMap[t.team_key] = t);
-    wrap.innerHTML = renderMembersTable(data, realMap);
-  });
+  }
+
+  const wrap = document.getElementById('membersTableWrap');
+  if (wrap) wrap.innerHTML = renderMembersTable(data, window._teamMapCache);
 }
 
 /* ═══ LEADERS ═══ */
@@ -1023,6 +1017,7 @@ async function renderPrograms(el){
             <div style="display:flex;gap:6px;flex-wrap:wrap;">
               <button class="btn btn-primary btn-sm" onclick="editItem('sksbv_programs', ${p.id})">✏️ എഡിറ്റ്</button>
               <button class="btn btn-success btn-sm" onclick="viewRegistrations(${p.id})">📋 രജിസ്ട്രേഷനുകൾ</button>
+              <button class="btn btn-ghost btn-sm" onclick="printProgramRegistrations(${p.id})">🖨️ പ്രിന്റ്</button>
               <button class="btn btn-danger btn-sm" onclick="deleteRow('sksbv_programs', ${p.id})">🗑️</button>
             </div>
           </div>`;
@@ -1033,13 +1028,9 @@ async function renderPrograms(el){
 }
 
 function viewRegistrations(programId){
+  window._pendingRegFilter = programId;
   switchTab('registrations');
-  setTimeout(()=>{
-    const f = document.getElementById('regFilterProgram');
-    if (f){ f.value = programId; filterRegistrations(); }
-  }, 400);
 }
-
 /* ═══ REGISTRATIONS ═══ */
 async function renderRegistrations(el){
   const [regRes, progRes] = await Promise.all([
@@ -1089,6 +1080,13 @@ async function renderRegistrations(el){
   window._typeIconsCache = typeIcons;
   window._typeLabelsCache = typeLabels;
   window._progDateCache = progDateMap;
+
+  if (window._pendingRegFilter){
+    const pid = window._pendingRegFilter;
+    window._pendingRegFilter = null;
+    const f = document.getElementById('regFilterProgram');
+    if (f){ f.value = pid; filterRegistrations(); }
+  }
 }
 
 function renderRegList(regs, progMap, typeIcons, typeLabels, progDateMap){
@@ -1154,27 +1152,489 @@ async function approveRegistration(id){
 }
 
 async function rejectRegistration(id){
-  const note = prompt('നിരസിക്കാനുള്ള കാരണം (optional):');
+  let reg = null;
   try {
-    const { data: reg } = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id',id).single();
+    const r = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id', id).single();
+    reg = r.data;
+  } catch(e){ toast('❌ ' + e.message, 'error'); return; }
+  if (!reg){ toast('❌ Registration not found', 'error'); return; }
+
+  const old = document.getElementById('rejectModal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.id = 'rejectModal';
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 style="color:#dc2626;">❌ Reject Registration</h3>
+        <button class="modal-close" onclick="document.getElementById('rejectModal').remove()">✕</button>
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid rgba(220,38,38,.3);border-radius:12px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-weight:900;font-size:.92rem;color:#0f172a;">${esc(reg.item_title || '')}</div>
+        <div style="font-size:.74rem;color:#64748b;font-weight:700;margin-top:2px;">
+          👤 ${esc(reg.member_name || '')} • ${esc(reg.member_class || '')}
+        </div>
+      </div>
+      <label style="display:block;font-size:.78rem;font-weight:800;color:#475569;margin-bottom:6px;">
+        📝 കാരണം (optional)
+      </label>
+      <textarea id="rejectNote" rows="3" maxlength="200"
+        placeholder="ഉദാ: രജിസ്ട്രേഷൻ deadline കഴിഞ്ഞു"
+        style="width:100%;padding:11px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:inherit;font-size:15px;color:#0f172a;resize:vertical;"></textarea>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+        ${['Deadline കഴിഞ്ഞു','Already approved','Duplicate entry','Rules പാലിച്ചിട്ടില്ല'].map(r =>
+          `<button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById('rejectNote').value='${r}'">${r}</button>`
+        ).join('')}
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('rejectModal').remove()">Cancel</button>
+        <button type="button" class="btn btn-danger" onclick="confirmReject(${id})">
+          <i class="fas fa-times"></i> Reject & Notify
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  setTimeout(() => { const n = document.getElementById('rejectNote'); if (n) n.focus(); }, 200);
+}
+
+async function confirmReject(id){
+  const note = (document.getElementById('rejectNote')?.value || '').trim();
+  try {
+    const { data: reg } = await supabaseClient.from('sksbv_program_registrations').select('*').eq('id', id).single();
     await supabaseClient.from('sksbv_program_registrations').update({
-      status:'rejected', admin_note: note||null, reviewed_at: new Date().toISOString()
+      status: 'rejected',
+      admin_note: note || null,
+      reviewed_at: new Date().toISOString()
     }).eq('id', id);
     try {
       await supabaseClient.from('sksbv_notifications').insert({
         title: '❌ Registration Not Approved',
-        message: `നിങ്ങളുടെ "${reg.item_title}" — ${note ? 'കാരണം: '+note : 'admin-മായി ബന്ധപ്പെടുക.'}`,
+        message: `"${reg.item_title}" — ${note ? 'കാരണം: ' + note : 'admin-മായി ബന്ധപ്പെടുക.'}`,
         target_type: 'member',
         target_member: reg.member_id
       });
     } catch(e){}
+    document.getElementById('rejectModal')?.remove();
     toast('നിരസിച്ചു & അറിയിപ്പ് അയച്ചു', 'success');
     loadTab('registrations');
-  } catch(e){ toast('❌ '+e.message, 'error'); }
+  } catch(e){
+    toast('❌ ' + e.message, 'error');
+  }
+}
+
+/* ═══ 🖨️ PRINT REGISTRATIONS ═══ */
+const PRINT_TYPE_LABELS = {song:'ഗാനം', speech:'പ്രസംഗം', poem:'കവിത', story:'കഥ', essay:'ലേഖനം', quran:'ഖുർആൻ', other:'മറ്റുള്ളവ'};
+const PRINT_TYPE_ORDER  = ['song','speech','poem','story','essay','quran','other'];
+
+function printProgramRegistrations(programId){
+  const old = document.getElementById('printOptsModal');
+  if (old) old.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'modal open';
+  modal.id = 'printOptsModal';
+  modal.innerHTML = `
+    <div class="modal-card" style="max-width:420px;">
+      <div class="modal-header">
+        <h3>🖨️ Print Registrations</h3>
+        <button class="modal-close" onclick="document.getElementById('printOptsModal').remove()">✕</button>
+      </div>
+
+      <div class="form-row">
+        <label>🖨️ Print Mode</label>
+        <select id="printMode">
+          <option value="notice">📜 പ്രോഗ്രാം നോട്ടീസ് (official)</option>
+          <option value="list">📋 രജിസ്ട്രേഷൻ ലിസ്റ്റ് (data table)</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>ഏത് രജിസ്ട്രേഷനുകൾ?</label>
+        <select id="printStatusFilter">
+          <option value="all">എല്ലാം</option>
+          <option value="approved">✅ Approved മാത്രം</option>
+          <option value="pending">⏳ Pending മാത്രം</option>
+          <option value="rejected">❌ Rejected മാത്രം</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label>ക്രമീകരണം</label>
+        <select id="printGroupBy">
+          <option value="category">ഇനം (Category) അനുസരിച്ച്</option>
+          <option value="name">പേരിന്റെ അക്ഷരക്രമത്തിൽ</option>
+          <option value="team">ടീം അനുസരിച്ച്</option>
+          <option value="none">ഗ്രൂപ്പ് ഇല്ലാതെ</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label style="display:flex;gap:8px;align-items:center;font-weight:700;margin:0;">
+          <input type="checkbox" id="printShowTeam" checked style="width:auto;">
+          ടീം കോളം ഉൾപ്പെടുത്തുക
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label style="display:flex;gap:8px;align-items:center;font-weight:700;margin:0;">
+          <input type="checkbox" id="printShowTeamDate" checked style="width:auto;">
+          ടീം തീയതി (Team Date) കോളം ഉൾപ്പെടുത്തുക
+        </label>
+        <div style="font-size:.68rem;color:#64748b;margin-top:4px;font-weight:600;">
+          💡 Team അനുസരിച്ച് group ചെയ്യുമ്പോൾ തീയതി header-ൽ മാത്രം — row-ൽ ആവർത്തിക്കില്ല
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label style="display:flex;gap:8px;align-items:center;font-weight:700;margin:0;">
+          <input type="checkbox" id="printBlankCols" style="width:auto;">
+          കൈയ്യെഴുത്തിന് ഒഴിഞ്ഞ കോളങ്ങൾ (മാർക്ക് / ഒപ്പ്)
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('printOptsModal').remove()">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="doPrintProgramRegistrations(${programId})">🖨️ Print</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+function buildProgramNoticeHtml(prog, progTeamDates, teamMap, registrations){
+  const CAT_LABELS = {song:'ഗാനം', speech:'പ്രസംഗം', poem:'കവിത', story:'കഥ', essay:'ലേഖനം', quran:'ഖുർആൻ', other:'മറ്റുള്ളവ'};
+  const CAT_ORDER  = ['song','speech','poem','story','essay','quran','other'];
+
+  // Categories actually offered (based on registrations)
+  const usedCats = {};
+  (registrations || []).forEach(r => { if (r.item_type) usedCats[r.item_type] = (usedCats[r.item_type] || 0) + 1; });
+  const catList = CAT_ORDER.filter(c => usedCats[c]).map(c => CAT_LABELS[c]).join(' • ');
+
+  // Team date rows
+  const teamDateRows = Object.keys(progTeamDates || {}).map(tk => {
+    const td = progTeamDates[tk];
+    const dt = (typeof td === 'object') ? (td.date || td.program_date) : td;
+    if (!dt) return '';
+    return `<tr><td class="tl">🎨 ${esc(teamMap[tk] || tk)}</td><td class="tv">${fmtDate(dt)}</td></tr>`;
+  }).filter(Boolean).join('');
+
+  // Registration window
+  let regWindowText = '—';
+  if (prog.registration_start && prog.registration_end){
+    regWindowText = fmtDate(prog.registration_start) + ' → ' + fmtDate(prog.registration_end);
+  } else if (prog.registration_end){
+    regWindowText = fmtDate(prog.registration_end) + ' വരെ';
+  } else if (prog.registration_start){
+    regWindowText = fmtDate(prog.registration_start) + ' മുതൽ';
+  }
+
+  // Default instructions
+  const defaultInstructions = [
+    'സാഹിത്യ സമാജത്തിലെ എല്ലാ അംഗങ്ങളും പ്രോഗ്രാമിൽ പങ്കെടുക്കേണ്ടതാണ്.',
+    'ഓരോ അംഗത്തിനും പരമാവധി 2 ഇനങ്ങളിൽ രജിസ്റ്റർ ചെയ്യാം.',
+    'ഇനത്തിന്റെ പേര് രജിസ്ട്രേഷൻ സമയത്ത് തന്നെ നൽകേണ്ടതാണ്.',
+    'രജിസ്ട്രേഷൻ സമയപരിധിക്ക് ശേഷം സ്വീകരിക്കുന്നതല്ല.',
+    'മത്സരങ്ങളുടെ ക്രമവും സമയവും പിന്നീട് അറിയിക്കും.'
+  ];
+  const instructions = (prog.notice_instructions && Array.isArray(prog.notice_instructions)) 
+    ? prog.notice_instructions : defaultInstructions;
+
+  // Ref number — auto-generate
+  const refNo = 'SKSBV/LIT/' + (new Date().getFullYear()) + '/' + String(prog.id || 0).padStart(3, '0');
+  const noticeDate = fmtDate(new Date());
+  const teamCount = Object.keys(progTeamDates || {}).length;
+
+  return `<!DOCTYPE html><html lang="ml"><head><meta charset="utf-8">
+  <title>${esc(prog.title || 'Program Notice')}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    @page{size:A4 portrait;margin:10mm}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Anek Malayalam',sans-serif;color:#0f172a;font-size:12.5px;line-height:1.55;background:#fff}
+    .notice{max-width:190mm;margin:0 auto;padding:6mm 8mm;border:2px solid #4c1d95;border-radius:8px;position:relative}
+    .notice::before{content:'';position:absolute;inset:3px;border:1px solid #a78bfa;border-radius:5px;pointer-events:none}
+    .head{text-align:center;padding-bottom:10px;border-bottom:3px double #4c1d95;margin-bottom:12px;position:relative;z-index:1}
+    .logo{width:56px;height:56px;margin:0 auto 6px;border-radius:50%;background:linear-gradient(140deg,#4c1d95,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.6rem;font-weight:900}
+    .org{font-size:18px;font-weight:900;color:#4c1d95;letter-spacing:1px}
+    .org-sub{font-size:11px;color:#6d28d9;font-weight:700;margin-top:2px;letter-spacing:.5px}
+    .org-tag{font-size:10px;color:#64748b;font-weight:600;margin-top:2px;font-style:italic}
+    .refrow{display:flex;justify-content:space-between;font-size:10.5px;color:#475569;font-weight:700;padding:6px 4px;border-bottom:1px dashed #cbd5e1;margin-bottom:14px;position:relative;z-index:1}
+    .headline{text-align:center;margin:14px 0 6px}
+    .headline .tag{display:inline-block;background:#4c1d95;color:#fff;font-size:10px;font-weight:900;letter-spacing:3px;padding:4px 16px;border-radius:20px;margin-bottom:8px}
+    .headline h1{font-size:22px;font-weight:900;color:#0f172a;line-height:1.2}
+    .headline .theme{font-size:13px;color:#6d28d9;font-weight:800;margin-top:4px}
+    .headline .theme::before{content:'📖 '}
+    .desc{margin:16px 0;padding:12px 16px;background:#faf5ff;border-left:4px solid #8b5cf6;border-radius:6px;font-size:12px;line-height:1.65;white-space:pre-wrap}
+    .section{margin:16px 0}
+    .section h3{font-size:13px;font-weight:900;color:#4c1d95;text-transform:uppercase;letter-spacing:1.5px;padding-bottom:4px;border-bottom:2px solid #c4b5fd;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .section h3::before{content:'';width:4px;height:14px;background:#4c1d95;border-radius:2px}
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;font-size:12px}
+    .info-grid .row{display:flex;gap:8px;padding:4px 0;border-bottom:1px dotted #e2e8f0}
+    .info-grid .row.full{grid-column:1/-1}
+    .info-grid .k{font-weight:900;color:#4c1d95;min-width:80px}
+    .info-grid .v{color:#0f172a;font-weight:700}
+    table.tdate{width:100%;border-collapse:collapse;margin:6px 0;font-size:12px}
+    table.tdate td{padding:6px 10px;border-bottom:1px solid #e2e8f0}
+    table.tdate .tl{font-weight:900;color:#4c1d95;width:50%}
+    table.tdate .tv{font-weight:700;color:#0f172a}
+    ul.instr{padding-left:22px;margin:6px 0;font-size:12px;line-height:1.8}
+    ul.instr li{margin-bottom:2px}
+    .sign{margin-top:32px;display:flex;justify-content:flex-end;position:relative;z-index:1}
+    .sign-box{text-align:center;min-width:180px}
+    .sign-box .line{border-top:1.5px solid #0f172a;padding-top:4px;margin-top:40px;font-weight:900;color:#0f172a;font-size:12px}
+    .sign-box .role{font-size:10.5px;color:#4c1d95;font-weight:800;margin-top:2px}
+    .copy{margin-top:20px;padding-top:10px;border-top:1px dashed #94a3b8;font-size:10px;color:#475569;font-weight:700;line-height:1.6;position:relative;z-index:1}
+    .copy b{color:#4c1d95}
+    @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.notice{border-color:#4c1d95}}
+  </style></head><body>
+  <div class="notice">
+    <div class="head">
+      <div class="logo">📚</div>
+      <div class="org">SKSBV — സാഹിത്യ സമാജം</div>
+      <div class="org-sub">NOORUSSALAM MADRASA</div>
+      <div class="org-tag">"അക്ഷരങ്ങൾ ചിറകടിക്കുന്നിടം"</div>
+    </div>
+
+    <div class="refrow">
+      <span>Ref: <b>${esc(refNo)}</b></span>
+      <span>Date: <b>${esc(noticeDate)}</b></span>
+    </div>
+
+    <div class="headline">
+      <div class="tag">NOTICE · അറിയിപ്പ്</div>
+      <h1>${esc(prog.title || 'പ്രോഗ്രാം')}</h1>
+      ${prog.theme ? `<div class="theme">${esc(prog.theme)}</div>` : ''}
+    </div>
+
+    ${prog.description ? `<div class="desc">${esc(prog.description)}</div>` : ''}
+
+    <div class="section">
+      <h3>പ്രോഗ്രാം വിവരങ്ങൾ</h3>
+      <div class="info-grid">
+        ${prog.program_date ? `<div class="row"><span class="k">📅 തീയതി</span><span class="v">${fmtDate(prog.program_date)}</span></div>` : ''}
+        ${prog.venue ? `<div class="row"><span class="k">📍 വേദി</span><span class="v">${esc(prog.venue)}</span></div>` : ''}
+        ${catList ? `<div class="row full"><span class="k">🎯 ഇനങ്ങൾ</span><span class="v">${esc(catList)}</span></div>` : ''}
+        <div class="row full"><span class="k">📝 രജിസ്ട്രേഷൻ</span><span class="v">${esc(regWindowText)}</span></div>
+      </div>
+    </div>
+
+    ${teamDateRows ? `
+    <div class="section">
+      <h3>ടീം തീയതികൾ</h3>
+      <table class="tdate">${teamDateRows}</table>
+    </div>` : ''}
+
+    <div class="section">
+      <h3>നിർദ്ദേശങ്ങൾ</h3>
+      <ul class="instr">
+        ${instructions.map(i => `<li>${esc(i)}</li>`).join('')}
+      </ul>
+    </div>
+
+    <div class="sign">
+      <div class="sign-box">
+        <div class="line">സെക്രട്ടറി</div>
+        <div class="role">സാഹിത്യ സമാജം — SKSBV</div>
+      </div>
+    </div>
+
+    <div class="copy">
+      <b>പകർപ്പ്:</b> എല്ലാ അംഗങ്ങൾക്കും, ടീം ലീഡർമാർക്കും.
+      ${teamCount > 0 ? ` &nbsp;•&nbsp; <b>Teams:</b> ${teamCount}` : ''}
+      &nbsp;•&nbsp; <b>Total Registered:</b> ${(registrations || []).length}
+    </div>
+  </div>
+  <script>window.onload=function(){setTimeout(function(){window.print();},600);};<\/script>
+  </body></html>`;
+}
+
+async function doPrintProgramRegistrations(programId){
+  const printMode    = document.getElementById('printMode')?.value || 'notice';
+  const statusFilter = document.getElementById('printStatusFilter').value;
+  const groupBy      = document.getElementById('printGroupBy').value;
+  const showTeam     = document.getElementById('printShowTeam').checked;
+  const showTeamDate = document.getElementById('printShowTeamDate').checked;
+  const blankCols    = document.getElementById('printBlankCols').checked;
+  const m0 = document.getElementById('printOptsModal'); if (m0) m0.remove();
+
+  const win = window.open('', '_blank');
+  if (!win){ toast('❌ Popup blocked — browser-ൽ popups allow ചെയ്യുക', 'error'); return; }
+  win.document.write('<p style="font-family:sans-serif;padding:20px;">Loading...</p>');
+
+  try {
+    const [pr, rr, tr] = await Promise.all([
+      supabaseClient.from('sksbv_programs').select('*').eq('id', programId).maybeSingle(),
+      supabaseClient.from('sksbv_program_registrations').select('*').eq('program_id', programId),
+      supabaseClient.from('sksbv_teams').select('team_key,team_name')
+    ]);
+
+    const prog = pr.data || {};
+    let progTeamDates = {};
+    try {
+      progTeamDates = (typeof prog.team_dates === 'string') ? JSON.parse(prog.team_dates || '{}') : (prog.team_dates || {});
+    } catch(e){ progTeamDates = {}; }
+    const getCurrentTeamDate = (teamKey) => {
+      if (!teamKey || !progTeamDates[teamKey]) return null;
+      const td = progTeamDates[teamKey];
+      return (typeof td === 'object') ? (td.date || td.program_date || null) : td;
+    };
+    let list = rr.data || [];
+    const teamMap = {};
+    (tr.data || []).forEach(t => { teamMap[t.team_key] = t.team_name; });
+    const teamLabel = k => teamMap[k] || k || '—';
+
+    if (statusFilter !== 'all') list = list.filter(r => r.status === statusFilter);
+    list.sort((a, b) => (a.member_name || '').localeCompare(b.member_name || ''));
+
+    // 📜 Notice mode — build official notice and exit
+    if (printMode === 'notice'){
+      win.document.open();
+      win.document.write(buildProgramNoticeHtml(prog, progTeamDates, teamMap, list));
+      win.document.close();
+      toast('📜 പ്രോഗ്രാം നോട്ടീസ്...', 'success');
+      return;
+    }
+
+    if (list.length === 0){
+      win.document.open();
+      win.document.write('<div style="font-family:sans-serif;padding:40px;text-align:center;">' +
+        '<h2>പ്രിന്റ് ചെയ്യാൻ രജിസ്ട്രേഷനുകൾ ഇല്ല</h2></div>');
+      win.document.close();
+      return;
+    }
+
+    // ── Group ──
+    const groups = {};
+    list.forEach(r => {
+      let k;
+      if (groupBy === 'category')      k = PRINT_TYPE_LABELS[r.item_type] || r.item_type || 'മറ്റുള്ളവ';
+      else if (groupBy === 'team')     k = r.team_key ? teamLabel(r.team_key) : 'ടീം ഇല്ല';
+      else if (groupBy === 'name')     k = (r.member_name || '#').charAt(0).toUpperCase();
+      else                             k = 'രജിസ്ട്രേഷനുകൾ';
+      (groups[k] = groups[k] || []).push(r);
+    });
+
+    const keys = Object.keys(groups).sort((a, b) => {
+      if (groupBy === 'category'){
+        const ia = PRINT_TYPE_ORDER.indexOf(Object.keys(PRINT_TYPE_LABELS).find(x => PRINT_TYPE_LABELS[x] === a));
+        const ib = PRINT_TYPE_ORDER.indexOf(Object.keys(PRINT_TYPE_LABELS).find(x => PRINT_TYPE_LABELS[x] === b));
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+      }
+      return a.localeCompare(b);
+    });
+
+    // ── Rows ──
+    const showTeamDateCol = showTeamDate && groupBy !== 'team';
+    let bodyHtml = '';
+    let sl = 0;
+    keys.forEach(k => {
+      if (groupBy !== 'none'){
+        let groupTitle = esc(k) + ' — ' + groups[k].length;
+        if (groupBy === 'team'){
+          const firstR = groups[k][0];
+          const dt = firstR ? getCurrentTeamDate(firstR.team_key) : null;
+          if (dt) groupTitle += ' &nbsp;•&nbsp; 📅 ' + fmtDate(dt);
+        }
+        bodyHtml += '<div class="grp">' + groupTitle + '</div>';
+      }
+      bodyHtml += '<table><thead><tr>' +
+        '<th style="width:28px;">#</th>' +
+        '<th>പേര്</th>' +
+        '<th style="width:55px;">ക്ലാസ്</th>' +
+        '<th style="width:75px;">ID</th>' +
+        (showTeam ? '<th style="width:90px;">ടീം</th>' : '') +
+        (showTeamDateCol ? '<th style="width:80px;">തീയതി</th>' : '') +
+        '<th>ഇനത്തിന്റെ പേര്</th>' +
+        (statusFilter === 'all' ? '<th style="width:70px;">Status</th>' : '') +
+        (blankCols ? '<th style="width:60px;">മാർക്ക്</th><th style="width:80px;">ഒപ്പ്</th>' : '') +
+        '</tr></thead><tbody>';
+
+      groups[k].forEach(r => {
+        sl++;
+        const currentTeamDate = getCurrentTeamDate(r.team_key);
+        const teamDateText = currentTeamDate ? fmtDate(currentTeamDate) : (r.team_date ? fmtDate(r.team_date) : '—');
+        bodyHtml += '<tr>' +
+          '<td>' + sl + '</td>' +
+          '<td><b>' + esc(r.member_name || '') + '</b></td>' +
+          '<td>' + esc(r.member_class || '—') + '</td>' +
+          '<td>' + esc(r.member_id || '') + '</td>' +
+          (showTeam ? '<td>' + esc(r.team_key ? teamLabel(r.team_key) : '—') + '</td>' : '') +
+          (showTeamDateCol ? '<td>' + esc(teamDateText) + '</td>' : '') +
+          '<td>' + esc(r.item_title || '') + '</td>' +
+          (statusFilter === 'all' ? '<td>' + esc(r.status || '') + '</td>' : '') +
+          (blankCols ? '<td></td><td></td>' : '') +
+          '</tr>';
+      });
+      bodyHtml += '</tbody></table>';
+    });
+
+    // ── Header ──
+    const statusText = statusFilter === 'all' ? 'എല്ലാം'
+      : statusFilter === 'approved' ? 'Approved മാത്രം'
+      : statusFilter === 'pending' ? 'Pending മാത്രം' : 'Rejected മാത്രം';
+
+    const headHtml =
+      '<div class="head">' +
+        '<div class="org">SKSBV — സാഹിത്യ സമാജം</div>' +
+        '<div class="ttl">' + esc(prog.title || '') + '</div>' +
+        (prog.theme ? '<div class="sub">📖 ' + esc(prog.theme) + '</div>' : '') +
+        '<div class="sub">📅 ' + fmtDate(prog.program_date) +
+          (prog.venue ? ' &nbsp;•&nbsp; 📍 ' + esc(prog.venue) : '') + '</div>' +
+        '<div class="meta">ആകെ: ' + list.length + ' രജിസ്ട്രേഷനുകൾ &nbsp;•&nbsp; ' + statusText +
+          ' &nbsp;•&nbsp; പ്രിന്റ്: ' + fmtDate(new Date()) + '</div>' +
+      '</div>';
+
+    const PRINT_CSS =
+      '@page{size:A4 portrait;margin:12mm}' +
+      '*{box-sizing:border-box}' +
+      'body{font-family:\'Anek Malayalam\',sans-serif;color:#0f172a;margin:0;font-size:12px}' +
+      '.head{text-align:center;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px}' +
+      '.org{font-size:11px;letter-spacing:2px;font-weight:700;color:#4c1d95}' +
+      '.ttl{font-size:20px;font-weight:900;margin-top:4px;line-height:1.2}' +
+      '.sub{font-size:11px;margin-top:3px;font-weight:700}' +
+      '.meta{font-size:10px;margin-top:5px;color:#475569;font-weight:700}' +
+      '.grp{background:#eef2ff;border-left:4px solid #6366f1;font-weight:900;font-size:12.5px;' +
+           'padding:6px 10px;margin:14px 0 6px;page-break-after:avoid}' +
+      'table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:4px}' +
+      'th,td{border:1px solid #94a3b8;padding:5px 6px;text-align:left;vertical-align:top}' +
+      'th{background:#e0e7ff;font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.3px}' +
+      'tbody tr:nth-child(even) td{background:#fafafa}' +
+      'tr{page-break-inside:avoid}' +
+      '.sign{display:flex;justify-content:space-between;margin-top:28px;font-size:11px;font-weight:700}' +
+      '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+
+    const html = '<!DOCTYPE html><html lang="ml"><head><meta charset="utf-8">' +
+      '<title>' + esc(prog.title || 'Registrations') + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@400;600;700;900&display=swap" rel="stylesheet">' +
+      '<style>' + PRINT_CSS + '</style></head><body>' +
+      headHtml + bodyHtml +
+      '<div class="sign"><div>പ്രോഗ്രാം കോർഡിനേറ്റർ ______________________</div>' +
+      '<div>സെക്രട്ടറി ______________________</div></div>' +
+      '<script>window.onload=function(){setTimeout(function(){window.print();},500);};<\/script>' +
+      '</body></html>';
+
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    toast('🖨️ പ്രിന്റ് തുറക്കുന്നു...', 'success');
+  } catch(e){
+    try {
+      win.document.open();
+      win.document.write('<div style="font-family:sans-serif;padding:30px;color:#dc2626;">' +
+        '<h2>Error</h2><p>' + esc(e.message) + '</p></div>');
+      win.document.close();
+    } catch(_){}
+    toast('❌ ' + e.message, 'error');
+  }
 }
 
 /* ═══ TAB HANDLERS ═══ */
-const TAB_HANDLERS = {
+  const TAB_HANDLERS = {
   dashboard: renderDashboard,
   programs: renderPrograms,
   registrations: renderRegistrations,
@@ -1512,11 +1972,15 @@ async function autoSplitTeams(){
     
     toast('⏳ Splitting ' + sorted.length + ' members...', 'info');
     
-    // Update in batches
-    for (let i = 0; i < sorted.length; i++){
-      const m = sorted[i];
-      const newTeam = i % 2 === 0 ? t1 : t2;
-      await supabaseClient.from('sksbv_members').update({ team: newTeam }).eq('id', m.id);
+    // Update in parallel batches (10 at a time)
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < sorted.length; i += BATCH_SIZE){
+      const batch = sorted.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map((m, idx) =>
+        supabaseClient.from('sksbv_members')
+          .update({ team: (i + idx) % 2 === 0 ? t1 : t2 })
+          .eq('id', m.id)
+      ));
     }
     
     toast('✅ ' + sorted.length + ' അംഗങ്ങളെ 2 ടീമുകളായി വിഭജിച്ചു', 'success');
