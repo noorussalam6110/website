@@ -7372,33 +7372,88 @@ function renderStudentsAdmin(){
 function openStudentForm(sid){
   var iE=!!sid;
   var s=iE?studentsAdminData.find(function(x){return x.studentid===sid;}):{};
-  modalTitleSpan.innerText=iE?'✏️ Edit':'➕ Add Student';
+  modalTitleSpan.innerText=iE?'✏️ Edit Student':'➕ Add Student';
   var cv=iE?(s.class||''):(currentAdminClass==='all'?'':currentAdminClass);
-  modalBodyDiv.innerHTML='<form><div class="row g-3"><div class="col-md-6"><label style="color:#475569;font-size:.78rem;">ID *</label><input type="text" id="sf_studentid" value="'+escapeHtml(s.studentid||'')+'" required '+(iE?'readonly':'')+' class="modal-form-input" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\');"></div><div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Name *</label><input type="text" id="sf_name" value="'+escapeHtml(s.name||'')+'" required class="modal-form-input"></div><div class="col-md-4"><label style="color:#475569;font-size:.78rem;">Class *</label><select id="sf_class" class="modal-form-input" required>'+[1,2,3,4,5,6,7,8,9,10].map(function(c){return'<option value="'+c+'" '+(String(cv)===String(c)?'selected':'')+'>Class '+c+'</option>';}).join('')+'</select></div><div class="col-md-4"><label style="color:#475569;font-size:.78rem;">Roll</label><input type="text" id="sf_roll" value="'+escapeHtml(s.roll||'')+'" class="modal-form-input"></div><div class="col-md-4"><label style="color:#475569;font-size:.78rem;">Password</label><input type="text" id="sf_password" value="'+escapeHtml(s.password||'noor123')+'" class="modal-form-input"></div><div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Father</label><input type="text" id="sf_fathername" value="'+escapeHtml(s.fathername||'')+'" class="modal-form-input"></div><div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Phone</label><input type="tel" id="sf_phone" value="'+escapeHtml(s.phone||'')+'" class="modal-form-input"></div></div><div class="d-flex gap-2 mt-4"><button type="button" class="btn-update flex-grow-1" onclick="saveStudent('+(iE?"'"+sid+"'":'null')+')">Save</button><button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div></form>';
+  
+  // Format Date (YYYY-MM-DD) for HTML input type="date"
+  var dobVal = s.dob ? String(s.dob).split('T')[0] : '';
+
+  var html = '<form><div class="row g-3">';
+  
+  // Basic Info
+  html += '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">ID *</label><input type="text" id="sf_studentid" value="'+escapeHtml(s.studentid||'')+'" required '+(iE?'readonly':'')+' class="modal-form-input" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,\'\');"></div>';
+  html += '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Name *</label><input type="text" id="sf_name" value="'+escapeHtml(s.name||'')+'" required class="modal-form-input"></div>';
+  
+  html += '<div class="col-md-4"><label style="color:#475569;font-size:.78rem;">Class *</label><select id="sf_class" class="modal-form-input" required>'+[1,2,3,4,5,6,7,8,9,10].map(function(c){return'<option value="'+c+'" '+(String(cv)===String(c)?'selected':'')+'>Class '+c+'</option>';}).join('')+'</select></div>';
+  html += '<div class="col-md-4"><label style="color:#475569;font-size:.78rem;">Roll</label><input type="text" id="sf_roll" value="'+escapeHtml(s.roll||'')+'" class="modal-form-input"></div>';
+  html += '<div class="col-md-4"><label style="color:#475569;font-size:.78rem;">Password</label><input type="text" id="sf_password" value="'+escapeHtml(s.password||'noor123')+'" class="modal-form-input"></div>';
+  
+  html += '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Father Name</label><input type="text" id="sf_fathername" value="'+escapeHtml(s.fathername||'')+'" class="modal-form-input"></div>';
+  html += '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Phone</label><input type="tel" id="sf_phone" value="'+escapeHtml(s.phone||'')+'" class="modal-form-input"></div>';
+  
+  // ⭐ NEW: Date of Birth & Blood Group
+  html += '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Date of Birth</label><input type="date" id="sf_dob" value="'+dobVal+'" class="modal-form-input"></div>';
+  html += '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;">Blood Group</label><select id="sf_bloodgroup" class="modal-form-input">';
+  ['', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].forEach(function(bg){
+    html += '<option value="'+bg+'" '+(s.bloodgroup===bg?'selected':'')+'>'+ (bg||'—') +'</option>';
+  });
+  html += '</select></div>';
+  
+  // ⭐ NEW: Email & Address
+  html += '<div class="col-12"><label style="color:#475569;font-size:.78rem;">Email</label><input type="email" id="sf_email" value="'+escapeHtml(s.email||'')+'" class="modal-form-input"></div>';
+  html += '<div class="col-12"><label style="color:#475569;font-size:.78rem;">Address</label><textarea id="sf_address" class="modal-form-input" style="min-height:70px;">'+escapeHtml(s.address||'')+'</textarea></div>';
+
+  html += '</div><div class="d-flex gap-2 mt-4"><button type="button" class="btn-update flex-grow-1" onclick="saveStudent('+(iE?"'"+sid+"'":'null')+')">Save</button><button type="button" class="btn-cancel" onclick="closeModal(\'globalModal\')">Cancel</button></div></form>';
+
+  modalBodyDiv.innerHTML = html;
   modal.style.display='flex';
 }
 
 function editStudent(sid){openStudentForm(sid);}
 
 async function saveStudent(eid){
-  var obj={
-    studentid:document.getElementById('sf_studentid').value.trim().toUpperCase(),
-    name:document.getElementById('sf_name').value.trim(),
-    class:document.getElementById('sf_class').value.trim(),
-    roll:document.getElementById('sf_roll').value.trim(),
-    password:document.getElementById('sf_password').value.trim()||'noor123',
-    fathername:document.getElementById('sf_fathername').value.trim(),
-    phone:document.getElementById('sf_phone').value.trim()
+  var obj = {
+    studentid: document.getElementById('sf_studentid').value.trim().toUpperCase(),
+    name: document.getElementById('sf_name').value.trim(),
+    class: document.getElementById('sf_class').value.trim(),
+    roll: document.getElementById('sf_roll').value.trim(),
+    password: document.getElementById('sf_password').value.trim() || 'noor123',
+    fathername: document.getElementById('sf_fathername').value.trim(),
+    phone: document.getElementById('sf_phone').value.trim(),
+    // ⭐ NEW: Saving the new fields
+    dob: document.getElementById('sf_dob').value || null,
+    bloodgroup: document.getElementById('sf_bloodgroup').value || null,
+    email: document.getElementById('sf_email').value.trim() || null,
+    address: document.getElementById('sf_address').value.trim() || null
   };
-  if(!obj.studentid||!obj.name){showToast('ID & Name required','error');return;}
+
+  if(!obj.studentid || !obj.name){ 
+    showToast('ID & Name required', 'error'); 
+    return; 
+  }
+  
   showLoading(true);
-  try{
-    if(eid)await supabaseClient.from('students').update(obj).eq('studentid',eid);
-    else await supabaseClient.from('students').insert(obj);
-    showToast('✅ Saved','success');
+  try {
+    if(eid) {
+      await supabaseClient.from('students').update(obj).eq('studentid', eid);
+      // സ്റ്റുഡന്റ് സ്വന്തം ഡാറ്റ എഡിറ്റ് ചെയ്യുമ്പോൾ ലോക്കൽ സ്റ്റോറേജിലും അപ്ഡേറ്റ് ചെയ്യാൻ
+      if (currentUser && currentUser.studentId === eid) {
+        Object.assign(currentUser, {
+          name: obj.name, fatherName: obj.fathername, phone: obj.phone,
+          dob: obj.dob, bloodGroup: obj.bloodgroup, email: obj.email, address: obj.address
+        });
+        localStorage.setItem('noor_session', JSON.stringify(currentUser));
+        if(typeof updateDashboardUI === 'function') updateDashboardUI();
+      }
+    } else {
+      await supabaseClient.from('students').insert(obj);
+    }
+    showToast('✅ Saved successfully', 'success');
     closeModal('globalModal');
     loadStudentsForAdmin();
-  }catch(e){showToast('❌ '+e.message,'error');}
+  } catch(e) {
+    showToast('❌ ' + e.message, 'error');
+  }
   showLoading(false);
 }
 
