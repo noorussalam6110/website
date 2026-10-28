@@ -4740,7 +4740,11 @@ function applyStudentPortalVisibility(st){
   for(var i=0;i<tiles.length;i++){
     var tile=tiles[i];var act=tile.dataset.action;
     if(!act)continue;
-    if(act==='topper'){var rankOK=currentUser&&[1,2,3].indexOf(currentUser.rank)>-1;tile.style.display=(v.actions.topper&&rankOK)?'':'none';continue;}
+        if(act==='topper'){
+      var rankOK = currentUser && [1, 2].indexOf(Number(currentUser.rank)) > -1;
+      tile.style.display = (v.actions.topper && rankOK) ? '' : 'none';
+      continue;
+    }
     tile.style.display=v.actions[act]?'':'none';
   }
   var grid=document.getElementById('quickActionsGrid');
@@ -6427,7 +6431,16 @@ function downloadIdCard(t){
 /* 🏆 TOPPER POSTER                                             */
 /* ============================================================ */
 function showTopperPoster(){
-  if(!currentUser)return;
+  if(!currentUser) return;
+  
+  // 🏆 റാങ്ക് 1, 2 ഉള്ളവർക്ക് മാത്രം അനുമതി
+  if(![1, 2].includes(Number(currentUser.rank))){
+    if(typeof showToast === 'function'){
+      showToast('🏆 ടോപ്പർ പോസ്റ്റർ റാങ്ക് 1, 2 ഉള്ളവർക്ക് മാത്രം', 'error');
+    }
+    return;
+  }
+  
   document.getElementById('topperNameDisplay').textContent=currentUser.name||'Student';
   var rt=currentUser.rank===1?'Class Topper':currentUser.rank===2?'Second Place':currentUser.rank===3?'Third Place':'—';
   document.getElementById('topperClassRank').textContent='Class '+currentUser.class+' • '+rt;
@@ -45528,6 +45541,108 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
   console.log('   💡 Admin → Grades → 🔄 Reset Rank button');
   console.log('   💡 resetOverallRank({scope:"all"}) — programmatic');
   console.log('   💡 RESET_debug() — check status');
+})();
+</script>
+<script id="visibility-enforcer-v1">
+(function(){
+  'use strict';
+  console.log('🔒 Visibility Enforcer v1 loading...');
+
+  // 1. Force visibility on dynamic tiles
+  function enforceVisibility() {
+    if (typeof STUDENT_PORTAL_VISIBILITY === 'undefined') return;
+    if (!currentUser) return;
+    
+    // അഡ്മിൻ ആണെങ്കിൽ ഒഴിവാക്കാം
+    if (window.isAdminMode || window.isTeacherMode) return;
+
+    var actions = STUDENT_PORTAL_VISIBILITY.actions || {};
+    
+    // ഡൈനാമിക് ആയി ചേർക്കുന്ന എല്ലാ ടൈലുകളുടെയും ലിസ്റ്റ്
+    var tiles = {
+      'sksbv': 'sksbv',
+      'complaints': 'complaints',
+      'quiz': 'quiz',
+      'rewards': 'rewards',
+      'avatar_custom': 'avatar',
+      'class_chat': 'chat',
+      'namaz': 'namaz'
+    };
+
+    Object.keys(tiles).forEach(function(domAction) {
+      var el = document.querySelector('.action-tile[data-action="' + domAction + '"]');
+      if (!el) return;
+
+      // അഡ്മിൻ ഓഫ് ചെയ്തിട്ടുണ്ടെങ്കിൽ !important ഉപയോഗിച്ച് ഹൈഡ് ചെയ്യുക
+      var isEnabled = actions[domAction] !== false;
+      
+      // Topper ടൈലിന് പ്രത്യേകം ചെക്ക് (റാങ്ക് 1,2)
+      if (domAction === 'topper') {
+        var rankOK = currentUser && [1, 2].indexOf(Number(currentUser.rank)) > -1;
+        isEnabled = actions.topper !== false && rankOK;
+      }
+
+      if (!isEnabled) {
+        el.style.setProperty('display', 'none', 'important');
+      } else {
+        el.style.removeProperty('display');
+      }
+    });
+  }
+
+  // 2. MutationObserver — പുതിയ ടൈലുകൾ വരുമ്പോൾ ഉടൻ ചെക്ക് ചെയ്യാൻ
+  function watchGrid() {
+    var grid = document.getElementById('quickActionsGrid');
+    if (!grid) return;
+    
+    var observer = new MutationObserver(function(mutations) {
+      var needsCheck = false;
+      mutations.forEach(function(m) {
+        if (m.type === 'childList' && m.addedNodes.length > 0) {
+          needsCheck = true;
+        }
+      });
+      if (needsCheck) {
+        setTimeout(enforceVisibility, 100);
+      }
+    });
+    
+    observer.observe(grid, { childList: true, subtree: false });
+  }
+
+  // 3. Hook into applyStudentPortalVisibility (Admin-ൽ നിന്ന് ഓഫ് ചെയ്യുമ്പോൾ)
+  var _origApply = window.applyStudentPortalVisibility;
+  if (typeof _origApply === 'function' && !_origApply._vEnforcer) {
+    window.applyStudentPortalVisibility = function() {
+      var r = _origApply.apply(this, arguments);
+      setTimeout(enforceVisibility, 50);
+      return r;
+    };
+    window.applyStudentPortalVisibility._vEnforcer = true;
+  }
+
+  // 4. Hook into login
+  var _origLogin = window.completeLogin;
+  if (typeof _origLogin === 'function' && !_origLogin._vEnforcer) {
+    window.completeLogin = async function(student) {
+      var r = await _origLogin.apply(this, arguments);
+      setTimeout(enforceVisibility, 1000);
+      setTimeout(enforceVisibility, 3000);
+      return r;
+    };
+    window.completeLogin._vEnforcer = true;
+  }
+
+  // 5. Safety check every 3 seconds
+  setInterval(enforceVisibility, 3000);
+
+  // Init
+  setTimeout(function(){
+    watchGrid();
+    enforceVisibility();
+  }, 1500);
+
+  console.log('✅ Visibility Enforcer ready');
 })();
 </script>
 </body>
