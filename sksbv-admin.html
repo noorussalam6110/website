@@ -2134,11 +2134,11 @@ document.addEventListener('keydown', e => {
         '<div style="background:#f0fdf4;padding:12px 14px;border-radius:12px;' +
                     'margin-bottom:16px;border:1.5px solid rgba(5,150,105,.3);">' +
           '<div style="font-weight:900;color:#0f172a;font-size:.94rem;">' +
-            escapeHtml(reg.member_name || '') + '</div>' +
+            esc(reg.member_name || '') + '</div>' +
           '<div style="font-size:.72rem;color:#64748b;margin-top:3px;font-weight:700;">' +
-            '🆔 ' + escapeHtml(reg.member_id || '') + ' • Class ' + escapeHtml(reg.member_class || '') + '</div>' +
+            '🆔 ' + esc(reg.member_id || '') + ' • Class ' + esc(reg.member_class || '') + '</div>' +
           '<div style="font-size:.72rem;color:#0891b2;margin-top:2px;font-weight:700;">' +
-            '📝 ' + escapeHtml(reg.item_title || '') + ' — ' + escapeHtml(reg.item_type || '') + '</div>' +
+            '📝 ' + esc(reg.item_title || '') + ' — ' + esc(reg.item_type || '') + '</div>' +
         '</div>' +
 
         // Quick presets
@@ -2226,11 +2226,18 @@ document.addEventListener('keydown', e => {
         .select('xp, level, total_earned')
         .eq('studentid', sid).maybeSingle();
 
+      if (xr.error){
+        console.error('student_xp error:', xr.error);
+        alert('❌ DB Error: ' + xr.error.message);
+        if (btn){ btn.disabled = false; btn.innerHTML = '✅ Give XP'; }
+        return;
+      }
+
       var old = xr.data || { xp: 0, level: 1, total_earned: 0 };
       var newTotal = (old.total_earned || 0) + amount;
       var newLevel = levelFromTotal(newTotal);
-      var levelStartXP = totalXPForLevel(newLevel);
-      var curXP = newTotal - levelStartXP;
+      var levelStartXP = newLevel > 1 ? totalXPForLevel(newLevel) : 0;
+      var curXP = Math.max(0, newTotal - levelStartXP);
 
       // Update
       var up = await supabaseClient.from('student_xp').upsert({
