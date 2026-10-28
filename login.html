@@ -44910,17 +44910,21 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
       var mr = await supabaseClient.from('exam_marks').select('studentid, obtained_marks, max_marks');
       var marks = mr.data || [];
 
-      // Fetch XP
+      // Fetch XP (Strict Mode)
       var xpMap = {};
       if (includeXP) {
         try {
           var xr = await supabaseClient.from('student_xp').select('studentid, total_earned');
-          (xr.data || []).forEach(function(x){
-            xpMap[x.studentid] = Number(x.total_earned) || 0;
-          });
+          if (xr.error) {
+            console.error('XP Table Error:', xr.error.message);
+          } else {
+            (xr.data || []).forEach(function(x){
+              xpMap[x.studentid] = Number(x.total_earned) || 0;
+            });
+            console.log('✅ XP fetched for', Object.keys(xpMap).length, 'students');
+          }
         } catch(e){ console.warn('XP fetch skipped:', e.message); }
       }
-
       // Fetch extracurricular
       var extraMap = {};
       if (includeExtra) {
@@ -44987,7 +44991,7 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
       for (var j = 0; j < list.length; j++) {
         var s = list[j];
         await supabaseClient.from('students').update({
-          totalmarks: Math.round(s.obt * 10) / 10,
+          totalmarks: Math.round(s.score * 10) / 10, // ⭐ XP + Extra + Acad % ചേർന്ന മൊത്തം സ്കോർ
           madrasarank: s.rank
         }).eq('studentid', s.studentid);
       }
@@ -45132,42 +45136,88 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
     var toolbar = gradesTab.querySelector('.admin-toolbar');
     if (!toolbar) return;
 
-    var btn = document.createElement('button');
-    btn.className = 'btn-update btn-overall-rank-xp';
-    btn.style.cssText = 'background:linear-gradient(100deg,#fbbf24,#f59e0b);' +
-                        'color:#03132e;margin-left:6px;font-weight:900;';
-    btn.innerHTML = '<i class="fas fa-crown"></i> 🏆 Overall Rank (All Classes)';
-    btn.onclick = async function(){
-      if (!confirm('🏆 Calculate Overall Madrasa Rank?\n\n' +
-                   'Formula:\n' +
-                   '  Academic% + (Extra × 0.2) + (XP ÷ 100)\n\n' +
-                   'All students, all classes — madrasarank + totalmarks update ചെയ്യും.')) return;
-
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Computing...';
-
+    // 1. കണക്കുകൂട്ടാൻ ഉള്ള ബട്ടൺ
+    var btnCalc = document.createElement('button');
+    btnCalc.className = 'btn-update btn-overall-rank-xp';
+    btnCalc.style.cssText = 'background:linear-gradient(100deg,#fbbf24,#f59e0b);color:#03132e;margin-left:6px;font-weight:900;';
+    btnCalc.innerHTML = '<i class="fas fa-sync-alt"></i> Calculate Overall Rank';
+    btnCalc.onclick = async function(){
+      if (!confirm('🏆 Overall Rank recalculate ചെയ്യണോ?\n\nFormula:\nAcademic % + (Extra × 0.2) + (XP ÷ 100)')) return;
+      btnCalc.disabled = true;
+      btnCalc.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Computing...';
       try {
         var list = await window.calculateOverallMadrasaRank();
         if (list && list.length) {
           showToast('✅ ' + list.length + ' students ranked!', 'success');
-          if (typeof confetti !== 'undefined') {
-            confetti({ particleCount: 150, spread: 90, origin: { y: .7 },
-                       colors: ['#fbbf24','#f59e0b','#34d399','#8b5cf6'] });
-          }
+          if (typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 80, origin: { y: .7 } });
           if (typeof loadGradesForAdmin === 'function') loadGradesForAdmin();
         } else {
-          showToast('⚠️ No data', 'warning');
+          showToast('⚠️ No data or calculation failed', 'warning');
         }
-      } catch(e) {
-        showToast('❌ ' + e.message, 'error');
-      }
-
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-crown"></i> 🏆 Overall Rank (All Classes)';
+      } catch(e) { showToast('❌ ' + e.message, 'error'); }
+      btnCalc.disabled = false;
+      btnCalc.innerHTML = '<i class="fas fa-sync-alt"></i> Calculate Overall Rank';
     };
-    toolbar.appendChild(btn);
-    console.log('✅ Admin button injected');
+
+    // 2. കണക്കുകൂട്ടൽ കാണാൻ ഉള്ള ബട്ടൺ
+    var btnView = document.createElement('button');
+    btnView.className = 'btn-load btn-overall-rank-xp';
+    btnView.style.cssText = 'background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;margin-left:6px;font-weight:900;';
+    btnView.innerHTML = '<i class="fas fa-list-ol"></i> View Rank Breakdown';
+    btnView.onclick = function(){ window.showAdminOverallRank(); };
+
+    toolbar.appendChild(btnCalc);
+    toolbar.appendChild(btnView);
+    console.log('✅ Admin buttons injected');
   }
+
+  // 🏆 അഡ്മിൻ റാങ്ക് വിശദാംശങ്ങൾ കാണാൻ
+  window.showAdminOverallRank = async function() {
+    if (typeof modal === 'undefined') return;
+    modalTitleSpan.innerText = '🏆 Overall Rank Breakdown';
+    modalBodyDiv.innerHTML = '<div style="text-align:center;padding:40px;"><div class="spinner-sm" style="margin:0 auto;"></div></div>';
+    modal.style.display = 'flex';
+
+    try {
+      var list = await window.calculateOverallMadrasaRank();
+      if (!list || list.length === 0) throw new Error('No data to calculate');
+
+      var html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:650px;">';
+      html += '<thead><tr style="background:#f0f6ff;">' +
+              '<th style="padding:10px;text-align:left;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Rank</th>' +
+              '<th style="padding:10px;text-align:left;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Student</th>' +
+              '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Class</th>' +
+              '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Acad %</th>' +
+              '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Extra</th>' +
+              '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">XP</th>' +
+              '<th style="padding:10px;text-align:right;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Total Score</th>' +
+              '</tr></thead><tbody>';
+
+      list.forEach(function(s) {
+        var medal = s.rank === 1 ? '🥇' : s.rank === 2 ? '🥈' : s.rank === 3 ? '🥉' : '#' + s.rank;
+        html += '<tr style="border-bottom:1px solid rgba(100,116,139,.1);">' +
+                '<td style="padding:10px;font-weight:900;color:#0891b2;">' + medal + '</td>' +
+                '<td style="padding:10px;"><strong>' + escapeHtml(s.name || '') + '</strong><br><small style="color:#94a3b8;">' + s.studentid + '</small></td>' +
+                '<td style="padding:10px;text-align:center;">' + escapeHtml(s.class || '') + '</td>' +
+                '<td style="padding:10px;text-align:center;color:#2563eb;font-weight:800;">' + s.academicPct.toFixed(1) + '%</td>' +
+                '<td style="padding:10px;text-align:center;color:#ea580c;font-weight:800;">+' + s.extraBonus.toFixed(1) + '</td>' +
+                '<td style="padding:10px;text-align:center;color:#7c3aed;font-weight:800;">+' + s.xpBonus.toFixed(1) + '<br><small style="font-size:.65rem;font-weight:600;color:#a78bfa;">(' + s.xp + ' XP)</small></td>' +
+                '<td style="padding:10px;text-align:right;font-weight:900;color:#059669;font-size:.95rem;">' + s.score.toFixed(2) + '</td>' +
+                '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      html += '<div style="margin-top:16px;padding:14px;background:#fef3c7;border-radius:12px;font-size:.8rem;color:#92400e;font-weight:700;line-height:1.6;">' +
+              '<i class="fas fa-calculator"></i> <b>How Rank is Calculated:</b><br>' +
+              'Total Score = <span style="color:#2563eb;">Academic %</span> + <span style="color:#ea580c;">(Extra Marks × 0.2)</span> + <span style="color:#7c3aed;">(Total XP ÷ 100)</span><br>' +
+              '<small style="font-weight:600;opacity:.8;">* 100 XP ഉള്ള വിദ്യാർത്ഥിക്ക് +1 പോയിന്റ് XP Bonus ലഭിക്കും.</small>' +
+              '</div>';
+
+      modalBodyDiv.innerHTML = html;
+    } catch(e) {
+      modalBodyDiv.innerHTML = '<div style="padding:20px;color:#dc2626;">Error: ' + e.message + '</div>';
+    }
+  };
 
   // Try periodically
   setTimeout(injectAdminButton, 2000);
