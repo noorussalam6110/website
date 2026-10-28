@@ -20522,15 +20522,77 @@ ON CONFLICT (key) DO NOTHING;
   font-weight: 900;
 }
 
-/* ─── LIKES COUNT ─── */
+/* ─── LIKES ROW WITH AVATARS ─── */
 .ig-post-likes {
   padding: 6px 16px 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ig-liker-avatars {
+  display: flex;
+  align-items: center;
+}
+.ig-liker-avatars img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  margin-left: -8px;
+  object-fit: cover;
+  position: relative;
+  z-index: 1;
+}
+.ig-liker-avatars img:first-child {
+  margin-left: 0;
+  z-index: 3;
+}
+.ig-liker-avatars img:nth-child(2) {
+  z-index: 2;
+}
+.ig-likes-text {
   font-size: .88rem;
-  font-weight: 700;
+  color: #0f172a;
+  font-weight: 500;
+}
+.ig-likes-text b {
+  font-weight: 800;
+}
+
+/* ─── COMMENT PREVIEW ─── */
+.ig-comments-preview {
+  padding: 2px 16px 8px;
+}
+.ig-view-comments {
+  color: #64748b;
+  font-size: .86rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: block;
+  margin-bottom: 4px;
+}
+.ig-comment-line {
+  font-size: .86rem;
+  color: #0f172a;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+.ig-comment-line b {
+  font-weight: 800;
+  margin-right: 5px;
   color: #0f172a;
 }
-.ig-post-likes b {
-  font-weight: 900;
+
+/* ─── CAPTION ─── */
+.ig-post-caption {
+  padding: 2px 16px 8px;
+  font-size: .88rem;
+  line-height: 1.45;
+  color: #0f172a;
+}
+.ig-post-caption .caption-author {
+  font-weight: 800;
+  margin-right: 6px;
 }
 
 /* ─── CAPTION ─── */
@@ -21059,13 +21121,44 @@ body:not(.light-mode) .ig-post-comment-form { background: rgba(20,25,40,.9); }
     var liked = (window._igLikeCache && window._igLikeCache[c.id]) ? true : false;
     var likedClass = liked ? ' liked' : '';
 
+    // ⭐ Caption, Likes & Comments (Instagram Style)
+    var likesHtml = '<div class="ig-post-likes">';
+    var likers = c.recentLikers || [];
+    var totalL = c.totalLikes !== undefined ? c.totalLikes : (c.likes || 0);
+
+    if (likers.length > 0) {
+      likesHtml += '<div class="ig-liker-avatars">';
+      likers.forEach(function(l) {
+        var lPhoto = l.photo && l.photo.startsWith('http') ? l.photo : 'https://ui-avatars.com/api/?name=' + (l.name || 'S') + '&background=random';
+        likesHtml += '<img src="' + lPhoto + '" alt="' + escapeHtml(l.name) + '">';
+      });
+      likesHtml += '</div>';
+      likesHtml += '<div class="ig-likes-text">Liked by <b>' + escapeHtml(likers[0].name) + '</b>' +
+                   (totalL > 1 ? ' and <b>' + (totalL - 1) + ' others</b>' : '') + '</div>';
+    } else if (totalL > 0) {
+      likesHtml += '<div class="ig-likes-text"><b>' + totalL + '</b> likes</div>';
+    } else {
+      likesHtml += '<div class="ig-likes-text" style="color:#94a3b8;font-weight:600;font-size:.82rem;">No likes yet</div>';
+    }
+    likesHtml += '</div>';
+
+    // Comments Preview
+    var commentsHtml = '<div class="ig-comments-preview">';
+    if (c.recentComments && c.recentComments.length > 0) {
+      commentsHtml += '<span class="ig-view-comments">View all comments</span>';
+      c.recentComments.forEach(function(comment) {
+        commentsHtml += '<div class="ig-comment-line"><b>' + escapeHtml(comment.students?.name || 'User') + '</b> ' + escapeHtml(comment.comment) + '</div>';
+      });
+    }
+    commentsHtml += '</div>';
+
     // Caption
     var captionHtml = '';
     if (c.title || c.description) {
       captionHtml = '<div class="ig-post-caption">' +
         '<span class="caption-author">' + escapeHtml(author.name) + '</span>' +
-        (c.title ? '<span class="caption-title">' + escapeHtml(c.title) + '</span>' : '') +
-        (c.description ? '<span class="caption-text">' + escapeHtml(c.description) + '</span>' : '') +
+        (c.title ? '<span style="font-weight:800;">' + escapeHtml(c.title) + '</span> ' : '') +
+        (c.description ? '<span>' + escapeHtml(c.description) + '</span>' : '') +
         '</div>';
     }
 
@@ -21129,8 +21222,11 @@ body:not(.light-mode) .ig-post-comment-form { background: rgba(20,25,40,.9); }
           '<i class="far fa-bookmark"></i>' +
         '</button>' +
       '</div>' +
-      '<div class="ig-post-likes"><b data-like-count="' + c.id + '">' + (c.likes || 0) + '</b> likes</div>' +
+      '<div data-like-count="' + c.id + '">' +
+        likesHtml +
+      '</div>' +
       captionHtml +
+      commentsHtml +
       timeHtml +
       commentForm +
     '</article>';
@@ -21257,6 +21353,45 @@ body:not(.light-mode) .ig-post-comment-form { background: rgba(20,25,40,.9); }
           studentPhoto: smap[c.studentid] ? smap[c.studentid].photo : ''
         });
       });
+
+      // ⭐ Fetch likes & comments for avatars/preview
+      try {
+        var cids = allCreations.map(function(c){ return c.id; });
+        if(cids.length > 0) {
+          // Recent Likers
+          var lr = await supabaseClient.from('creation_likes')
+            .select('creation_id, students(name, photo)')
+            .in('creation_id', cids)
+            .order('created_at', { ascending: false });
+          
+          var likersMap = {};
+          (lr.data || []).forEach(function(l) {
+            if(!likersMap[l.creation_id]) likersMap[l.creation_id] = [];
+            if(l.students) likersMap[l.creation_id].push(l.students);
+          });
+
+          // Recent Comments (Limit to latest 2 per post)
+          var cr = await supabaseClient.from('creation_comments')
+            .select('creation_id, comment, studentid, students(name)')
+            .in('creation_id', cids)
+            .order('created_at', { ascending: true }); // Oldest to newest for preview
+          
+          var commentsMap = {};
+          (cr.data || []).forEach(function(c) {
+            if(!commentsMap[c.creation_id]) commentsMap[c.creation_id] = [];
+            commentsMap[c.creation_id].push(c);
+          });
+
+          // Attach to creations
+          allCreations = allCreations.map(function(c) {
+            return Object.assign({}, c, {
+              recentLikers: (likersMap[c.id] || []).slice(0, 3),
+              totalLikes: likersMap[c.id] ? likersMap[c.id].length : (c.likes || 0),
+              recentComments: (commentsMap[c.id] || []).slice(-2) // Last 2
+            });
+          });
+        }
+      } catch(e) { console.warn('Likes/Comments fetch error:', e); }
 
       // Load like cache for current user
       if (currentUser) {
