@@ -5628,7 +5628,7 @@ async function callGeminiAI(userMessage){
 
 async function aiRespond(q){
   var t=q.toLowerCase();
-  var uname=escapeHtml((currentUser.name||'Student').split(' ')[0]);
+  var uname=escapeHtml(currentUser.name||'Student');
   if(/(balance|palathulli|savings|സമ്പാദ്യം|പലതുള്ളി)/.test(t)){var b=await getStudentBalance(currentUser.studentId);return'💰 '+uname+', നിങ്ങളുടെ പലതുള്ളിയിൽ <b>₹'+b.toFixed(2)+'</b> ഉണ്ട്!';}
   if(/(attendance|ഹാജർ|ഹാജര്‍)/.test(t)){var a=currentUser.attendance||0;return'📆 '+uname+', ഹാജർ: <b>'+a+'%</b>.';}
   if(/(result|റിസൾട്ട്|grade|mark|ഗ്രേഡ്|മാർക്ക്)/.test(t)){return'📊 '+uname+', Grade: <b>'+(currentUser.overallGrade||'N/A')+'</b> | Rank: <b>#'+(currentUser.rank||'—')+'</b>';}
@@ -14889,7 +14889,7 @@ console.log('✅ Modal scroll fix v27.0 fully loaded');
           <div class="lvl-label">LEVEL</div>
         </div>
         <div class="xp-info">
-          <div class="xp-title">${escapeHtml(currentUser?.name?.split(' ')[0] || 'Student')}</div>
+          <div class="xp-title">${escapeHtml(currentUser?.name || 'Student')}</div>
           <div class="xp-rank-name">${rank}</div>
         </div>
       </div>
@@ -15519,10 +15519,10 @@ console.log('✅ Modal scroll fix v27.0 fully loaded');
       const dedupKey = 'bday_notif_' + currentUser.studentId + '_' + todayKey;
       try { if(localStorage.getItem(dedupKey)) return; } catch(e){}
 
-      const displayName = (currentUser.name || 'Student').split(' ')[0];
+      const displayName = currentUser.name || 'Student';
       await supabaseClient.from('notifications').insert({
         title: '🎂 ജന്മദിനാശംസകൾ, ' + displayName + '!',
-        message: 'ഹാപ്പി ബർത്ത്ഡേ ' + displayName + '! 🎉\n\nനിങ്ങൾക്കായി ഒരു പ്രത്യേക birthday gift ഒരുക്കിയിട്ടുണ്ട്! 🎁\n\nLogin ചെയ്ത് NSM AI യുമായി സംസാരിച്ച് നിങ്ങളുടെ birthday celebration കാണൂ! ✨',
+        message: 'ഹാപ്പി ബർത്ത്ഡേ ' + displayName + '! 🎉\n\nനിങ്ങൾക്കായി ഒരു പ്രത്യേക birthday gift ഒരുക്കിയിട്ടുണ്ട്! 🎁\n\nLogin ചെയ്ത് NSM AI ഒരുക്കിയ നിങ്ങളുടെ birthday celebration കാണൂ! ✨',
         type: 'important',
         target_type: 'student',
         target_student: currentUser.studentId,
@@ -15565,7 +15565,7 @@ console.log('✅ Modal scroll fix v27.0 fully loaded');
     banner.innerHTML = `
       🎂🎉<br>
       <span style="font-size:1.2rem;">ജന്മദിനാശംസകൾ!</span><br>
-      <span style="font-size:2.5rem;">${currentUser.name.split(' ')[0]}</span><br>
+      <span style="font-size:2.5rem;">${currentUser.name}</span><br>
       <span style="font-size:.9rem;opacity:.9;">🎈 Happy Birthday! 🎈</span>
     `;
     document.body.appendChild(banner);
@@ -44897,6 +44897,21 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
       var colors = ['#fbbf24','#cbd5e1','#cd7f32'];
       var html = '';
 
+      // 🏆 RANK CALCULATION FORMULA BOX
+      html += '<div style="background:linear-gradient(135deg,#eff6ff,#fce7f3);border:1.5px solid rgba(139,92,246,.35);border-radius:16px;padding:14px 16px;margin-bottom:16px;text-align:center;box-shadow:0 4px 12px -6px rgba(139,92,246,.2);">' +
+                '<div style="font-weight:900;color:#0f172a;font-size:.88rem;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
+                  '<i class="fas fa-calculator" style="color:#7c3aed;"></i> റാങ്ക് എങ്ങനെയാണ് കണക്കാക്കുന്നത്?' +
+                '</div>' +
+                '<div style="font-size:.76rem;color:#475569;line-height:1.6;background:#fff;padding:10px;border-radius:10px;display:inline-block;font-weight:700;border:1px solid rgba(100,116,139,.1);">' +
+                  '<span style="color:#059669;">Academic %</span> + ' +
+                  '<span style="color:#ea580c;">(Extra Marks × 0.2)</span> + ' +
+                  '<span style="color:#7c3aed;">(XP ÷ 100)</span>' +
+                '</div>' +
+                '<div style="font-size:.66rem;color:#94a3b8;margin-top:8px;font-weight:600;">' +
+                  '* മൊത്തത്തിലുള്ള സ്കോർ അനുസരിച്ച് റാങ്ക് നിശ്ചയിക്കുന്നു' +
+                '</div>' +
+              '</div>';
+
       // Top 3
       html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">';
       list.slice(0, 3).forEach(function(s, i){
@@ -44909,8 +44924,8 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
                     escapeHtml(s.name || '') + '</div>' +
                   '<div style="font-size:.68rem;color:#64748b;font-weight:700;">' +
                     'Class ' + escapeHtml(s.class || '') + '</div>' +
-                  '<div style="font-weight:900;color:' + colors[i] + ';font-size:.94rem;margin-top:4px;">' +
-                    (Number(s.totalmarks) || 0).toFixed(1) + '</div>' +
+                  '<div style="font-weight:900;color:' + colors[i] + ';font-size:.85rem;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.05);">' +
+                    'Rank #' + s.madrasarank + '</div>' +
                 '</div>';
       });
       html += '</div>';
@@ -44934,8 +44949,6 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
                 '<td style="padding:10px;"><strong>' + escapeHtml(s.name || '') +
                     (isMe ? ' <span style="color:#b45309;">⭐ You</span>' : '') + '</strong></td>' +
                 '<td style="padding:10px;text-align:center;">' + escapeHtml(s.class || '') + '</td>' +
-                '<td style="padding:10px;text-align:right;font-weight:900;color:#059669;">' +
-                    (Number(s.totalmarks) || 0).toFixed(1) + '</td>' +
                 '</tr>';
       });
       html += '</tbody></table></div>';
