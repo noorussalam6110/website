@@ -1262,7 +1262,57 @@ body.modal-open .ai-fab.show {
   .new-badge{min-width:20px;height:20px;font-size:.62rem;top:-5px;right:-5px;border-width:1.5px;}
 }
 body.light-mode .new-badge{border-color:#fff;box-shadow:0 4px 12px -2px rgba(239,68,68,.5);}
+/* ═══════════════════════════════════════════════════════ */
+/* ✅ 100% WORKING CUSTOM CHECKBOX (Pure CSS)            */
+/* ═══════════════════════════════════════════════════════ */
+input[type="checkbox"].notif-checkbox,
+#notifSelectAll {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  width: 24px !important;
+  height: 24px !important;
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  background-color: #ffffff !important;
+  cursor: pointer !important;
+  position: relative !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
 
+/* ഹോവർ ചെയ്യുമ്പോൾ */
+input[type="checkbox"].notif-checkbox:hover,
+#notifSelectAll:hover {
+  border-color: #1e6be0 !important;
+  box-shadow: 0 0 0 3px rgba(30, 107, 224, 0.15) !important;
+}
+
+/* ക്ലിക്ക് ചെയ്ത് സെലക്ട് ചെയ്യുമ്പോൾ (Background മാറും) */
+input[type="checkbox"].notif-checkbox:checked,
+#notifSelectAll:checked {
+  background-color: #1e6be0 !important;
+  border-color: #1e6be0 !important;
+}
+
+/* ✅ ടിക്ക് മാർക്ക് വരയ്ക്കുന്ന ഭാഗം (Pure CSS) */
+input[type="checkbox"].notif-checkbox:checked::after,
+#notifSelectAll:checked::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 7px !important;
+  top: 3px !important;
+  width: 6px !important;
+  height: 12px !important;
+  border: solid white !important;
+  border-width: 0 3px 3px 0 !important;
+  transform: rotate(45deg) !important;
+  display: block !important;
+}
 </style>
 <!-- ═══════════════════════════════════════════════════════ -->
 <!-- 🔤 MALAYALAM FONT FOR PDF — v25.0                       -->
@@ -8766,7 +8816,7 @@ async function loadNotificationsAdmin(){
     if(notificationsData.length===0){wrap.innerHTML='<div class="empty-state">No notifications</div>';return;}
     
     var h='<table><thead><tr>' +
-          '<th style="width:40px;"><input type="checkbox" id="notifSelectAll" onclick="toggleAllNotifications(this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:#1e6be0;"></th>' +
+          '<th style="width:40px;text-align:center;"><input type="checkbox" id="notifSelectAll" onclick="toggleAllNotifications(this.checked)"></th>' +
           '<th>Title</th><th>Type</th><th>Target</th><th>Date</th><th>Action</th>' +
           '</tr></thead><tbody>';
           
@@ -8778,7 +8828,7 @@ async function loadNotificationsAdmin(){
       else targetLabel='<span style="background:#eff6ff;color:#2563eb;padding:3px 10px;border-radius:20px;font-size:.66rem;font-weight:800;">📚 Class '+escapeHtml(n.target_class||'—')+'</span>';
       
       h+='<tr>' +
-         '<td><input type="checkbox" class="notif-checkbox" value="'+n.id+'" style="width:18px;height:18px;cursor:pointer;accent-color:#1e6be0;"></td>' +
+         '<td style="text-align:center;"><input type="checkbox" class="notif-checkbox" value="'+n.id+'"></td>' +
          '<td><strong>'+escapeHtml(n.title)+'</strong></td>' +
          '<td><span style="font-size:.68rem;color:'+(n.type==='urgent'?'#dc2626':n.type==='important'?'#b45309':'#64748b')+';font-weight:800;text-transform:uppercase;">'+escapeHtml(n.type||'general')+'</span></td>' +
          '<td>'+targetLabel+'</td>' +
@@ -15615,30 +15665,45 @@ console.log('✅ Modal scroll fix v27.0 fully loaded');
     const oldBanner = document.getElementById('birthdayBanner');
     if(oldBanner) oldBanner.remove();
 
-    // Big birthday banner
+    // 🎂 Premium Birthday Banner
     const banner = document.createElement('div');
     banner.id = 'birthdayBanner';
     banner.style.cssText = `
       position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-      background: linear-gradient(135deg, #f472b6, #a78bfa);
-      color: #fff; padding: 30px 50px; border-radius: 30px;
-      font-size: 1.8rem; font-weight: 900; text-align: center;
-      box-shadow: 0 30px 80px -20px rgba(244,114,182,.9);
-      z-index: 100005; transition: transform .6s cubic-bezier(.34,1.56,.64,1);
-      font-family: 'Anek Malayalam', sans-serif;
+      background: linear-gradient(135deg, rgba(108, 92, 231, 0.98), rgba(253, 121, 168, 0.98));
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 2px solid rgba(255,255,255,0.3);
+      color: #fff; padding: 24px 36px; border-radius: 28px;
+      text-align: center; width: 90%; max-width: 320px;
+      box-shadow: 0 25px 60px -15px rgba(108, 92, 231, 0.8), inset 0 0 40px rgba(255,255,255,0.1);
+      z-index: 100005; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      font-family: 'Anek Malayalam', sans-serif; cursor: pointer;
     `;
+    
+    // 👇 Name-ന്റെ സൈസ് കുറച്ചു (1.6rem), Box-ന് പ്രീമിയം ലുക്ക് നൽകി
     banner.innerHTML = `
-      🎂🎉<br>
-      <span style="font-size:1.2rem;">ജന്മദിനാശംസകൾ!</span><br>
-      <span style="font-size:2.5rem;">${currentUser.name}</span><br>
-      <span style="font-size:.9rem;opacity:.9;">🎈 Happy Birthday! 🎈</span>
+      <div style="font-size: 2.8rem; margin-bottom: 8px; animation: bounce 2s infinite;">🎂</div>
+      <div style="font-size: 1rem; font-weight: 800; color: #ffd966; letter-spacing: 1px;">ജന്മദിനാശംസകൾ!</div>
+      <div style="font-size: 1.6rem; font-weight: 900; margin: 8px 0; text-shadow: 0 2px 10px rgba(0,0,0,0.2); word-break: break-word;">${currentUser.name}</div>
+      <div style="font-size: 0.85rem; background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 20px; display: inline-block;">🎈 Happy Birthday 🎈</div>
+      <div style="font-size: 0.65rem; margin-top: 14px; opacity: 0.7; font-weight: 600;"><i class="fas fa-hand-pointer"></i> Tap to close</div>
     `;
+    
     document.body.appendChild(banner);
+    
+    // Animate in
     setTimeout(() => banner.style.transform = 'translate(-50%, -50%) scale(1)', 100);
-    setTimeout(() => {
+    
+    // 👇 താപ്പ് ചെയ്താൽ ക്ലോസ് ആകാൻ
+    const hideBanner = () => {
+      if (!banner.parentNode) return;
       banner.style.transform = 'translate(-50%, -50%) scale(0)';
       setTimeout(() => banner.remove(), 600);
-    }, 6000);
+    };
+    banner.onclick = hideBanner;
+    
+    // Auto close after 6 seconds
+    setTimeout(hideBanner, 6000);
     
     // 🎂 Birthday XP disabled — notification sends separately via sendBirthdayGreeting()
   }
