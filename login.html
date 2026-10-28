@@ -44891,14 +44891,14 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
 <script id="overall-rank-xp-v150">
 (function(){
   'use strict';
-  console.log('🏆 Overall Madrasa Rank v150 (with XP) loading...');
+  console.log('🏆 Overall Madrasa Rank v150 loading...');
 
   // ═══════════════════════════════════════════════════
   // ⚙️ CONFIG — Tune weights here
   // ═══════════════════════════════════════════════════
   var RANK_CONFIG = {
     extraWeight: 0.2,     // Extra × 0.2
-    xpMultiplier: 0.015,  // XP × 0.015 (100 XP = +1.5)
+    xpMultiplier: 0.015,  // XP × 0.015 (100 XP = +1.5 points)
     includeExtra: true,
     includeXP: true
   };
@@ -44916,33 +44916,26 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
     if (!supabaseClient) return null;
 
     try {
-      console.log('🔢 Computing Overall Rank... (extra×'+extraWeight+', XP/'+xpDivisor+')');
+      console.log('🔢 Computing Overall Rank... (extra×'+extraWeight+', XP×'+xpMultiplier+')');
 
-      // Fetch students
+      // 1. Fetch Data
       var sr = await supabaseClient.from('students').select('studentid, name, class');
       var students = sr.data || [];
       if (!students.length) return [];
 
-      // Fetch marks
       var mr = await supabaseClient.from('exam_marks').select('studentid, obtained_marks, max_marks');
       var marks = mr.data || [];
 
-      // Fetch XP (Strict Mode)
       var xpMap = {};
       if (includeXP) {
         try {
           var xr = await supabaseClient.from('student_xp').select('studentid, total_earned');
-          if (xr.error) {
-            console.error('XP Table Error:', xr.error.message);
-          } else {
-            (xr.data || []).forEach(function(x){
-              xpMap[x.studentid] = Number(x.total_earned) || 0;
-            });
-            console.log('✅ XP fetched for', Object.keys(xpMap).length, 'students');
-          }
+          (xr.data || []).forEach(function(x){
+            xpMap[x.studentid] = Number(x.total_earned) || 0;
+          });
         } catch(e){ console.warn('XP fetch skipped:', e.message); }
       }
-      // Fetch extracurricular
+
       var extraMap = {};
       if (includeExtra) {
         try {
@@ -44954,7 +44947,7 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
         } catch(e){ console.warn('Extra fetch skipped:', e.message); }
       }
 
-      // Aggregate
+      // 2. Aggregate Marks
       var stats = {};
       students.forEach(function(s){
         stats[s.studentid] = {
@@ -44976,7 +44969,7 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
         }
       });
 
-      // Compute scores
+      // 3. Compute Scores
       var list = Object.keys(stats).map(function(k){
         var s = stats[k];
         var academicPct = s.max > 0 ? (s.obt / s.max) * 100 : 0;
@@ -44991,10 +44984,9 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
         });
       });
 
-      // Sort desc
+      // 4. Sort & Rank
       list.sort(function(a, b){ return b.score - a.score; });
 
-      // Assign ranks (ties share rank)
       var rank = 0, prevScore = null;
       for (var i = 0; i < list.length; i++) {
         if (prevScore === null || Math.abs(list[i].score - prevScore) > 0.001) {
@@ -45004,24 +44996,16 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
         list[i].rank = rank;
       }
 
-      // Update students table
+      // 5. Update DB
       for (var j = 0; j < list.length; j++) {
         var s = list[j];
         await supabaseClient.from('students').update({
-          totalmarks: Math.round(s.score * 10) / 10, // ⭐ XP + Extra + Acad % ചേർന്ന മൊത്തം സ്കോർ
+          totalmarks: Math.round(s.score * 10) / 10, // ⭐ മൊത്തം സ്കോർ (XP + Extra + Acad)
           madrasarank: s.rank
         }).eq('studentid', s.studentid);
       }
 
-      console.log('✅ ' + list.length + ' students ranked');
-      console.log('🏆 Top 5:');
-      list.slice(0, 5).forEach(function(s, i){
-        console.log('  ' + (i+1) + '. ' + s.name + ' (' + s.class + ') — ' +
-                    s.score.toFixed(2) + ' | Acad ' + s.academicPct.toFixed(1) +
-                    '% + Extra ' + s.extraBonus.toFixed(1) +
-                    ' + XP ' + s.xpBonus.toFixed(1));
-      });
-
+      console.log('✅ ' + list.length + ' students ranked successfully');
       return list;
     } catch(e) {
       console.error('calculateOverallMadrasaRank:', e);
@@ -45030,7 +45014,27 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
   };
 
   // ═══════════════════════════════════════════════════
-  // 📊 LEADERBOARD — view top 50
+  // 🎯 MAKE CARD CLICKABLE & HINT TEXT
+  // ═══════════════════════════════════════════════════
+  setTimeout(function(){
+    var card = document.getElementById('madrasaRankCard');
+    if (card && !card._clickHooked) {
+      card._clickHooked = true;
+      card.style.cursor = 'pointer';
+      card.onclick = function(){ window.showOverallLeaderboard(); };
+      
+      if (!card.querySelector('.rank-tap-hint')) {
+        var hint = document.createElement('div');
+        hint.className = 'rank-tap-hint';
+        hint.style.cssText = 'margin-top:8px;font-size:.7rem;color:#0891b2;font-weight:800;display:flex;align-items:center;gap:4px;';
+        hint.innerHTML = '<i class="fas fa-calculator"></i> Tap to see leaderboard & Rank Formula';
+        card.appendChild(hint);
+      }
+    }
+  }, 2500);
+
+  // ═══════════════════════════════════════════════════
+  // 📊 LEADERBOARD
   // ═══════════════════════════════════════════════════
   window.showOverallLeaderboard = async function(){
     if (typeof modal === 'undefined' || !currentUser) return;
@@ -45052,7 +45056,6 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
           '<div style="text-align:center;padding:40px;color:#64748b;">' +
             '<i class="fas fa-trophy" style="font-size:3rem;opacity:.3;display:block;margin-bottom:12px;"></i>' +
             '<div style="font-weight:800;color:#0f172a;">Ranks not calculated yet</div>' +
-            '<div style="font-size:.82rem;margin-top:6px;">Admin → Grades → 🏆 Overall Rank</div>' +
           '</div>';
         return;
       }
@@ -45061,18 +45064,11 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
       var colors = ['#fbbf24','#cbd5e1','#cd7f32'];
       var html = '';
 
-      // 🏆 RANK CALCULATION FORMULA BOX
-      html += '<div style="background:linear-gradient(135deg,#eff6ff,#fce7f3);border:1.5px solid rgba(139,92,246,.35);border-radius:16px;padding:14px 16px;margin-bottom:16px;text-align:center;box-shadow:0 4px 12px -6px rgba(139,92,246,.2);">' +
-                '<div style="font-weight:900;color:#0f172a;font-size:.88rem;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">' +
-                  '<i class="fas fa-calculator" style="color:#7c3aed;"></i> റാങ്ക് എങ്ങനെയാണ് കണക്കാക്കുന്നത്?' +
-                '</div>' +
-                '<div style="font-size:.76rem;color:#475569;line-height:1.6;background:#fff;padding:10px;border-radius:10px;display:inline-block;font-weight:700;border:1px solid rgba(100,116,139,.1);">' +
-                  '<span style="color:#059669;">Academic %</span> + ' +
-                  '<span style="color:#ea580c;">(Extra Marks × 0.2)</span> + ' +
-                  '<span style="color:#7c3aed;">(XP ÷ 100)</span>' +
-                '</div>' +
-                '<div style="font-size:.66rem;color:#94a3b8;margin-top:8px;font-weight:600;">' +
-                  '* മൊത്തത്തിലുള്ള സ്കോർ അനുസരിച്ച് റാങ്ക് നിശ്ചയിക്കുന്നു' +
+      // Formula Box
+      html += '<div style="background:linear-gradient(135deg,#eff6ff,#fce7f3);border:1.5px solid rgba(139,92,246,.35);border-radius:16px;padding:14px 16px;margin-bottom:16px;text-align:center;">' +
+                '<div style="font-weight:900;color:#0f172a;font-size:.88rem;margin-bottom:8px;"><i class="fas fa-calculator" style="color:#7c3aed;"></i> റാങ്ക് കണക്കാക്കുന്ന വിധം</div>' +
+                '<div style="font-size:.76rem;color:#475569;font-weight:700;background:#fff;padding:10px;border-radius:10px;border:1px solid rgba(100,116,139,.1);display:inline-block;">' +
+                  '<span style="color:#059669;">Acad %</span> + <span style="color:#ea580c;">(Extra × 0.2)</span> + <span style="color:#7c3aed;">(XP × 0.015)</span>' +
                 '</div>' +
               '</div>';
 
@@ -45083,25 +45079,20 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
                 'background:linear-gradient(140deg,' + colors[i] + '25,' + colors[i] + '10);' +
                 'border:2px solid ' + colors[i] + ';">' +
                   '<div style="font-size:1.8rem;">' + medals[i] + '</div>' +
-                  '<div style="font-weight:900;color:#0f172a;font-size:.8rem;margin-top:6px;' +
-                              'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' +
-                    escapeHtml(s.name || '') + '</div>' +
-                  '<div style="font-size:.68rem;color:#64748b;font-weight:700;">' +
-                    'Class ' + escapeHtml(s.class || '') + '</div>' +
-                  '<div style="font-weight:900;color:' + colors[i] + ';font-size:.85rem;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.05);">' +
-                    'Rank #' + s.madrasarank + '</div>' +
+                  '<div style="font-weight:900;color:#0f172a;font-size:.8rem;margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(s.name || '') + '</div>' +
+                  '<div style="font-size:.68rem;color:#64748b;font-weight:700;">Class ' + escapeHtml(s.class || '') + '</div>' +
+                  '<div style="font-weight:900;color:' + colors[i] + ';font-size:.85rem;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.05);">Rank #' + s.madrasarank + '</div>' +
                 '</div>';
       });
       html += '</div>';
 
-      // Rest
+      // Rest (No Marks shown)
       html += '<div style="background:#fff;border-radius:14px;overflow:hidden;border:1px solid rgba(100,116,139,.15);">';
       html += '<table style="width:100%;border-collapse:collapse;font-size:.82rem;">';
       html += '<thead><tr style="background:#f8fafc;">' +
               '<th style="padding:10px;text-align:left;color:#475569;font-size:.68rem;text-transform:uppercase;">Rank</th>' +
               '<th style="padding:10px;text-align:left;color:#475569;font-size:.68rem;text-transform:uppercase;">Student</th>' +
               '<th style="padding:10px;text-align:center;color:#475569;font-size:.68rem;text-transform:uppercase;">Class</th>' +
-              '<th style="padding:10px;text-align:right;color:#475569;font-size:.68rem;text-transform:uppercase;">Marks</th>' +
               '</tr></thead><tbody>';
 
       list.forEach(function(s){
@@ -45123,27 +45114,7 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
   };
 
   // ═══════════════════════════════════════════════════
-  // 🎯 MAKE CARD CLICKABLE
-  // ═══════════════════════════════════════════════════
-  setTimeout(function(){
-    var card = document.getElementById('madrasaRankCard');
-    if (card && !card._clickHooked) {
-      card._clickHooked = true;
-      card.style.cursor = 'pointer';
-      card.onclick = function(){ window.showOverallLeaderboard(); };
-      // Add hint
-      if (!card.querySelector('.rank-tap-hint')) {
-        var hint = document.createElement('div');
-        hint.className = 'rank-tap-hint';
-        hint.style.cssText = 'margin-top:8px;font-size:.7rem;color:#0891b2;font-weight:800;display:flex;align-items:center;gap:4px;';
-        hint.innerHTML = '<i class="fas fa-hand-pointer"></i> Tap to see leaderboard';
-        card.appendChild(hint);
-      }
-    }
-  }, 2500);
-
-  // ═══════════════════════════════════════════════════
-  // 🎛️ ADMIN BUTTON — auto-inject in Grades tab
+  // 🎛️ ADMIN BUTTONS & BREAKDOWN VIEW
   // ═══════════════════════════════════════════════════
   function injectAdminButton(){
     var gradesTab = document.getElementById('adminGradesTab');
@@ -45153,13 +45124,12 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
     var toolbar = gradesTab.querySelector('.admin-toolbar');
     if (!toolbar) return;
 
-    // 1. കണക്കുകൂട്ടാൻ ഉള്ള ബട്ടൺ
     var btnCalc = document.createElement('button');
     btnCalc.className = 'btn-update btn-overall-rank-xp';
     btnCalc.style.cssText = 'background:linear-gradient(100deg,#fbbf24,#f59e0b);color:#03132e;margin-left:6px;font-weight:900;';
     btnCalc.innerHTML = '<i class="fas fa-sync-alt"></i> Calculate Overall Rank';
     btnCalc.onclick = async function(){
-      if (!confirm('🏆 Overall Rank recalculate ചെയ്യണോ?\n\nFormula:\nAcademic % + (Extra × 0.2) + (XP ÷ 100)')) return;
+      if (!confirm('🏆 Overall Rank recalculate ചെയ്യണോ?\n\nFormula:\nAcademic % + (Extra × 0.2) + (XP × 0.015)')) return;
       btnCalc.disabled = true;
       btnCalc.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Computing...';
       try {
@@ -45169,14 +45139,13 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
           if (typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 80, origin: { y: .7 } });
           if (typeof loadGradesForAdmin === 'function') loadGradesForAdmin();
         } else {
-          showToast('⚠️ No data or calculation failed', 'warning');
+          showToast('⚠️ Calculation failed', 'error');
         }
       } catch(e) { showToast('❌ ' + e.message, 'error'); }
       btnCalc.disabled = false;
       btnCalc.innerHTML = '<i class="fas fa-sync-alt"></i> Calculate Overall Rank';
     };
 
-    // 2. കണക്കുകൂട്ടൽ കാണാൻ ഉള്ള ബട്ടൺ
     var btnView = document.createElement('button');
     btnView.className = 'btn-load btn-overall-rank-xp';
     btnView.style.cssText = 'background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;margin-left:6px;font-weight:900;';
@@ -45185,10 +45154,8 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
 
     toolbar.appendChild(btnCalc);
     toolbar.appendChild(btnView);
-    console.log('✅ Admin buttons injected');
   }
 
-  // 🏆 അഡ്മിൻ റാങ്ക് വിശദാംശങ്ങൾ കാണാൻ
   window.showAdminOverallRank = async function() {
     if (typeof modal === 'undefined') return;
     modalTitleSpan.innerText = '🏆 Overall Rank Breakdown';
@@ -45197,13 +45164,12 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
 
     try {
       var list = await window.calculateOverallMadrasaRank();
-      if (!list || list.length === 0) throw new Error('No data to calculate');
+      if (!list || list.length === 0) throw new Error('No data');
 
       var html = '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;min-width:650px;">';
       html += '<thead><tr style="background:#f0f6ff;">' +
               '<th style="padding:10px;text-align:left;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Rank</th>' +
               '<th style="padding:10px;text-align:left;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Student</th>' +
-              '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Class</th>' +
               '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Acad %</th>' +
               '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">Extra</th>' +
               '<th style="padding:10px;text-align:center;color:#1e40af;font-size:.68rem;text-transform:uppercase;">XP</th>' +
@@ -45214,38 +45180,21 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
         var medal = s.rank === 1 ? '🥇' : s.rank === 2 ? '🥈' : s.rank === 3 ? '🥉' : '#' + s.rank;
         html += '<tr style="border-bottom:1px solid rgba(100,116,139,.1);">' +
                 '<td style="padding:10px;font-weight:900;color:#0891b2;">' + medal + '</td>' +
-                '<td style="padding:10px;"><strong>' + escapeHtml(s.name || '') + '</strong><br><small style="color:#94a3b8;">' + s.studentid + '</small></td>' +
-                '<td style="padding:10px;text-align:center;">' + escapeHtml(s.class || '') + '</td>' +
+                '<td style="padding:10px;"><strong>' + escapeHtml(s.name || '') + '</strong> <small>(C'+s.class+')</small></td>' +
                 '<td style="padding:10px;text-align:center;color:#2563eb;font-weight:800;">' + s.academicPct.toFixed(1) + '%</td>' +
                 '<td style="padding:10px;text-align:center;color:#ea580c;font-weight:800;">+' + s.extraBonus.toFixed(1) + '</td>' +
-                '<td style="padding:10px;text-align:center;color:#7c3aed;font-weight:800;">+' + s.xpBonus.toFixed(1) + '<br><small style="font-size:.65rem;font-weight:600;color:#a78bfa;">(' + s.xp + ' XP)</small></td>' +
+                '<td style="padding:10px;text-align:center;color:#7c3aed;font-weight:800;">+' + s.xpBonus.toFixed(1) + '<br><small style="font-size:.65rem;color:#a78bfa;">(' + s.xp + ' XP)</small></td>' +
                 '<td style="padding:10px;text-align:right;font-weight:900;color:#059669;font-size:.95rem;">' + s.score.toFixed(2) + '</td>' +
                 '</tr>';
       });
-
       html += '</tbody></table></div>';
-      html += '<div style="margin-top:16px;padding:14px;background:#fef3c7;border-radius:12px;font-size:.8rem;color:#92400e;font-weight:700;line-height:1.6;">' +
-              '<i class="fas fa-calculator"></i> <b>How Rank is Calculated:</b><br>' +
-              'Total Score = <span style="color:#2563eb;">Academic %</span> + <span style="color:#ea580c;">(Extra Marks × 0.2)</span> + <span style="color:#7c3aed;">(Total XP × 0.015)</span><br>' +
-              '<small style="font-weight:600;opacity:.8;">* 100 XP ഉള്ള വിദ്യാർത്ഥിക്ക് +1.5 പോയിന്റ് XP Bonus ലഭിക്കും.</small>' +
-              '</div>';
-
       modalBodyDiv.innerHTML = html;
     } catch(e) {
       modalBodyDiv.innerHTML = '<div style="padding:20px;color:#dc2626;">Error: ' + e.message + '</div>';
     }
   };
 
-  // Try periodically
-  setTimeout(injectAdminButton, 2000);
-  setTimeout(injectAdminButton, 5000);
-  setTimeout(injectAdminButton, 10000);
-  setInterval(function(){
-    var admin = document.getElementById('adminSection');
-    if (admin && admin.style.display === 'block') injectAdminButton();
-  }, 4000);
-
-  // Hook switchAdminTab
+  // 3. Hook switchAdminTab
   if (typeof window.switchAdminTab === 'function' && !window.switchAdminTab._v150){
     var _orig = window.switchAdminTab;
     window.switchAdminTab = function(tab){
@@ -45256,42 +45205,12 @@ textarea.cmp-form-input{min-height:120px;resize:vertical;line-height:1.55;}
     window.switchAdminTab._v150 = true;
   }
 
-  // ═══════════════════════════════════════════════════
-  // 🔄 AUTO-RUN ONCE DAILY (optional)
-  // ═══════════════════════════════════════════════════
-  // Uncomment below to auto-recalculate once per day on admin login:
-  /*
-  setTimeout(async function(){
-    if (!window.isAdminMode) return;
-    var today = new Date().toISOString().split('T')[0];
-    var lastRun = localStorage.getItem('overall_rank_last_run');
-    if (lastRun === today) return;
-    localStorage.setItem('overall_rank_last_run', today);
-    console.log('🔄 Daily auto-rank running...');
-    await window.calculateOverallMadrasaRank();
-  }, 8000);
-  */
-
-  // ═══════════════════════════════════════════════════
-  // 🐛 DEBUG
-  // ═══════════════════════════════════════════════════
-  window.RANK_debug = async function(){
-    console.log('=== RANK DEBUG v150 ===');
-    console.log('Config:', RANK_CONFIG);
-    var r = await supabaseClient.from('students')
-      .select('studentid, name, class, totalmarks, madrasarank')
-      .order('madrasarank', { ascending: true, nullsFirst: false })
-      .limit(10);
-    console.log('Top 10 (from DB):');
-    (r.data || []).forEach(function(s, i){
-      console.log('  #' + (s.madrasarank || '?') + ' ' + s.name + ' (' + s.class + ') — ' + s.totalmarks);
-    });
-  };
+  setTimeout(injectAdminButton, 2000);
+  setInterval(function(){
+    if(document.getElementById('adminSection')?.style.display === 'block') injectAdminButton();
+  }, 4000);
 
   console.log('✅ v150 ready');
-  console.log('   💡 Admin → Grades → 🏆 Overall Rank button');
-  console.log('   💡 Student → tap rank card → leaderboard');
-  console.log('   💡 RANK_debug() — check top 10');
 })();
 </script>
 <!-- ═══════════════════════════════════════════════════════ -->
