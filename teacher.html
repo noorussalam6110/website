@@ -7094,5 +7094,648 @@ console.log('✅ Teacher Portal base loaded');
   console.log('   💡 TXP_debug() — check state');
 })();
 </script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 📭🎓 v210.0 — TEACHER: INACTIVE/RESTORE + CLASS PROMOTION -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style id="teacher-inactive-promote-v210-css">
+tr.td60-inactive-row { background: #fef3c7 !important; opacity: 0.92; }
+tr.td60-inactive-row:hover td { background: #fde68a !important; }
+.td60-inactive-badge {
+  display: inline-block; background: rgba(180,83,9,.18); color: #b45309;
+  padding: 2px 8px; border-radius: 20px; font-size: .6rem; font-weight: 800;
+  margin-left: 6px; letter-spacing: .3px; vertical-align: middle;
+}
+.td60-lifecycle-btn {
+  padding: 6px 10px; border-radius: 30px; border: none; font-family: inherit;
+  font-weight: 800; font-size: .72rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  min-width: 36px; min-height: 32px; transition: all .2s;
+}
+.td60-lifecycle-btn.inactive { background: linear-gradient(100deg,#dc2626,#ef4444); color: #fff; }
+.td60-lifecycle-btn.restore { background: linear-gradient(100deg,#059669,#34d399); color: #fff; }
+.td60-lifecycle-btn:active { transform: scale(.92); }
+.td60-prom-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.td60-prom-stat { background: #fff; border-radius: 12px; padding: 12px; text-align: center; }
+.td60-prom-stat .n { font-size: 1.6rem; font-weight: 900; line-height: 1; }
+.td60-prom-stat .l { font-size: .64rem; color: #64748b; margin-top: 5px; font-weight: 800; text-transform: uppercase; letter-spacing: .3px; }
+.td60-prom-student-list { max-height: 320px; overflow-y: auto; border: 1px solid rgba(100,116,139,.15); border-radius: 12px; margin-bottom: 14px; -webkit-overflow-scrolling: touch; }
+.td60-prom-student-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid rgba(100,116,139,.08); cursor: pointer; transition: background .15s; }
+.td60-prom-student-item:last-child { border-bottom: none; }
+.td60-prom-student-item:hover { background: #f8fafc; }
+.td60-prom-student-item.selected { background: #ecfdf5; }
+.td60-prom-student-item.failed { background: #fef3c7; }
+.td60-prom-student-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #8b5cf6; flex-shrink: 0; cursor: pointer; }
+.td60-lifecycle-modal { position: fixed; inset: 0; background: rgba(3,8,28,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); z-index: 100700; display: none; align-items: flex-start; justify-content: center; padding: 16px; padding-top: max(16px, env(safe-area-inset-top, 16px)); padding-bottom: max(16px, env(safe-area-inset-bottom, 16px)); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.td60-lifecycle-modal.open { display: flex; }
+.td60-lifecycle-card { background: #fff; border-radius: 22px; max-width: 500px; width: 100%; margin: auto 0; max-height: calc(100dvh - 40px); overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 40px 90px -30px rgba(0,0,0,.7); animation: td60lcIn .35s cubic-bezier(.34,1.56,.64,1); }
+@keyframes td60lcIn { from { opacity: 0; transform: scale(.94) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.td60-lifecycle-head { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #fff; flex-shrink: 0; }
+.td60-lifecycle-head.red { background: linear-gradient(135deg,#dc2626,#ef4444); }
+.td60-lifecycle-head.purple { background: linear-gradient(135deg,#8b5cf6,#a78bfa); }
+.td60-lifecycle-head-title { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 1rem; }
+.td60-lifecycle-close { background: rgba(255,255,255,.22); border: none; color: #fff; width: 38px; height: 38px; border-radius: 50%; font-size: 1rem; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.td60-lifecycle-body { padding: 18px 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; flex: 1 1 auto; }
+.td60-lifecycle-footer { padding: 14px 20px; background: #f8fafc; border-top: 1px solid rgba(100,116,139,.1); display: flex; gap: 10px; flex-shrink: 0; }
+.td60-lifecycle-btn-primary { flex: 1; padding: 13px 18px; border-radius: 14px; border: none; font-family: inherit; font-weight: 800; font-size: .88rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; transition: all .2s; }
+.td60-lifecycle-btn-primary.danger { background: linear-gradient(100deg,#dc2626,#ef4444); color: #fff; box-shadow: 0 10px 25px -10px rgba(220,38,38,.7); }
+.td60-lifecycle-btn-primary.purple { background: linear-gradient(100deg,#8b5cf6,#a78bfa); color: #fff; box-shadow: 0 10px 25px -10px rgba(139,92,246,.7); }
+.td60-lifecycle-btn-cancel { padding: 13px 18px; border-radius: 14px; border: 1.5px solid rgba(100,116,139,.2); background: #fff; color: #475569; font-family: inherit; font-weight: 800; font-size: .86rem; cursor: pointer; min-height: 48px; }
+.td60-lifecycle-field { margin-bottom: 14px; }
+.td60-lifecycle-label { display: block; font-size: .78rem; font-weight: 800; color: #475569; margin-bottom: 6px; }
+.td60-lifecycle-input { width: 100%; padding: 12px 14px; border: 1.5px solid rgba(100,116,139,.25); border-radius: 12px; font-family: inherit; font-size: 16px; color: #0f172a; background: #f8fafc; outline: none; transition: all .2s; }
+.td60-lifecycle-input:focus { border-color: #8b5cf6; background: #fff; box-shadow: 0 0 0 4px rgba(139,92,246,.1); }
+textarea.td60-lifecycle-input { min-height: 90px; resize: vertical; line-height: 1.5; }
+.td60-lifecycle-student-preview { display: flex; align-items: center; gap: 12px; background: #f8fafc; border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; border: 1px solid rgba(100,116,139,.15); }
+.td60-lifecycle-avatar { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(140deg,#0891b2,#22d3ee); display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 1.2rem; flex-shrink: 0; }
+.td60-lifecycle-student-name { font-weight: 800; color: #0f172a; font-size: .95rem; }
+.td60-lifecycle-student-meta { font-size: .72rem; color: #64748b; margin-top: 3px; font-weight: 700; }
+.td60-lifecycle-preview-box { background: linear-gradient(135deg,#f5f3ff,#ede9fe); border: 1.5px solid rgba(139,92,246,.4); border-radius: 14px; padding: 14px; margin-bottom: 14px; font-size: .8rem; color: #5b21b6; line-height: 1.55; font-weight: 700; }
+</style>
+
+<script id="teacher-inactive-promote-v210-js">
+(function(){
+  'use strict';
+  console.log('📭🎓 Teacher Inactive+Promote v210 loading...');
+
+  var TIP_STATE = { currentClass: null, students: [], selectedForPromotion: new Set() };
+  window.TIP_STATE = TIP_STATE;
+
+  function $id(id) { return document.getElementById(id); }
+  function esc(s) { return s === null || s === undefined ? '' : String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+  function toast(m,t) { if (typeof showToast === 'function') showToast(m,t); }
+  function getTeacher() { return window.currentTeacher || (window.TV60 && window.TV60.teacher) || null; }
+  function getActiveClass() { return (window.TV60 && window.TV60.activeClass) || null; }
+  function isStudentFailed(s) { var g = (s.overallgrade || '').toString().trim().toUpperCase(); return g === 'D' || g === 'D+'; }
+
+  window.TIP_markInactive = async function(sid) {
+    if (!sid) return;
+    if (!getTeacher()) { toast('❌ Session missing', 'error'); return; }
+    var student = null;
+    try { var r = await supabaseClient.from('students').select('*').eq('studentid', sid).single(); student = r.data; }
+    catch(e) { toast('❌ Not found', 'error'); return; }
+    var modal = document.createElement('div');
+    modal.id = 'tipInactiveModal';
+    modal.className = 'td60-lifecycle-modal open';
+    modal.innerHTML =
+      '<div class="td60-lifecycle-card">' +
+        '<div class="td60-lifecycle-head red">' +
+          '<div class="td60-lifecycle-head-title"><i class="fas fa-inbox"></i> Mark Inactive</div>' +
+          '<button class="td60-lifecycle-close" onclick="TIP_closeModal(\'tipInactiveModal\')">✕</button>' +
+        '</div>' +
+        '<div class="td60-lifecycle-body">' +
+          '<div class="td60-lifecycle-student-preview">' +
+            '<div class="td60-lifecycle-avatar">' + esc((student.name||'S').charAt(0).toUpperCase()) + '</div>' +
+            '<div><div class="td60-lifecycle-student-name">' + esc(student.name||'') + '</div>' +
+            '<div class="td60-lifecycle-student-meta">' + esc(student.studentid) + ' • Class ' + esc(student.class||'—') + ' • Roll ' + esc(student.roll||'—') + '</div></div>' +
+          '</div>' +
+          '<div style="background:#fef2f2;border:1px solid rgba(220,38,38,.3);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:.76rem;color:#991b1b;line-height:1.6;">' +
+            '<div style="font-weight:900;margin-bottom:6px;">📭 Inactive ചെയ്യുമ്പോൾ:</div>' +
+            '<div style="padding-left:14px;">✕ Login ചെയ്യാൻ കഴിയില്ല<br>✕ Active lists-ൽ കാണില്ല<br>✓ Historical data സൂക്ഷിക്കും<br>✓ Super Admin restore ചെയ്യാം</div>' +
+          '</div>' +
+          '<div class="td60-lifecycle-field"><label class="td60-lifecycle-label">📋 കാരണം *</label>' +
+            '<select id="tipReasonType" class="td60-lifecycle-input">' +
+              '<option value="tc">🎓 TC (Transfer Certificate)</option>' +
+              '<option value="dropout">🚪 Dropout</option>' +
+              '<option value="completed">✅ Course Completed</option>' +
+              '<option value="transfer">🔄 Transfer</option>' +
+              '<option value="other">📝 Other</option>' +
+            '</select></div>' +
+          '<div class="td60-lifecycle-field"><label class="td60-lifecycle-label">📝 Notes (optional)</label>' +
+            '<textarea id="tipReasonNote" class="td60-lifecycle-input" maxlength="300" placeholder="e.g., TC വാങ്ങി, Dubai-ലേക്ക് പോയി..."></textarea></div>' +
+        '</div>' +
+        '<div class="td60-lifecycle-footer">' +
+          '<button class="td60-lifecycle-btn-cancel" onclick="TIP_closeModal(\'tipInactiveModal\')">Cancel</button>' +
+          '<button class="td60-lifecycle-btn-primary danger" onclick="TIP_confirmInactive(\'' + esc(sid) + '\')"><i class="fas fa-inbox"></i> Mark Inactive</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) TIP_closeModal('tipInactiveModal'); });
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  };
+
+  window.TIP_confirmInactive = async function(sid) {
+    var type = ($id('tipReasonType') || {}).value || 'other';
+    var note = (($id('tipReasonNote') || {}).value || '').trim();
+    if (!confirm('📭 ' + sid + ' mark as inactive?')) return;
+    try {
+      var update = { is_inactive: true, inactive_at: new Date().toISOString(), inactive_type: type };
+      if (note) update.inactive_reason = note;
+      var r = await supabaseClient.from('students').update(update).eq('studentid', sid);
+      if (r.error) {
+        if (/column|does not exist/i.test(r.error.message||'')) { toast('⚠️ Run SQL migration first', 'error'); return; }
+        throw r.error;
+      }
+      try {
+        var teacher = getTeacher();
+        await supabaseClient.from('notifications').insert({
+          title: '📭 Student Marked Inactive',
+          message: '👨‍🏫 ' + (teacher ? teacher.name : 'Teacher') + '\n🎓 ' + sid + '\n📚 Class ' + (getActiveClass()||'—') + '\n📋 ' + type + (note ? '\n💬 ' + note : ''),
+          type: 'important', target_type: 'admin', link_url: null
+        });
+      } catch(e) {}
+      toast('✅ Marked inactive', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 50, spread: 60, origin: { y: .7 }, colors: ['#f59e0b','#fbbf24'] });
+      if (navigator.vibrate) try { navigator.vibrate([20,40,20]); } catch(e) {}
+      TIP_closeModal('tipInactiveModal');
+      refreshStudentsPanel();
+    } catch(e) { console.error(e); toast('❌ ' + e.message, 'error'); }
+  };
+
+  window.TIP_restore = async function(sid) {
+    if (!sid) return;
+    if (!confirm('♻️ Restore ' + sid + ' to active status?')) return;
+    try {
+      var r = await supabaseClient.from('students').update({ is_inactive: false, inactive_at: null, inactive_type: null, inactive_reason: null }).eq('studentid', sid);
+      if (r.error) throw r.error;
+      try {
+        var teacher = getTeacher();
+        await supabaseClient.from('notifications').insert({ title: '♻️ Student Restored', message: '👨‍🏫 ' + (teacher ? teacher.name : 'Teacher') + '\n🎓 ' + sid, type: 'general', target_type: 'admin', link_url: null });
+      } catch(e) {}
+      toast('✅ Restored', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 80, spread: 70, origin: { y: .7 }, colors: ['#059669','#34d399'] });
+      if (navigator.vibrate) try { navigator.vibrate([20,40,20]); } catch(e) {}
+      refreshStudentsPanel();
+    } catch(e) { toast('❌ ' + e.message, 'error'); }
+  };
+
+  window.TIP_openPromotion = async function() {
+    var cls = getActiveClass();
+    if (!cls) { toast('❌ Class select ചെയ്യൂ', 'error'); return; }
+    var students = [];
+    try {
+      var r = await supabaseClient.from('students').select('studentid, name, roll, class, overallgrade, is_inactive').eq('class', cls).order('roll');
+      students = (r.data || []).filter(function(s) { return s.is_inactive !== true; });
+    } catch(e) { toast('❌ Load failed', 'error'); return; }
+    if (!students.length) { toast('⚠️ No active students', 'info'); return; }
+    students = students.map(function(s) { return Object.assign({}, s, { _failed: isStudentFailed(s) }); });
+    TIP_STATE.currentClass = cls;
+    TIP_STATE.students = students;
+    TIP_STATE.selectedForPromotion = new Set(students.filter(function(s) { return !s._failed; }).map(function(s) { return s.studentid; }));
+
+    var modal = document.createElement('div');
+    modal.id = 'tipPromoModal';
+    modal.className = 'td60-lifecycle-modal open';
+    var passCount = students.filter(function(s){ return !s._failed; }).length;
+    var failCount = students.filter(function(s){ return s._failed; }).length;
+    var nextClass = parseInt(cls) + 1;
+    var toOptions = '';
+    for (var c = 2; c <= 10; c++) toOptions += '<option value="' + c + '"' + (c === nextClass ? ' selected' : '') + '>Class ' + c + '</option>';
+    toOptions += '<option value="graduate"' + (parseInt(cls) === 10 ? ' selected' : '') + '>🎓 Graduate (Inactive)</option>';
+    var studentItems = students.map(function(s) {
+      var checked = TIP_STATE.selectedForPromotion.has(s.studentid);
+      return '<label class="td60-prom-student-item ' + (s._failed ? 'failed' : '') + ' ' + (checked ? 'selected' : '') + '" data-sid="' + esc(s.studentid) + '">' +
+        '<input type="checkbox" class="tip-prom-cb" data-sid="' + esc(s.studentid) + '" ' + (checked ? 'checked' : '') + ' onchange="TIP_toggleStudent(\'' + esc(s.studentid) + '\', this.checked)">' +
+        '<div style="flex:1;min-width:0;"><div style="font-weight:800;color:#0f172a;font-size:.86rem;">' + esc(s.name||'') + '</div>' +
+        '<div style="font-size:.68rem;color:#64748b;margin-top:2px;">Roll ' + esc(s.roll||'—') + ' • Grade ' + esc(s.overallgrade||'—') + (s._failed ? ' <span style="background:#fee2e2;color:#dc2626;padding:1px 6px;border-radius:10px;font-weight:900;margin-left:4px;">⚠️ FAILED</span>' : '') + '</div></div>' +
+      '</label>';
+    }).join('');
+
+    modal.innerHTML =
+      '<div class="td60-lifecycle-card">' +
+        '<div class="td60-lifecycle-head purple">' +
+          '<div class="td60-lifecycle-head-title"><i class="fas fa-arrow-up"></i> Promote Class ' + esc(cls) + '</div>' +
+          '<button class="td60-lifecycle-close" onclick="TIP_closeModal(\'tipPromoModal\')">✕</button>' +
+        '</div>' +
+        '<div class="td60-lifecycle-body">' +
+          '<div class="td60-prom-stats">' +
+            '<div class="td60-prom-stat" style="background:#ecfdf5;border:1.5px solid rgba(5,150,105,.3);"><div class="n" style="color:#059669;">' + passCount + '</div><div class="l">✅ Passed</div></div>' +
+            '<div class="td60-prom-stat" style="background:#fef3c7;border:1.5px solid rgba(180,83,9,.3);"><div class="n" style="color:#b45309;">' + failCount + '</div><div class="l">⚠️ Failed</div></div>' +
+          '</div>' +
+          '<div class="td60-lifecycle-preview-box"><div style="font-weight:900;margin-bottom:6px;font-size:.86rem;">🎓 Smart Promotion</div>Failed students (D/D+) auto-unchecked. Tick ചെയ്തവർ മാത്രം promote ചെയ്യും.</div>' +
+          '<div class="td60-lifecycle-field"><label class="td60-lifecycle-label">📥 Target Class *</label><select id="tipToClass" class="td60-lifecycle-input">' + toOptions + '</select></div>' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">' +
+            '<div style="font-weight:800;color:#475569;font-size:.76rem;text-transform:uppercase;letter-spacing:.5px;">👥 Select Students</div>' +
+            '<div style="display:flex;gap:6px;">' +
+              '<button type="button" onclick="TIP_selectAll(true)" style="padding:5px 10px;border-radius:20px;border:1.5px solid rgba(5,150,105,.3);background:#ecfdf5;color:#059669;font-family:inherit;font-weight:800;font-size:.66rem;cursor:pointer;">✓ All</button>' +
+              '<button type="button" onclick="TIP_selectAll(false)" style="padding:5px 10px;border-radius:20px;border:1.5px solid rgba(180,83,9,.3);background:#fef3c7;color:#b45309;font-family:inherit;font-weight:800;font-size:.66rem;cursor:pointer;">✕ None</button>' +
+            '</div></div>' +
+          '<div class="td60-prom-student-list">' + studentItems + '</div>' +
+        '</div>' +
+        '<div class="td60-lifecycle-footer">' +
+          '<button class="td60-lifecycle-btn-cancel" onclick="TIP_closeModal(\'tipPromoModal\')">Cancel</button>' +
+          '<button class="td60-lifecycle-btn-primary purple" id="tipPromoExecuteBtn" onclick="TIP_executePromotion()"><i class="fas fa-arrow-up"></i> Promote Selected</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) TIP_closeModal('tipPromoModal'); });
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  };
+
+  window.TIP_toggleStudent = function(sid, checked) {
+    if (checked) TIP_STATE.selectedForPromotion.add(sid); else TIP_STATE.selectedForPromotion.delete(sid);
+    var el = document.querySelector('.td60-prom-student-item[data-sid="' + sid + '"]');
+    if (el) el.classList.toggle('selected', checked);
+  };
+
+  window.TIP_selectAll = function(checked) {
+    TIP_STATE.selectedForPromotion = new Set();
+    if (checked) TIP_STATE.students.forEach(function(s) { TIP_STATE.selectedForPromotion.add(s.studentid); });
+    document.querySelectorAll('.tip-prom-cb').forEach(function(cb) { cb.checked = checked; var el = cb.closest('.td60-prom-student-item'); if (el) el.classList.toggle('selected', checked); });
+    if (navigator.vibrate) try { navigator.vibrate(8); } catch(e) {}
+  };
+
+  window.TIP_executePromotion = async function() {
+    var ids = Array.from(TIP_STATE.selectedForPromotion);
+    if (!ids.length) { toast('⚠️ Select at least one', 'error'); return; }
+    var toClass = ($id('tipToClass') || {}).value;
+    if (!toClass) { toast('⚠️ Target class select', 'error'); return; }
+    var toLabel = toClass === 'graduate' ? 'Graduation' : 'Class ' + toClass;
+    if (!confirm('🎓 Promote ' + ids.length + ' students to ' + toLabel + '?')) return;
+    var btn = $id('tipPromoExecuteBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Promoting...'; }
+    var success = 0, failed = 0;
+    var teacher = getTeacher();
+    try {
+      for (var i = 0; i < ids.length; i++) {
+        var sid = ids[i];
+        var update = { last_promotion_date: new Date().toISOString() };
+        if (toClass === 'graduate') { update.is_inactive = true; update.inactive_at = new Date().toISOString(); update.inactive_type = 'completed'; update.inactive_reason = 'Class ' + TIP_STATE.currentClass + ' completed'; }
+        else { update.class = toClass; }
+        try { var r = await supabaseClient.from('students').update(update).eq('studentid', sid); if (r.error) failed++; else success++; } catch(e) { failed++; }
+      }
+      try { await supabaseClient.from('notifications').insert({ title: '🎓 Students Promoted', message: '👨‍🏫 ' + (teacher ? teacher.name : 'Teacher') + '\n📤 From: Class ' + TIP_STATE.currentClass + '\n📥 To: ' + toLabel + '\n👥 Count: ' + success, type: 'general', target_type: 'admin', link_url: null }); } catch(e) {}
+      if (failed === 0) { toast('🎓 ' + success + ' promoted', 'success'); if (typeof confetti !== 'undefined') confetti({ particleCount: 150, spread: 100, origin: { y: .6 }, colors: ['#8b5cf6','#a78bfa','#fbbf24'] }); if (navigator.vibrate) try { navigator.vibrate([30,40,30,40,30]); } catch(e) {} }
+      else { toast('⚠️ ' + success + ' success, ' + failed + ' failed', 'error'); }
+      TIP_closeModal('tipPromoModal');
+      refreshStudentsPanel();
+    } catch(e) { console.error(e); toast('❌ ' + e.message, 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-arrow-up"></i> Promote Selected'; } }
+  };
+
+  window.TIP_closeModal = function(id) { var m = document.getElementById(id); if (m) m.remove(); };
+  function refreshStudentsPanel() { var tab = document.querySelector('.td60-tab[data-tab="students"]'); if (tab) tab.click(); }
+
+  async function enhanceStudentsTable() {
+    var cls = getActiveClass();
+    if (!cls) return;
+    var panel = $id('td60Panel');
+    if (!panel) return;
+    var table = panel.querySelector('.td60-table');
+    if (!table) return;
+    if (table._v210enhanced && table.dataset.v210Class === String(cls)) return;
+    table._v210enhanced = true;
+    table.dataset.v210Class = String(cls);
+    var sids = [];
+    table.querySelectorAll('tbody tr').forEach(function(row) {
+      var ref = row.querySelector('[onclick*="td60OpenStudentDetail"]');
+      var sid = null;
+      if (ref) { var m = (ref.getAttribute('onclick') || '').match(/'([^']+)'/); if (m) sid = m[1]; }
+      if (!sid) sid = row.dataset.sid;
+      if (sid) { sids.push(sid); if (!row.dataset.sid) row.dataset.sid = sid; }
+    });
+    if (!sids.length) return;
+    var inactiveMap = {};
+    try { var r = await supabaseClient.from('students').select('studentid, is_inactive').in('studentid', sids); (r.data || []).forEach(function(s) { inactiveMap[s.studentid] = s.is_inactive === true; }); } catch(e) { console.warn(e); }
+    var thead = table.querySelector('thead tr');
+    if (thead && !thead.querySelector('.td60-actions-th')) { var th = document.createElement('th'); th.className = 'td60-actions-th'; th.style.textAlign = 'center'; th.style.fontSize = '.62rem'; th.textContent = 'Action'; thead.appendChild(th); }
+    table.querySelectorAll('tbody tr').forEach(function(row) {
+      var sid = row.dataset.sid;
+      if (!sid) return;
+      var isInactive = inactiveMap[sid] === true;
+      if (isInactive) row.classList.add('td60-inactive-row');
+      var nameCell = null;
+      var cells = row.querySelectorAll('td');
+      for (var i = 0; i < cells.length; i++) { if (cells[i].querySelector('strong')) { nameCell = cells[i]; break; } }
+      if (nameCell) {
+        var existing = nameCell.querySelector('.td60-inactive-badge');
+        if (isInactive && !existing) { var b = document.createElement('span'); b.className = 'td60-inactive-badge'; b.textContent = '📭 INACTIVE'; nameCell.appendChild(b); }
+        else if (!isInactive && existing) { existing.remove(); }
+      }
+      if (row.querySelector('.td60-lifecycle-cell')) return;
+      var actionTd = document.createElement('td');
+      actionTd.className = 'td60-lifecycle-cell';
+      actionTd.style.textAlign = 'center';
+      actionTd.style.whiteSpace = 'nowrap';
+      var btn = document.createElement('button');
+      btn.className = 'td60-lifecycle-btn ' + (isInactive ? 'restore' : 'inactive');
+      btn.innerHTML = isInactive ? '♻️' : '📭';
+      btn.title = isInactive ? 'Restore' : 'Mark Inactive';
+      (function(id, inactive) { btn.onclick = function(ev) { ev.stopPropagation(); if (inactive) window.TIP_restore(id); else window.TIP_markInactive(id); }; })(sid, isInactive);
+      actionTd.appendChild(btn);
+      row.appendChild(actionTd);
+    });
+    addStudentsToolbar(panel);
+  }
+
+  function addStudentsToolbar(panel) {
+    if (panel.querySelector('.td60-students-toolbar')) return;
+    var table = panel.querySelector('.td60-table');
+    if (!table) return;
+    var toolbar = document.createElement('div');
+    toolbar.className = 'td60-students-toolbar';
+    toolbar.style.cssText = 'display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;padding:10px 12px;background:linear-gradient(135deg,#eff6ff,#dbeafe);border:1.5px solid rgba(59,130,246,.3);border-radius:14px;';
+    toolbar.innerHTML =
+      '<div style="font-weight:900;color:#1e40af;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;margin-right:6px;"><i class="fas fa-bolt"></i> Actions</div>' +
+      '<button onclick="TIP_openPromotion()" style="padding:8px 14px;border-radius:10px;border:none;background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;font-family:inherit;font-weight:800;font-size:.76rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:36px;box-shadow:0 4px 12px -4px rgba(139,92,246,.6);"><i class="fas fa-arrow-up"></i> Promote</button>' +
+      '<button onclick="TIP_refreshEnhance()" style="padding:8px 14px;border-radius:10px;border:1.5px solid rgba(100,116,139,.2);background:#fff;color:#475569;font-family:inherit;font-weight:800;font-size:.76rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;min-height:36px;"><i class="fas fa-sync-alt"></i> Refresh</button>';
+    table.parentNode.insertBefore(toolbar, table);
+  }
+
+  window.TIP_refreshEnhance = function() { refreshStudentsPanel(); setTimeout(enhanceStudentsTable, 500); };
+
+  function watchPanel() {
+    var panel = $id('td60Panel');
+    if (!panel || panel._v210watched) return;
+    panel._v210watched = true;
+    var pending = null;
+    new MutationObserver(function(muts) {
+      var hasTable = false;
+      muts.forEach(function(m) {
+        if (m.type === 'childList' && m.addedNodes.length > 0) {
+          for (var i = 0; i < m.addedNodes.length; i++) {
+            var n = m.addedNodes[i];
+            if (n.nodeType === 1) { if (n.classList && n.classList.contains('td60-table')) { hasTable = true; break; } if (n.querySelector && n.querySelector('.td60-table')) { hasTable = true; break; } }
+          }
+        }
+      });
+      if (!hasTable) return;
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(function() { pending = null; var tab = window.TV60 && window.TV60.activeTab; if (tab === 'students') enhanceStudentsTable(); }, 250);
+    }).observe(panel, { childList: true, subtree: true });
+  }
+
+  var _origEnter = window.enterTeacherDashboard;
+  if (typeof _origEnter === 'function' && !_origEnter._v210) {
+    window.enterTeacherDashboard = async function(t) { var r = await _origEnter.apply(this, arguments); setTimeout(watchPanel, 2000); return r; };
+    window.enterTeacherDashboard._v210 = true;
+  }
+
+  var dash = $id('teacherDashboardV60');
+  if (dash) {
+    new MutationObserver(function() { if (dash.classList.contains('open')) { setTimeout(watchPanel, 1000); setTimeout(watchPanel, 3000); } }).observe(dash, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  setInterval(function() {
+    if (!window.currentTeacher) return;
+    var dash = $id('teacherDashboardV60');
+    if (!dash || !dash.classList.contains('open')) return;
+    var tab = window.TV60 && window.TV60.activeTab;
+    if (tab === 'students') enhanceStudentsTable();
+  }, 5000);
+
+  setTimeout(watchPanel, 2500);
+  setTimeout(watchPanel, 5000);
+  setTimeout(watchPanel, 8000);
+
+  window.TIP_debug = function() {
+    console.log('=== TEACHER INACTIVE/PROMOTE v210 ===');
+    console.log('Current class:', getActiveClass());
+    console.log('Teacher:', getTeacher());
+    console.log('Active tab:', window.TV60 && window.TV60.activeTab);
+    var panel = $id('td60Panel');
+    if (panel) { console.log('Toolbar:', !!panel.querySelector('.td60-students-toolbar')); console.log('Inactive rows:', panel.querySelectorAll('.td60-inactive-row').length); console.log('Lifecycle buttons:', panel.querySelectorAll('.td60-lifecycle-btn').length); }
+    if (typeof showToast === 'function') showToast('📭 Check console', 'info');
+  };
+
+  console.log('✅ Teacher Inactive + Promote v210 ready');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🔒 v211.0 — INACTIVE FILTER (Separate from counts)        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style id="teacher-inactive-filter-v211-css">
+.td60-students-mode-tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.td60-mode-btn { flex: 1; min-width: 100px; padding: 10px 12px; border-radius: 12px; border: 1.5px solid rgba(100,116,139,.2); background: #fff; color: #475569; font-family: inherit; font-weight: 800; font-size: .76rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: all .2s; -webkit-tap-highlight-color: transparent; min-height: 40px; }
+.td60-mode-btn:active { transform: scale(.96); }
+.td60-mode-btn.active[data-mode="active"] { background: linear-gradient(135deg,#059669,#34d399); color: #fff; border-color: transparent; box-shadow: 0 4px 12px -4px rgba(5,150,105,.6); }
+.td60-mode-btn.active[data-mode="inactive"] { background: linear-gradient(135deg,#f59e0b,#fbbf24); color: #fff; border-color: transparent; box-shadow: 0 4px 12px -4px rgba(251,191,36,.6); }
+.td60-mode-btn.active[data-mode="all"] { background: linear-gradient(135deg,#64748b,#94a3b8); color: #fff; border-color: transparent; box-shadow: 0 4px 12px -4px rgba(100,116,139,.6); }
+.td60-row-inactive-hidden { display: none !important; }
+</style>
+
+<script id="teacher-inactive-filter-v211-js">
+(function(){
+  'use strict';
+  console.log('🔒 Inactive Filter v211 loading...');
+  var _cache = {}, TTL = 30000;
+  function clearCache() { _cache = {}; console.log('🔄 Inactive cache cleared'); }
+  window.TIP211_clearCache = clearCache;
+
+  async function getInactiveIds(cls) {
+    if (!cls || typeof supabaseClient === 'undefined' || !supabaseClient) return new Set();
+    var key = String(cls), now = Date.now();
+    if (_cache[key] && now - _cache[key].t < TTL) return _cache[key].s;
+    try {
+      var r = await supabaseClient.from('students').select('studentid').eq('class', key).eq('is_inactive', true);
+      var set = new Set((r.data || []).map(function(x){ return x.studentid; }));
+      _cache[key] = { s: set, t: now };
+      return set;
+    } catch(e) { return new Set(); }
+  }
+
+  async function getActiveCount(cls) {
+    if (!cls || typeof supabaseClient === 'undefined') return 0;
+    try { var r = await supabaseClient.from('students').select('studentid', { count: 'exact', head: true }).eq('class', String(cls)).eq('is_inactive', false); if (!r.error) return r.count || 0; } catch(e) {}
+    try { var r2 = await supabaseClient.from('students').select('studentid', { count: 'exact', head: true }).eq('class', String(cls)); return r2.count || 0; } catch(e) { return 0; }
+  }
+
+  window.TIP211_MODE = 'active';
+
+  window.TIP211_setMode = function(mode) { window.TIP211_MODE = mode; updateModeButtons(); applyStudentsFilter(); if (navigator.vibrate) try { navigator.vibrate(8); } catch(e) {} };
+
+  function updateModeButtons() { document.querySelectorAll('.td60-mode-btn').forEach(function(btn) { btn.classList.toggle('active', btn.dataset.mode === window.TIP211_MODE); }); }
+
+  async function applyStudentsFilter() {
+    var panel = document.getElementById('td60Panel');
+    if (!panel) return;
+    var table = panel.querySelector('.td60-table');
+    if (!table) return;
+    var cls = window.TV60 && window.TV60.activeClass;
+    if (!cls) return;
+    var inactiveSet = await getInactiveIds(cls);
+    var mode = window.TIP211_MODE;
+    var activeCount = 0, inactiveCount = 0;
+    table.querySelectorAll('tbody tr').forEach(function(row) {
+      if (row.querySelector('td[colspan]')) return;
+      var sid = row.dataset.sid;
+      if (!sid) { var ref = row.querySelector('[onclick*="td60OpenStudentDetail"]'); if (ref) { var m = (ref.getAttribute('onclick') || '').match(/'([^']+)'/); if (m) sid = m[1]; } }
+      if (!sid) return;
+      var isInactive = inactiveSet.has(sid);
+      if (isInactive) inactiveCount++; else activeCount++;
+      var show = (mode === 'all') || (mode === 'active' && !isInactive) || (mode === 'inactive' && isInactive);
+      row.style.display = show ? '' : 'none';
+    });
+    var aBtn = document.querySelector('.td60-mode-btn[data-mode="active"]');
+    var iBtn = document.querySelector('.td60-mode-btn[data-mode="inactive"]');
+    var alBtn = document.querySelector('.td60-mode-btn[data-mode="all"]');
+    if (aBtn) aBtn.innerHTML = '👥 Active (' + activeCount + ')';
+    if (iBtn) iBtn.innerHTML = '📭 Inactive (' + inactiveCount + ')';
+    if (alBtn) alBtn.innerHTML = '📋 All (' + (activeCount + inactiveCount) + ')';
+  }
+
+  function addStudentsModeTabs() {
+    var panel = document.getElementById('td60Panel');
+    if (!panel) return;
+    var tab = window.TV60 && window.TV60.activeTab;
+    if (tab !== 'students') return;
+    if (panel.querySelector('.td60-students-mode-tabs')) return;
+    var table = panel.querySelector('.td60-table');
+    if (!table) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'td60-students-mode-tabs';
+    wrap.innerHTML =
+      '<button type="button" class="td60-mode-btn active" data-mode="active" onclick="TIP211_setMode(\'active\')">👥 Active</button>' +
+      '<button type="button" class="td60-mode-btn" data-mode="inactive" onclick="TIP211_setMode(\'inactive\')">📭 Inactive</button>' +
+      '<button type="button" class="td60-mode-btn" data-mode="all" onclick="TIP211_setMode(\'all\')">📋 All</button>';
+    var toolbar = panel.querySelector('.td60-students-toolbar');
+    if (toolbar && toolbar.nextSibling) panel.insertBefore(wrap, toolbar.nextSibling);
+    else if (table.parentNode) table.parentNode.insertBefore(wrap, table);
+    setTimeout(updateModeButtons, 50);
+    setTimeout(applyStudentsFilter, 150);
+  }
+
+  async function filterOtherTabTables() {
+    var panel = document.getElementById('td60Panel');
+    if (!panel) return;
+    var tab = window.TV60 && window.TV60.activeTab;
+    var cls = window.TV60 && window.TV60.activeClass;
+    if (!tab || !cls || tab === 'students') return;
+    var inactiveSet = await getInactiveIds(cls);
+    if (!inactiveSet.size) return;
+    var hidden = 0;
+    panel.querySelectorAll('table tbody tr').forEach(function(row) {
+      var sid = row.dataset.sid;
+      if (!sid) { var ref = row.querySelector('[onclick*="td60OpenStudentDetail"]'); if (ref) { var m = (ref.getAttribute('onclick') || '').match(/'([^']+)'/); if (m) sid = m[1]; } }
+      if (sid && inactiveSet.has(sid)) { row.classList.add('td60-row-inactive-hidden'); hidden++; }
+    });
+    if (hidden > 0) {
+      var info = panel.querySelector('.td60-inactive-info');
+      if (!info) {
+        info = document.createElement('div');
+        info.className = 'td60-inactive-info';
+        info.style.cssText = 'margin:8px 0;padding:8px 12px;background:#fef3c7;border:1px solid rgba(180,83,9,.3);border-radius:10px;font-size:.72rem;color:#92400e;font-weight:800;display:flex;align-items:center;gap:6px;';
+        var firstTable = panel.querySelector('table');
+        if (firstTable && firstTable.parentNode) firstTable.parentNode.insertBefore(info, firstTable);
+      }
+      info.innerHTML = '<i class="fas fa-eye-slash"></i> ' + hidden + ' inactive student(s) hidden from this view';
+    }
+    if (tab === 'analytics') await fixAnalyticsCount(panel, cls);
+    if (tab === 'xpreward') adjustXPStats(panel, inactiveSet);
+  }
+
+  async function fixAnalyticsCount(panel, cls) {
+    var activeCount = await getActiveCount(cls);
+    panel.querySelectorAll('div').forEach(function(div) {
+      if (div.style.textAlign !== 'center') return;
+      var kids = div.children;
+      if (kids.length !== 2) return;
+      if ((kids[1].textContent || '').trim() === 'Students') kids[0].textContent = activeCount;
+    });
+  }
+
+  function adjustXPStats(panel, inactiveSet) {
+    if (!window.TXP_STATE || !window.TXP_STATE.students) return;
+    var activeStudents = window.TXP_STATE.students.filter(function(s) { return !inactiveSet.has(s.studentid); });
+    var activeCount = activeStudents.length, totalXP = 0, maxXP = 0, topName = '—';
+    activeStudents.forEach(function(s) { var xp = (window.TXP_STATE.xpMap[s.studentid] || {}).total_earned || 0; totalXP += xp; if (xp > maxXP) { maxXP = xp; topName = s.name; } });
+    var avgXP = activeCount > 0 ? Math.round(totalXP / activeCount) : 0;
+    var statNums = panel.querySelectorAll('.txp-stat .n');
+    if (statNums.length >= 4) { statNums[0].textContent = activeCount; statNums[1].textContent = totalXP.toLocaleString(); statNums[2].textContent = avgXP; statNums[3].textContent = (topName || '').split(' ')[0]; }
+    if (window.TXP_STATE.selected) { var activeSet = new Set(activeStudents.map(function(s){ return s.studentid; })); var newSelected = new Set(); window.TXP_STATE.selected.forEach(function(sid) { if (activeSet.has(sid)) newSelected.add(sid); }); window.TXP_STATE.selected = newSelected; }
+  }
+
+  async function updateTeacherStatsCount() {
+    var teacher = window.currentTeacher || (window.TV60 && window.TV60.teacher);
+    if (!teacher || !teacher.classes || !teacher.classes.length) return;
+    var totalActive = 0;
+    for (var i = 0; i < teacher.classes.length; i++) totalActive += await getActiveCount(teacher.classes[i]);
+    var statsWrap = document.getElementById('td60Stats');
+    if (!statsWrap) return;
+    statsWrap.querySelectorAll('.td60-stat').forEach(function(card) {
+      var lbl = card.querySelector('.td60-stat-label');
+      if (!lbl || lbl.textContent.indexOf('Total Students') === -1) return;
+      var numEl = card.querySelector('.td60-stat-num');
+      if (numEl) numEl.textContent = totalActive;
+    });
+  }
+  window.TIP211_updateStats = updateTeacherStatsCount;
+
+  async function updateClassSnapshot() {
+    var snapshot = document.querySelector('.td60-snapshot');
+    if (!snapshot) return;
+    var cls = window.TV60 && window.TV60.activeClass;
+    if (!cls) return;
+    var count = await getActiveCount(cls);
+    snapshot.innerHTML = snapshot.innerHTML.replace(/👥 \d+ Students/, '👥 ' + count + ' Students');
+  }
+
+  function initObserver() {
+    var panel = document.getElementById('td60Panel');
+    if (!panel || panel._v211) return;
+    panel._v211 = true;
+    var pending = null;
+    new MutationObserver(function(muts) {
+      var hasNew = false;
+      muts.forEach(function(m) { if (m.type !== 'childList' || !m.addedNodes.length) return; for (var i = 0; i < m.addedNodes.length; i++) { var n = m.addedNodes[i]; if (n.nodeType === 1) { if (n.tagName === 'TABLE' || n.querySelector?.('table') || n.classList?.contains('td60-table')) { hasNew = true; break; } } } });
+      if (!hasNew) return;
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(async function() { pending = null; var tab = window.TV60 && window.TV60.activeTab; var cls = window.TV60 && window.TV60.activeClass; if (!tab || !cls) return; if (tab === 'students') addStudentsModeTabs(); else await filterOtherTabTables(); updateClassSnapshot(); }, 300);
+    }).observe(panel, { childList: true, subtree: true });
+  }
+
+  function hookStudentStateChanges() {
+    ['TIP_confirmInactive', 'TIP_restore', 'TIP_executePromotion'].forEach(function(fn) {
+      var orig = window[fn];
+      if (typeof orig !== 'function' || orig._v211) return;
+      window[fn] = async function() { var r = await orig.apply(this, arguments); clearCache(); setTimeout(function() { updateTeacherStatsCount(); applyStudentsFilter(); }, 500); return r; };
+      window[fn]._v211 = true;
+    });
+  }
+
+  function hookTXPPanel() {
+    var _txp = window.TXP_OPEN;
+    if (typeof _txp !== 'function' || _txp._v211) return;
+    window.TXP_OPEN = async function() {
+      var r = await _txp.apply(this, arguments);
+      setTimeout(async function() {
+        var cls = window.TV60 && window.TV60.activeClass;
+        if (!cls || !window.TXP_STATE) return;
+        var inactiveSet = await getInactiveIds(cls);
+        if (!inactiveSet.size) return;
+        if (window.TXP_STATE.students) window.TXP_STATE.students = window.TXP_STATE.students.filter(function(s) { return !inactiveSet.has(s.studentid); });
+        var panel = document.getElementById('td60Panel');
+        if (panel) { panel.querySelectorAll('.txp-table tbody tr[data-sid]').forEach(function(row) { if (inactiveSet.has(row.dataset.sid)) row.classList.add('td60-row-inactive-hidden'); }); adjustXPStats(panel, inactiveSet); }
+      }, 400);
+      return r;
+    };
+    window.TXP_OPEN._v211 = true;
+  }
+
+  function init() { initObserver(); hookStudentStateChanges(); hookTXPPanel(); setTimeout(updateTeacherStatsCount, 1500); setTimeout(updateTeacherStatsCount, 3500); setTimeout(updateClassSnapshot, 2000); }
+
+  var _enter = window.enterTeacherDashboard;
+  if (typeof _enter === 'function' && !_enter._v211) {
+    window.enterTeacherDashboard = async function(t) { var r = await _enter.apply(this, arguments); setTimeout(init, 1500); setTimeout(init, 4000); return r; };
+    window.enterTeacherDashboard._v211 = true;
+  }
+
+  var dash = document.getElementById('teacherDashboardV60');
+  if (dash) { new MutationObserver(function() { if (dash.classList.contains('open')) { setTimeout(init, 1000); setTimeout(updateTeacherStatsCount, 2500); } }).observe(dash, { attributes: true, attributeFilter: ['class'] }); }
+
+  setInterval(function() {
+    if (!window.currentTeacher) return;
+    var dash = document.getElementById('teacherDashboardV60');
+    if (!dash || !dash.classList.contains('open')) return;
+    var tab = window.TV60 && window.TV60.activeTab;
+    if (tab === 'students') addStudentsModeTabs();
+    else if (tab && window.TV60 && window.TV60.activeClass) filterOtherTabTables();
+  }, 5000);
+
+  setTimeout(init, 3000);
+  setTimeout(init, 6000);
+
+  window.TIP211_debug = async function() {
+    console.log('=== INACTIVE FILTER v211 DEBUG ===');
+    var cls = window.TV60 && window.TV60.activeClass;
+    console.log('Class:', cls);
+    console.log('Mode:', window.TIP211_MODE);
+    if (cls) { var inactive = await getInactiveIds(cls); var activeCount = await getActiveCount(cls); console.log('Inactive:', Array.from(inactive)); console.log('Active count:', activeCount); }
+    var panel = document.getElementById('td60Panel');
+    if (panel) { console.log('Mode tabs:', !!panel.querySelector('.td60-students-mode-tabs')); console.log('Hidden rows:', panel.querySelectorAll('.td60-row-inactive-hidden').length); }
+    if (typeof showToast === 'function') showToast('📭 Check console', 'info');
+  };
+
+  console.log('✅ Inactive Filter v211 ready');
+})();
+</script>  
 </body>
 </html>
