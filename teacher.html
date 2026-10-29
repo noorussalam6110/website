@@ -7737,5 +7737,1011 @@ textarea.td60-lifecycle-input { min-height: 90px; resize: vertical; line-height:
   console.log('✅ Inactive Filter v211 ready');
 })();
 </script>  
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🚀 v220.0 — TEACHER SUPER DASHBOARD                       -->
+<!-- 8 new tabs + enhanced stats                               -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script id="teacher-super-dashboard-v220">
+(function(){
+  'use strict';
+  console.log('🚀 Teacher Super Dashboard v220 loading...');
+
+  var V220 = { activeTab: null, currentClass: null };
+  window.V220 = V220;
+
+  var MY_TABS = [
+    { key: 'v220-fees', label: 'Fees', icon: 'fa-money-bill-wave' },
+    { key: 'v220-moral', label: 'Moral', icon: 'fa-hand-holding-heart' },
+    { key: 'v220-extra', label: 'Activity', icon: 'fa-star' },
+    { key: 'v220-competitions', label: 'Competitions', icon: 'fa-trophy' },
+    { key: 'v220-lessons', label: 'Lessons', icon: 'fa-book-reader' },
+    { key: 'v220-reports', label: 'Reports', icon: 'fa-file-pdf' },
+    { key: 'v220-quiz', label: 'Quiz', icon: 'fa-question-circle' },
+    { key: 'v220-survey', label: 'Survey', icon: 'fa-clipboard-list' }
+  ];
+
+  function $id(id) { return document.getElementById(id); }
+  function esc(s) { return s === null || s === undefined ? '' : String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; }); }
+  function toast(m,t) { if (typeof showToast === 'function') showToast(m,t); }
+  function getTeacher() { return window.currentTeacher || (window.TV60 && window.TV60.teacher) || null; }
+  function getActiveClass() { return (window.TV60 && window.TV60.activeClass) || null; }
+  function fmtDate(d) { if (!d) return '—'; try { return new Date(d).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}); } catch(e) { return d; } }
+  function gradeFrom10(v) { if (v >= 9) return 'A+'; if (v >= 8) return 'A'; if (v >= 7) return 'B+'; if (v >= 6) return 'B'; if (v >= 5) return 'C+'; if (v >= 4) return 'C'; if (v >= 3) return 'D+'; return 'D'; }
+
+  // ═══════════════════════════════════════════════════════
+  // 📥 TAB INJECTION
+  // ═══════════════════════════════════════════════════════
+  function injectTabs() {
+    var tabsInner = $id('td60TabsInner');
+    if (!tabsInner) return;
+    MY_TABS.forEach(function(t) {
+      if (tabsInner.querySelector('[data-tab="' + t.key + '"]')) return;
+      var btn = document.createElement('button');
+      btn.className = 'td60-tab';
+      btn.dataset.tab = t.key;
+      btn.innerHTML = '<i class="fas ' + t.icon + '"></i> ' + t.label;
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        tabsInner.querySelectorAll('.td60-tab').forEach(function(b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        var cls = getActiveClass();
+        if (!cls) return;
+        V220.activeTab = t.key;
+        renderMyPanel(t.key, cls);
+      });
+      tabsInner.appendChild(btn);
+    });
+  }
+
+  function trackClass() {
+    var cls = getActiveClass();
+    if (cls !== V220.currentClass) {
+      V220.currentClass = cls;
+      if (V220.activeTab) {
+        setTimeout(function() {
+          var btn = document.querySelector('.td60-tab[data-tab="' + V220.activeTab + '"]');
+          if (btn) btn.click();
+        }, 800);
+      }
+    }
+  }
+  setInterval(trackClass, 1000);
+
+  function setupTabsObserver() {
+    var tabsInner = $id('td60TabsInner');
+    if (!tabsInner) { setTimeout(setupTabsObserver, 800); return; }
+    if (tabsInner._v220) return;
+    tabsInner._v220 = true;
+    new MutationObserver(function() { injectTabs(); }).observe(tabsInner, { childList: true });
+    injectTabs();
+  }
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.td60-tab');
+    if (!btn) return;
+    var key = btn.dataset.tab || '';
+    if (!key.startsWith('v220-')) {
+      V220.activeTab = null;
+    }
+  }, true);
+
+  // ═══════════════════════════════════════════════════════
+  // 🎨 PANEL ROUTER
+  // ═══════════════════════════════════════════════════════
+  function renderMyPanel(tab, cls) {
+    var panel = $id('td60Panel');
+    if (!panel) return;
+    panel.innerHTML = '<div style="text-align:center;padding:30px;"><div class="td60-spinner"></div></div>';
+    if (tab === 'v220-fees') return renderFeesPanel(panel, cls);
+    if (tab === 'v220-moral') return renderMoralPanel(panel, cls);
+    if (tab === 'v220-extra') return renderExtraPanel(panel, cls);
+    if (tab === 'v220-competitions') return renderCompPanel(panel, cls);
+    if (tab === 'v220-lessons') return renderLessonsPanel(panel, cls);
+    if (tab === 'v220-reports') return renderReportsPanel(panel, cls);
+    if (tab === 'v220-quiz') return renderQuizPanel(panel, cls);
+    if (tab === 'v220-survey') return renderSurveyPanel(panel, cls);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 💰 FEES PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderFeesPanel(panel, cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, roll, is_inactive').eq('class', cls);
+      var students = (sr.data || []).filter(function(s){ return s.is_inactive !== true; });
+      if (!students.length) { panel.innerHTML = '<div class="td60-empty"><i class="fas fa-users"></i>No students</div>'; return; }
+      var ids = students.map(function(s){ return s.studentid; });
+      var fpr = await supabaseClient.from('fee_parents').select('*');
+      var parents = (fpr.data || []).filter(function(p) {
+        return (p.student_ids || []).some(function(id){ return ids.indexOf(id) > -1; });
+      });
+      var html = '';
+      html += '<div style="background:linear-gradient(135deg,#ecfeff,#cffafe);border:1.5px solid rgba(8,145,178,.35);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:.76rem;color:#0891b2;font-weight:700;line-height:1.5;"><i class="fas fa-eye"></i> <b>View Only</b> — Teachers fee status കാണാം, edit ചെയ്യാൻ Super Admin-നെ ബന്ധപ്പെടുക.</div>';
+      if (!parents.length) {
+        html += '<div class="td60-empty"><i class="fas fa-receipt"></i>No fee records linked for this class</div>';
+      } else {
+        html += '<div class="td60-table-wrap"><table class="td60-table" style="min-width:500px;"><thead><tr><th>Student</th><th>Parent</th><th>Last Paid</th><th>Paid</th><th>Mobile</th></tr></thead><tbody>';
+        parents.forEach(function(p) {
+          var sidList = p.student_ids || [];
+          var students4P = students.filter(function(s){ return sidList.indexOf(s.studentid) > -1; });
+          var name = students4P.map(function(s){ return s.name; }).join(', ') || p.student_names || '—';
+          html += '<tr><td><strong>' + esc(name) + '</strong></td><td>' + esc(p.parent_name || '—') + '</td><td>' + (p.last_paid_month ? '<span style="color:#059669;font-weight:800;">' + esc(p.last_paid_month) + '</span>' : '<span style="color:#dc2626;">—</span>') + '</td><td style="text-align:center;font-weight:800;">' + (p.paid_months || 0) + '</td><td>' + esc(p.mobile || '—') + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      panel.innerHTML = html;
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🌟 MORAL VALUES PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderMoralPanel(panel, cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, roll, is_inactive').eq('class', cls).order('roll');
+      var students = (sr.data || []).filter(function(s){ return s.is_inactive !== true; });
+      if (!students.length) { panel.innerHTML = '<div class="td60-empty">No students</div>'; return; }
+      var ids = students.map(function(s){ return s.studentid; });
+      var mr = await supabaseClient.from('moral_values').select('*').in('studentid', ids);
+      var mvMap = {};
+      (mr.data || []).forEach(function(m) {
+        if (!mvMap[m.studentid]) mvMap[m.studentid] = {};
+        var v = (m.marks !== null && m.marks !== undefined) ? Number(m.marks) : parseFloat(m.grade);
+        mvMap[m.studentid][m.trait] = isNaN(v) ? '' : v;
+      });
+      var traits = (window.TRAITS_LIST || ['Discipline','Respect','Honesty','Punctuality','Cleanliness']);
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;"><div style="font-weight:900;color:#0f172a;font-size:.9rem;"><i class="fas fa-hand-holding-heart" style="color:#ec4899;"></i> Grade Moral Values (0-10)</div><button onclick="V220_saveMoral(\'' + cls + '\')" id="v220MoralSaveBtn" style="padding:9px 16px;border-radius:10px;border:none;background:linear-gradient(100deg,#059669,#34d399);color:#fff;font-family:inherit;font-weight:800;font-size:.8rem;cursor:pointer;min-height:40px;"><i class="fas fa-save"></i> Save All</button></div>';
+      html += '<div class="td60-table-wrap"><table class="td60-table" style="min-width:' + (200 + traits.length * 70) + 'px;"><thead><tr><th>Roll</th><th>Name</th>';
+      traits.forEach(function(t) { html += '<th style="text-align:center;font-size:.6rem;">' + esc(t) + '</th>'; });
+      html += '</tr></thead><tbody>';
+      students.forEach(function(s) {
+        html += '<tr data-sid="' + esc(s.studentid) + '"><td style="font-weight:800;color:#0891b2;">' + esc(s.roll || '—') + '</td><td><strong>' + esc(s.name) + '</strong></td>';
+        traits.forEach(function(t) {
+          var val = (mvMap[s.studentid] && mvMap[s.studentid][t]) || '';
+          html += '<td style="text-align:center;"><input type="number" class="v220-moral-inp" data-sid="' + esc(s.studentid) + '" data-trait="' + esc(t) + '" min="0" max="10" step="0.5" value="' + val + '" style="width:56px;padding:6px;border:1.5px solid rgba(100,116,139,.25);border-radius:8px;text-align:center;font-weight:700;font-family:inherit;font-size:16px;outline:none;"></td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table></div>';
+      panel.innerHTML = html;
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  window.V220_saveMoral = async function(cls) {
+    var btn = $id('v220MoralSaveBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+    try {
+      var records = [], bySid = {};
+      document.querySelectorAll('.v220-moral-inp').forEach(function(inp) {
+        var v = parseFloat(inp.value);
+        if (isNaN(v)) return;
+        v = Math.max(0, Math.min(10, v));
+        records.push({ studentid: inp.dataset.sid, trait: inp.dataset.trait, marks: v, grade: gradeFrom10(v) });
+        if (!bySid[inp.dataset.sid]) bySid[inp.dataset.sid] = [];
+        bySid[inp.dataset.sid].push(v);
+      });
+      if (!records.length) { toast('⚠️ No marks', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; } return; }
+      var sids = Object.keys(bySid);
+      await supabaseClient.from('moral_values').delete().in('studentid', sids);
+      for (var i = 0; i < records.length; i += 100) await supabaseClient.from('moral_values').insert(records.slice(i, i + 100));
+      for (var sid in bySid) {
+        var arr = bySid[sid];
+        var avg = arr.reduce(function(a,b){ return a+b; }, 0) / arr.length;
+        await supabaseClient.from('students').update({ moralvaluesgrade: gradeFrom10(avg), moralvaluessub: 'Avg ' + avg.toFixed(2) + '/10' }).eq('studentid', sid);
+      }
+      toast('✅ Saved ' + records.length + ' entries', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 80, spread: 70, origin: { y: .7 } });
+    } catch(e) { toast('❌ ' + e.message, 'error'); }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // ⭐ EXTRACURRICULAR PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderExtraPanel(panel, cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, roll, is_inactive').eq('class', cls).order('roll');
+      var students = (sr.data || []).filter(function(s){ return s.is_inactive !== true; });
+      if (!students.length) { panel.innerHTML = '<div class="td60-empty">No students</div>'; return; }
+      var now = new Date();
+      var month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      var cats = ['writing', 'reading', 'speech', 'diary'];
+      var ids = students.map(function(s){ return s.studentid; });
+      var er = await supabaseClient.from('extracurricular_grades').select('*').eq('month_year', month).in('studentid', ids);
+      var emap = {};
+      (er.data || []).forEach(function(e) {
+        if (!emap[e.studentid]) emap[e.studentid] = {};
+        emap[e.studentid][e.category] = e.marks;
+      });
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;"><div><div style="font-weight:900;color:#0f172a;font-size:.9rem;"><i class="fas fa-star" style="color:#f59e0b;"></i> Extracurricular — ' + month + '</div><div style="font-size:.7rem;color:#64748b;margin-top:2px;font-weight:700;">Grade activities 0-10</div></div><button onclick="V220_saveExtra(\'' + cls + '\',\'' + month + '\')" id="v220ExtraSaveBtn" style="padding:9px 16px;border-radius:10px;border:none;background:linear-gradient(100deg,#059669,#34d399);color:#fff;font-family:inherit;font-weight:800;font-size:.8rem;cursor:pointer;min-height:40px;"><i class="fas fa-save"></i> Save All</button></div>';
+      html += '<div class="td60-table-wrap"><table class="td60-table" style="min-width:' + (200 + cats.length * 80) + 'px;"><thead><tr><th>Roll</th><th>Name</th>';
+      cats.forEach(function(c) { html += '<th style="text-align:center;font-size:.62rem;">' + c.toUpperCase() + '</th>'; });
+      html += '<th style="text-align:center;font-size:.62rem;">TOTAL</th></tr></thead><tbody>';
+      students.forEach(function(s, si) {
+        html += '<tr data-sid="' + esc(s.studentid) + '"><td style="font-weight:800;color:#0891b2;">' + esc(s.roll || '—') + '</td><td><strong>' + esc(s.name) + '</strong></td>';
+        cats.forEach(function(c, ci) {
+          var val = (emap[s.studentid] && emap[s.studentid][c] !== undefined && emap[s.studentid][c] !== null) ? emap[s.studentid][c] : '';
+          html += '<td style="text-align:center;"><input type="number" class="v220-extra-inp" data-sid="' + esc(s.studentid) + '" data-cat="' + esc(c) + '" data-sidx="' + si + '" min="0" max="10" step="0.5" value="' + val + '" style="width:56px;padding:6px;border:1.5px solid rgba(100,116,139,.25);border-radius:8px;text-align:center;font-weight:700;font-family:inherit;font-size:16px;outline:none;"></td>';
+        });
+        html += '<td style="text-align:center;" id="v220ExtraTotal_' + si + '">0</td></tr>';
+      });
+      html += '</tbody></table></div>';
+      panel.innerHTML = html;
+      setTimeout(function() { recalcExtra(); document.querySelectorAll('.v220-extra-inp').forEach(function(inp) { inp.addEventListener('input', recalcExtra); }); }, 100);
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  function recalcExtra() {
+    var bySid = {};
+    document.querySelectorAll('.v220-extra-inp').forEach(function(inp) {
+      var si = inp.dataset.sidx;
+      var v = parseFloat(inp.value);
+      if (isNaN(v)) return;
+      if (!bySid[si]) bySid[si] = 0;
+      bySid[si] += v;
+    });
+    document.querySelectorAll('[id^="v220ExtraTotal_"]').forEach(function(el) {
+      var si = el.id.replace('v220ExtraTotal_', '');
+      el.textContent = (bySid[si] || 0).toFixed(1);
+      el.style.fontWeight = '900';
+      el.style.color = '#b45309';
+    });
+  }
+
+  window.V220_saveExtra = async function(cls, month) {
+    var btn = $id('v220ExtraSaveBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+    try {
+      var records = [];
+      var sids = new Set();
+      document.querySelectorAll('.v220-extra-inp').forEach(function(inp) {
+        var v = parseFloat(inp.value);
+        if (isNaN(v)) return;
+        v = Math.max(0, Math.min(10, v));
+        records.push({ studentid: inp.dataset.sid, month_year: month, category: inp.dataset.cat, marks: v, grade: gradeFrom10(v) });
+        sids.add(inp.dataset.sid);
+      });
+      if (!records.length) { toast('⚠️ No marks', 'error'); if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; } return; }
+      await supabaseClient.from('extracurricular_grades').delete().eq('month_year', month).in('studentid', Array.from(sids));
+      for (var i = 0; i < records.length; i += 100) await supabaseClient.from('extracurricular_grades').insert(records.slice(i, i + 100));
+      toast('✅ Saved ' + records.length + ' entries', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 80, spread: 70, origin: { y: .7 } });
+    } catch(e) { toast('❌ ' + e.message, 'error'); }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save All'; }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🏆 COMPETITIONS PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderCompPanel(panel, cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, is_inactive').eq('class', cls);
+      var students = (sr.data || []).filter(function(s){ return s.is_inactive !== true; });
+      var ids = students.map(function(s){ return s.studentid; });
+      var r = await supabaseClient.from('competitions').select('*').in('studentid', ids).order('competition_date', {ascending: false}).limit(100);
+      var list = r.data || [];
+      var smap = {};
+      students.forEach(function(s){ smap[s.studentid] = s.name; });
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;"><div style="font-weight:900;color:#0f172a;font-size:.9rem;"><i class="fas fa-trophy" style="color:#f59e0b;"></i> Competitions (' + list.length + ')</div><button onclick="V220_openCompForm(\'' + cls + '\')" style="padding:9px 16px;border-radius:10px;border:none;background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;font-family:inherit;font-weight:800;font-size:.8rem;cursor:pointer;min-height:40px;"><i class="fas fa-plus"></i> Add</button></div>';
+      if (!list.length) { html += '<div class="td60-empty"><i class="fas fa-trophy"></i>No competitions yet</div>'; }
+      else {
+        html += '<div class="td60-table-wrap"><table class="td60-table" style="min-width:450px;"><thead><tr><th>Competition</th><th>Student</th><th>Date</th><th>Position</th><th>Grade</th></tr></thead><tbody>';
+        list.forEach(function(c) {
+          var pos = c.position === 1 ? '🥇 1st' : c.position === 2 ? '🥈 2nd' : c.position === 3 ? '🥉 3rd' : c.position ? '#' + c.position : '—';
+          html += '<tr><td><strong>' + esc(c.competition_name) + '</strong></td><td>' + esc(smap[c.studentid] || '—') + '</td><td>' + fmtDate(c.competition_date) + '</td><td>' + pos + '</td><td>' + esc(c.grade || '—') + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      panel.innerHTML = html;
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  window.V220_openCompForm = async function(cls) {
+    var sr = await supabaseClient.from('students').select('studentid, name').eq('class', cls).eq('is_inactive', false);
+    var students = sr.data || [];
+    modalTitleSpan.innerText = '🏆 Add Competition Result';
+    modalBodyDiv.innerHTML = '<form id="v220CompForm">' +
+      '<div class="row g-3">' +
+        '<div class="col-12"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Competition Name *</label><input type="text" id="v220CompName" required class="modal-form-input"></div>' +
+        '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Date *</label><input type="date" id="v220CompDate" required class="modal-form-input" value="' + new Date().toISOString().split('T')[0] + '"></div>' +
+        '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Student *</label><select id="v220CompStudent" required class="modal-form-input"><option value="">--</option>' + students.map(function(s) { return '<option value="' + esc(s.studentid) + '">' + esc(s.name) + ' (' + esc(s.studentid) + ')</option>'; }).join('') + '</select></div>' +
+        '<div class="col-md-4"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Position</label><select id="v220CompPos" class="modal-form-input"><option value="">—</option><option value="1">🥇 1st</option><option value="2">🥈 2nd</option><option value="3">🥉 3rd</option></select></div>' +
+        '<div class="col-md-4"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Grade *</label><select id="v220CompGrade" required class="modal-form-input"><option value="">--</option><option value="A+">A+</option><option value="A">A</option><option value="B+">B+</option><option value="B">B</option><option value="C">C</option></select></div>' +
+        '<div class="col-md-4"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Category</label><input type="text" id="v220CompCat" class="modal-form-input" placeholder="Optional"></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;margin-top:16px;"><button type="submit" class="btn-update" style="flex:1;">Save</button><button type="button" onclick="closeModal(\'globalModal\')" class="btn-cancel">Cancel</button></div></form>';
+    modal.style.display = 'flex';
+    setTimeout(function() {
+      $id('v220CompForm').onsubmit = async function(e) {
+        e.preventDefault();
+        try {
+          var payload = {
+            competition_name: $id('v220CompName').value.trim(),
+            competition_date: $id('v220CompDate').value,
+            studentid: $id('v220CompStudent').value,
+            position: $id('v220CompPos').value ? parseInt($id('v220CompPos').value) : null,
+            grade: $id('v220CompGrade').value,
+            category: $id('v220Cat') ? $id('v220CompCat').value.trim() : null,
+            target_class: cls
+          };
+          if (!payload.competition_name || !payload.studentid || !payload.grade) { toast('Fill required', 'error'); return; }
+          await supabaseClient.from('competitions').insert(payload);
+          toast('✅ Added', 'success');
+          if (typeof confetti !== 'undefined') confetti({ particleCount: 60, spread: 60, origin: { y: .7 } });
+          closeModal('globalModal');
+          renderCompPanel($id('td60Panel'), cls);
+        } catch(err) { toast('❌ ' + err.message, 'error'); }
+      };
+    }, 100);
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 📖 LESSONS PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderLessonsPanel(panel, cls) {
+    try {
+      var r = await supabaseClient.from('lessons').select('*').eq('class', String(cls)).order('month_year', {ascending: false}).order('lesson_no').limit(100);
+      var list = r.data || [];
+      var html = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;"><div style="font-weight:900;color:#0f172a;font-size:.9rem;"><i class="fas fa-book-reader" style="color:#059669;"></i> Lessons (' + list.length + ')</div><button onclick="V220_openLessonForm(\'' + cls + '\')" style="padding:9px 16px;border-radius:10px;border:none;background:linear-gradient(100deg,#059669,#34d399);color:#fff;font-family:inherit;font-weight:800;font-size:.8rem;cursor:pointer;min-height:40px;"><i class="fas fa-plus"></i> Add Lesson</button></div>';
+      if (!list.length) { html += '<div class="td60-empty"><i class="fas fa-book-reader"></i>No lessons yet</div>'; }
+      else {
+        var byMonth = {};
+        list.forEach(function(l) {
+          if (!byMonth[l.month_year]) byMonth[l.month_year] = [];
+          byMonth[l.month_year].push(l);
+        });
+        html += '<div style="display:flex;flex-direction:column;gap:14px;">';
+        Object.keys(byMonth).sort().reverse().forEach(function(mo) {
+          html += '<div style="background:#f8fafc;border-radius:14px;padding:14px;border:1px solid rgba(100,116,139,.15);"><div style="font-weight:900;color:#0f172a;font-size:.88rem;margin-bottom:10px;"><i class="fas fa-calendar" style="color:#059669;"></i> ' + mo + '</div>';
+          byMonth[mo].forEach(function(l) {
+            var st = l.status || 'pending';
+            var color = st === 'completed' ? '#059669' : '#b45309';
+            html += '<div style="padding:10px 12px;background:#fff;border-radius:10px;margin-bottom:6px;border-left:3px solid ' + color + ';"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;"><strong style="color:#0f172a;font-size:.86rem;">' + (l.lesson_no ? l.lesson_no + '. ' : '') + esc(l.title) + '</strong><span style="background:' + color + '15;color:' + color + ';padding:2px 8px;border-radius:20px;font-size:.6rem;font-weight:900;">' + (st === 'completed' ? '✓ Done' : '⏳') + '</span></div><div style="font-size:.68rem;color:#64748b;margin-top:4px;">' + esc(l.subject) + '</div></div>';
+          });
+          html += '</div>';
+        });
+        html += '</div>';
+      }
+      panel.innerHTML = html;
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  window.V220_openLessonForm = function(cls) {
+    modalTitleSpan.innerText = '📖 Add Lesson';
+    modalBodyDiv.innerHTML = '<form id="v220LessonForm">' +
+      '<div class="row g-3">' +
+        '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Month *</label><input type="month" id="v220LsnMonth" required class="modal-form-input" value="' + new Date().toISOString().slice(0,7) + '"></div>' +
+        '<div class="col-md-6"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Subject *</label><input type="text" id="v220LsnSubject" required class="modal-form-input" placeholder="e.g., Arabic"></div>' +
+        '<div class="col-md-3"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">No.</label><input type="number" id="v220LsnNo" class="modal-form-input" min="1"></div>' +
+        '<div class="col-md-9"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Title *</label><input type="text" id="v220LsnTitle" required class="modal-form-input"></div>' +
+        '<div class="col-12"><label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:4px;">Description</label><textarea id="v220LsnDesc" class="modal-form-input" style="min-height:70px;"></textarea></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;margin-top:16px;"><button type="submit" class="btn-update" style="flex:1;">Save</button><button type="button" onclick="closeModal(\'globalModal\')" class="btn-cancel">Cancel</button></div></form>';
+    modal.style.display = 'flex';
+    setTimeout(function() {
+      $id('v220LessonForm').onsubmit = async function(e) {
+        e.preventDefault();
+        try {
+          await supabaseClient.from('lessons').insert({
+            class: String(cls),
+            month_year: $id('v220LsnMonth').value,
+            subject: $id('v220LsnSubject').value.trim(),
+            lesson_no: parseInt($id('v220LsnNo').value) || null,
+            title: $id('v220LsnTitle').value.trim(),
+            description: $id('v220LsnDesc').value.trim() || null,
+            status: 'pending'
+          });
+          toast('✅ Lesson added', 'success');
+          closeModal('globalModal');
+          renderLessonsPanel($id('td60Panel'), cls);
+        } catch(err) { toast('❌ ' + err.message, 'error'); }
+      };
+    }, 100);
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 📄 REPORTS PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderReportsPanel(panel, cls) {
+    var html = '<div style="font-weight:900;color:#0f172a;font-size:.92rem;margin-bottom:14px;"><i class="fas fa-file-pdf" style="color:#dc2626;"></i> PDF Reports — Class ' + esc(cls) + '</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">';
+    var reports = [
+      { key: 'student', icon: 'fa-user', title: 'Student Report', desc: 'Individual student academic report', color: '#8b5cf6', fn: 'V220_reportStudent' },
+      { key: 'class', icon: 'fa-users', title: 'Class List', desc: 'Full student list with details', color: '#0891b2', fn: 'V220_reportClassList' },
+      { key: 'attendance', icon: 'fa-calendar', title: 'Attendance', desc: 'Monthly attendance PDF', color: '#059669', fn: 'V220_reportAttendance' },
+      { key: 'marks', icon: 'fa-file-alt', title: 'Marks Report', desc: 'Exam-wise marks sheet', color: '#f59e0b', fn: 'V220_reportMarks' },
+      { key: 'topper', icon: 'fa-trophy', title: 'Topper Poster', desc: 'Rank 1-3 poster (PNG/PDF)', color: '#dc2626', fn: 'V220_reportTopper' },
+      { key: 'idcard', icon: 'fa-id-card', title: 'ID Card', desc: 'Generate student ID cards', color: '#3b82f6', fn: 'V220_reportIdCard' }
+    ];
+    reports.forEach(function(r) {
+      html += '<div onclick="' + r.fn + '(\'' + cls + '\')" style="background:#fff;border:1.5px solid rgba(180,200,230,.5);border-radius:14px;padding:16px;cursor:pointer;transition:all .2s;border-top:3px solid ' + r.color + ';" onmouseover="this.style.transform=\'translateY(-3px)\';this.style.boxShadow=\'0 12px 24px -10px rgba(0,0,0,.15)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">';
+      html += '<div style="width:44px;height:44px;border-radius:12px;background:' + r.color + '15;color:' + r.color + ';display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:10px;"><i class="fas ' + r.icon + '"></i></div>';
+      html += '<div style="font-weight:900;color:#0f172a;font-size:.88rem;">' + r.title + '</div>';
+      html += '<div style="font-size:.72rem;color:#64748b;margin-top:4px;line-height:1.4;">' + r.desc + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    panel.innerHTML = html;
+  }
+
+  window.V220_reportStudent = async function(cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, roll').eq('class', cls).eq('is_inactive', false).order('roll');
+      var students = sr.data || [];
+      if (!students.length) { toast('⚠️ No students', 'error'); return; }
+      modalTitleSpan.innerText = '📄 Select Student';
+      modalBodyDiv.innerHTML = '<div style="max-height:70vh;overflow-y:auto;">' + students.map(function(s) {
+        return '<button onclick="V220_generateStudentPDF(\'' + esc(s.studentid) + '\')" style="width:100%;padding:12px 14px;background:#f8fafc;border:1px solid rgba(100,116,139,.15);border-radius:10px;margin-bottom:6px;text-align:left;cursor:pointer;font-family:inherit;font-size:.86rem;"><strong style="color:#0f172a;">' + esc(s.name) + '</strong> <span style="color:#64748b;font-size:.72rem;">(Roll ' + esc(s.roll || '—') + ')</span></button>';
+      }).join('') + '</div>';
+      modal.style.display = 'flex';
+    } catch(e) { toast('❌ ' + e.message, 'error'); }
+  };
+
+  window.V220_generateStudentPDF = async function(sid) {
+    closeModal('globalModal');
+    if (typeof window.TD200_studentReportPDF === 'function') {
+      window.TD200_studentReportPDF(sid);
+    } else {
+      toast('⚠️ PDF function not loaded', 'error');
+    }
+  };
+
+  window.V220_reportClassList = function(cls) {
+    if (typeof window.TD200_studentListPDF === 'function') window.TD200_studentListPDF();
+    else toast('⚠️ PDF function not loaded', 'error');
+  };
+
+  window.V220_reportAttendance = function(cls) {
+    if (typeof window.TD200_attendancePDF === 'function') window.TD200_attendancePDF();
+    else toast('⚠️ Open Attendance tab first, then PDF', 'info');
+  };
+
+  window.V220_reportMarks = function(cls) {
+    if (typeof window.TD200_marksPDF === 'function') window.TD200_marksPDF();
+    else toast('⚠️ Open Marks tab first, then PDF', 'info');
+  };
+
+  window.V220_reportTopper = async function(cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, roll, rank').eq('class', cls).eq('is_inactive', false).not('rank', 'is', null).order('rank').limit(3);
+      var top3 = sr.data || [];
+      if (!top3.length) { toast('⚠️ No ranked students', 'error'); return; }
+      modalTitleSpan.innerText = '🏆 Topper Poster';
+      modalBodyDiv.innerHTML = '<div style="padding:10px 0;">' + top3.map(function(s, i) {
+        var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉';
+        return '<div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8fafc;border-radius:12px;margin-bottom:8px;"><div style="font-size:2rem;">' + medal + '</div><div style="flex:1;"><div style="font-weight:900;color:#0f172a;">' + esc(s.name) + '</div><div style="font-size:.76rem;color:#64748b;">Rank ' + (s.rank || i + 1) + ' • Roll ' + esc(s.roll || '—') + '</div></div></div>';
+      }).join('') + '<div style="margin-top:14px;padding:12px;background:#fef3c7;border:1px solid rgba(180,83,9,.3);border-radius:12px;font-size:.76rem;color:#92400e;font-weight:700;line-height:1.5;"><i class="fas fa-info-circle"></i> Topper poster generation Super Admin panel-ൽ ലഭ്യമാണ്. Admin-നെ ബന്ധപ്പെടുക.</div></div>';
+      modal.style.display = 'flex';
+    } catch(e) { toast('❌ ' + e.message, 'error'); }
+  };
+
+  window.V220_reportIdCard = async function(cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, roll').eq('class', cls).eq('is_inactive', false).order('roll');
+      var students = sr.data || [];
+      if (!students.length) { toast('⚠️ No students', 'error'); return; }
+      modalTitleSpan.innerText = '🆔 ID Cards';
+      modalBodyDiv.innerHTML = '<div style="max-height:70vh;overflow-y:auto;">' + students.map(function(s) {
+        return '<button onclick="V220_generateIdCard(\'' + esc(s.studentid) + '\')" style="width:100%;padding:12px 14px;background:#f8fafc;border:1px solid rgba(100,116,139,.15);border-radius:10px;margin-bottom:6px;text-align:left;cursor:pointer;font-family:inherit;font-size:.86rem;"><strong style="color:#0f172a;">' + esc(s.name) + '</strong> <span style="color:#64748b;font-size:.72rem;">(Roll ' + esc(s.roll || '—') + ')</span></button>';
+      }).join('') + '</div>';
+      modal.style.display = 'flex';
+    } catch(e) { toast('❌ ' + e.message, 'error'); }
+  };
+
+  window.V220_generateIdCard = function(sid) {
+    closeModal('globalModal');
+    toast('ℹ️ ID card generation Super Admin panel-ൽ ലഭ്യമാണ്', 'info');
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🎯 QUIZ RESULTS PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderQuizPanel(panel, cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, is_inactive').eq('class', cls);
+      var students = (sr.data || []).filter(function(s){ return s.is_inactive !== true; });
+      var ids = students.map(function(s){ return s.studentid; });
+      var smap = {};
+      students.forEach(function(s){ smap[s.studentid] = s.name; });
+      var r = await supabaseClient.from('quiz_attempts').select('*').in('studentid', ids).order('created_at', {ascending: false}).limit(100);
+      var list = r.data || [];
+      var html = '<div style="font-weight:900;color:#0f172a;font-size:.9rem;margin-bottom:14px;"><i class="fas fa-question-circle" style="color:#8b5cf6;"></i> Quiz Attempts (' + list.length + ')</div>';
+      if (!list.length) { html += '<div class="td60-empty"><i class="fas fa-question-circle"></i>No quiz attempts yet</div>'; }
+      else {
+        var avgScore = list.reduce(function(s, a){ return s + (a.score || 0); }, 0) / list.length;
+        var avgTotal = list.reduce(function(s, a){ return s + (a.total || 0); }, 0) / list.length;
+        var avgPct = avgTotal > 0 ? Math.round(avgScore / avgTotal * 100) : 0;
+        html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;margin-bottom:14px;"><div style="background:#eff6ff;border:1.5px solid rgba(59,130,246,.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:900;color:#2563eb;">' + list.length + '</div><div style="font-size:.62rem;color:#1e40af;font-weight:800;margin-top:3px;">Attempts</div></div><div style="background:#f0fdf4;border:1.5px solid rgba(5,150,105,.3);border-radius:12px;padding:12px;text-align:center;"><div style="font-size:1.4rem;font-weight:900;color:#059669;">' + avgPct + '%</div><div style="font-size:.62rem;color:#065f46;font-weight:800;margin-top:3px;">Avg Score</div></div></div>';
+        html += '<div class="td60-table-wrap"><table class="td60-table" style="min-width:450px;"><thead><tr><th>#</th><th>Student</th><th>Week</th><th>Score</th><th>%</th><th>Date</th></tr></thead><tbody>';
+        list.forEach(function(a, i) {
+          var pct = a.total > 0 ? Math.round(a.score / a.total * 100) : 0;
+          var color = pct >= 80 ? '#059669' : pct >= 60 ? '#0891b2' : pct >= 40 ? '#b45309' : '#dc2626';
+          html += '<tr><td>' + (i + 1) + '</td><td>' + esc(smap[a.studentid] || a.studentid) + '</td><td>' + esc(a.week_year || '—') + '</td><td><strong style="color:' + color + ';">' + a.score + '/' + a.total + '</strong></td><td><span style="color:' + color + ';font-weight:900;">' + pct + '%</span></td><td>' + fmtDate(a.created_at) + '</td></tr>';
+        });
+        html += '</tbody></table></div>';
+      }
+      panel.innerHTML = html;
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 📋 SURVEY PANEL
+  // ═══════════════════════════════════════════════════════
+  async function renderSurveyPanel(panel, cls) {
+    try {
+      var sr = await supabaseClient.from('students').select('studentid, name, is_inactive').eq('class', cls);
+      var students = (sr.data || []).filter(function(s){ return s.is_inactive !== true; });
+      var ids = students.map(function(s){ return s.studentid; });
+      var smap = {};
+      students.forEach(function(s){ smap[s.studentid] = s.name; });
+      var r = await supabaseClient.from('survey_responses').select('*').in('studentid', ids).order('created_at', {ascending: false}).limit(100);
+      var list = r.data || [];
+      var html = '<div style="font-weight:900;color:#0f172a;font-size:.9rem;margin-bottom:14px;"><i class="fas fa-clipboard-list" style="color:#0891b2;"></i> Survey Responses (' + list.length + ' / ' + students.length + ')</div>';
+      if (!list.length) { html += '<div class="td60-empty"><i class="fas fa-clipboard-list"></i>No survey responses yet</div>'; }
+      else {
+        var respPct = students.length > 0 ? Math.round(list.length / students.length * 100) : 0;
+        html += '<div style="background:linear-gradient(135deg,#ecfeff,#cffafe);border:1.5px solid rgba(8,145,178,.35);border-radius:14px;padding:14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;"><div style="font-size:.78rem;color:#0891b2;font-weight:800;">Participation Rate</div><div style="font-size:1.4rem;font-weight:900;color:#0891b2;">' + respPct + '%</div></div>';
+        list.forEach(function(s, i) {
+          var name = smap[s.studentid] || s.student_name || '—';
+          html += '<div style="background:#f8fafc;border:1px solid rgba(100,116,139,.15);border-radius:12px;padding:14px;margin-bottom:10px;"><div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap;"><strong style="color:#0f172a;font-size:.88rem;">' + esc(name) + '</strong><small style="color:#64748b;">' + fmtDate(s.created_at) + '</small></div>';
+          if (s.q1_answer) html += '<div style="font-size:.78rem;margin-bottom:6px;"><span style="color:#0891b2;font-weight:800;">Q1:</span> <span style="color:#475569;">' + esc(s.q1_answer) + '</span></div>';
+          if (s.q2_answer) html += '<div style="font-size:.78rem;margin-bottom:6px;"><span style="color:#0891b2;font-weight:800;">Q2:</span> <span style="color:#475569;">' + esc(s.q2_answer) + '</span></div>';
+          if (s.q3_answer) html += '<div style="font-size:.78rem;"><span style="color:#0891b2;font-weight:800;">Q3:</span> <span style="color:#475569;">' + esc(s.q3_answer) + '</span></div>';
+          html += '</div>';
+        });
+      }
+      panel.innerHTML = html;
+    } catch(e) { panel.innerHTML = '<div class="td60-empty">Error: ' + esc(e.message) + '</div>'; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 📊 ENHANCE TOP STATS
+  // ═══════════════════════════════════════════════════════
+  async function enhanceTopStats() {
+    var teacher = getTeacher();
+    if (!teacher || !teacher.classes || !teacher.classes.length) return;
+    var wrap = $id('td60Stats');
+    if (!wrap) return;
+    if (wrap.querySelectorAll('.td60-stat').length >= 8) return;
+    if (wrap._v220enhanced) return;
+    wrap._v220enhanced = true;
+
+    try {
+      var classes = teacher.classes;
+      var totalActive = 0, totalInactive = 0, topXPName = '—', topXPVal = 0;
+
+      for (var i = 0; i < classes.length; i++) {
+        var srA = await supabaseClient.from('students').select('studentid', { count: 'exact', head: true }).eq('class', String(classes[i])).eq('is_inactive', false);
+        totalActive += srA.count || 0;
+        var srI = await supabaseClient.from('students').select('studentid', { count: 'exact', head: true }).eq('class', String(classes[i])).eq('is_inactive', true);
+        totalInactive += srI.count || 0;
+      }
+
+      // Top XP
+      var activeSids = [];
+      for (var j = 0; j < classes.length; j++) {
+        var sr2 = await supabaseClient.from('students').select('studentid, name').eq('class', String(classes[j])).eq('is_inactive', false);
+        (sr2.data || []).forEach(function(s){ activeSids.push(s); });
+      }
+      if (activeSids.length) {
+        var ids = activeSids.map(function(s){ return s.studentid; });
+        var xr = await supabaseClient.from('student_xp').select('studentid, total_earned').in('studentid', ids).order('total_earned', {ascending: false}).limit(1);
+        if (xr.data && xr.data.length) {
+          topXPVal = xr.data[0].total_earned || 0;
+          var found = activeSids.find(function(s){ return s.studentid === xr.data[0].studentid; });
+          topXPName = found ? (found.name || '').split(' ')[0] : '—';
+        }
+      }
+
+      // Today attendance
+      var todayStr = new Date().toISOString().split('T')[0];
+      var attTotal = 0;
+      for (var k = 0; k < classes.length; k++) {
+        var ar = await supabaseClient.from('attendance_records').select('present_days').eq('month_year', todayStr.slice(0,7)).eq('studentid', activeSids.filter(function(s){ return String(s.class) === String(classes[k]); }).map(function(s){ return s.studentid; }));
+        (ar.data || []).forEach(function(a){ attTotal += Number(a.present_days) || 0; });
+      }
+
+      var newStats = [
+        { num: classes.length, label: 'Classes', icon: 'fa-chalkboard', color1: '#0891b2', color2: '#22d3ee', bg1: '#e0f2fe', bg2: '#bae6fd' },
+        { num: totalActive, label: 'Active Students', icon: 'fa-users', color1: '#059669', color2: '#34d399', bg1: '#d1fae5', bg2: '#a7f3d0' },
+        { num: totalInactive, label: 'Inactive', icon: 'fa-user-slash', color1: '#b45309', color2: '#f59e0b', bg1: '#fef3c7', bg2: '#fde68a' },
+        { num: topXPName, label: 'Top XP', icon: 'fa-crown', color1: '#7c3aed', color2: '#a78bfa', bg1: '#ede9fe', bg2: '#ddd6fe' }
+      ];
+
+      newStats.forEach(function(s) {
+        var card = document.createElement('div');
+        card.className = 'td60-stat';
+        card.innerHTML = '<div class="td60-stat-row"><div><div class="td60-stat-num" style="background:linear-gradient(120deg,' + s.color1 + ',' + s.color2 + ');-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">' + esc(String(s.num)) + '</div><div class="td60-stat-label">' + esc(s.label) + '</div></div><div class="td60-stat-ico" style="background:linear-gradient(140deg,' + s.bg1 + ',' + s.bg2 + ');color:' + s.color1 + ';"><i class="fas ' + s.icon + '"></i></div></div>';
+        wrap.appendChild(card);
+      });
+
+      console.log('✅ Top stats enhanced: 4 → ' + wrap.querySelectorAll('.td60-stat').length);
+    } catch(e) { console.warn('enhanceTopStats:', e); }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🔗 HOOKS & INIT
+  // ═══════════════════════════════════════════════════════
+  var _origEnter = window.enterTeacherDashboard;
+  if (typeof _origEnter === 'function' && !_origEnter._v220) {
+    window.enterTeacherDashboard = async function(t) {
+      var r = await _origEnter.apply(this, arguments);
+      setTimeout(function() { setupTabsObserver(); enhanceTopStats(); }, 2000);
+      setTimeout(enhanceTopStats, 4000);
+      return r;
+    };
+    window.enterTeacherDashboard._v220 = true;
+  }
+
+  var dash = $id('teacherDashboardV60');
+  if (dash) {
+    new MutationObserver(function() {
+      if (dash.classList.contains('open')) {
+        setTimeout(setupTabsObserver, 1500);
+        setTimeout(enhanceTopStats, 2500);
+      }
+    }).observe(dash, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Periodic safety
+  setInterval(function() {
+    if (!window.currentTeacher) return;
+    var dash = $id('teacherDashboardV60');
+    if (!dash || !dash.classList.contains('open')) return;
+    injectTabs();
+    enhanceTopStats();
+  }, 5000);
+
+  setTimeout(function() { setupTabsObserver(); enhanceTopStats(); }, 3000);
+  setTimeout(enhanceTopStats, 6000);
+
+  // ═══════════════════════════════════════════════════════
+  // 🐛 DEBUG
+  // ═══════════════════════════════════════════════════════
+  window.V220_debug = function() {
+    console.log('=== TEACHER SUPER DASHBOARD v220 ===');
+    console.log('Active tab:', V220.activeTab);
+    console.log('Current class:', V220.currentClass);
+    var tabsInner = $id('td60TabsInner');
+    if (tabsInner) {
+      console.log('My tabs:', MY_TABS.filter(function(t){ return !!tabsInner.querySelector('[data-tab="' + t.key + '"]'); }).map(function(t){ return t.key; }));
+    }
+    var stats = $id('td60Stats');
+    if (stats) console.log('Stats count:', stats.querySelectorAll('.td60-stat').length);
+    if (typeof showToast === 'function') showToast('🚀 Check console', 'info');
+  };
+
+  console.log('✅ Teacher Super Dashboard v220 ready');
+  console.log('   💡 8 new tabs added');
+  console.log('   📊 Top stats enhanced (4 → 8)');
+  console.log('   💡 V220_debug() — check status');
+})();
+</script>  
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🔢 v221.0 — ROLL NUMBER SORTING (Numeric)                -->
+<!-- All teacher tables sorted by roll (1,2,3...10,11)        -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style id="roll-sort-v221-css">
+/* Sort indicator on Roll header */
+.td60-table th.td60-roll-sorted::after {
+  content: '↓';
+  color: #0891b2;
+  font-size: .58rem;
+  margin-left: 4px;
+  font-weight: 900;
+  display: inline-block;
+  opacity: .75;
+}
+/* Ensure roll cells stay compact */
+.td60-table td.td60-roll-cell {
+  font-variant-numeric: tabular-nums;
+}
+</style>
+
+<script id="roll-sort-v221-js">
+(function(){
+  'use strict';
+  console.log('🔢 Roll Sort v221 loading...');
+
+  // ═══════════════════════════════════════════════════════
+  // 🎯 SORT VALUE RESOLVER
+  // ═══════════════════════════════════════════════════════
+  function getRollSortValue(cellText) {
+    var txt = String(cellText || '').trim();
+    // Empty / dash → last
+    if (!txt || txt === '—' || txt === '-' || txt === '–') {
+      return { type: 2, value: 999999 };
+    }
+    // Pure numeric → numeric sort
+    var num = parseFloat(txt);
+    if (!isNaN(num)) {
+      return { type: 0, value: num };
+    }
+    // Non-numeric (like "A1", "B2") → alphabetical after numeric
+    return { type: 1, value: txt.toLowerCase() };
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🎯 SORT ONE TABLE BY ROLL
+  // ═══════════════════════════════════════════════════════
+  function sortTableByRoll(table) {
+    if (!table || table.tagName !== 'TABLE') return false;
+
+    var thead = table.querySelector('thead tr');
+    if (!thead) return false;
+    var headers = Array.from(thead.querySelectorAll('th'));
+    if (!headers.length) return false;
+
+    // Find Roll column index
+    var rollIdx = -1;
+    var classIdx = -1;
+    var hashIdx = -1;
+    headers.forEach(function(th, idx) {
+      var txt = (th.textContent || '').trim();
+      if (/^roll/i.test(txt)) rollIdx = idx;
+      if (/^class$/i.test(txt)) classIdx = idx;
+      if (/^#$/i.test(txt)) hashIdx = idx;
+    });
+
+    if (rollIdx === -1) return false;
+
+    // Skip sorting if user is actively typing in this table
+    var active = document.activeElement;
+    if (active && active.tagName === 'INPUT' && table.contains(active)) {
+      return false;
+    }
+
+    var tbody = table.querySelector('tbody');
+    if (!tbody) return false;
+
+    var allRows = Array.from(tbody.querySelectorAll('tr'));
+    // Split sortable vs static rows (colspan group headers stay put)
+    var sortable = allRows.filter(function(r) {
+      return !r.querySelector('td[colspan]') && r.children.length > rollIdx;
+    });
+    if (sortable.length < 2) return false;
+
+    // Detect if already sorted (avoid churn)
+    var alreadySorted = true;
+    for (var i = 1; i < sortable.length; i++) {
+      var prev = getRollSortValue(sortable[i-1].children[rollIdx].textContent);
+      var curr = getRollSortValue(sortable[i].children[rollIdx].textContent);
+      var cmp = 0;
+      if (prev.type !== curr.type) cmp = prev.type - curr.type;
+      else if (prev.value < curr.value) cmp = -1;
+      else if (prev.value > curr.value) cmp = 1;
+
+      // If there's also a Class column, respect class-first sorting
+      if (cmp > 0) {
+        if (classIdx > -1) {
+          var aCls = parseInt(sortable[i-1].children[classIdx]?.textContent) || 0;
+          var bCls = parseInt(sortable[i].children[classIdx]?.textContent) || 0;
+          if (aCls < bCls) { /* different classes, ok */ }
+          else { alreadySorted = false; break; }
+        } else {
+          alreadySorted = false; break;
+        }
+      }
+    }
+    if (alreadySorted) {
+      markRollHeader(thead, rollIdx);
+      return false;
+    }
+
+    // Sort (class-first if present, then roll)
+    sortable.sort(function(a, b) {
+      if (classIdx > -1) {
+        var aCls = parseInt(a.children[classIdx]?.textContent) || 0;
+        var bCls = parseInt(b.children[classIdx]?.textContent) || 0;
+        if (aCls !== bCls) return aCls - bCls;
+      }
+      var aVal = getRollSortValue(a.children[rollIdx].textContent);
+      var bVal = getRollSortValue(b.children[rollIdx].textContent);
+      if (aVal.type !== bVal.type) return aVal.type - bVal.type;
+      if (aVal.value < bVal.value) return -1;
+      if (aVal.value > bVal.value) return 1;
+      // Tie-breaker: by name (column after roll typically)
+      var nameIdx = rollIdx + 1;
+      if (a.children[nameIdx] && b.children[nameIdx]) {
+        var aN = (a.children[nameIdx].textContent || '').toLowerCase();
+        var bN = (b.children[nameIdx].textContent || '').toLowerCase();
+        return aN.localeCompare(bN);
+      }
+      return 0;
+    });
+
+    // Re-append in sorted order (hidden rows keep their display:none)
+    sortable.forEach(function(r) { tbody.appendChild(r); });
+
+    // Renumber # column if present
+    if (hashIdx > -1) {
+      var counter = 0;
+      Array.from(tbody.querySelectorAll('tr')).forEach(function(r) {
+        if (r.querySelector('td[colspan]')) return;
+        var cell = r.children[hashIdx];
+        if (cell) { counter++; cell.textContent = counter; }
+      });
+    }
+
+    markRollHeader(thead, rollIdx);
+    return true;
+  }
+
+  function markRollHeader(thead, rollIdx) {
+    var headers = Array.from(thead.querySelectorAll('th'));
+    headers.forEach(function(th) { th.classList.remove('td60-roll-sorted'); });
+    if (headers[rollIdx]) headers[rollIdx].classList.add('td60-roll-sorted');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🔄 SORT ALL TABLES IN TEACHER PANEL
+  // ═══════════════════════════════════════════════════════
+  function sortAllTables() {
+    var panel = document.getElementById('td60Panel');
+    if (!panel) return 0;
+    var tables = panel.querySelectorAll('table.td60-table');
+    var count = 0;
+    tables.forEach(function(t) {
+      if (sortTableByRoll(t)) count++;
+    });
+    return count;
+  }
+  window.V221_sortAll = sortAllTables;
+
+  // ═══════════════════════════════════════════════════════
+  // 🎯 OBSERVER — Auto-sort whenever a table renders
+  // ═══════════════════════════════════════════════════════
+  function initObserver() {
+    var panel = document.getElementById('td60Panel');
+    if (!panel) { setTimeout(initObserver, 800); return; }
+    if (panel._v221obs) return;
+    panel._v221obs = true;
+
+    var pending = null;
+    var lastRun = 0;
+
+    new MutationObserver(function(muts) {
+      var hasNewTable = false;
+      muts.forEach(function(m) {
+        if (m.type !== 'childList' || !m.addedNodes.length) return;
+        for (var i = 0; i < m.addedNodes.length; i++) {
+          var n = m.addedNodes[i];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'TABLE' && n.classList.contains('td60-table')) { hasNewTable = true; break; }
+          if (n.querySelector && n.querySelector('table.td60-table')) { hasNewTable = true; break; }
+        }
+      });
+      if (!hasNewTable) return;
+
+      if (pending) clearTimeout(pending);
+      // Delay so v210 (250ms), v211 (300ms), and initial render complete first
+      pending = setTimeout(function() {
+        pending = null;
+        var now = Date.now();
+        if (now - lastRun < 400) return;
+        lastRun = now;
+        var sorted = sortAllTables();
+        if (sorted > 0) console.log('🔢 Sorted ' + sorted + ' table(s) by roll');
+      }, 500);
+    }).observe(panel, { childList: true, subtree: true });
+
+    console.log('✅ Roll sort observer active');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🔁 PERIODIC SAFETY (covers edge cases like re-sort after
+  // user marks inactive → v211 filter toggles → table shifts)
+  // ═══════════════════════════════════════════════════════
+  setInterval(function() {
+    if (!window.currentTeacher) return;
+    var dash = document.getElementById('teacherDashboardV60');
+    if (!dash || !dash.classList.contains('open')) return;
+    var tab = window.TV60 && window.TV60.activeTab;
+    if (!tab) return;
+    // Skip while user is typing
+    var active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+    sortAllTables();
+  }, 4000);
+
+  // ═══════════════════════════════════════════════════════
+  // 🔗 HOOK — Re-sort after tab switch
+  // ═══════════════════════════════════════════════════════
+  document.addEventListener('click', function(e) {
+    var tab = e.target.closest('.td60-tab');
+    if (!tab) return;
+    setTimeout(sortAllTables, 800);
+    setTimeout(sortAllTables, 1600);
+  }, true);
+
+  // ═══════════════════════════════════════════════════════
+  // 🔗 HOOK — v210 / v220 refresh → re-sort
+  // ═══════════════════════════════════════════════════════
+  ['TIP_refreshEnhance', 'TIP_executePromotion', 'TIP_confirmInactive', 'TIP_restore'].forEach(function(fn) {
+    var orig = window[fn];
+    if (typeof orig !== 'function' || orig._v221) return;
+    window[fn] = async function() {
+      var r = await orig.apply(this, arguments);
+      setTimeout(sortAllTables, 700);
+      setTimeout(sortAllTables, 1500);
+      return r;
+    };
+    window[fn]._v221 = true;
+  });
+
+  // ═══════════════════════════════════════════════════════
+  // 🚀 INIT
+  // ═══════════════════════════════════════════════════════
+  function init() {
+    initObserver();
+    // Initial sort in case table already rendered
+    setTimeout(sortAllTables, 500);
+    setTimeout(sortAllTables, 1500);
+    setTimeout(sortAllTables, 3000);
+  }
+
+  var _origEnter = window.enterTeacherDashboard;
+  if (typeof _origEnter === 'function' && !_origEnter._v221) {
+    window.enterTeacherDashboard = async function(t) {
+      var r = await _origEnter.apply(this, arguments);
+      setTimeout(init, 2000);
+      return r;
+    };
+    window.enterTeacherDashboard._v221 = true;
+  }
+
+  var dash = document.getElementById('teacherDashboardV60');
+  if (dash) {
+    new MutationObserver(function() {
+      if (dash.classList.contains('open')) {
+        setTimeout(init, 1200);
+      }
+    }).observe(dash, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { setTimeout(init, 3000); });
+  } else {
+    setTimeout(init, 3000);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🐛 DEBUG
+  // ═══════════════════════════════════════════════════════
+  window.V221_debug = function() {
+    console.log('=== ROLL SORT v221 ===');
+    var panel = document.getElementById('td60Panel');
+    if (!panel) { console.log('No panel'); return; }
+    var tables = panel.querySelectorAll('table.td60-table');
+    console.log('Tables in panel:', tables.length);
+    tables.forEach(function(t, i) {
+      var thead = t.querySelector('thead tr');
+      var headers = thead ? Array.from(thead.querySelectorAll('th')).map(function(th) { return (th.textContent || '').trim(); }) : [];
+      var tbody = t.querySelector('tbody');
+      var firstRow = tbody ? tbody.querySelector('tr:not([style*="display: none"])') : null;
+      var firstRoll = '';
+      if (firstRow) {
+        // Find roll column
+        var rollIdx = headers.findIndex(function(h) { return /^roll/i.test(h); });
+        if (rollIdx > -1 && firstRow.children[rollIdx]) {
+          firstRoll = firstRow.children[rollIdx].textContent.trim();
+        }
+      }
+      console.log('  Table ' + (i+1) + ':', {
+        headers: headers.slice(0, 6),
+        sorted: thead?.querySelector('th.td60-roll-sorted') ? 'YES' : 'NO',
+        firstRoll: firstRoll,
+        rowCount: tbody ? tbody.querySelectorAll('tr').length : 0
+      });
+    });
+    if (typeof showToast === 'function') showToast('🔢 Check console', 'info');
+  };
+
+  console.log('✅ Roll Sort v221 ready');
+  console.log('   🔢 All tables sorted by roll (1,2,3...10,11)');
+  console.log('   💡 V221_debug() — check status');
+  console.log('   💡 V221_sortAll() — manual sort');
+})();
+</script>
 </body>
 </html>
