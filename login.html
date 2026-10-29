@@ -46688,5 +46688,2407 @@ tr.adm-row-inactive-hidden { display: none !important; }
   console.log('✅ Admin Inactive Filter v212 ready');
 })();
 </script> 
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🔐 v230.0 — STUDENT LOGIN WITH 4-DIGIT PIN                -->
+<!-- Replaces v32.0 handler — Two-step: UID → PIN              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style id="pin-login-v230-css">
+#nsmPinField { display: none; }
+#nsmPinField.active { display: flex; }
+
+#nsmPinStudentBadge {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(5,14,43,.9), rgba(10,26,63,.85));
+  border: 1.5px solid rgba(34,211,238,.35);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  color: #fff;
+}
+#nsmPinStudentBadge.active { display: flex; }
+#nsmPinStudentBadge > i {
+  color: #67e8f9;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+#nsmPinStudentBadge .pin-badge-text {
+  flex: 1;
+  min-width: 0;
+  font-size: .84rem;
+  line-height: 1.3;
+}
+#nsmPinStudentBadge .pin-badge-text b {
+  font-weight: 800;
+  color: #fff;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#nsmPinStudentBadge .pin-badge-text small {
+  display: block;
+  font-size: .7rem;
+  color: #a9cdff;
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+#nsmPinInput {
+  text-align: center;
+  letter-spacing: 10px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  padding-left: 10px !important;
+}
+#nsmPinInput::placeholder {
+  letter-spacing: 6px;
+  font-size: .95rem;
+  opacity: .5;
+}
+
+/* PIN shake animation on wrong entry */
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+.nsm-pin-shake {
+  animation: pinShake 0.45s ease;
+}
+
+/* Back link */
+.nsm-pin-back {
+  background: none;
+  border: none;
+  color: #ffd966;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: .72rem;
+  font-weight: 800;
+  padding: 0;
+  margin-left: 6px;
+}
+.nsm-pin-back:hover { color: #fff; }
+
+/* Attempts counter */
+.nsm-pin-attempts {
+  background: rgba(239,68,68,.15);
+  border: 1px solid rgba(239,68,68,.35);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: .68rem;
+  color: #fca5a5;
+  font-weight: 800;
+  margin-top: 8px;
+  text-align: center;
+  display: none;
+}
+.nsm-pin-attempts.show { display: block; }
+</style>
+
+<script id="pin-login-v230-js">
+(function(){
+  'use strict';
+  console.log('🔐 PIN Login v230 loading...');
+
+  var _pinStudent = null;
+  var MAX_ATTEMPTS = 5;
+  var LOCK_SECONDS = 60;
+
+  // ═══════════════════════════════════════════════════════
+  // 📥 ADD PIN FIELD TO FORM
+  // ═══════════════════════════════════════════════════════
+  function addPinField() {
+    var form = document.getElementById('loginForm');
+    if (!form) return;
+    if (document.getElementById('nsmPinField')) return;
+
+    // Student badge (above UID)
+    var badge = document.createElement('div');
+    badge.id = 'nsmPinStudentBadge';
+    badge.innerHTML =
+      '<i class="fas fa-user-circle"></i>' +
+      '<div class="pin-badge-text">' +
+        '<b id="nsmPinStudentName">—</b>' +
+        '<small id="nsmPinStudentMeta">—</small>' +
+      '</div>';
+
+    // PIN field
+    var pinField = document.createElement('div');
+    pinField.id = 'nsmPinField';
+    pinField.className = 'nsm-field';
+    pinField.innerHTML =
+      '<label class="nsm-label">4-Digit PIN <span>*</span></label>' +
+      '<div class="nsm-input-wrap">' +
+        '<i class="fas fa-lock nsm-input-icon"></i>' +
+        '<input type="tel" id="nsmPinInput" class="nsm-input" ' +
+               'placeholder="••••" maxlength="4" ' +
+               'inputmode="numeric" pattern="[0-9]*" ' +
+               'autocomplete="off" autocorrect="off" spellcheck="false">' +
+        '<i class="fas fa-eye" onclick="NSM_PIN_toggleEye(this)" ' +
+           'style="cursor:pointer;color:#ffd966;padding:8px;font-size:.9rem;margin-left:4px;"></i>' +
+      '</div>' +
+      '<small class="nsm-hint" style="cursor:default;">' +
+        '<i class="fas fa-shield-alt"></i> 4 അക്ക PIN നൽകുക' +
+        '<button type="button" class="nsm-pin-back" onclick="NSM_PIN_cancel()">' +
+          'ID മാറ്റുക' +
+        '</button>' +
+      '</small>' +
+      '<div class="nsm-pin-attempts" id="nsmPinAttempts"></div>';
+
+    // Find insertion point — before the primary button
+    var btn = form.querySelector('.nsm-btn-primary');
+    if (btn && btn.parentNode) {
+      btn.parentNode.insertBefore(badge, btn);
+      btn.parentNode.insertBefore(pinField, btn);
+    } else {
+      form.appendChild(badge);
+      form.appendChild(pinField);
+    }
+
+    // Bind PIN input events
+    var pinInp = document.getElementById('nsmPinInput');
+    if (pinInp) {
+      pinInp.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+      });
+      pinInp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && this.value.length === 4) {
+          e.preventDefault();
+          submitPin();
+        }
+      });
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 👁️ PIN VISIBILITY TOGGLE
+  // ═══════════════════════════════════════════════════════
+  window.NSM_PIN_toggleEye = function(el) {
+    var inp = document.getElementById('nsmPinInput');
+    if (!inp) return;
+    inp.type = inp.type === 'password' ? 'tel' : 'password';
+    el.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🔙 CANCEL PIN — Back to UID
+  // ═══════════════════════════════════════════════════════
+  window.NSM_PIN_cancel = function() {
+    _pinStudent = null;
+    window._NSM_PIN_STUDENT = null;
+
+    var pinField = document.getElementById('nsmPinField');
+    if (pinField) pinField.classList.remove('active');
+    var badge = document.getElementById('nsmPinStudentBadge');
+    if (badge) badge.classList.remove('active');
+    var att = document.getElementById('nsmPinAttempts');
+    if (att) att.classList.remove('show');
+
+    // Show UID field
+    var sidInput = document.getElementById('studentId');
+    if (sidInput) {
+      var uidField = sidInput.closest('.nsm-field');
+      if (uidField) uidField.style.display = '';
+    }
+
+    // Reset PIN input
+    var pinInp = document.getElementById('nsmPinInput');
+    if (pinInp) { pinInp.value = ''; pinInp.type = 'password'; }
+
+    // Reset button
+    var btn = document.getElementById('nsmLoginBtn');
+    if (btn) btn.innerHTML = '<i class="fas fa-arrow-right-to-bracket"></i><span>പോർട്ടലിലേക്ക് പ്രവേശിക്കുക</span>';
+
+    if (navigator.vibrate) try { navigator.vibrate(10); } catch(e) {}
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🎯 SHOW PIN STEP
+  // ═══════════════════════════════════════════════════════
+  function showPinStep(student) {
+    _pinStudent = student;
+    window._NSM_PIN_STUDENT = student;
+
+    var sidInput = document.getElementById('studentId');
+    if (sidInput) {
+      var uidField = sidInput.closest('.nsm-field');
+      if (uidField) uidField.style.display = 'none';
+    }
+
+    var badge = document.getElementById('nsmPinStudentBadge');
+    if (badge) {
+      var nameEl = document.getElementById('nsmPinStudentName');
+      var metaEl = document.getElementById('nsmPinStudentMeta');
+      if (nameEl) nameEl.textContent = student.name || 'Student';
+      if (metaEl) metaEl.textContent = 'Class ' + (student.class || '—') + ' • ' + student.studentid;
+      badge.classList.add('active');
+    }
+
+    var pinField = document.getElementById('nsmPinField');
+    if (pinField) pinField.classList.add('active');
+
+    var pinInp = document.getElementById('nsmPinInput');
+    if (pinInp) {
+      pinInp.value = '';
+      pinInp.type = 'password';
+      setTimeout(function() { try { pinInp.focus(); } catch(e) {} }, 200);
+    }
+
+    var btn = document.getElementById('nsmLoginBtn');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-unlock"></i><span>PIN ഉപയോഗിച്ച് ലോഗിൻ</span>';
+    }
+
+    showToast('🔒 4-digit PIN നൽകുക', 'info');
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // ✅ SUBMIT PIN
+  // ═══════════════════════════════════════════════════════
+  async function submitPin() {
+    if (!_pinStudent) {
+      showToast('Session expired. Try again.', 'error');
+      return;
+    }
+
+    var pinInp = document.getElementById('nsmPinInput');
+    if (!pinInp) return;
+    var pin = (pinInp.value || '').trim();
+
+    if (pin.length !== 4) {
+      showToast('❌ 4 അക്ക PIN നൽകുക', 'error');
+      pinInp.focus();
+      return;
+    }
+
+    // Rate limit check
+    var studentId = _pinStudent.studentid;
+    var lockKey = 'pin_lock_' + studentId;
+    var attemptsKey = 'pin_attempts_' + studentId;
+    var lockUntil = parseInt(sessionStorage.getItem(lockKey) || '0');
+    var attempts = parseInt(sessionStorage.getItem(attemptsKey) || '0');
+
+    if (Date.now() < lockUntil) {
+      var secsLeft = Math.ceil((lockUntil - Date.now()) / 1000);
+      showToast('⏳ കാത്തിരിക്കുക: ' + secsLeft + 's', 'error');
+      showAttemptsUI('🚫 Locked for ' + secsLeft + 's');
+      return;
+    }
+
+    // Validate
+    var storedPin = String(_pinStudent.pin || '');
+    if (pin !== storedPin) {
+      attempts++;
+      sessionStorage.setItem(attemptsKey, attempts);
+
+      // Shake + vibrate
+      var wrap = pinInp.closest('.nsm-input-wrap');
+      if (wrap) {
+        wrap.classList.add('nsm-pin-shake');
+        setTimeout(function() { wrap.classList.remove('nsm-pin-shake'); }, 500);
+      }
+      if (navigator.vibrate) try { navigator.vibrate([30, 30, 30]); } catch(e) {}
+
+      if (attempts >= MAX_ATTEMPTS) {
+        sessionStorage.setItem(lockKey, Date.now() + LOCK_SECONDS * 1000);
+        sessionStorage.setItem(attemptsKey, '0');
+        showToast('🚫 5 തെറ്റായ ശ്രമങ്ങൾ — 60s lockout', 'error');
+        showAttemptsUI('🚫 Locked for ' + LOCK_SECONDS + 's');
+      } else {
+        showToast('❌ തെറ്റായ PIN (' + attempts + '/' + MAX_ATTEMPTS + ')', 'error');
+        showAttemptsUI('⚠️ തെറ്റായ PIN — ' + (MAX_ATTEMPTS - attempts) + ' ശ്രമങ്ങൾ ബാക്കി');
+      }
+
+      pinInp.value = '';
+      pinInp.focus();
+      return;
+    }
+
+    // ✅ SUCCESS
+    sessionStorage.removeItem(attemptsKey);
+    sessionStorage.removeItem(lockKey);
+
+    var student = _pinStudent;
+    _pinStudent = null;
+    window._NSM_PIN_STUDENT = null;
+
+    if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch(e) {}
+
+    // Show loading
+    if (typeof showLoading === 'function') showLoading(true);
+
+    try {
+      if (typeof window.completeLogin === 'function') {
+        await window.completeLogin(student);
+      }
+    } catch(e) {
+      console.error('Login error:', e);
+      showToast('❌ ' + (e.message || 'Error'), 'error');
+      if (typeof showLoading === 'function') showLoading(false);
+    }
+  }
+
+  function showAttemptsUI(msg) {
+    var el = document.getElementById('nsmPinAttempts');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function() {
+      if (el.textContent === msg) el.classList.remove('show');
+    }, 5000);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🚪 SUBMIT UID — FIRST STEP
+  // ═══════════════════════════════════════════════════════
+  async function submitUid() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+      showToast('System loading. Refresh.', 'error');
+      return;
+    }
+
+    var sidInput = document.getElementById('studentId');
+    if (!sidInput) return;
+    var raw = (sidInput.value || '').trim().toUpperCase();
+    if (!raw) {
+      showToast('Student ID നൽകുക', 'error');
+      return;
+    }
+
+    // Admin bypass check
+    var ap = (typeof DEFAULT_ADMIN_PASSWORD !== 'undefined') ? DEFAULT_ADMIN_PASSWORD : 'MADRASA2026';
+    var savedAp = localStorage.getItem('admin_password') || ap;
+
+    if (raw === savedAp || raw === ap) {
+      // Admin login flow
+      if (typeof showLoading === 'function') showLoading(true);
+      try {
+        isAdminMode = true;
+        currentAdminClass = '';
+        loginSection.style.display = 'none';
+        adminSection.style.display = 'block';
+        dashboardSection.style.display = 'none';
+        document.getElementById('aiFab').classList.remove('show');
+        if (notifChannel) { supabaseClient.removeChannel(notifChannel); notifChannel = null; }
+        if (typeof stopLeaderboardAutoScroll === 'function') stopLeaderboardAutoScroll();
+        if (typeof loadAllSettings === 'function') await loadAllSettings();
+        document.getElementById('adminClassSelector').value = '';
+        document.getElementById('adminMainContent').style.display = 'none';
+        document.getElementById('noClassMsg').style.display = 'block';
+        document.getElementById('selectedClassBadge').style.display = 'none';
+        document.getElementById('adminSettingsTab').style.display = 'none';
+        try { localStorage.setItem('noor_last_id', raw); } catch(e) {}
+        showToast('🔐 Admin Panel', 'success');
+        if (typeof enableBodyScroll === 'function') enableBodyScroll();
+        if (typeof showLoading === 'function') showLoading(false);
+      } catch(err) {
+        console.error('Admin login error:', err);
+        showToast('❌ ' + err.message, 'error');
+        if (typeof showLoading === 'function') showLoading(false);
+      }
+      return;
+    }
+
+    // Student lookup
+    if (typeof showLoading === 'function') showLoading(true);
+    try {
+      var r = await supabaseClient.from('students')
+        .select('*')
+        .eq('studentid', raw)
+        .single();
+
+      if (r.error || !r.data) {
+        showToast('❌ Student ID കണ്ടെത്തിയില്ല', 'error');
+        if (typeof showLoading === 'function') showLoading(false);
+        return;
+      }
+
+      var student = r.data;
+
+      // Blocked check
+      if (student.is_blocked === true) {
+        if (typeof showLoading === 'function') showLoading(false);
+        if (typeof showBlockedScreen === 'function') showBlockedScreen(student);
+        return;
+      }
+
+      // ═══ PIN check ═══
+      var hasPin = student.pin && String(student.pin).trim().length === 4;
+
+      if (hasPin) {
+        // Show PIN step
+        if (typeof showLoading === 'function') showLoading(false);
+        showPinStep(student);
+        return;
+      }
+
+      // No PIN — direct login (current behavior)
+      if (typeof showLoading === 'function') showLoading(false);
+      try { localStorage.setItem('noor_last_id', raw); } catch(e) {}
+
+      if (typeof window.completeLogin === 'function') {
+        await window.completeLogin(student);
+      }
+    } catch(err) {
+      console.error('Login error:', err);
+      showToast('❌ ' + (err.message || 'Error'), 'error');
+      if (typeof showLoading === 'function') showLoading(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🎯 INSTALL FORM HANDLER
+  // ═══════════════════════════════════════════════════════
+  function installHandler() {
+    var form = document.getElementById('loginForm');
+    if (!form) return false;
+    if (form._pinHandlerInstalled) return true;
+
+    // Don't replace yet — let v32.0 run first if it hasn't
+    // Wait for v32.0's 2-second timer
+
+    // Clone form to remove ALL previous listeners
+    var newForm = form.cloneNode(true);
+    form.parentNode.replaceChild(newForm, form);
+    newForm._pinHandlerInstalled = true;
+
+    // Re-attach UID input formatter
+    var sidInput = document.getElementById('studentId');
+    if (sidInput) {
+      sidInput.addEventListener('input', function() {
+        var p = this.selectionStart;
+        var c = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (this.value !== c) {
+          this.value = c;
+          this.setSelectionRange(p, p);
+        }
+        try { localStorage.setItem('noor_last_id', c); } catch(e) {}
+      });
+    }
+
+    // Add PIN field HTML
+    addPinField();
+
+    // Attach submit handler
+    newForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // If PIN step active → submit PIN
+      if (window._NSM_PIN_STUDENT) {
+        await submitPin();
+        return;
+      }
+
+      // Otherwise → submit UID
+      await submitUid();
+    });
+
+    console.log('✅ PIN login handler installed');
+    return true;
+  }
+
+  // Try installing multiple times to catch after v32.0
+  function tryInstall() {
+    if (installHandler()) {
+      // Success — re-attach for safety in case form was replaced
+      setTimeout(function() {
+        if (!document.getElementById('nsmPinField')) {
+          installHandler();
+        }
+      }, 500);
+    }
+  }
+
+  // Wait for v32.0 to finish (it uses 800ms + 2000ms timers)
+  setTimeout(tryInstall, 2500);
+  setTimeout(tryInstall, 4000);
+  setTimeout(tryInstall, 6000);
+
+  // Watch for form being replaced (in case v32.0 runs late)
+  var observer = setInterval(function() {
+    var form = document.getElementById('loginForm');
+    if (form && !form._pinHandlerInstalled) {
+      installHandler();
+    }
+    if (form && !document.getElementById('nsmPinField')) {
+      addPinField();
+    }
+  }, 3000);
+
+  // Debug helper
+  window.NSM_PIN_debug = function() {
+    console.log('=== PIN LOGIN DEBUG v230 ===');
+    console.log('PIN field in DOM:', !!document.getElementById('nsmPinField'));
+    console.log('Form has handler:', !!(document.getElementById('loginForm')?._pinHandlerInstalled));
+    console.log('Current PIN student:', window._NSM_PIN_STUDENT ? window._NSM_PIN_STUDENT.studentid : null);
+  };
+
+  console.log('✅ PIN Login v230 ready');
+  console.log('   💡 NSM_PIN_debug() — check status');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🔐 v231.0 — ADMIN PIN MANAGEMENT                          -->
+<!-- PIN column + set/generate/clear + bulk manager            -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style id="admin-pin-v231-css">
+.td-pin-cell {
+  text-align: center;
+  white-space: nowrap;
+}
+.pin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(5,150,105,.15);
+  color: #059669;
+  font-weight: 900;
+  font-size: .72rem;
+  cursor: pointer;
+  border: 1px solid rgba(5,150,105,.35);
+  transition: all .2s;
+  user-select: none;
+}
+.pin-chip:hover {
+  background: rgba(5,150,105,.25);
+  transform: scale(1.05);
+}
+.pin-chip .pin-text {
+  filter: blur(4px);
+  transition: filter .2s;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 1px;
+}
+.pin-chip.revealed .pin-text {
+  filter: none;
+}
+.pin-chip.revealed {
+  background: rgba(5,150,105,.3);
+  border-color: #059669;
+}
+.pin-none {
+  color: #94a3b8;
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+/* Bulk PIN Manager modal */
+.pin-manager-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(3,8,28,.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 100850;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  overflow-y: auto;
+}
+.pin-manager-modal.open { display: flex; }
+.pin-manager-card {
+  background: #fff;
+  border-radius: 22px;
+  max-width: 720px;
+  width: 100%;
+  margin: auto 0;
+  max-height: calc(100dvh - 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 40px 90px -30px rgba(0,0,0,.7);
+}
+.pin-manager-head {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #059669, #10b981, #34d399);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  flex-shrink: 0;
+  gap: 10px;
+}
+.pin-manager-head h3 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pin-manager-close {
+  background: rgba(255,255,255,.22);
+  border: none;
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pin-manager-toolbar {
+  padding: 12px 18px;
+  background: #f8fafc;
+  border-bottom: 1px solid rgba(100,116,139,.1);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  flex-shrink: 0;
+}
+.pin-manager-btn {
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: .74rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  transition: all .2s;
+}
+.pin-manager-btn:active { transform: scale(.96); }
+.pin-manager-btn.primary {
+  background: linear-gradient(100deg, #059669, #34d399);
+  color: #fff;
+  box-shadow: 0 4px 12px -4px rgba(5,150,105,.5);
+}
+.pin-manager-btn.warn {
+  background: linear-gradient(100deg, #f59e0b, #fbbf24);
+  color: #03132e;
+}
+.pin-manager-btn.danger {
+  background: linear-gradient(100deg, #dc2626, #ef4444);
+  color: #fff;
+}
+.pin-manager-btn.info {
+  background: linear-gradient(100deg, #3b82f6, #60a5fa);
+  color: #fff;
+}
+.pin-manager-body {
+  padding: 14px 18px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+}
+.pin-manager-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .82rem;
+}
+.pin-manager-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f0fdf4;
+}
+.pin-manager-table th {
+  padding: 10px 8px;
+  text-align: left;
+  font-size: .62rem;
+  font-weight: 900;
+  color: #059669;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  border-bottom: 1.5px solid rgba(5,150,105,.25);
+}
+.pin-manager-table td {
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(100,116,139,.08);
+  color: #0f172a;
+  vertical-align: middle;
+}
+.pin-manager-table tr:hover td {
+  background: #f8fafc;
+}
+.pin-manager-table .pm-input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1.5px solid rgba(100,116,139,.25);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+  letter-spacing: 3px;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+.pin-manager-table .pm-input:focus {
+  border-color: #059669;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(5,150,105,.12);
+}
+.pin-manager-table .pm-gen-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(100deg, #8b5cf6, #a78bfa);
+  color: #fff;
+  font-size: .82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pin-manager-table .pm-status {
+  font-size: .62rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-block;
+}
+.pin-manager-table .pm-status.set {
+  background: rgba(5,150,105,.15);
+  color: #059669;
+}
+.pin-manager-table .pm-status.none {
+  background: rgba(100,116,139,.12);
+  color: #64748b;
+}
+</style>
+
+<script id="admin-pin-v231-js">
+(function(){
+  'use strict';
+  console.log('🔐 Admin PIN Management v231 loading...');
+
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function(m) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+  function toast(m, t) { if (typeof showToast === 'function') showToast(m, t); }
+  function getStudents() {
+    try { return (typeof studentsAdminData !== 'undefined' && Array.isArray(studentsAdminData)) ? studentsAdminData : []; }
+    catch(e) { return []; }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🎲 GENERATE RANDOM 4-DIGIT PIN
+  // ═══════════════════════════════════════════════════════
+  function generatePin() {
+    return String(Math.floor(1000 + Math.random() * 9000));
+  }
+  window.ADM_PIN_generate = generatePin;
+
+  // ═══════════════════════════════════════════════════════
+  // 👁️ REVEAL PIN CHIP
+  // ═══════════════════════════════════════════════════════
+  window.ADM_PIN_reveal = function(el, pin) {
+    var textEl = el.querySelector('.pin-text');
+    if (!textEl) return;
+    if (el.classList.contains('revealed')) {
+      el.classList.remove('revealed');
+      textEl.textContent = '••••';
+      return;
+    }
+    textEl.textContent = pin;
+    el.classList.add('revealed');
+    if (navigator.vibrate) try { navigator.vibrate(10); } catch(e) {}
+    setTimeout(function() {
+      if (el.classList.contains('revealed')) {
+        el.classList.remove('revealed');
+        textEl.textContent = '••••';
+      }
+    }, 5000);
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🎨 ENHANCE STUDENTS TABLE WITH PIN COLUMN
+  // ═══════════════════════════════════════════════════════
+  function enhanceStudentsTable() {
+    var wrap = document.getElementById('adminStudentsWrap');
+    if (!wrap) return;
+    var table = wrap.querySelector('table');
+    if (!table) return;
+
+    var thead = table.querySelector('thead tr');
+    if (!thead) return;
+
+    // Add PIN header if missing
+    if (!thead.querySelector('.th-pin')) {
+      var th = document.createElement('th');
+      th.className = 'th-pin';
+      th.style.cssText = 'text-align:center;font-size:.6rem;text-transform:uppercase;color:#059669;';
+      th.textContent = 'PIN';
+      // Insert before Actions column if present, else append
+      var actionTh = thead.querySelector('th:last-child');
+      if (actionTh && /action/i.test(actionTh.textContent)) {
+        actionTh.parentNode.insertBefore(th, actionTh);
+      } else {
+        thead.appendChild(th);
+      }
+    }
+
+    // Add PIN cells
+    var students = getStudents();
+    table.querySelectorAll('tbody tr').forEach(function(row) {
+      if (row.querySelector('td[colspan]')) return;
+      if (row.querySelector('.td-pin-cell')) return;
+
+      // Get student ID
+      var sid = row.dataset.sid;
+      if (!sid) {
+        var ref = row.querySelector('[onclick*="editStudent"]') || row.querySelector('[onclick*="deleteStudent"]');
+        if (ref) {
+          var m = (ref.getAttribute('onclick') || '').match(/'([^']+)'/);
+          if (m) { sid = m[1]; row.dataset.sid = sid; }
+        }
+      }
+      if (!sid) return;
+
+      var student = students.find(function(x) { return x.studentid === sid; });
+      var hasPin = student && student.pin && String(student.pin).length === 4;
+
+      var td = document.createElement('td');
+      td.className = 'td-pin-cell';
+      td.style.textAlign = 'center';
+
+      if (hasPin) {
+        td.innerHTML =
+          '<span class="pin-chip" onclick="ADM_PIN_reveal(this, \'' + esc(student.pin) + '\')">' +
+            '<i class="fas fa-lock" style="font-size:.65rem;"></i>' +
+            '<span class="pin-text">••••</span>' +
+          '</span>';
+      } else {
+        td.innerHTML = '<span class="pin-none">—</span>';
+      }
+
+      // Insert before last cell (actions) if it exists, else append
+      var cells = row.children;
+      var actionCell = cells[cells.length - 1];
+      if (actionCell && actionCell.querySelector('.btn-sm, .admin-actions')) {
+        row.insertBefore(td, actionCell);
+      } else {
+        row.appendChild(td);
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 📝 ADD PIN FIELD TO STUDENT FORM
+  // ═══════════════════════════════════════════════════════
+  var _origOpenForm = window.openStudentForm;
+  if (typeof _origOpenForm === 'function' && !_origOpenForm._pinAdded) {
+    window.openStudentForm = function(sid) {
+      var result = _origOpenForm.apply(this, arguments);
+
+      setTimeout(function() {
+        var sidField = document.getElementById('sf_studentid');
+        if (!sidField) return;
+        var form = sidField.closest('form');
+        if (!form) return;
+        if (form.querySelector('#sf_pin')) return; // already added
+
+        var student = null;
+        if (sid && typeof studentsAdminData !== 'undefined') {
+          student = studentsAdminData.find(function(x) { return x.studentid === sid; });
+        }
+        var currentPin = (student && student.pin) ? student.pin : '';
+
+        var pinRow = document.createElement('div');
+        pinRow.className = 'col-12';
+        pinRow.innerHTML =
+          '<label style="color:#475569;font-size:.78rem;font-weight:800;display:block;margin-bottom:5px;">' +
+            '🔐 4-Digit Login PIN ' +
+            '<span style="color:#94a3b8;font-weight:600;font-size:.7rem;">(Optional)</span>' +
+          '</label>' +
+          '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+            '<input type="tel" id="sf_pin" class="modal-form-input" maxlength="4" ' +
+                   'inputmode="numeric" pattern="[0-9]{4}" ' +
+                   'value="' + esc(currentPin) + '" placeholder="----" ' +
+                   'style="flex:1;letter-spacing:8px;text-align:center;font-weight:900;font-size:1.2rem;min-width:140px;padding:12px;" ' +
+                   'oninput="this.value=this.value.replace(/[^0-9]/g,\'\').slice(0,4);">' +
+            '<button type="button" onclick="ADM_PIN_generateForForm()" ' +
+                    'style="padding:12px 16px;border-radius:12px;border:none;' +
+                           'background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;' +
+                           'font-family:inherit;font-weight:800;font-size:.78rem;cursor:pointer;' +
+                           'min-height:46px;white-space:nowrap;">' +
+              '<i class="fas fa-dice"></i> Generate' +
+            '</button>' +
+            '<button type="button" onclick="document.getElementById(\'sf_pin\').value=\'\';document.getElementById(\'sf_pin\').focus();" ' +
+                    'title="Clear PIN" ' +
+                    'style="padding:12px 14px;border-radius:12px;' +
+                           'border:1.5px solid rgba(100,116,139,.25);background:#f8fafc;' +
+                           'color:#475569;font-family:inherit;font-weight:800;font-size:.78rem;' +
+                           'cursor:pointer;min-height:46px;">' +
+              '<i class="fas fa-times"></i>' +
+            '</button>' +
+          '</div>' +
+          '<small style="color:#64748b;font-size:.72rem;display:block;margin-top:6px;line-height:1.55;">' +
+            '<i class="fas fa-info-circle" style="color:#0891b2;"></i> ' +
+            '<b>PIN സെറ്റ് ചെയ്താൽ:</b> Student login-ൽ UID കഴിഞ്ഞ് PIN നിർബന്ധം. ' +
+            '<b>ശൂന്യമാക്കിയാൽ:</b> UID മാത്രം മതി.' +
+          '</small>';
+
+        // Insert before the button row
+        var lastRow = form.querySelector('.d-flex.gap-2.mt-4') ||
+                      form.querySelector('.d-flex.gap-2');
+        if (lastRow && lastRow.parentNode) {
+          lastRow.parentNode.insertBefore(pinRow, lastRow);
+        } else {
+          form.appendChild(pinRow);
+        }
+      }, 200);
+
+      return result;
+    };
+    window.openStudentForm._pinAdded = true;
+    console.log('✅ openStudentForm hooked for PIN');
+  }
+
+  window.ADM_PIN_generateForForm = function() {
+    var pin = generatePin();
+    var inp = document.getElementById('sf_pin');
+    if (!inp) return;
+    inp.value = pin;
+    toast('🎲 PIN: ' + pin, 'success');
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 💾 HOOK SAVE STUDENT TO INCLUDE PIN
+  // ═══════════════════════════════════════════════════════
+  var _origSave = window.saveStudent;
+  if (typeof _origSave === 'function' && !_origSave._pinHooked) {
+    window.saveStudent = async function(eid) {
+      var pinInp = document.getElementById('sf_pin');
+      var pinValue = pinInp ? pinInp.value.trim() : '';
+      var sidField = document.getElementById('sf_studentid');
+      var sid = sidField ? sidField.value.trim().toUpperCase() : '';
+
+      // Validate PIN
+      if (pinValue && (pinValue.length !== 4 || !/^\d{4}$/.test(pinValue))) {
+        toast('❌ PIN exactly 4 digits (0-9)', 'error');
+        return;
+      }
+
+      // For existing student: save PIN before (modal will close in original)
+      if (eid && pinInp) {
+        try {
+          await supabaseClient.from('students')
+            .update({ pin: pinValue || null })
+            .eq('studentid', eid);
+          console.log('✅ PIN updated for', eid, ':', pinValue || 'cleared');
+        } catch(err) {
+          console.warn('PIN save (update) failed:', err);
+        }
+      }
+
+      // Original save
+      var result = await _origSave.apply(this, arguments);
+
+      // For new student: save PIN after (student must exist first)
+      if (!eid && pinInp && pinValue && sid) {
+        try {
+          await supabaseClient.from('students')
+            .update({ pin: pinValue })
+            .eq('studentid', sid);
+          console.log('✅ PIN set for new student', sid);
+          if (typeof loadStudentsForAdmin === 'function') loadStudentsForAdmin();
+        } catch(err) {
+          console.warn('PIN save (new) failed:', err);
+        }
+      }
+
+      return result;
+    };
+    window.saveStudent._pinHooked = true;
+    console.log('✅ saveStudent hooked for PIN');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🎛️ BULK PIN MANAGER MODAL
+  // ═══════════════════════════════════════════════════════
+  window.ADM_PIN_openManager = async function() {
+    var cls = (typeof currentAdminClass !== 'undefined' && currentAdminClass) ? currentAdminClass : '';
+    if (!cls) { toast('⚠️ Class select ചെയ്യൂ', 'error'); return; }
+
+    var sr = await supabaseClient.from('students')
+      .select('studentid, name, roll, pin, is_inactive')
+      .eq('class', cls)
+      .order('roll');
+    var students = sr.data || [];
+
+    var modal = document.createElement('div');
+    modal.id = 'pinManagerModal';
+    modal.className = 'pin-manager-modal open';
+
+    var rowsHtml = students.map(function(s, i) {
+      var hasPin = s.pin && String(s.pin).length === 4;
+      var inactive = s.is_inactive === true ? ' style="opacity:.5;"' : '';
+      return '<tr' + inactive + ' data-sid="' + esc(s.studentid) + '">' +
+        '<td style="text-align:center;color:#64748b;font-weight:700;font-size:.76rem;">' + (i + 1) + '</td>' +
+        '<td style="font-weight:800;color:#0891b2;">' + esc(s.roll || '—') + '</td>' +
+        '<td><strong>' + esc(s.name) + '</strong>' + (inactive ? ' <span style="font-size:.6rem;color:#b45309;font-weight:800;">📭 INACTIVE</span>' : '') + '</td>' +
+        '<td style="text-align:center;">' +
+          '<div style="display:flex;gap:4px;align-items:center;justify-content:center;">' +
+            '<input type="tel" class="pm-input" maxlength="4" inputmode="numeric" value="' + esc(hasPin ? s.pin : '') + '" placeholder="----" oninput="this.value=this.value.replace(/[^0-9]/g,\'\').slice(0,4);">' +
+            '<button type="button" class="pm-gen-btn" onclick="ADM_PIN_genRow(this)" title="Generate"><i class="fas fa-dice"></i></button>' +
+          '</div>' +
+        '</td>' +
+        '<td style="text-align:center;">' +
+          '<span class="pm-status ' + (hasPin ? 'set' : 'none') + '">' + (hasPin ? '🔒 SET' : '— none') + '</span>' +
+        '</td>' +
+      '</tr>';
+    }).join('');
+
+    modal.innerHTML =
+      '<div class="pin-manager-card">' +
+        '<div class="pin-manager-head">' +
+          '<h3><i class="fas fa-key"></i> PIN Manager — Class ' + esc(cls) + '</h3>' +
+          '<button class="pin-manager-close" onclick="ADM_PIN_closeManager()">✕</button>' +
+        '</div>' +
+        '<div class="pin-manager-toolbar">' +
+          '<button class="pin-manager-btn primary" onclick="ADM_PIN_generateAllMissing()">' +
+            '<i class="fas fa-dice"></i> Generate Missing</button>' +
+          '<button class="pin-manager-btn warn" onclick="ADM_PIN_regenerateAll()">' +
+            '<i class="fas fa-sync-alt"></i> Regenerate All</button>' +
+          '<button class="pin-manager-btn danger" onclick="ADM_PIN_clearAll()">' +
+            '<i class="fas fa-trash"></i> Clear All</button>' +
+          '<button class="pin-manager-btn info" style="margin-left:auto;" onclick="ADM_PIN_saveAll(\'' + esc(cls) + '\')">' +
+            '<i class="fas fa-save"></i> Save All</button>' +
+        '</div>' +
+        '<div class="pin-manager-body">' +
+          '<div style="background:#ecfeff;border:1px solid rgba(8,145,178,.3);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:.74rem;color:#0891b2;font-weight:700;line-height:1.55;">' +
+            '<i class="fas fa-info-circle"></i> ' +
+            'PIN empty ആയാൽ student UID മാത്രം ഉപയോഗിച്ച് login ചെയ്യും. ' +
+            'PIN set ചെയ്താൽ UID + PIN നിർബന്ധം.' +
+          '</div>' +
+          '<table class="pin-manager-table">' +
+            '<thead><tr>' +
+              '<th style="text-align:center;width:40px;">#</th>' +
+              '<th style="width:60px;">Roll</th>' +
+              '<th>Name</th>' +
+              '<th style="text-align:center;width:130px;">PIN</th>' +
+              '<th style="text-align:center;width:90px;">Status</th>' +
+            '</tr></thead>' +
+            '<tbody id="pmTableBody">' + rowsHtml + '</tbody>' +
+          '</table>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+    modal.addEventListener('click', function(e) { if (e.target === modal) ADM_PIN_closeManager(); });
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  };
+
+  window.ADM_PIN_closeManager = function() {
+    var m = document.getElementById('pinManagerModal');
+    if (m) m.remove();
+  };
+
+  window.ADM_PIN_genRow = function(btn) {
+    var inp = btn.parentNode.querySelector('.pm-input');
+    if (inp) inp.value = generatePin();
+    if (navigator.vibrate) try { navigator.vibrate(8); } catch(e) {}
+  };
+
+  window.ADM_PIN_generateAllMissing = function() {
+    var count = 0;
+    document.querySelectorAll('#pmTableBody tr').forEach(function(row) {
+      var inp = row.querySelector('.pm-input');
+      if (inp && !inp.value.trim()) { inp.value = generatePin(); count++; }
+    });
+    toast('🎲 Generated ' + count + ' PIN(s)', count > 0 ? 'success' : 'info');
+  };
+
+  window.ADM_PIN_regenerateAll = function() {
+    if (!confirm('🎲 എല്ലാ PIN-ഉം regenerate ചെയ്യണോ? (existing ones will be overwritten)')) return;
+    document.querySelectorAll('#pmTableBody .pm-input').forEach(function(inp) {
+      inp.value = generatePin();
+    });
+    toast('🎲 All PINs regenerated — Save അമർത്തുക', 'success');
+  };
+
+  window.ADM_PIN_clearAll = function() {
+    if (!confirm('🗑️ എല്ലാ PIN-ഉം clear ചെയ്യണോ?')) return;
+    document.querySelectorAll('#pmTableBody .pm-input').forEach(function(inp) {
+      inp.value = '';
+    });
+    toast('🗑️ Cleared — Save അമർത്തുക', 'info');
+  };
+
+  window.ADM_PIN_saveAll = async function(cls) {
+    var updates = [];
+    document.querySelectorAll('#pmTableBody tr').forEach(function(row) {
+      var sid = row.dataset.sid;
+      var inp = row.querySelector('.pm-input');
+      if (!sid || !inp) return;
+      var val = inp.value.trim();
+      if (val && (val.length !== 4 || !/^\d{4}$/.test(val))) return; // skip invalid
+      updates.push({ studentid: sid, pin: val || null });
+    });
+
+    if (!updates.length) { toast('⚠️ No changes', 'error'); return; }
+
+    try {
+      var count = 0;
+      for (var i = 0; i < updates.length; i++) {
+        var r = await supabaseClient.from('students')
+          .update({ pin: updates[i].pin })
+          .eq('studentid', updates[i].studentid);
+        if (!r.error) count++;
+      }
+      toast('✅ Saved ' + count + ' PIN(s)', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 80, origin: { y: .7 } });
+      if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch(e) {}
+      if (typeof loadStudentsForAdmin === 'function') loadStudentsForAdmin();
+      ADM_PIN_closeManager();
+    } catch(e) {
+      toast('❌ ' + e.message, 'error');
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🎛️ ADD "PIN Manager" BUTTON TO STUDENTS TOOLBAR
+  // ═══════════════════════════════════════════════════════
+  function addPinManagerButton() {
+    var tab = document.getElementById('adminStudentsTab');
+    if (!tab) return;
+    var toolbar = tab.querySelector('.admin-toolbar');
+    if (!toolbar) return;
+    if (toolbar.querySelector('.btn-pin-manager')) return;
+
+    var btn = document.createElement('button');
+    btn.className = 'btn-update btn-pin-manager';
+    btn.style.cssText = 'background:linear-gradient(100deg,#059669,#10b981);color:#fff;';
+    btn.innerHTML = '<i class="fas fa-key"></i> PIN Manager';
+    btn.onclick = function() { ADM_PIN_openManager(); };
+    toolbar.appendChild(btn);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🔗 HOOKS
+  // ═══════════════════════════════════════════════════════
+  var _origLoad = window.loadStudentsForAdmin;
+  if (typeof _origLoad === 'function' && !_origLoad._pinLoad) {
+    window.loadStudentsForAdmin = async function() {
+      var r = await _origLoad.apply(this, arguments);
+      setTimeout(function() {
+        addPinManagerButton();
+        enhanceStudentsTable();
+      }, 300);
+      setTimeout(enhanceStudentsTable, 1200);
+      return r;
+    };
+    window.loadStudentsForAdmin._pinLoad = true;
+  }
+
+  // Hook table re-renders
+  var watchWrap = function() {
+    var wrap = document.getElementById('adminStudentsWrap');
+    if (!wrap || wrap._pinWatch) return;
+    wrap._pinWatch = true;
+    new MutationObserver(function() {
+      setTimeout(enhanceStudentsTable, 200);
+    }).observe(wrap, { childList: true });
+  };
+
+  // Hook switchAdminTab
+  var _origSwitch = window.switchAdminTab;
+  if (typeof _origSwitch === 'function' && !_origSwitch._pinHooked) {
+    window.switchAdminTab = function(tab) {
+      var r = _origSwitch.apply(this, arguments);
+      if (tab === 'students') {
+        setTimeout(addPinManagerButton, 300);
+        setTimeout(enhanceStudentsTable, 600);
+        setTimeout(watchWrap, 800);
+      }
+      return r;
+    };
+    window.switchAdminTab._pinHooked = true;
+  }
+
+  // Init
+  setTimeout(function() {
+    addPinManagerButton();
+    enhanceStudentsTable();
+    watchWrap();
+  }, 2000);
+  setTimeout(function() {
+    addPinManagerButton();
+    enhanceStudentsTable();
+  }, 4500);
+
+  // Periodic safety
+  setInterval(function() {
+    var admin = document.getElementById('adminSection');
+    if (!admin || admin.style.display !== 'block') return;
+    var tab = document.querySelector('.admin-tab.active');
+    if (tab && tab.dataset.tab === 'students') {
+      addPinManagerButton();
+      enhanceStudentsTable();
+    }
+  }, 4000);
+
+  // Debug
+  window.ADM_PIN_debug = function() {
+    console.log('=== ADMIN PIN DEBUG v231 ===');
+    console.log('PIN Manager button:', !!document.querySelector('.btn-pin-manager'));
+    console.log('PIN column in table:', !!document.querySelector('.th-pin'));
+    console.log('PIN cells:', document.querySelectorAll('.td-pin-cell').length);
+    console.log('openStudentForm hooked:', !!(window.openStudentForm && window.openStudentForm._pinAdded));
+    console.log('saveStudent hooked:', !!(window.saveStudent && window.saveStudent._pinHooked));
+    if (typeof showToast === 'function') showToast('🔐 Check console', 'info');
+  };
+
+  console.log('✅ Admin PIN Management v231 ready');
+  console.log('   🔐 PIN column in students table');
+  console.log('   🔐 PIN Manager button in toolbar');
+  console.log('   🔐 PIN field in Add/Edit form');
+  console.log('   💡 ADM_PIN_debug() — check status');
+})();
+</script>
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 🔐 v232.0 — STUDENT SELF-SERVICE PIN                      -->
+<!-- First-time setup + Change PIN + Admin toggles             -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<style id="pin-self-v232-css">
+/* ═══ SETUP MODAL ═══ */
+.pin-setup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3,8,28,.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  z-index: 100900;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  padding-top: max(16px, env(safe-area-inset-top, 16px));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pin-setup-overlay.open { display: flex; }
+.pin-setup-card {
+  background: linear-gradient(155deg, #fff, #f8fafc);
+  border-radius: 24px;
+  max-width: 400px;
+  width: 100%;
+  margin: auto 0;
+  padding: 28px 22px 22px;
+  box-shadow: 0 40px 100px -30px rgba(0,0,0,.85),
+              0 0 80px -20px rgba(212,175,55,.4);
+  animation: pinSetupIn .45s cubic-bezier(.34,1.56,.64,1);
+  position: relative;
+  overflow: hidden;
+}
+@keyframes pinSetupIn {
+  from { opacity: 0; transform: scale(.92) translateY(30px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.pin-setup-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent, #fbbf24, #fff, #fbbf24, transparent);
+  border-radius: 3px;
+}
+.pin-setup-icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 14px;
+  border-radius: 22px;
+  background: linear-gradient(140deg, #8b5cf6, #a78bfa, #ec4899);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  color: #fff;
+  box-shadow: 0 15px 35px -12px rgba(139,92,246,.7);
+  animation: pinIconFloat 3s ease-in-out infinite;
+}
+@keyframes pinIconFloat {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-5px) rotate(-3deg); }
+}
+.pin-setup-title {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 6px;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.pin-setup-sub {
+  text-align: center;
+  font-size: .82rem;
+  color: #64748b;
+  margin: 0 0 18px;
+  line-height: 1.5;
+}
+.pin-setup-student {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1.5px solid rgba(139,92,246,.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pin-setup-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(140deg, #0891b2, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px -4px rgba(8,145,178,.5);
+}
+.pin-setup-name {
+  font-weight: 800;
+  color: #0f172a;
+  font-size: .92rem;
+  line-height: 1.2;
+}
+.pin-setup-meta {
+  font-size: .7rem;
+  color: #64748b;
+  margin-top: 2px;
+  font-weight: 700;
+}
+.pin-setup-field {
+  margin-bottom: 12px;
+}
+.pin-setup-field label {
+  display: block;
+  font-size: .78rem;
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 6px;
+}
+.pin-setup-input {
+  width: 100%;
+  padding: 14px;
+  border: 1.5px solid rgba(100,116,139,.25);
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #0f172a;
+  text-align: center;
+  letter-spacing: 12px;
+  font-variant-numeric: tabular-nums;
+  background: #f8fafc;
+  outline: none;
+  transition: all .25s;
+}
+.pin-setup-input:focus {
+  border-color: #8b5cf6;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(139,92,246,.12);
+}
+.pin-setup-input::placeholder {
+  letter-spacing: 8px;
+  font-size: 1rem;
+  opacity: .4;
+}
+.pin-setup-error {
+  background: #fef2f2;
+  border: 1px solid rgba(220,38,38,.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: .74rem;
+  color: #991b1b;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-align: center;
+}
+.pin-setup-save {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(100deg, #8b5cf6, #a78bfa);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: .94rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  box-shadow: 0 10px 25px -10px rgba(139,92,246,.7);
+  transition: all .2s;
+}
+.pin-setup-save:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px -10px rgba(139,92,246,.85);
+}
+.pin-setup-save:active:not(:disabled) { transform: scale(.97); }
+.pin-setup-save:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+.pin-setup-skip {
+  width: 100%;
+  padding: 11px;
+  border: 1.5px solid rgba(100,116,139,.2);
+  border-radius: 12px;
+  background: transparent;
+  color: #64748b;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: .82rem;
+  cursor: pointer;
+  margin-top: 8px;
+  min-height: 44px;
+  transition: .2s;
+}
+.pin-setup-skip:hover { background: #f1f5f9; color: #475569; }
+.pin-setup-warning {
+  text-align: center;
+  font-size: .72rem;
+  color: #b45309;
+  font-weight: 700;
+  margin-top: 14px;
+  padding: 8px 12px;
+  background: #fef3c7;
+  border: 1px solid rgba(180,83,9,.3);
+  border-radius: 10px;
+  line-height: 1.5;
+}
+
+/* ═══ PROFILE CHANGE PIN BUTTON ═══ */
+.btn-change-pin {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(139,92,246,.3);
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  color: #5b21b6;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: .86rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  min-height: 46px;
+  transition: .2s;
+}
+.btn-change-pin:hover {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -8px rgba(139,92,246,.5);
+}
+.btn-change-pin:active { transform: scale(.97); }
+.btn-change-pin i { color: #7c3aed; }
+
+/* ═══ ADMIN SETTINGS SECTION ═══ */
+.pin-settings-section {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1.5px solid rgba(139,92,246,.35);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.pin-settings-section h5 {
+  margin: 0 0 12px;
+  font-size: .95rem;
+  font-weight: 900;
+  color: #5b21b6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pin-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  background: #fff;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(100,116,139,.12);
+  cursor: pointer;
+  user-select: none;
+}
+.pin-setting-row:hover { background: #faf5ff; }
+.pin-setting-text { flex: 1; min-width: 0; }
+.pin-setting-text strong {
+  display: block;
+  font-size: .84rem;
+  color: #0f172a;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.pin-setting-text small {
+  display: block;
+  font-size: .7rem;
+  color: #64748b;
+  margin-top: 2px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.pin-setting-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 28px;
+  background: #cbd5e1;
+  transition: background .25s;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+.pin-setting-switch.on {
+  background: linear-gradient(100deg, #8b5cf6, #a78bfa);
+}
+.pin-setting-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: left .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 2px 5px rgba(0,0,0,.2);
+}
+.pin-setting-switch.on::after { left: 23px; }
+
+/* ═══ TOAST ═══ */
+.pin-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-120%);
+  padding: 14px 22px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: .88rem;
+  z-index: 100950;
+  transition: transform .5s cubic-bezier(.34,1.56,.64,1);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 92vw;
+  color: #fff;
+  box-shadow: 0 20px 50px -12px rgba(0,0,0,.5);
+}
+.pin-toast.show { transform: translateX(-50%) translateY(0); }
+.pin-toast.success { background: linear-gradient(135deg, #059669, #34d399); }
+.pin-toast.error { background: linear-gradient(135deg, #dc2626, #ef4444); }
+.pin-toast.info { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+</style>
+
+<script id="pin-self-v232-js">
+(function(){
+  'use strict';
+  console.log('🔐 PIN Self-Service v232 loading...');
+
+  var PIN_CFG = {
+    selfSetup: true,
+    forceSetup: false,
+    loaded: false
+  };
+  window.PIN_CFG = PIN_CFG;
+
+  var _setupStudent = null;
+  var _pinStudent232 = null;
+  var MAX_ATTEMPTS = 5;
+  var LOCK_SECONDS = 60;
+
+  function $id(id) { return document.getElementById(id); }
+  function esc(s) {
+    if (s === null || s === undefined) return '';
+    return String(s).replace(/[&<>"']/g, function(m) {
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+    });
+  }
+  function toast(m, t) { if (typeof showToast === 'function') showToast(m, t); }
+
+  // ═══════════════════════════════════════════════════════
+  // 📥 LOAD SETTINGS
+  // ═══════════════════════════════════════════════════════
+  async function loadPinSettings() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    try {
+      var r = await supabaseClient.from('settings')
+        .select('key, value')
+        .in('key', ['pin_self_setup', 'pin_force_setup']);
+      (r.data || []).forEach(function(s) {
+        if (s.key === 'pin_self_setup') PIN_CFG.selfSetup = String(s.value).toLowerCase() === 'true';
+        if (s.key === 'pin_force_setup') PIN_CFG.forceSetup = String(s.value).toLowerCase() === 'true';
+      });
+      PIN_CFG.loaded = true;
+      console.log('✅ PIN settings:', PIN_CFG);
+    } catch(e) { console.warn('loadPinSettings:', e); }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🎬 PIN SETUP MODAL — First time or when admin forces
+  // ═══════════════════════════════════════════════════════
+  function showPinSetupModal(student, opts) {
+    opts = opts || {};
+    var force = !!opts.force;
+
+    var old = $id('pinSetupModal');
+    if (old) old.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'pinSetupModal';
+    modal.className = 'pin-setup-overlay open';
+    modal.innerHTML =
+      '<div class="pin-setup-card">' +
+        '<div class="pin-setup-icon">🔐</div>' +
+        '<h2 class="pin-setup-title">PIN സെറ്റ് ചെയ്യുക</h2>' +
+        '<p class="pin-setup-sub">Account സുരക്ഷിതമാക്കാൻ 4 അക്ക PIN ഉണ്ടാക്കൂ</p>' +
+        '<div class="pin-setup-student">' +
+          '<div class="pin-setup-avatar">' + esc((student.name || 'S').charAt(0).toUpperCase()) + '</div>' +
+          '<div style="min-width:0;">' +
+            '<div class="pin-setup-name">' + esc(student.name || 'Student') + '</div>' +
+            '<div class="pin-setup-meta">Class ' + esc(student.class || '—') + ' • ' + esc(student.studentid || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="pin-setup-field">' +
+          '<label>🔑 പുതിയ PIN (4 അക്കം)</label>' +
+          '<input type="tel" id="pinSetupInput1" class="pin-setup-input" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" autocorrect="off">' +
+        '</div>' +
+        '<div class="pin-setup-field">' +
+          '<label>✓ PIN വീണ്ടും നൽകുക</label>' +
+          '<input type="tel" id="pinSetupInput2" class="pin-setup-input" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off" autocorrect="off">' +
+        '</div>' +
+        '<div class="pin-setup-error" id="pinSetupError" style="display:none;"></div>' +
+        '<button type="button" class="pin-setup-save" id="pinSetupSaveBtn" onclick="PIN232_saveSetup()">' +
+          '<i class="fas fa-shield-alt"></i> PIN സേവ് ചെയ്യുക' +
+        '</button>' +
+        (force ? '' : '<button type="button" class="pin-setup-skip" onclick="PIN232_skipSetup()">പിന്നീട് സെറ്റ് ചെയ്യാം</button>') +
+        (force ? '<div class="pin-setup-warning">⚠️ Admin നിർബന്ധമാക്കിയിരിക്കുന്നു — skip ചെയ്യാൻ കഴിയില്ല</div>' : '') +
+      '</div>';
+
+    document.body.appendChild(modal);
+    _setupStudent = student;
+    window._PIN232_SETUP_STUDENT = student;
+    window._PIN232_FORCE = force;
+
+    // Input handlers
+    ['pinSetupInput1', 'pinSetupInput2'].forEach(function(id) {
+      var inp = $id(id);
+      if (inp) {
+        inp.addEventListener('input', function() {
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+          var err = $id('pinSetupError');
+          if (err) err.style.display = 'none';
+        });
+        inp.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            if (id === 'pinSetupInput1') {
+              var i2 = $id('pinSetupInput2');
+              if (i2 && this.value.length === 4) i2.focus();
+            } else if (this.value.length === 4) {
+              window.PIN232_saveSetup();
+            }
+          }
+        });
+      }
+    });
+
+    setTimeout(function() {
+      var i1 = $id('pinSetupInput1');
+      if (i1) try { i1.focus(); } catch(e) {}
+    }, 300);
+
+    if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 💾 SAVE PIN (Setup)
+  // ═══════════════════════════════════════════════════════
+  window.PIN232_saveSetup = async function() {
+    var i1 = $id('pinSetupInput1');
+    var i2 = $id('pinSetupInput2');
+    var err = $id('pinSetupError');
+    var btn = $id('pinSetupSaveBtn');
+    if (!i1 || !i2 || !_setupStudent) return;
+
+    var pin1 = (i1.value || '').trim();
+    var pin2 = (i2.value || '').trim();
+
+    function showErr(msg) {
+      if (err) { err.textContent = msg; err.style.display = 'block'; }
+      if (navigator.vibrate) try { navigator.vibrate([30, 30, 30]); } catch(e) {}
+    }
+
+    if (pin1.length !== 4 || !/^\d{4}$/.test(pin1)) { showErr('❌ 4 അക്ക PIN നൽകുക'); i1.focus(); return; }
+    if (pin2.length !== 4 || !/^\d{4}$/.test(pin2)) { showErr('❌ PIN വീണ്ടും നൽകുക'); i2.focus(); return; }
+    if (pin1 !== pin2) { showErr('❌ രണ്ട് PINs ഒരുപോലെയല്ല'); i2.value = ''; i2.focus(); return; }
+    if (/^(.)\1{3}$/.test(pin1)) { showErr('❌ 1111, 2222 പോലെയുള്ള PIN പാടില്ല'); i1.focus(); return; }
+
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      var r = await supabaseClient.from('students')
+        .update({ pin: pin1 })
+        .eq('studentid', _setupStudent.studentid);
+      if (r.error) throw r.error;
+
+      var student = _setupStudent;
+      _setupStudent = null;
+      window._PIN232_SETUP_STUDENT = null;
+
+      var m = $id('pinSetupModal');
+      if (m) m.remove();
+
+      toast('✅ PIN സെറ്റ് ചെയ്തു!', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 120, spread: 80, origin: { y: .6 }, colors: ['#8b5cf6','#a78bfa','#fbbf24','#34d399'] });
+      if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch(e) {}
+
+      // Proceed to login
+      if (typeof showLoading === 'function') showLoading(true);
+      try {
+        if (typeof window.completeLogin === 'function') {
+          await window.completeLogin(student);
+        }
+      } catch(e) {
+        console.error('Login after setup:', e);
+        if (typeof showLoading === 'function') showLoading(false);
+      }
+    } catch(e) {
+      showErr('❌ ' + (e.message || 'Error'));
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-shield-alt"></i> PIN സേവ് ചെയ്യുക'; }
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // ⏭️ SKIP SETUP
+  // ═══════════════════════════════════════════════════════
+  window.PIN232_skipSetup = function() {
+    var student = _setupStudent;
+    _setupStudent = null;
+    window._PIN232_SETUP_STUDENT = null;
+    var m = $id('pinSetupModal');
+    if (m) m.remove();
+
+    if (student) {
+      if (typeof showLoading === 'function') showLoading(true);
+      setTimeout(async function() {
+        try {
+          if (typeof window.completeLogin === 'function') await window.completeLogin(student);
+        } catch(e) { if (typeof showLoading === 'function') showLoading(false); }
+      }, 150);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🔄 CHANGE PIN MODAL (from profile)
+  // ═══════════════════════════════════════════════════════
+  window.PIN232_openChangeModal = function(student) {
+    if (!student) { toast('❌ No user', 'error'); return; }
+    var hasPin = student.pin && String(student.pin).length === 4;
+
+    var old = $id('pinChangeModal232');
+    if (old) old.remove();
+
+    var modal = document.createElement('div');
+    modal.id = 'pinChangeModal232';
+    modal.className = 'pin-setup-overlay open';
+    modal.innerHTML =
+      '<div class="pin-setup-card">' +
+        '<div class="pin-setup-icon" style="background:linear-gradient(140deg,#0891b2,#22d3ee);">🔑</div>' +
+        '<h2 class="pin-setup-title" style="background:linear-gradient(135deg,#0891b2,#22d3ee);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">PIN ' + (hasPin ? 'മാറ്റുക' : 'സെറ്റ് ചെയ്യുക') + '</h2>' +
+        '<p class="pin-setup-sub">' + (hasPin ? 'നിലവിലെ PIN verify ചെയ്ത ശേഷം പുതിയ PIN സെറ്റ് ചെയ്യുക' : 'ഇപ്പോൾ ഒരു 4 അക്ക PIN സെറ്റ് ചെയ്യൂ') + '</p>' +
+        '<div class="pin-setup-student">' +
+          '<div class="pin-setup-avatar">' + esc((student.name || 'S').charAt(0).toUpperCase()) + '</div>' +
+          '<div style="min-width:0;">' +
+            '<div class="pin-setup-name">' + esc(student.name || 'Student') + '</div>' +
+            '<div class="pin-setup-meta">Class ' + esc(student.class || '—') + ' • ' + esc(student.studentid || '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        (hasPin ?
+          '<div class="pin-setup-field">' +
+            '<label>🔒 നിലവിലെ PIN</label>' +
+            '<input type="tel" id="pinChangeOld" class="pin-setup-input" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off">' +
+          '</div>' : '') +
+        '<div class="pin-setup-field">' +
+          '<label>🔑 പുതിയ PIN</label>' +
+          '<input type="tel" id="pinChangeNew" class="pin-setup-input" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off">' +
+        '</div>' +
+        '<div class="pin-setup-field">' +
+          '<label>✓ പുതിയ PIN വീണ്ടും</label>' +
+          '<input type="tel" id="pinChangeConfirm" class="pin-setup-input" maxlength="4" inputmode="numeric" placeholder="••••" autocomplete="off">' +
+        '</div>' +
+        '<div class="pin-setup-error" id="pinChangeError" style="display:none;"></div>' +
+        '<button type="button" class="pin-setup-save" id="pinChangeSaveBtn" onclick="PIN232_saveChange()" style="background:linear-gradient(100deg,#0891b2,#22d3ee);box-shadow:0 10px 25px -10px rgba(8,145,178,.7);">' +
+          '<i class="fas fa-save"></i> സേവ് ചെയ്യുക' +
+        '</button>' +
+        '<button type="button" class="pin-setup-skip" onclick="PIN232_closeChange()">Cancel</button>' +
+      '</div>';
+
+    document.body.appendChild(modal);
+    window._PIN232_CHANGE_STUDENT = student;
+    window._PIN232_HAS_PIN = hasPin;
+
+    ['pinChangeOld', 'pinChangeNew', 'pinChangeConfirm'].forEach(function(id) {
+      var inp = $id(id);
+      if (inp) {
+        inp.addEventListener('input', function() {
+          this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+          var err = $id('pinChangeError');
+          if (err) err.style.display = 'none';
+        });
+      }
+    });
+
+    setTimeout(function() {
+      var first = hasPin ? $id('pinChangeOld') : $id('pinChangeNew');
+      if (first) try { first.focus(); } catch(e) {}
+    }, 300);
+  };
+
+  window.PIN232_closeChange = function() {
+    var m = $id('pinChangeModal232');
+    if (m) m.remove();
+    window._PIN232_CHANGE_STUDENT = null;
+  };
+
+  window.PIN232_saveChange = async function() {
+    var student = window._PIN232_CHANGE_STUDENT;
+    var hasPin = window._PIN232_HAS_PIN;
+    if (!student) return;
+
+    var oldPin = hasPin ? ($id('pinChangeOld') || {}).value || '' : null;
+    var newPin = ($id('pinChangeNew') || {}).value || '';
+    var confirm = ($id('pinChangeConfirm') || {}).value || '';
+    var err = $id('pinChangeError');
+    var btn = $id('pinChangeSaveBtn');
+
+    function showErr(msg) {
+      if (err) { err.textContent = msg; err.style.display = 'block'; }
+      if (navigator.vibrate) try { navigator.vibrate([30, 30, 30]); } catch(e) {}
+    }
+
+    if (hasPin) {
+      if (!oldPin || oldPin !== String(student.pin)) { showErr('❌ നിലവിലെ PIN തെറ്റാണ്'); var i0 = $id('pinChangeOld'); if (i0) { i0.value = ''; i0.focus(); } return; }
+    }
+    if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) { showErr('❌ പുതിയ PIN 4 അക്കമാകണം'); return; }
+    if (newPin !== confirm) { showErr('❌ PINs ഒരുപോലെയല്ല'); $id('pinChangeConfirm').value = ''; $id('pinChangeConfirm').focus(); return; }
+    if (/^(.)\1{3}$/.test(newPin)) { showErr('❌ 1111, 2222 പോലെയുള്ള PIN പാടില്ല'); return; }
+    if (hasPin && newPin === oldPin) { showErr('❌ പുതിയ PIN പഴയതിൽ നിന്ന് വ്യത്യസ്തമാകണം'); return; }
+
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...'; }
+
+    try {
+      var r = await supabaseClient.from('students').update({ pin: newPin }).eq('studentid', student.studentid);
+      if (r.error) throw r.error;
+
+      // Update currentUser
+      if (window.currentUser && window.currentUser.studentId === student.studentid) {
+        window.currentUser.pin = newPin;
+        try { localStorage.setItem('noor_session', JSON.stringify(window.currentUser)); } catch(e) {}
+      }
+
+      window._PIN232_CHANGE_STUDENT = null;
+      var m = $id('pinChangeModal232');
+      if (m) m.remove();
+
+      toast('✅ PIN updated!', 'success');
+      if (typeof confetti !== 'undefined') confetti({ particleCount: 100, spread: 70, origin: { y: .6 }, colors: ['#0891b2','#22d3ee','#34d399'] });
+      if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch(e) {}
+    } catch(e) {
+      showErr('❌ ' + (e.message || 'Error'));
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> സേവ് ചെയ്യുക'; }
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🚪 MODIFY LOGIN FLOW — replaces v230 handler
+  // ═══════════════════════════════════════════════════════
+  async function handleUidSubmit() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) {
+      toast('System loading. Refresh.', 'error');
+      return;
+    }
+
+    await loadPinSettings();
+
+    var sidInput = $id('studentId');
+    if (!sidInput) return;
+    var raw = (sidInput.value || '').trim().toUpperCase();
+    if (!raw) { toast('Student ID നൽകുക', 'error'); return; }
+
+    // Admin bypass
+    var ap = (typeof DEFAULT_ADMIN_PASSWORD !== 'undefined') ? DEFAULT_ADMIN_PASSWORD : 'MADRASA2026';
+    var savedAp = localStorage.getItem('admin_password') || ap;
+    if (raw === savedAp || raw === ap) {
+      // Admin login — call v230 flow via button click (Admin handled there)
+      var origBtn = $id('nsmLoginBtn');
+      // Just call the original v32 handler path — reuse v230's submitUid
+      // But we cloned form... let's just do admin login here
+      if (typeof showLoading === 'function') showLoading(true);
+      try {
+        isAdminMode = true;
+        currentAdminClass = '';
+        if (typeof loginSection !== 'undefined') loginSection.style.display = 'none';
+        document.getElementById('adminSection').style.display = 'block';
+        document.getElementById('dashboardSection').style.display = 'none';
+        var fab = document.getElementById('aiFab');
+        if (fab) fab.classList.remove('show');
+        if (typeof notifChannel !== 'undefined' && notifChannel) { supabaseClient.removeChannel(notifChannel); notifChannel = null; }
+        if (typeof stopLeaderboardAutoScroll === 'function') stopLeaderboardAutoScroll();
+        if (typeof loadAllSettings === 'function') await loadAllSettings();
+        document.getElementById('adminClassSelector').value = '';
+        document.getElementById('adminMainContent').style.display = 'none';
+        document.getElementById('noClassMsg').style.display = 'block';
+        document.getElementById('selectedClassBadge').style.display = 'none';
+        document.getElementById('adminSettingsTab').style.display = 'none';
+        try { localStorage.setItem('noor_last_id', raw); } catch(e) {}
+        toast('🔐 Admin Panel', 'success');
+        if (typeof enableBodyScroll === 'function') enableBodyScroll();
+        if (typeof showLoading === 'function') showLoading(false);
+      } catch(err) {
+        console.error('Admin login error:', err);
+        toast('❌ ' + err.message, 'error');
+        if (typeof showLoading === 'function') showLoading(false);
+      }
+      return;
+    }
+
+    // Student lookup
+    if (typeof showLoading === 'function') showLoading(true);
+    try {
+      var r = await supabaseClient.from('students').select('*').eq('studentid', raw).single();
+      if (r.error || !r.data) {
+        toast('❌ Student ID കണ്ടെത്തിയില്ല', 'error');
+        if (typeof showLoading === 'function') showLoading(false);
+        return;
+      }
+      var student = r.data;
+
+      // Blocked
+      if (student.is_blocked === true) {
+        if (typeof showLoading === 'function') showLoading(false);
+        if (typeof showBlockedScreen === 'function') showBlockedScreen(student);
+        return;
+      }
+
+      // Inactive (v160)
+      if (student.is_inactive === true) {
+        if (typeof showLoading === 'function') showLoading(false);
+        if (typeof showInactiveScreen === 'function') showInactiveScreen(student);
+        else toast('📭 Account inactive', 'error');
+        return;
+      }
+
+      // ═══ PIN check ═══
+      var hasPin = student.pin && String(student.pin).trim().length === 4;
+
+      if (hasPin) {
+        // Show PIN entry (v230 flow — set state)
+        if (typeof showLoading === 'function') showLoading(false);
+        showPinEntryStep(student);
+        return;
+      }
+
+      // ═══ No PIN: check self-setup ═══
+      if (PIN_CFG.selfSetup) {
+        if (typeof showLoading === 'function') showLoading(false);
+        showPinSetupModal(student, { force: PIN_CFG.forceSetup });
+        return;
+      }
+
+      // No PIN + no self-setup → direct login
+      if (typeof showLoading === 'function') showLoading(false);
+      try { localStorage.setItem('noor_last_id', raw); } catch(e) {}
+      if (typeof window.completeLogin === 'function') await window.completeLogin(student);
+    } catch(err) {
+      console.error('Login error:', err);
+      toast('❌ ' + (err.message || 'Error'), 'error');
+      if (typeof showLoading === 'function') showLoading(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🔑 PIN ENTRY STEP (reuse existing DOM from v230)
+  // ═══════════════════════════════════════════════════════
+  function showPinEntryStep(student) {
+    _pinStudent232 = student;
+    window._NSM_PIN_STUDENT = student;
+
+    var sidInput = $id('studentId');
+    if (sidInput) {
+      var uidField = sidInput.closest('.nsm-field');
+      if (uidField) uidField.style.display = 'none';
+    }
+
+    var badge = $id('nsmPinStudentBadge');
+    if (badge) {
+      var nameEl = $id('nsmPinStudentName');
+      var metaEl = $id('nsmPinStudentMeta');
+      if (nameEl) nameEl.textContent = student.name || 'Student';
+      if (metaEl) metaEl.textContent = 'Class ' + (student.class || '—') + ' • ' + student.studentid;
+      badge.classList.add('active');
+    }
+
+    var pinField = $id('nsmPinField');
+    if (pinField) pinField.classList.add('active');
+
+    var pinInp = $id('nsmPinInput');
+    if (pinInp) {
+      pinInp.value = '';
+      pinInp.type = 'password';
+      setTimeout(function() { try { pinInp.focus(); } catch(e) {} }, 200);
+    }
+
+    var btn = $id('nsmLoginBtn');
+    if (btn) btn.innerHTML = '<i class="fas fa-unlock"></i><span>PIN ഉപയോഗിച്ച് ലോഗിൻ</span>';
+
+    toast('🔒 4-digit PIN നൽകുക', 'info');
+  }
+
+  async function handlePinSubmit() {
+    if (!_pinStudent232) return;
+    var pinInp = $id('nsmPinInput');
+    if (!pinInp) return;
+    var pin = (pinInp.value || '').trim();
+
+    if (pin.length !== 4) {
+      toast('❌ 4 അക്ക PIN നൽകുക', 'error');
+      pinInp.focus();
+      return;
+    }
+
+    var studentId = _pinStudent232.studentid;
+    var lockKey = 'pin_lock_' + studentId;
+    var attemptsKey = 'pin_attempts_' + studentId;
+    var lockUntil = parseInt(sessionStorage.getItem(lockKey) || '0');
+    var attempts = parseInt(sessionStorage.getItem(attemptsKey) || '0');
+
+    if (Date.now() < lockUntil) {
+      var secs = Math.ceil((lockUntil - Date.now()) / 1000);
+      toast('⏳ Locked for ' + secs + 's', 'error');
+      return;
+    }
+
+    var storedPin = String(_pinStudent232.pin || '');
+    if (pin !== storedPin) {
+      attempts++;
+      sessionStorage.setItem(attemptsKey, attempts);
+      var wrap = pinInp.closest('.nsm-input-wrap');
+      if (wrap) {
+        wrap.classList.add('nsm-pin-shake');
+        setTimeout(function() { wrap.classList.remove('nsm-pin-shake'); }, 500);
+      }
+      if (navigator.vibrate) try { navigator.vibrate([30, 30, 30]); } catch(e) {};
+
+      if (attempts >= MAX_ATTEMPTS) {
+        sessionStorage.setItem(lockKey, Date.now() + LOCK_SECONDS * 1000);
+        sessionStorage.setItem(attemptsKey, '0');
+        toast('🚫 5 attempts — locked 60s', 'error');
+      } else {
+        toast('❌ തെറ്റായ PIN (' + attempts + '/' + MAX_ATTEMPTS + ')', 'error');
+      }
+      pinInp.value = '';
+      pinInp.focus();
+      return;
+    }
+
+    // ✅ Success
+    sessionStorage.removeItem(attemptsKey);
+    sessionStorage.removeItem(lockKey);
+    var student = _pinStudent232;
+    _pinStudent232 = null;
+    window._NSM_PIN_STUDENT = null;
+
+    if (navigator.vibrate) try { navigator.vibrate([20, 40, 20]); } catch(e) {}
+    if (typeof showLoading === 'function') showLoading(true);
+    try {
+      if (typeof window.completeLogin === 'function') await window.completeLogin(student);
+    } catch(e) {
+      console.error('Login after PIN:', e);
+      toast('❌ ' + (e.message || 'Error'), 'error');
+      if (typeof showLoading === 'function') showLoading(false);
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🔗 INSTALL HANDLER (replaces v230's handler)
+  // ═══════════════════════════════════════════════════════
+  function installHandler() {
+    var form = $id('loginForm');
+    if (!form) return false;
+    if (form._pin232Installed) return true;
+
+    // Use capture phase — runs before v230's bubble handler
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      // PIN entry mode?
+      if (window._NSM_PIN_STUDENT) {
+        await handlePinSubmit();
+        return;
+      }
+      // Setup modal open?
+      if (window._PIN232_SETUP_STUDENT) {
+        return; // handled by modal's save button
+      }
+      // Normal UID submit
+      await handleUidSubmit();
+    }, true);
+
+    form._pin232Installed = true;
+    console.log('✅ v232 handler installed');
+    return true;
+  }
+
+  // Cancel button (ID മാറ്റുക) — reset state
+  document.addEventListener('click', function(e) {
+    var cancel = e.target.closest('.nsm-pin-back, [onclick*="NSM_PIN_cancel"]');
+    if (!cancel) return;
+    _pinStudent232 = null;
+    window._NSM_PIN_STUDENT = null;
+  }, true);
+
+  // ═══════════════════════════════════════════════════════
+  // 👤 PROFILE — CHANGE PIN BUTTON
+  // ═══════════════════════════════════════════════════════
+  var _origProfile = window.showProfileCard;
+  if (typeof _origProfile === 'function' && !_origProfile._pin232) {
+    window.showProfileCard = function() {
+      var r = _origProfile.apply(this, arguments);
+      setTimeout(function() {
+        if (!window.currentUser) return;
+        if (!PIN_CFG.selfSetup) return; // disabled by admin
+
+        var body = $id('modalContentBody');
+        if (!body) return;
+        if (body.querySelector('.btn-change-pin')) return;
+
+        var btnRow = body.querySelector('.d-flex.gap-2.mt-4');
+        if (!btnRow) return;
+
+        var hasPin = window.currentUser.pin && String(window.currentUser.pin).length === 4;
+        var btn = document.createElement('button');
+        btn.className = 'btn-change-pin';
+        btn.style.flexBasis = '100%';
+        btn.innerHTML = '<i class="fas fa-key"></i> ' + (hasPin ? 'Change PIN' : 'Set PIN');
+        btn.onclick = function() {
+          PIN232_openChangeModal(window.currentUser);
+        };
+        btnRow.appendChild(btn);
+      }, 150);
+      return r;
+    };
+    window.showProfileCard._pin232 = true;
+    console.log('✅ Profile hooked for Change PIN');
+  }
+
+  // Also hook edit profile form
+  var _origEdit = window.openEditProfile;
+  if (typeof _origEdit === 'function' && !_origEdit._pin232) {
+    window.openEditProfile = function() {
+      var r = _origEdit.apply(this, arguments);
+      setTimeout(function() {
+        if (!window.currentUser) return;
+        if (!PIN_CFG.selfSetup) return;
+
+        var form = $id('editProfileForm');
+        if (!form) return;
+        if (form.querySelector('#editChangePinBtn')) return;
+
+        var hasPin = window.currentUser.pin && String(window.currentUser.pin).length === 4;
+        var section = document.createElement('div');
+        section.style.cssText = 'margin-top:14px;padding:14px;background:linear-gradient(135deg,#f5f3ff,#ede9fe);border:1.5px solid rgba(139,92,246,.3);border-radius:14px;';
+        section.innerHTML =
+          '<div style="font-weight:900;color:#5b21b6;font-size:.88rem;margin-bottom:8px;display:flex;align-items:center;gap:6px;">' +
+            '<i class="fas fa-shield-alt"></i> 4-Digit Login PIN' +
+          '</div>' +
+          '<p style="font-size:.74rem;color:#64748b;line-height:1.5;margin:0 0 10px;">' +
+            (hasPin ? '✅ PIN set ആണ്' : '⚠️ PIN set ചെയ്തിട്ടില്ല') +
+          '</p>' +
+          '<button type="button" id="editChangePinBtn" onclick="PIN232_openChangeModal(window.currentUser)" ' +
+                  'style="width:100%;padding:11px;border-radius:12px;border:none;' +
+                         'background:linear-gradient(100deg,#8b5cf6,#a78bfa);color:#fff;' +
+                         'font-family:inherit;font-weight:800;font-size:.84rem;cursor:pointer;' +
+                         'display:inline-flex;align-items:center;justify-content:center;gap:6px;' +
+                         'min-height:44px;">' +
+            '<i class="fas fa-key"></i> ' + (hasPin ? 'Change PIN' : 'Set PIN') +
+          '</button>';
+
+        // Insert before submit button
+        var submitRow = form.querySelector('button[type="submit"]');
+        if (submitRow && submitRow.parentNode) {
+          submitRow.parentNode.insertBefore(section, submitRow);
+        } else {
+          form.appendChild(section);
+        }
+      }, 150);
+      return r;
+    };
+    window.openEditProfile._pin232 = true;
+    console.log('✅ Edit profile hooked for PIN');
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // 🎛️ ADMIN SETTINGS UI
+  // ═══════════════════════════════════════════════════════
+  function addAdminPinSettings() {
+    var tab = $id('adminSettingsTab');
+    if (!tab) return;
+    if (tab.querySelector('.pin-settings-section')) return;
+
+    var container = tab.querySelector('[style*="padding:20px"][style*="background:#f8fafc"]') ||
+                    tab.querySelector('div');
+    if (!container) return;
+
+    var section = document.createElement('div');
+    section.className = 'pin-settings-section';
+    section.innerHTML =
+      '<h5><i class="fas fa-shield-alt"></i> Student PIN Settings</h5>' +
+      '<div class="pin-setting-row" onclick="PIN232_toggleSetting(\'selfSetup\')">' +
+        '<div class="pin-setting-text">' +
+          '<strong>Allow Self-Setup & Change</strong>' +
+          '<small>Students-നു സ്വന്തം PIN സെറ്റ് ചെയ്യാനും മാറ്റാനും അനുവദിക്കുക</small>' +
+        '</div>' +
+        '<button type="button" class="pin-setting-switch ' + (PIN_CFG.selfSetup ? 'on' : '') + '" id="pinSwitchSelfSetup"></button>' +
+      '</div>' +
+      '<div class="pin-setting-row" onclick="PIN232_toggleSetting(\'forceSetup\')">' +
+        '<div class="pin-setting-text">' +
+          '<strong>Force Setup on First Login</strong>' +
+          '<small>PIN ഇല്ലാത്ത students-നെ login-നു മുൻപ് PIN സെറ്റ് ചെയ്യാൻ നിർബന്ധിക്കുക</small>' +
+        '</div>' +
+        '<button type="button" class="pin-setting-switch ' + (PIN_CFG.forceSetup ? 'on' : '') + '" id="pinSwitchForceSetup"></button>' +
+      '</div>' +
+      '<div style="background:#fff;padding:10px 14px;border-radius:12px;margin-top:10px;font-size:.72rem;color:#0891b2;font-weight:700;line-height:1.55;">' +
+        '<i class="fas fa-info-circle"></i> PIN Manager button students tab-ൽ ഉണ്ട്. Admin PIN manually set/reset ചെയ്യാനും ഉപയോഗിക്കാം.' +
+      '</div>';
+
+    // Insert before DB stats section (find DB stats heading)
+    var allH5 = container.querySelectorAll('h5');
+    var dbStatsH5 = null;
+    allH5.forEach(function(h) { if (/Database Stats/i.test(h.textContent)) dbStatsH5 = h; });
+    if (dbStatsH5 && dbStatsH5.parentNode) {
+      dbStatsH5.parentNode.insertBefore(section, dbStatsH5);
+    } else {
+      container.appendChild(section);
+    }
+  }
+
+  window.PIN232_toggleSetting = async function(key) {
+    var newVal = !PIN_CFG[key];
+    PIN_CFG[key] = newVal;
+    var switchEl = $id(key === 'selfSetup' ? 'pinSwitchSelfSetup' : 'pinSwitchForceSetup');
+    if (switchEl) switchEl.classList.toggle('on', newVal);
+
+    try {
+      var dbKey = key === 'selfSetup' ? 'pin_self_setup' : 'pin_force_setup';
+      await supabaseClient.from('settings').upsert({
+        key: dbKey, value: newVal ? 'true' : 'false'
+      }, { onConflict: 'key' });
+      toast((key === 'selfSetup' ? 'Self-Setup' : 'Force Setup') + ': ' + (newVal ? 'ON' : 'OFF'), 'success');
+      if (navigator.vibrate) try { navigator.vibrate(15); } catch(e) {}
+    } catch(e) {
+      PIN_CFG[key] = !newVal; // rollback
+      if (switchEl) switchEl.classList.toggle('on', !newVal);
+      toast('❌ ' + e.message, 'error');
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════
+  // 🚀 INIT
+  // ═══════════════════════════════════════════════════════
+  function init() {
+    loadPinSettings();
+    installHandler();
+  }
+
+  // Wait for v230 to complete its form handler installation
+  setTimeout(init, 4500);
+  setTimeout(installHandler, 7000);
+  setTimeout(installHandler, 10000);
+
+  // Periodic re-install (in case v230 reinstalls)
+  setInterval(function() {
+    var form = $id('loginForm');
+    if (form && !form._pin232Installed) {
+      installHandler();
+    }
+  }, 5000);
+
+  // Watch for admin settings tab opening
+  var adminEl = $id('adminSection');
+  if (adminEl) {
+    new MutationObserver(function() {
+      if (adminEl.style.display === 'block') {
+        setTimeout(addAdminPinSettings, 800);
+      }
+    }).observe(adminEl, { attributes: true, attributeFilter: ['style'] });
+  }
+  setInterval(function() {
+    var admin = $id('adminSection');
+    if (admin && admin.style.display === 'block') {
+      var st = $id('adminSettingsTab');
+      if (st && st.style.display === 'block') addAdminPinSettings();
+    }
+  }, 4000);
+
+  // ═══════════════════════════════════════════════════════
+  // 🐛 DEBUG
+  // ═══════════════════════════════════════════════════════
+  window.PIN232_debug = function() {
+    console.log('=== PIN SELF-SERVICE v232 ===');
+    console.log('Config:', PIN_CFG);
+    console.log('Handler installed:', !!($id('loginForm') && $id('loginForm')._pin232Installed));
+    console.log('Setup modal open:', !!$id('pinSetupModal'));
+    console.log('Change modal open:', !!$id('pinChangeModal232'));
+    console.log('Profile hooked:', !!(window.showProfileCard && window.showProfileCard._pin232));
+    console.log('Admin settings hooked:', !!document.querySelector('.pin-settings-section'));
+    console.log('Change PIN function:', typeof window.PIN232_openChangeModal);
+    if (typeof showToast === 'function') showToast('🔐 Check console', 'info');
+  };
+
+  window.PIN232_reloadSettings = loadPinSettings;
+
+  console.log('✅ PIN Self-Service v232 ready');
+  console.log('   🔑 Students can set/change their own PIN');
+  console.log('   🎛️ Admin toggles in Settings tab');
+  console.log('   💡 PIN232_debug() — check status');
+})();
+</script>  
 </body>
 </html>
