@@ -2995,8 +2995,6 @@ setTimeout(loadMalayalamFontForPDF, 2000);
       <button class="admin-tab" data-tab="competitions" onclick="switchAdminTab('competitions')">🏆 Competitions</button>
       <button class="admin-tab" data-tab="creations" onclick="switchAdminTab('creations')">🎨 Creations</button>
       <button class="admin-tab" data-tab="attendance" onclick="switchAdminTab('attendance')">📆 Attendance</button>
-      <button class="admin-tab" data-tab="balances" onclick="switchAdminTab('balances')">💵 Balances</button>
-      <button class="admin-tab" data-tab="withdrawals" onclick="switchAdminTab('withdrawals')">📤 Withdrawals</button>
       <button class="admin-tab" data-tab="timetable" onclick="switchAdminTab('timetable')">⏰ Timetable</button>
       <button class="admin-tab" data-tab="homework" onclick="switchAdminTab('homework')">📝 Homework</button>
       <button class="admin-tab" data-tab="notifications" onclick="switchAdminTab('notifications')">🔔 Notify</button>
@@ -3016,17 +3014,41 @@ setTimeout(loadMalayalamFontForPDF, 2000);
     </div>
 
     <div id="adminPaymentsTab" class="admin-tab-content">
-      <div class="admin-toolbar">
-        <label>Date</label>
-        <input type="date" id="adminDate" />
-        <button class="btn-load" onclick="loadPaymentsForDate()"><i class="fas fa-sync-alt"></i> Load</button>
-        <input type="text" id="adminSearch" placeholder="🔍 Search" oninput="applyPaymentsFilters()" />
-        <button class="btn-pdf" onclick="downloadPaymentsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+      <!-- 🆕 പലതുള്ളി സബ്-ടാബുകൾ -->
+      <div class="admin-tabs" style="margin-bottom:16px;">
+        <button class="admin-tab active" data-pala-tab="daily" onclick="switchPalathulliSubTab('daily')">📅 Daily Entry</button>
+        <button class="admin-tab" data-pala-tab="balances" onclick="switchPalathulliSubTab('balances')">💵 Balances</button>
+        <button class="admin-tab" data-pala-tab="withdrawals" onclick="switchPalathulliSubTab('withdrawals')">📤 Withdrawals</button>
       </div>
-      <div class="admin-table-wrap" id="adminTableWrap"></div>
-      <div class="d-flex gap-3 justify-content-end mt-3">
-        <button class="btn-cancel" onclick="clearAdminForm()">Clear</button>
-        <button class="btn-update" id="adminUpdateBtn" onclick="bulkUpdate()"><i class="fas fa-save"></i> Update</button>
+
+      <div id="palaSubTabDaily">
+        <div class="admin-toolbar">
+          <label>Date</label>
+          <input type="date" id="adminDate" />
+          <button class="btn-load" onclick="loadPaymentsForDate()"><i class="fas fa-sync-alt"></i> Load</button>
+          <input type="text" id="adminSearch" placeholder="🔍 Search" oninput="applyPaymentsFilters()" />
+          <button class="btn-pdf" onclick="downloadPaymentsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+        </div>
+        <div class="admin-table-wrap" id="adminTableWrap"></div>
+        <div class="d-flex gap-3 justify-content-end mt-3">
+          <button class="btn-cancel" onclick="clearAdminForm()">Clear</button>
+          <button class="btn-update" id="adminUpdateBtn" onclick="bulkUpdate()"><i class="fas fa-save"></i> Update</button>
+        </div>
+      </div>
+
+      <div id="palaSubTabBalances" style="display:none;">
+        <div class="admin-toolbar">
+          <button class="btn-load" onclick="loadBalances()"><i class="fas fa-sync-alt"></i> Refresh Balances</button>
+          <button class="btn-pdf" onclick="downloadBalancesPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+        </div>
+        <div class="admin-table-wrap" id="balancesWrap"></div>
+      </div>
+
+      <div id="palaSubTabWithdrawals" style="display:none;">
+        <div class="admin-toolbar">
+          <button class="btn-load" onclick="loadAllWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh Requests</button>
+        </div>
+        <div class="admin-table-wrap" id="allWithdrawalsWrap"></div>
       </div>
     </div>
 
@@ -3120,21 +3142,6 @@ setTimeout(loadMalayalamFontForPDF, 2000);
       <div class="d-flex gap-3 justify-content-end mt-3">
         <button class="btn-update" id="attendanceUpdateBtn" onclick="bulkUpdateAttendance()"><i class="fas fa-save"></i> Update</button>
       </div>
-    </div>
-
-    <div id="adminBalancesTab" class="admin-tab-content" style="display:none;">
-      <div class="admin-toolbar">
-        <button class="btn-load" onclick="loadBalances()"><i class="fas fa-sync-alt"></i> Refresh</button>
-        <button class="btn-pdf" onclick="downloadBalancesPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
-      </div>
-      <div class="admin-table-wrap" id="balancesWrap"></div>
-    </div>
-
-    <div id="adminWithdrawalsTab" class="admin-tab-content" style="display:none;">
-      <div class="admin-toolbar">
-        <button class="btn-load" onclick="loadAllWithdrawals()"><i class="fas fa-sync-alt"></i> Refresh</button>
-      </div>
-      <div class="admin-table-wrap" id="allWithdrawalsWrap"></div>
     </div>
 
     <div id="adminTimetableTab" class="admin-tab-content" style="display:none;">
@@ -6904,7 +6911,27 @@ function closeSettingsTab(){
   }
 }
 
+function switchPalathulliSubTab(tab){
+  document.querySelectorAll('[data-pala-tab]').forEach(function(t){
+    t.classList.toggle('active', t.dataset.palaTab === tab);
+  });
+  var subDaily = document.getElementById('palaSubTabDaily');
+  var subBalances = document.getElementById('palaSubTabBalances');
+  var subWithdrawals = document.getElementById('palaSubTabWithdrawals');
+  if(subDaily) subDaily.style.display = tab === 'daily' ? 'block' : 'none';
+  if(subBalances) subBalances.style.display = tab === 'balances' ? 'block' : 'none';
+  if(subWithdrawals) subWithdrawals.style.display = tab === 'withdrawals' ? 'block' : 'none';
+  
+  if(tab === 'daily') loadPaymentsForDate();
+  if(tab === 'balances') loadBalances();
+  if(tab === 'withdrawals') loadAllWithdrawals();
+}
+
 function switchAdminTab(tab){
+  // 🔄 പഴയ ബട്ടണുകൾ എവിടെയെങ്കിലും ക്ലിക്ക് ചെയ്താൽ ഓട്ടോമാറ്റിക് ആയി പുതിയ സബ്-ടാബിലേക്ക് പോകാൻ
+  if(tab==='balances'){ switchAdminTab('payments'); setTimeout(function(){ switchPalathulliSubTab('balances'); }, 100); return; }
+  if(tab==='withdrawals'){ switchAdminTab('payments'); setTimeout(function(){ switchPalathulliSubTab('withdrawals'); }, 100); return; }
+
   if(tab==='settings'){
     document.getElementById('adminSettingsTab').style.display='block';
     document.getElementById('adminMainContent').style.display='none';
@@ -6938,8 +6965,8 @@ function switchAdminTab(tab){
   document.querySelectorAll('.admin-tab-content').forEach(function(c){c.style.display='none';});
 
   var map={
-    payments:'adminPaymentsTab',withdrawals:'adminWithdrawalsTab',balances:'adminBalancesTab',
-    students:'adminStudentsTab',events:'adminEventsTab',
+    payments:'adminPaymentsTab',
+    summary:'adminSummaryTab',students:'adminStudentsTab',events:'adminEventsTab',
     attendance:'adminAttendanceTab',grades:'adminGradesTab',feed:'adminFeedTab',
     marks:'adminMarksTab',moralvalues:'adminMoralValuesTab',extracurricular:'adminExtracurricularTab',
     competitions:'adminCompetitionsTab',timetable:'adminTimetableTab',homework:'adminHomeworkTab',
@@ -6949,10 +6976,12 @@ function switchAdminTab(tab){
   var el=document.getElementById(map[tab]);
   if(el)el.style.display='block';
 
-  if(tab==='payments'){var di=document.getElementById('adminDate');if(!di.value)di.value=new Date().toISOString().split('T')[0];loadPaymentsForDate();}
+  if(tab==='payments'){
+    var di=document.getElementById('adminDate');
+    if(!di.value)di.value=new Date().toISOString().split('T')[0];
+    switchPalathulliSubTab('daily');
+  }
   if(tab==='students')loadStudentsForAdmin();
-  if(tab==='withdrawals')loadAllWithdrawals();
-  if(tab==='balances')loadBalances();
   if(tab==='attendance'){var n=new Date();document.getElementById('attendanceMonth').value=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');loadAttendanceForAdmin();}
   if(tab==='grades')loadGradesForAdmin();
   if(tab==='moralvalues')loadMoralValuesAdmin();
@@ -7025,18 +7054,29 @@ function renderAdminTable(){
   var wrap=document.getElementById('adminTableWrap');
   if(!filteredPayments||filteredPayments.length===0){wrap.innerHTML='<div class="empty-state">No students</div>';return;}
   var sc=currentAdminClass==='all';
-  var h='<table><thead><tr><th>#</th><th>Student</th>'+(sc?'<th>Class</th>':'')+'<th>Debit (Today)</th><th>Credit (Today)</th><th>Status</th></tr></thead><tbody>';
+  // 💰 Total Balance കോളം തിരികെ കൊണ്ടുവന്നു
+  var h='<table><thead><tr><th>#</th><th>Student</th>'+(sc?'<th>Class</th>':'')+'<th>Debit (Today)</th><th>Credit (Today)</th><th style="background:linear-gradient(180deg,#ecfdf5,#d1fae5);color:#059669;white-space:nowrap;text-align:right;">💰 Total Balance</th><th>Status</th></tr></thead><tbody>';
   filteredPayments.forEach(function(i,idx){
     var cid=String(i.studentId).replace(/[^a-zA-Z0-9]/g,'');
     var st=i.exists?'<span class="existing-badge '+(i.approved?'':'pending')+'">'+(i.approved?'✅':'⏳')+'</span>':'—';
-    var totalPaid=Number(i.totalPaid)||0;
-    var totalWithdrawn=Number(i.totalWithdrawn)||0;
-    var net=totalPaid-totalWithdrawn;
-    var netColor=net>0?'#059669':net<0?'#dc2626':'#64748b';
+    
+    // ഇതുവരെയുള്ള ബാലൻസ് കണക്കാക്കുന്നു
+    var totalPaid = Number(i.totalPaid) || 0;
+    var totalWithdrawn = Number(i.totalWithdrawn) || 0;
+    var netBalance = totalPaid - totalWithdrawn;
+    var netColor = netBalance > 0 ? '#059669' : netBalance < 0 ? '#dc2626' : '#64748b';
+
     h+='<tr><td>'+(idx+1)+'</td><td><strong>'+escapeHtml(i.name)+'</strong><br><small style="color:#94a3b8;">'+escapeHtml(i.studentId||'')+'</small></td>';
     if(sc)h+='<td>'+escapeHtml(i.class||'')+'</td>';
     h+='<td><input type="number" id="admin_debit_'+cid+'" value="'+i.debit+'" min="0"></td>';
     h+='<td><input type="number" id="admin_credit_'+cid+'" value="'+i.credit+'" min="0"></td>';
+    
+    // മൊത്തം ബാലൻസ് കാണിക്കുന്ന സെൽ
+    h+='<td style="text-align:right;background:#f0fdf4;border-left:2px solid rgba(5,150,105,.25);white-space:nowrap;">'
+      +'<div style="font-weight:900;color:'+netColor+';font-size:.95rem;line-height:1.2;">₹'+netBalance.toLocaleString('en-IN',{maximumFractionDigits:2})+'</div>'
+      +'<div style="font-size:.6rem;color:#64748b;font-weight:700;margin-top:2px;">(In: ₹'+totalPaid.toLocaleString('en-IN')+' | Out: ₹'+totalWithdrawn.toLocaleString('en-IN')+')</div>'
+      +'</td>';
+      
     h+='<td>'+st+'</td></tr>';
   });
   h+='</tbody></table>';
