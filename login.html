@@ -11938,7 +11938,7 @@ function applyTheme(theme){window.applyTheme_v25(theme);}
 /* ============================================================ */
 /* 🚀 INIT                                                      */
 /* ============================================================ */
-// 🆕 Student Dashboard External Form Widget
+// 🆕 Student Dashboard External Form Widget (Premium Design)
 window.renderExtFormWidget = function() {
   var existing = document.getElementById('studentExtFormWidget');
   if (existing) existing.remove();
@@ -11954,23 +11954,51 @@ window.renderExtFormWidget = function() {
   var container = document.querySelector('#dashboardSection > .container');
   if (!container) return;
 
+  // 🎨 Premium CSS Animations
+  if (!document.getElementById('extFormWidgetStyles')) {
+    var style = document.createElement('style');
+    style.id = 'extFormWidgetStyles';
+    style.innerHTML = `
+      @keyframes efwGradient { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+      @keyframes efwShine { 0% { left: -100%; } 20%, 100% { left: 100%; } }
+      @keyframes efwPulse { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.4); opacity: 0; } }
+      @keyframes efwBounce { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+      .efw-widget { position: relative; overflow: hidden; border-radius: 20px; padding: 18px 20px; background: linear-gradient(135deg, #4f46e5, #0ea5e9, #8b5cf6); background-size: 200% 200%; animation: efwGradient 4s ease infinite; display: flex; align-items: center; gap: 16px; cursor: pointer; margin: 0 0 16px 0; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.5); border: 1.5px solid rgba(255,255,255,0.2); transition: transform 0.2s ease; }
+      .efw-widget:active { transform: scale(0.98); }
+      .efw-shine { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-20deg); animation: efwShine 4s infinite; }
+      .efw-icon-wrap { position: relative; flex-shrink: 0; }
+      .efw-icon-ring { position: absolute; inset: -4px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); animation: efwPulse 1.5s infinite ease-out; }
+      .efw-icon { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; box-shadow: inset 0 0 10px rgba(255,255,255,0.3); }
+      .efw-text-wrap { flex: 1; min-width: 0; z-index: 2; }
+      .efw-title { font-size: 1rem; font-weight: 900; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); line-height: 1.3; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .efw-sub { font-size: 0.75rem; color: rgba(255,255,255,0.95); font-weight: 700; display: flex; align-items: center; gap: 6px; }
+      .efw-badge { background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; letter-spacing: 0.5px; text-transform: uppercase; }
+      .efw-arrow { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; animation: efwBounce 1.5s infinite; z-index: 2; }
+    `;
+    document.head.appendChild(style);
+  }
+
   var widget = document.createElement('div');
   widget.id = 'studentExtFormWidget';
-  widget.style.cssText = 'margin: 0 0 16px 0; padding: 16px; border-radius: 20px; background: linear-gradient(135deg, #e0f2fe, #bae6fd); border: 1.5px solid #38bdf8; display: flex; align-items: center; gap: 14px; cursor: pointer; box-shadow: 0 4px 15px -5px rgba(56, 189, 248, 0.4); transition: transform 0.2s;';
-  
+  widget.className = 'efw-widget';
   widget.onclick = function() { window.open(url, '_blank'); };
-  widget.onmouseover = function() { this.style.transform = 'translateY(-2px)'; };
-  widget.onmouseout = function() { this.style.transform = 'translateY(0)'; };
-
+  
   widget.innerHTML = `
-    <div style="width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(140deg, #0284c7, #38bdf8); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #fff; flex-shrink: 0; box-shadow: 0 4px 10px -2px rgba(2, 132, 199, 0.5);">
-      <i class="fas fa-clipboard-list"></i>
+    <div class="efw-shine"></div>
+    
+    <div class="efw-icon-wrap">
+      <div class="efw-icon-ring"></div>
+      <div class="efw-icon"><i class="fas fa-clipboard-list"></i></div>
     </div>
-    <div style="flex: 1; min-width: 0;">
-      <div style="font-size: 0.95rem; font-weight: 900; color: #0f172a; line-height: 1.3; word-break: break-word;">${escapeHtml(title)}</div>
-      <div style="font-size: 0.74rem; color: #0369a1; font-weight: 700; margin-top: 4px;"><i class="fas fa-external-link-alt"></i> ഇവിടെ ക്ലിക്ക് ചെയ്ത് തുറക്കുക</div>
+    
+    <div class="efw-text-wrap">
+      <div class="efw-title">${escapeHtml(title)}</div>
+      <div class="efw-sub">
+        <span class="efw-badge">✨ New</span> ടാപ്പ് ചെയ്ത് തുറക്കുക
+      </div>
     </div>
-    <i class="fas fa-chevron-right" style="color: #0284c7; font-size: 1.1rem;"></i>
+    
+    <div class="efw-arrow"><i class="fas fa-arrow-right"></i></div>
   `;
 
   // Dashboard Header-ന് തൊട്ടുതാഴെ ഇത് ചേർക്കുന്നു
