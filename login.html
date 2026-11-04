@@ -32306,6 +32306,10 @@ function fixStuckScroll() {
 
   document.addEventListener('touchstart', function(e) {
     if (e.touches.length !== 1) return;
+    
+    // 🚫 Admin Panel-ൽ സ്വൈപ്പ് ബാക്ക് പ്രവർത്തിക്കില്ല (സ്ക്രോൾ ചെയ്യാൻ വേണ്ടി)
+    if (document.getElementById('adminSection') && document.getElementById('adminSection').style.display === 'block') return;
+
     var t = e.touches[0];
 
     // Must start near left edge
@@ -43713,6 +43717,34 @@ setInterval(function(){
   console.log('✅ v150 ready');
 })();
 </script>
+  /* 🛠️ ANDROID ADMIN SCROLL FIX */
+  @media (max-width: 900px) {
+    /* 1. അഡ്മിൻ ഹെഡർ മാത്രം Sticky അല്ലാതാക്കുന്നു (സ്ക്രോൾ ഈസി ആകാൻ) */
+    #adminSection .dashboard-header-glow {
+      position: relative !important;
+      top: auto !important;
+    }
+    
+    /* 2. അഡ്മിൻ സെക്ഷൻ സ്ക്രോൾ ചെയ്യാൻ അനുവദിക്കുന്നു */
+    #adminSection {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      touch-action: pan-y !important;
+    }
+
+    /* 3. ടാബുകൾ വരികളായി പോകാതെ ഒരു വരിയിൽ സ്ക്രോൾ ആകാൻ */
+    .admin-tabs {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding-bottom: 10px !important;
+      scrollbar-width: none !important;
+    }
+    .admin-tabs::-webkit-scrollbar { display: none !important; }
+    .admin-tab { flex-shrink: 0 !important; white-space: nowrap !important; }
+  }
+</style>  
 <style id="v-final-sticky-hover-fix">
 /* ============================================ */
 /* 🎯 FIX: Mobile Sticky Hover on ALL Buttons  */
@@ -43844,6 +43876,25 @@ setInterval(function(){
 
   console.log('✅ Sticky hover cleared on tap');
 })();
+</script>
+<script id="admin-scroll-unlock-fix">
+  // 🛠️ അഡ്മിൻ പാനലിൽ പേജ് സ്ക്രോൾ ലോക്ക് ആകാതിരിക്കാനുള്ള സുരക്ഷാ കോഡ്
+  setInterval(function() {
+    var adminSec = document.getElementById('adminSection');
+    if (adminSec && adminSec.style.display === 'block') {
+      // ഏതെങ്കിലും മോഡൽ തുറന്നിട്ടുണ്ടോ എന്ന് ചെക്ക് ചെയ്യുന്നു
+      var modalOpen = document.querySelector('.modal-glass[style*="display: flex"], .modal-glass[style*="display:flex"], .pin-manager-modal.open');
+      
+      if (!modalOpen) {
+        if (document.body.style.position === 'fixed' || document.body.style.overflow === 'hidden') {
+          document.body.style.position = '';
+          document.body.style.overflow = '';
+          document.body.style.top = '';
+          document.body.classList.remove('modal-open', 'login-active');
+        }
+      }
+    }
+  }, 1000);
 </script>
 </body>
 </html>
