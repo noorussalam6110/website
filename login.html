@@ -20690,10 +20690,17 @@ function igRenderPost(c, opts){
       '<div class="ig-post-avatar" onclick="event.stopPropagation();IG_openUserProfile(\'' + igEsc(author.id) + '\')" title="View profile">' + avatarInner + '</div>' +
       '<div class="ig-post-author-info">' +
         '<div class="ig-post-author-name" onclick="event.stopPropagation();IG_openUserProfile(\'' + igEsc(author.id) + '\')" title="View profile">' + igEsc(author.name) + pendingBadge + '</div>' +
-        '<div class="ig-post-author-meta">' +
+      '<div class="ig-post-author-meta" style="display:flex;justify-content:space-between;align-items:center;width:100%;">' +
+        '<div style="display:flex;gap:6px;align-items:center;">' +
           (author.class ? '<span><i class="fas fa-graduation-cap" style="font-size:.65rem;"></i> Class ' + igEsc(author.class) + '</span>' : '') +
           '<span class="ig-post-cat-badge">' + getCategoryLabel(c.category) + '</span>' +
         '</div>' +
+        ((window.currentUser && window.currentUser.studentId !== author.id) ? 
+          '<button onclick="event.stopPropagation();toggleCreatorFollow(\'' + igEsc(author.id) + '\', this)" ' +
+                  'style="padding:3px 12px;border-radius:20px;font-size:.68rem;font-weight:800;cursor:pointer;transition:0.2s;border:1px solid ' + (window._followingCache && window._followingCache[author.id] ? '#cbd5e1' : '#0095f6') + ';background:' + (window._followingCache && window._followingCache[author.id] ? '#fff' : '#0095f6') + ';color:' + (window._followingCache && window._followingCache[author.id] ? '#475569' : '#fff') + ';">' +
+            (window._followingCache && window._followingCache[author.id] ? 'Following' : '+ Follow') +
+          '</button>' : '') +
+      '</div>' +
       '</div>' + menuBtn +
     '</header>' + mediaHtml +
     '<div class="ig-post-actions-bar">' +
@@ -20789,6 +20796,15 @@ window.loadCreationsGallery = async function(){
       });
     });
 
+    // 🆕 Fetch who I am following
+    window._followingCache = {};
+    if (window.currentUser) {
+      try {
+        var fr = await supabaseClient.from('creator_follows').select('following_id').eq('follower_id', window.currentUser.studentId);
+        (fr.data || []).forEach(function(f) { window._followingCache[f.following_id] = true; });
+      } catch(e) { console.warn('Follows fetch:', e); }
+    }
+
     // Fetch likes + comments
     try {
       var cids = window.allCreations.map(function(c){ return c.id; });
@@ -20857,7 +20873,8 @@ function igRenderFilterChips(){
   var chips = document.getElementById('igFilterChips');
   if(!chips) return;
   var cats = [
-    { key: '', label: '🌟 എല്ലാം' }, { key: 'drawing', label: '🎨 ചിത്രരചന' },
+    { key: '', label: '🌟 എല്ലാം' }, { key: '__following__', label: '👥 Following' }, 
+    { key: 'drawing', label: '🎨 ചിത്രരചന' },
     { key: 'writing', label: '✍️ രചന' }, { key: 'poem', label: '📝 കവിത' },
     { key: 'story', label: '📖 കഥ' }, { key: 'craft', label: '🔨 കരകൗശലം' },
     { key: 'photography', label: '📷 ഫോട്ടോ' }, { key: 'calligraphy', label: '🖋️ കാലിഗ്രഫി' },
@@ -20885,15 +20902,67 @@ window.igFilterFeed = function(q){
 function igApplyFilters(){
   var af = window._igActiveFilter;
   var sq = window._igSearchQuery;
+  
   window._igFilteredCreations = (window.allCreations || []).filter(function(c){
     if(af === '__mine__'){ if(!window.currentUser || c.studentid !== window.currentUser.studentId) return false; }
+    else if(af === '__following__'){ if(!window.currentUser || !window._followingCache[c.studentid]) return false; }
     else if(af){ if(c.category !== af) return false; }
+    
     if(sq){
       var hay = ((c.title || '') + ' ' + (c.description || '') + ' ' + (c.text_content || '') + ' ' + (c.studentName || '')).toLowerCase();
       if(hay.indexOf(sq) === -1) return false;
     }
     return true;
   });
+window.toggleCreatorFollow = async function(targetSid, btn) {
+  if (!window.currentUser) { if(typeof showToast==='function') showToast('Login ചെയ്യുക', 'error'); return; }
+  if (targetSid === window.currentUser.studentId) return;
+
+  var isFollowing = window._followingCache && window._followingCache[targetSid];
+  btn.disabled = true;
+  var origText = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+  try {
+    if (isFollowing) {
+      await supabaseClient.from('creator_follows').delete().eq('follower_id', window.currentUser.studentId).eq('following_id', targetSid);
+      if (window._followingCache) delete window._followingCache[targetSid];
+      if(typeof showToast==='function') showToast('Unfollowed', 'info');
+    } else {
+      await supabaseClient.from('creator_follows').insert({ follower_id: window.currentUser.studentId, following_id: targetSid });
+      if (!window._followingCache) window._followingCache = {};
+      window._followingCache[targetSid] = true;
+      if(typeof showToast==='function') showToast('Following!', 'success');
+    }
+    
+    // UI Update
+    var nowFollowing = window._followingCache && window._followingCache[targetSid];
+    btn.style.borderColor = nowFollowing ? '#cbd5e1' : '#0095f6';
+    btn.style.background = nowFollowing ? '#fff' : '#0095f6';
+    btn.style.color = nowFollowing ? '#475569' : '#fff';
+    btn.innerHTML = nowFollowing ? 'Following' : '+ Follow';
+
+    // Re-sort feed instantly
+    igApplyFilters();
+  } catch(e) {
+    if(typeof showToast==='function') showToast('❌ ' + e.message, 'error');
+    btn.innerHTML = origText;
+  }
+  btn.disabled = false;
+};
+  // 🆕 Sorting Algorithm: Followed creators first -> Most liked -> Newest
+  window._igFilteredCreations.sort(function(a, b){
+    var isA_Follow = window._followingCache[a.studentid] ? 1 : 0;
+    var isB_Follow = window._followingCache[b.studentid] ? 1 : 0;
+    if (isA_Follow !== isB_Follow) return isB_Follow - isA_Follow;
+    
+    var likesA = a.likes || 0;
+    var likesB = b.likes || 0;
+    if (likesA !== likesB) return likesB - likesA;
+    
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   igRenderFeed();
 }
 
