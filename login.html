@@ -11087,6 +11087,35 @@ async function clearDailyGreeting(){
 /* ============================================================ */
 var _attChart=null,_marksChart=null;
 
+// 🆕 Plugin for continuous artificial animation (ചലിച്ചുകൊണ്ടിരിക്കുന്ന ലൈൻ)
+if(window.Chart){
+  const movingGraphPlugin = {
+    id: 'movingGraph',
+    afterDraw: function(chart) {
+      if (chart.config.type === 'line' && chart.isDatasetVisible(0)) {
+        const meta = chart.getDatasetMeta(0);
+        if (meta && meta.dataset) {
+          meta.dataset.options.borderDash = [8, 4];
+          meta.dataset.options.borderDashOffset = -(performance.now() / 40) % 12;
+          if (!chart._animFrame) {
+            chart._animFrame = requestAnimationFrame(function() {
+              chart._animFrame = null;
+              if (chart.ctx && chart.canvas) chart.draw();
+            });
+          }
+        }
+      }
+    },
+    beforeDestroy: function(chart) {
+      if (chart._animFrame) {
+        cancelAnimationFrame(chart._animFrame);
+        chart._animFrame = null;
+      }
+    }
+  };
+  try { Chart.register(movingGraphPlugin); } catch(e){}
+}
+
 async function renderCharts(){
   if(!currentUser||!window.Chart)return;
   var attCtx=document.getElementById('attendanceChart');
@@ -11094,18 +11123,52 @@ async function renderCharts(){
   if(!attCtx||!marksCtx)return;
   var txtColor='#0f172a';
   var gridColor='rgba(59,130,246,.15)';
+  
   try{
     var ar=await supabaseClient.from('attendance_records').select('month_year,percentage').eq('studentid',currentUser.studentId).order('month_year');
     var labels=(ar.data||[]).map(function(x){return formatMonthMalayalam(x.month_year,true);});
     var vals=(ar.data||[]).map(function(x){return Number(x.percentage)||0;});
     if(!labels.length){labels=['No data'];vals=[0];}
     if(_attChart)_attChart.destroy();
+    
+    // 🆕 Gradient Fill for Line Chart
+    var gradientLine = attCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+    gradientLine.addColorStop(0, 'rgba(34, 211, 238, 0.6)');
+    gradientLine.addColorStop(1, 'rgba(34, 211, 238, 0.05)');
+
     _attChart=new Chart(attCtx,{
       type:'line',
-      data:{labels:labels,datasets:[{label:'Attendance %',data:vals,borderColor:'#0891b2',backgroundColor:'rgba(8,145,178,.15)',fill:true,tension:.35,pointBackgroundColor:'#0891b2',pointRadius:5,borderWidth:3}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{color:txtColor},grid:{color:gridColor}},x:{ticks:{color:txtColor},grid:{color:gridColor}}}}
+      data:{labels:labels,datasets:[{
+        label:'Attendance %',
+        data:vals,
+        borderColor:'#0891b2',
+        backgroundColor: gradientLine,
+        fill:true,
+        tension:.45,
+        pointBackgroundColor:'#fff',
+        pointBorderColor:'#0891b2',
+        pointBorderWidth:3,
+        pointRadius:4,
+        pointHoverRadius:8,
+        borderWidth:3
+      }]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        // 🆕 MOBILE OPTIMIZED ANIMATION
+        animation: (window.innerWidth <= 900) ? {
+          y: { duration: 1200, easing: 'easeOutBack', from: 0 }, // മൊബൈലിൽ വേഗത്തിൽ തീരും
+          x: { duration: 800, easing: 'easeOutQuart' }
+        } : {
+          y: { duration: 3000, easing: 'easeOutElastic', from: 0 }, // ഡെസ്ക്ടോപ്പിൽ ബൗൺസ് ഇഫക്ട്
+          x: { duration: 1000, easing: 'easeOutQuart' }
+        },
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true,max:100,ticks:{color:txtColor},grid:{color:gridColor}},x:{ticks:{color:txtColor},grid:{color:gridColor}}}
+      }
     });
   }catch(e){console.warn('attChart',e);}
+  
   try{
     var mr=await supabaseClient.from('exam_marks').select('exam_name,obtained_marks,max_marks').eq('studentid',currentUser.studentId);
     var byExam={};
@@ -11117,10 +11180,37 @@ async function renderCharts(){
     var exVals=exLabels.map(function(k){var e=byExam[k];return e.t>0?Math.round(e.o/e.t*100):0;});
     if(!exLabels.length){exLabels=['No data'];exVals=[0];}
     if(_marksChart)_marksChart.destroy();
+    
+    // 🆕 Gradient Fill for Bar Chart
+    var gradientBar = marksCtx.getContext('2d').createLinearGradient(0, 0, 0, 250);
+    gradientBar.addColorStop(0, '#3b82f6');
+    gradientBar.addColorStop(1, '#a855f7');
+
     _marksChart=new Chart(marksCtx,{
       type:'bar',
-      data:{labels:exLabels,datasets:[{label:'Score %',data:exVals,backgroundColor:'rgba(59,130,246,.7)',borderColor:'#2563eb',borderWidth:2,borderRadius:10}]},
-      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:100,ticks:{color:txtColor},grid:{color:gridColor}},x:{ticks:{color:txtColor},grid:{color:gridColor}}}}
+      data:{labels:exLabels,datasets:[{
+        label:'Score %',
+        data:exVals,
+        backgroundColor: gradientBar,
+        borderColor:'#2563eb',
+        borderWidth:0,
+        borderRadius:10,
+        barThickness: 25
+      }]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        // 🆕 MOBILE OPTIMIZED ANIMATION
+        animation: (window.innerWidth <= 900) ? {
+          y: { duration: 1200, easing: 'easeOutBack', from: 0 },
+          x: { duration: 800, easing: 'easeOutQuart' }
+        } : {
+          y: { duration: 3000, easing: 'easeOutElastic', from: 0 },
+          x: { duration: 1000, easing: 'easeOutQuart' }
+        },
+        plugins:{legend:{display:false}},
+        scales:{y:{beginAtZero:true,max:100,ticks:{color:txtColor},grid:{color:gridColor}},x:{ticks:{color:txtColor},grid:{color:gridColor}}}
+      }
     });
   }catch(e){console.warn('marksChart',e);}
 }
@@ -22214,19 +22304,19 @@ CREATE INDEX IF NOT EXISTS idx_creation_likes_lookup ON creation_likes(creation_
   /* 🎯 PRIORITY ORDER — Header-ന് താഴെ ഈ ക്രമത്തിൽ          */
   /* ═══════════════════════════════════════════════════════ */
   var DESIRED_ORDER = [
-    '#studentExtFormWidget',        // 🆕 0. External Form Link (ഏറ്റവും മുകളിൽ)
-    '.student-welcome-banner',      // 1. Good morning greeting
-    '#leaderboardSection',          // 2. Top Winners
-    '#palathulliSection',           // 3. Palathulli സമ്പാദ്യം
-    '#dailyHub',                    // 4. Prayer + Islamic + Exam
-    '#xpWidget',                    // 5. XP Level
-    '#streakWidget',                // 6. Streak Fire
-    '#missionsWidget',              // 7. Daily Missions
-    '#statsGridSection',            // 8. Stats cards
-    '#madrasaRankCard',             // 9. Overall Madrasa Rank
-    '#chartsSection',               // 10. Charts
-    '#quickActionsTitle',           // 11. Quick Actions title
-    '#quickActionsGrid',            // 12. Quick Actions tiles
+    '#studentExtFormWidget',        // 0. External Form Link (Admin Priority)
+    '.student-welcome-banner',      // 1. Greeting
+    '#palathulliSection',           // 2. Palathulli സമ്പാദ്യം (പ്രധാനപ്പെട്ടത്)
+    '#dailyHub',                    // 3. Prayer + Islamic + Exam
+    '#statsGridSection',            // 4. Stats cards (Grade, Rank, Attendance)
+    '#madrasaRankCard',             // 5. Overall Madrasa Rank
+    '#chartsSection',               // 6. Charts (ഗ്രാഫുകൾ)
+    '#quickActionsTitle',           // 7. Quick Actions Title (കുറച്ച് താഴേക്ക് മാറ്റി)
+    '#quickActionsGrid',            // 8. Quick Actions Tiles
+    '#leaderboardSection',          // 9. Top Winners
+    '#xpWidget',                    // 10. XP Level
+    '#streakWidget',                // 11. Streak Fire
+    '#missionsWidget',              // 12. Daily Missions
     '#feedEventsRow',               // 13. Feed + Events
     '#monthlyProgressSection'       // 14. Monthly Progress
   ];
