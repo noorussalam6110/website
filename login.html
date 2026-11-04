@@ -20914,6 +20914,24 @@ function igApplyFilters(){
     }
     return true;
   });
+
+  // 🆕 Sorting Algorithm: Followed creators first -> Most liked -> Newest
+  window._igFilteredCreations.sort(function(a, b){
+    var isA_Follow = window._followingCache[a.studentid] ? 1 : 0;
+    var isB_Follow = window._followingCache[b.studentid] ? 1 : 0;
+    if (isA_Follow !== isB_Follow) return isB_Follow - isA_Follow;
+    
+    var likesA = a.likes || 0;
+    var likesB = b.likes || 0;
+    if (likesA !== likesB) return likesB - likesA;
+    
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  igRenderFeed();
+}
+
+// 🆕 Follow/Unfollow Function
 window.toggleCreatorFollow = async function(targetSid, btn) {
   if (!window.currentUser) { if(typeof showToast==='function') showToast('Login ചെയ്യുക', 'error'); return; }
   if (targetSid === window.currentUser.studentId) return;
@@ -20950,21 +20968,6 @@ window.toggleCreatorFollow = async function(targetSid, btn) {
   }
   btn.disabled = false;
 };
-  // 🆕 Sorting Algorithm: Followed creators first -> Most liked -> Newest
-  window._igFilteredCreations.sort(function(a, b){
-    var isA_Follow = window._followingCache[a.studentid] ? 1 : 0;
-    var isB_Follow = window._followingCache[b.studentid] ? 1 : 0;
-    if (isA_Follow !== isB_Follow) return isB_Follow - isA_Follow;
-    
-    var likesA = a.likes || 0;
-    var likesB = b.likes || 0;
-    if (likesA !== likesB) return likesB - likesA;
-    
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-
-  igRenderFeed();
-}
 
 /* ═══════════════════════════════════════════════════════ */
 /* ❤️ LIKE                                                  */
