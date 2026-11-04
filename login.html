@@ -4805,11 +4805,16 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         return;
       }
 
-      if (student.is_blocked === true) {
-        showLoading(false);
-        showBlockedScreen(student);
-        return;
-      }
+    if (student.is_blocked === true) {
+      showLoading(false);
+      showBlockedScreen(student);
+      return;
+    }
+    if (student.is_inactive === true) {
+      showLoading(false);
+      showToast('❌ Student ID കണ്ടെത്തിയില്ല', 'error');
+      return;
+    }
 
       showLoading(false);
       if (typeof window.completeLogin === 'function') {
@@ -4927,10 +4932,15 @@ async function restoreSession(){
     try{
       currentUser=JSON.parse(s);
       try{
-        var blockCheck=await supabaseClient.from('students').select('is_blocked,block_reason,blocked_at').eq('studentid',currentUser.studentId).single();
+        var blockCheck=await supabaseClient.from('students').select('is_blocked,block_reason,blocked_at,is_inactive').eq('studentid',currentUser.studentId).single();
         if(blockCheck.data&&blockCheck.data.is_blocked===true){
           localStorage.removeItem('noor_session');currentUser=null;
           setTimeout(function(){showBlockedScreen(blockCheck.data);},300);
+          return;
+        }
+        if(blockCheck.data && blockCheck.data.is_inactive === true){
+          localStorage.removeItem('noor_session');currentUser=null;
+          setTimeout(function(){ showToast('❌ Student ID കണ്ടെത്തിയില്ല', 'error'); }, 300);
           return;
         }
       }catch(bce){}
@@ -41319,66 +41329,31 @@ tr.inactive-row:hover td { background: #fde68a !important; }
     window.getFilteredStudentIds._v160 = true;
   }
 
-  var _origCompleteLogin = window.completeLogin;
-  if (typeof _origCompleteLogin === 'function' && !_origCompleteLogin._v160) {
-    window.completeLogin = async function(student) {
-      if (student && student.is_inactive === true) { window.showInactiveScreen(student); return; }
-      return _origCompleteLogin.apply(this, arguments);
-    };
-    window.completeLogin._v160 = true;
-  }
-
-  window.showInactiveScreen = function(student) {
-    try { localStorage.removeItem('noor_session'); } catch (e) {}
-    currentUser = null;
-    var typeLabel = { tc:'TC (Transfer Certificate)', dropout:'Dropout', completed:'Course Completed', transfer:'Transferred to another madrasa', other:'Other' }[student.inactive_type] || 'Not specified';
-    var old = document.getElementById('inactiveScreen');
-    if (old) old.remove();
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('dashboardSection').style.display = 'none';
-    document.getElementById('adminSection').style.display = 'none';
-    try { var fab = document.getElementById('aiFab'); if (fab) fab.classList.remove('show'); } catch (e) {}
-    var html = '<div id="inactiveScreen" style="position:fixed;inset:0;background:linear-gradient(155deg,#03081c,#050e2b 30%,#071433);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">' +
-      '<div style="max-width:460px;width:100%;background:linear-gradient(160deg,rgba(180,83,9,.18),rgba(5,14,43,.98));border:2px solid rgba(251,191,36,.5);border-radius:28px;padding:36px 26px 30px;text-align:center;box-shadow:0 40px 100px -30px rgba(0,0,0,.95);">' +
-        '<div style="width:90px;height:90px;margin:0 auto 16px;border-radius:50%;background:linear-gradient(140deg,#b45309,#f59e0b);display:flex;align-items:center;justify-content:center;"><i class="fas fa-inbox" style="font-size:2.3rem;color:#fff;"></i></div>' +
-        '<h1 style="color:#fff;font-size:1.55rem;font-weight:900;margin:0 0 6px;">📭 Account Inactive</h1>' +
-        '<p style="color:#fbbf24;font-size:.9rem;margin:0 0 22px;font-weight:700;">നിങ്ങളുടെ അക്കൗണ്ട് നിലവിൽ inactive ആണ്</p>' +
-        '<div style="background:rgba(8,20,48,.7);border:1px solid rgba(140,190,255,.2);border-radius:16px;padding:16px;text-align:left;margin-bottom:16px;">' +
-          '<div style="font-size:.7rem;color:#9db8dd;text-transform:uppercase;font-weight:800;letter-spacing:1px;margin-bottom:8px;"><i class="fas fa-user"></i> Student Details</div>' +
-          '<div style="color:#fff;font-weight:800;font-size:1rem;">' + escapeHtml(student.name || 'Student') + '</div>' +
-          '<div style="color:#9db8dd;font-size:.78rem;margin-top:3px;">' + escapeHtml(student.studentid) + ' • Class ' + escapeHtml(student.class || '—') + '</div></div>' +
-        '<div style="background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(251,146,60,.1));border:1.6px solid rgba(251,191,36,.4);border-radius:16px;padding:16px;text-align:left;margin-bottom:20px;">' +
-          '<div style="font-size:.7rem;color:#fcd34d;text-transform:uppercase;font-weight:800;letter-spacing:1px;margin-bottom:8px;"><i class="fas fa-circle-info"></i> Reason</div>' +
-          '<div style="color:#fff;font-size:.9rem;line-height:1.6;">' + escapeHtml(typeLabel) +
-          (student.inactive_reason ? '<div style="font-size:.82rem;color:#cbd5e1;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.1);">' + escapeHtml(student.inactive_reason) + '</div>' : '') +
-          (student.inactive_at ? '<div style="color:#9db8dd;font-size:.7rem;margin-top:10px;"><i class="far fa-clock"></i> ' + formatDate(student.inactive_at) + '</div>' : '') + '</div></div>' +
-        '<div style="background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:14px;padding:12px 16px;margin-bottom:22px;text-align:left;"><div style="font-size:.78rem;color:#67e8f9;line-height:1.6;"><i class="fas fa-info-circle"></i> <b>എന്ത് ചെയ്യണം?</b><br>മദ്രസ ഓഫീസിൽ ബന്ധപ്പെട്ട് അക്കൗണ്ട് restore ചെയ്യാൻ അപേക്ഷിക്കുക.<br>📞 +91 70346 78818</div></div>' +
-        '<button onclick="closeInactiveScreen()" style="background:linear-gradient(100deg,#22d3ee,#3b8bff);color:#03132e;border:none;padding:14px 32px;border-radius:50px;font-weight:800;font-size:.95rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:9px;width:100%;justify-content:center;"><i class="fas fa-arrow-left"></i> Back to Login</button>' +
-        '<div style="margin-top:18px;font-size:.68rem;color:#6d88ad;">Noorussalam Madrasa</div></div></div>';
-    document.body.insertAdjacentHTML('beforeend', html);
-    if (navigator.vibrate) try { navigator.vibrate([40, 50, 40]); } catch (e) {}
-  };
-
-  window.closeInactiveScreen = function() {
-    var el = document.getElementById('inactiveScreen');
-    if (el) el.remove();
-    document.getElementById('loginSection').style.display = 'flex';
-    var inp = document.getElementById('studentId');
-    if (inp) inp.value = '';
-    window._lastTrackedUser = null;
-    localStorage.removeItem('noor_session');
-  };
+      var _origCompleteLogin = window.completeLogin;
+      if (typeof _origCompleteLogin === 'function' && !_origCompleteLogin._v160) {
+        window.completeLogin = async function(student) {
+          if (student && student.is_inactive === true) { 
+            if (typeof showToast === 'function') showToast('❌ Student ID കണ്ടെത്തിയില്ല', 'error');
+            if (typeof logout === 'function') logout();
+            return; 
+          }
+          return _origCompleteLogin.apply(this, arguments);
+        };
+        window.completeLogin._v160 = true;
+      }
 
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) return;
     if (!currentUser) return;
     if (window.isAdminMode) return;
-    if (document.getElementById('inactiveScreen')) return;
     var dash = document.getElementById('dashboardSection');
     if (!dash || dash.style.display !== 'block') return;
     try {
-      supabaseClient.from('students').select('is_inactive, inactive_type, inactive_reason, inactive_at').eq('studentid', currentUser.studentId).single().then(function(r) {
-        if (r.data && r.data.is_inactive === true) { Object.assign(currentUser, r.data); window.showInactiveScreen(currentUser); }
+      supabaseClient.from('students').select('is_inactive').eq('studentid', currentUser.studentId).single().then(function(r) {
+        if (r.data && r.data.is_inactive === true) {
+          if (typeof showToast === 'function') showToast('❌ Student ID കണ്ടെത്തിയില്ല', 'error');
+          if (typeof logout === 'function') logout();
+        }
       });
     } catch (e) {}
   });
@@ -43289,8 +43264,11 @@ function hookLoginFlow() {
       const student = r.data;
       if (typeof showLoading === 'function') showLoading(false);
       
-      if (student.is_blocked === true) return showBlockedScreen(student);
-      if (student.is_inactive === true) return showInactiveScreen(student);
+        if (student.is_blocked === true) return showBlockedScreen(student);
+        if (student.is_inactive === true) {
+          if (typeof showToast === 'function') showToast('❌ Student ID കണ്ടെത്തിയില്ല', 'error');
+          return;
+        }
       
       const hasPin = student.pin && String(student.pin).trim().length === 4;
       if (hasPin) {
